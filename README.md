@@ -1,3 +1,3 @@
 # greetgo.sandbox
 
-SandBox from greetgo! HI
+SandBox from greetgo!
