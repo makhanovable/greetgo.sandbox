@@ -3,7 +3,7 @@
 .idea/
 .classpath
 .project
-/ideaDataSources
+/.ideaDataSources
 /dataSources
 *.ids
 *.iml
