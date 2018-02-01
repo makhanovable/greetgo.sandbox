@@ -1,4 +1,8 @@
 package kz.greetgo.sandbox.controller.report.client_list.model;
 
-public interface ReportFooterData {
+import java.util.Date;
+
+public class ReportFooterData {
+  public String createdBy;
+  public Date createdAt;
 }

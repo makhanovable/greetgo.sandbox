@@ -1,8 +1,8 @@
 package kz.greetgo.sandbox.controller.register;
 
-import kz.greetgo.sandbox.controller.report.client_list.ReportView;
+import kz.greetgo.sandbox.controller.report.client_list.ClientListReportView;
 
 public interface ReportRegister {
 
-  void generate(ReportView reportView);
+  void generate(ClientListReportView reportView);
 }

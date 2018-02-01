@@ -258,6 +258,7 @@ public class ClientRegisterStand implements ClientRegister {
 
   @Override
   public String prepareRecordListStream(String personId) {
+
     return tempSessionRegister.get().save(personId, "/client/list/report", 60);
   }
 

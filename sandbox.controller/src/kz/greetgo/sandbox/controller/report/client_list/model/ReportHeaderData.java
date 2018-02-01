@@ -1,4 +1,5 @@
 package kz.greetgo.sandbox.controller.report.client_list.model;
 
-public interface ReportHeaderData {
+public class ReportHeaderData {
+  public String title;
 }
