@@ -1048,6 +1048,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
       phone.number.equals("+72822590121") && phone.type == PhoneType.HOME)).isEqualTo(true);
   }
 
+  @Test
+  public void method_streamRecordList_manually() {
+
+  }
+
   @Test(expectedExceptions = InvalidParameter.class)
   public void method_getCount_requestNull() {
     clientRegister.get().getCount(null);

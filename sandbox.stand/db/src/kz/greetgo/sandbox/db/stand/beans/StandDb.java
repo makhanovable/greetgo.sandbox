@@ -3,9 +3,12 @@ package kz.greetgo.sandbox.db.stand.beans;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.HasAfterInject;
 import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.util.Util;
 import kz.greetgo.sandbox.db.stand.model.CharmDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.stand.model.PersonDot;
+import kz.greetgo.sandbox.db.stand.model.ReportSessionDot;
+import kz.greetgo.util.RND;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -19,13 +22,14 @@ public class StandDb implements HasAfterInject {
   public final Map<String, PersonDot> personStorage = new HashMap<>();
   public final Map<Long, ClientDot> clientStorage = new HashMap<>();
   public AtomicLong curClientId = new AtomicLong(0);
+  public final Map<String, ReportSessionDot> reportSessionStorage = new HashMap<>();
 
   @Override
   public void afterInject() throws Exception {
-    //TODO parse only once, not in separate files
     this.parseCharms();
     this.parsePersons();
     this.parseClients();
+    this.generateClients();
   }
 
   private void parseCharms() throws Exception {
@@ -160,12 +164,32 @@ public class StandDb implements HasAfterInject {
     clientStorage.put(c.id, c);
   }
 
+  private void generateClients() {
+    for (int i = 0; i < 500; i++) {
+      ClientDot c = new ClientDot();
+      c.id = clientStorage.size();
+      c.surname = RND.str(RND.plusInt(5) + 5);
+      c.name = RND.str(RND.plusInt(5) + 5);
+      c.patronymic = RND.str(RND.plusInt(5) + 5);
+      c.gender = toGender(RND.plusInt(Gender.values().length));
+      c.birthDate = this.generateDate();
+      c.charm = this.generateCharm();
+      c.factualAddressInfo = this.generateAddressInfo(AddressType.FACTUAL);
+      c.registrationAddressInfo = this.generateAddressInfo(AddressType.REGISTRATION);
+      c.phones = this.generatePhones();
+
+      ClientDot.generateAgeAndBalance(c);
+
+      clientStorage.put(c.id, c);
+    }
+  }
+
   // https://stackoverflow.com/a/3985467
   private String generateDate() {
     long time = -946771200000L + (Math.abs(new Random().nextLong()) % (70L * 365 * 24 * 60 * 60 * 1000));
     Date date = new Date(time);
 
-    return new SimpleDateFormat("yyyy-MM-dd").format(date);
+    return new SimpleDateFormat(Util.datePattern).format(date);
   }
 
   private Charm generateCharm() {
@@ -180,9 +204,9 @@ public class StandDb implements HasAfterInject {
     AddressInfo ret = new AddressInfo();
 
     ret.type = addressType;
-    ret.street = this.generateString(random.nextInt(10) + 5, false);
-    ret.house = this.generateString(random.nextInt(3) + 2, false);
-    ret.flat = this.generateString(random.nextInt(3) + 2, true);
+    ret.street = RND.str(random.nextInt(10) + 5);
+    ret.house = RND.str(random.nextInt(3) + 2);
+    ret.flat = RND.str(random.nextInt(3) + 2);
 
     return ret;
   }
@@ -194,39 +218,13 @@ public class StandDb implements HasAfterInject {
 
     for (int i = 0; i < n; i++) {
       Phone phone = new Phone();
-      phone.number = "+" + this.generateString(11, true);
+      phone.number = "+" + RND.intStr(11);
       phone.type = toPhoneType(random.nextInt(PhoneType.values().length));
 
       ret.add(phone);
     }
 
     return ret;
-  }
-
-  // https://stackoverflow.com/a/20536597 (modified)
-  private String generateString(int len, boolean digitsOnly) {
-    Random random = new Random();
-    String LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    String DIGITS = "1234567890";
-    String CHARS = LETTERS + DIGITS;
-    StringBuilder salt = new StringBuilder();
-
-    while (salt.length() < len) {
-      int id;
-
-      if (digitsOnly) {
-        id = (int) (random.nextFloat() * DIGITS.length());
-        salt.append(DIGITS.charAt(id));
-      } else {
-        id = (int) (random.nextFloat() * CHARS.length());
-        if (random.nextInt(3) != 0)
-          salt.append(Character.toLowerCase(CHARS.charAt(id)));
-        else
-          salt.append(CHARS.charAt(id));
-      }
-    }
-
-    return salt.toString();
   }
 
   private static Gender toGender(int i) {
