@@ -9,7 +9,7 @@ public class PersonDot {
   public String surname, name, patronymic;
 
   public String encryptedPassword;
-
+  //Test
   public UserInfo toUserInfo() {
     UserInfo ret = new UserInfo();
     ret.id = id;
