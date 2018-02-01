@@ -4,25 +4,11 @@ import {AuthInfo} from "../model/AuthInfo";
 
 @Component({
   selector: 'root-component',
-  template: `
-    <login-component
-      *ngIf="mode == 'login'"
-      (finish)="startApp()"
-    ></login-component>
-
-    <main-form-component
-      *ngIf="mode == 'main-form'"
-      (exit)="exit()"
-    ></main-form-component>
-
-    <div *ngIf="mode == 'init'">
-      Инициация системы... <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
-    </div>
-  `
+  template: require('./root-component.html'),
 })
+
 export class RootComponent implements OnInit {
   mode: string = "login";
-
   constructor(private httpService: HttpService) {}
 
   ngOnInit(): void {
