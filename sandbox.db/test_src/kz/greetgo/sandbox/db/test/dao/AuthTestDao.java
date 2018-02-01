@@ -20,7 +20,9 @@ public interface AuthTestDao {
                        @Param("value") String value);
 
   @Insert("insert into Person (id, accountName, encryptedPassword, blocked) " +
-    "values (#{id}, #{accountName}, #{encryptedPassword}, #{blocked})")
+    "values (#{id}, #{accountName}, #{encryptedPassword}, #{blocked})" +
+    "ON CONFLICT(accountName, encryptedPassword, blocked) " +
+    "DO UPDATE accountName=#{accountName}, #{encryptedPassword}=encryptedPassword, blocked=#{blocked}")
   void insertUser(@Param("id") String id,
                   @Param("accountName") String accountName,
                   @Param("encryptedPassword") String encryptedPassword,
@@ -35,4 +37,7 @@ public interface AuthTestDao {
   @Insert("insert into Person (  id,    accountName,    surname,    name,    patronymic,    encryptedPassword, blocked) " +
     "                  values (#{id}, #{accountName}, #{surname}, #{name}, #{patronymic}, #{encryptedPassword}, 0)")
   void insertPersonDot(PersonDot personDot);
+
+  @Update("UPDATE Person SET blocked=1")
+  void deleteAllTablePerson();
 }

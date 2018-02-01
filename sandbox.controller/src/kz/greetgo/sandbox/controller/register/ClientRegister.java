@@ -1,8 +1,8 @@
 package kz.greetgo.sandbox.controller.register;
 
+import kz.greetgo.mvc.interfaces.RequestTunnel;
 import kz.greetgo.sandbox.controller.model.*;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
@@ -46,13 +46,20 @@ public interface ClientRegister {
   void saveDetails(ClientDetailsToSave detailsToSave);
 
   /**
+   * Подготавливает временную сессию для загрузки файла и возвращает токен сессии
+   *
+   * @param personId идентификатор пользователя
+   * @return токен
+   */
+  String prepareRecordListStream(String personId);
+
+  /**
    * Возвращает полный список записей в выходной поток
    *
    * @param outStream       выходной поток
    * @param request         принимаемые параметры страницы, сортировки и фильтрации в виде модели
    * @param fileContentType тип контента для формирования файла
-   * @param personId        идентификатор текущего пользователя
    */
-  void streamRecordList(OutputStream outStream, ClientRecordRequest request, FileContentType fileContentType,
-                        String personId) throws Exception;
+  void streamRecordList(String token, OutputStream outStream, ClientRecordRequest request, FileContentType fileContentType,
+                        RequestTunnel requestTunnel) throws Exception;
 }

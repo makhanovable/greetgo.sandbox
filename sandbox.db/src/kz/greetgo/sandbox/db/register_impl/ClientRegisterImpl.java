@@ -2,9 +2,12 @@ package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.mvc.interfaces.RequestTunnel;
 import kz.greetgo.sandbox.controller.errors.InvalidParameter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.controller.register.TempSessionRegister;
+import kz.greetgo.sandbox.controller.util.Util;
 import kz.greetgo.sandbox.db.dao.CharmDao;
 import kz.greetgo.sandbox.db.dao.ClientAddrDao;
 import kz.greetgo.sandbox.db.dao.ClientDao;
@@ -15,6 +18,8 @@ import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
 import java.io.OutputStream;
 import java.sql.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +31,7 @@ public class ClientRegisterImpl implements ClientRegister {
   public BeanGetter<ClientAddrDao> clientAddrDao;
   public BeanGetter<ClientPhoneDao> clientPhoneDao;
   public BeanGetter<JdbcSandbox> jdbc;
+  public BeanGetter<TempSessionRegister> tempSessionRegister;
 
   @Override
   public long getCount(ClientRecordRequest request) {
@@ -128,8 +134,50 @@ public class ClientRegisterImpl implements ClientRegister {
     }
   }
 
+
   @Override
-  public void streamRecordList(OutputStream outStream, ClientRecordRequest request, FileContentType fileContentType, String personId) throws Exception {
-    throw new UnsupportedOperationException();
+  public String prepareRecordListStream(String personId) {
+    //TODO: finish tests
+
+    return null;
   }
+
+  @Override
+  public void streamRecordList(String token, OutputStream outStream, ClientRecordRequest request, FileContentType fileContentType, RequestTunnel requestTunnel) throws Exception {
+    tempSessionRegister.get().checkForValidity(token, requestTunnel.getTarget());
+    String personId = tempSessionRegister.get().remove(token);
+
+    String contentType, fileType;
+    switch (fileContentType) {
+      case PDF:
+        contentType = "application/pdf";
+        fileType = "pdf";
+        break;
+      case XLSX:
+        contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        fileType = "xlsx";
+        break;
+      default:
+        throw new InvalidParameter();
+    }
+
+    requestTunnel.setResponseContentType(contentType);
+    requestTunnel.setResponseHeader("Content-Disposition", "attachment; filename=\"client_records_" +
+      LocalDateTime.now().format(DateTimeFormatter.ofPattern(Util.reportDatePattern)) + "." + fileType + "\"");
+
+    /*
+    List<ClientDot> clientDots = new ArrayList<>(db.get().clientStorage.values());
+    clientDots = this.getFilteredList(clientDots, request.nameFilter);
+    clientDots = this.getSortedList(clientDots, request.columnSortType, request.sortAscend);
+
+    switch (fileContentType) {
+      case PDF:
+        this.streamRecordListToPdf(outStream, request, clientDots, personId);
+        break;
+      case XLSX:
+        this.streamRecordListToXlsx(outStream, request, clientDots, personId);
+        break;
+    }*/
+  }
+
 }

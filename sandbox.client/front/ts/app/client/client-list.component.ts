@@ -93,20 +93,15 @@ export class ClientListComponent {
   }
 
   onClientRecordListDownloadButtonClick() {
-    window.open(this.httpService.url("/client/report" +
-      "?clientRecordRequest=" + JSON.stringify(this.request) +
-      "&fileContentType=" + JSON.stringify(this.downloadContentType) +
-      "&token=" + this.httpService.token
-    ));
-    /*
-     this.httpService.get("/client/report", {
-     'clientRecordRequest': JSON.stringify(this.request),
-     'fileContentType': JSON.stringify(FileContentType.PDF)
-     }).toPromise().then(result => {
-     console.log(result);
-     }, error => {
-     console.log(error);
-     });*/
+    this.httpService.get("/client/list/token").toPromise().then(result => {
+      window.open(this.httpService.url("/client/list/report" +
+        "?clientRecordRequest=" + JSON.stringify(this.request) +
+        "&fileContentType=" + JSON.stringify(this.downloadContentType) +
+        "&token=" + JSON.stringify(result.json())
+      ));
+    }, error => {
+      console.log(error);
+    });
   }
 
   onFilterButtonClick(filterValue: any) {

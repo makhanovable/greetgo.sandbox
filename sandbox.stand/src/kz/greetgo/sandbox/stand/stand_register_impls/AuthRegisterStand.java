@@ -117,7 +117,7 @@ public class AuthRegisterStand implements AuthRegister {
     PersonDot personDot = db.get().personStorage.get(personId);
     if (personDot == null) throw new NullPointerException("personDot == null for id = " + personId);
     AuthInfo ret = new AuthInfo();
-    ret.pageSize = 7;
+    ret.pageSize = 50;
     ret.appTitle = personDot.accountName + " - Sandbox STAND";
     return ret;
   }

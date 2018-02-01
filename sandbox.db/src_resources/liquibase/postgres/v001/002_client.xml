@@ -3,7 +3,6 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <!--TODO: убрать nextval, т.к. в оно вызывается в коде?-->
   <changeSet author="nsmagulov" id="create-table-client">
     <sql endDelimiter=";;"><![CDATA[
       CREATE TABLE client (

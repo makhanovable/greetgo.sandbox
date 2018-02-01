@@ -7,6 +7,9 @@ import java.time.LocalDate;
 import java.util.Locale;
 
 public class Util {
+
+  public static final String floatFormat = "%.2f";
+
   public static String floatToString(float f) {
     return String.format(Locale.US, "%f", f);
   }
@@ -16,6 +19,7 @@ public class Util {
   }
 
   public static final String datePattern = "YYYY-MM-DD";
+  public static final String reportDatePattern = "dd-MM-yyyy-hh-mm";
 
   public static LocalDate generateLocalDate() {
     return LocalDate.ofEpochDay(RND.plusLong(LocalDate.now().toEpochDay()));
