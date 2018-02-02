@@ -3,9 +3,11 @@ export class ClientInfo {
     public name: string;
     public patronymic: string;
     public surName: string;
-    public gender: Gender;
     public birthDay: Date;
     public charm: Charm;
+    public totalAccountBalance: number;
+    public maximumBalance: number;
+    public minimumBalance: number;
 }
 
 export class Charm {

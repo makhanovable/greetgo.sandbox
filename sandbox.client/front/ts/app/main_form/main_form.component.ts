@@ -5,21 +5,23 @@ import { HttpService } from "../HttpService";
 import { MatTableDataSource, MatPaginator } from "@angular/material";
 import { ViewChild } from "@angular/core/src/metadata/di";
 import { ClientInfo } from "../../model/ClientInfo";
+import { OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
 
 @Component({
   selector: 'main-form-component',
   template: require('./main_form-component.html'),
   styles: [require('./main_form-component.css')],
 })
-export class MainFormComponent {
+export class MainFormComponent implements OnInit {
   @Output() exit = new EventEmitter<void>();
 
   userInfo: UserInfo | null = null;
   loadUserInfoButtonEnabled: boolean = true;
   loadUserInfoError: string | null;
 
-  displayedColumns = ['id', 'FIO', 'gender', 'charm'];
-  dataSource = new MatTableDataSource<ClientInfo>(ELEMENT_DATA);
+  displayedColumns = ['fio', 'charm', 'age', 'totalAccountBalance', 'maximumBalance', 'minimumBalance'];
+  dataSource: MatTableDataSource<ClientInfo>;
+  tableElemets: ClientInfo[];
 
   constructor(private httpService: HttpService) { }
 
@@ -37,22 +39,27 @@ export class MainFormComponent {
     });
   }
 
-  pong() {
-    alert('hello')
+  ngOnInit() {
+    this.tableElemets = [
+      { id: 1, birthDay: new Date("September 4, 1996"), patronymic: "D.", name: "Dauren", surName: "Amze", charm: { name: "ленивый" } } as ClientInfo
+
+    ];
+    this.dataSource = new MatTableDataSource<ClientInfo>(this.tableElemets);
+
   }
-  notImpl(){
+
+  pong() {
+    alert('pong')
+  }
+
+  calculateAge(birthday) {
+    var ageDifMs = Date.now() - birthday.getTime();
+    var ageDate = new Date(ageDifMs);
+    return Math.abs(ageDate.getUTCFullYear() - 1970);
+  }
+  notImpl() {
     alert("not Implemented")
   }
 
 }
 
-const ELEMENT_DATA: any[] = [
-   { age: "21", name: "Dauren", surName: "amze", gender: Gender.MALE, charm: { name: "ленивый" } }
-  , { age: "21", name: "Dauren", surName: "amze", gender: Gender.MALE, charm: { name: "ленивый" } }
-  , { age: "21", name: "Dauren", surName: "amze", gender: Gender.MALE, charm: { name: "ленивый" } }
-  , { age: "21", name: "Dauren", surName: "amze", gender: Gender.MALE, charm: { name: "ленивый" } }
-  , { age: "21", name: "Dauren", surName: "amze", gender: Gender.MALE, charm: { name: "ленивый" } }
-  , { age: "21", name: "Dauren", surName: "amze", gender: Gender.MALE, charm: { name: "ленивый" } }
-  , { age: "21", name: "Dauren", surName: "amze", gender: Gender.MALE, charm: { name: "ленивый" } }
-
-];

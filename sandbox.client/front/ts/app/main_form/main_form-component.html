@@ -59,7 +59,7 @@
 </div>
 
 
-<div class="container-fluid">
+<div class="container">
     <div class="row">
         <div class="col-md-10">
             <div class="row">
@@ -68,29 +68,36 @@
                         <mat-table #table [dataSource]="dataSource">
 
                             <!-- Position Column -->
-                            <ng-container matColumnDef="id">
-                                <mat-header-cell *matHeaderCellDef> Age </mat-header-cell>
-                                <mat-cell *matCellDef="let element"> {{element.age}} </mat-cell>
+                            <ng-container matColumnDef="fio">
+                                <mat-header-cell *matHeaderCellDef> Full name </mat-header-cell>
+                                <mat-cell *matCellDef="let element"> {{[element.surName, element.name, element.patronymic].join(' ') }} </mat-cell>
                             </ng-container>
 
                             <!-- Name Column -->
-                            <ng-container matColumnDef="FIO">
-                                <mat-header-cell *matHeaderCellDef> Name </mat-header-cell>
-                                <mat-cell *matCellDef="let element"> {{element.name + " " + element.surName}} </mat-cell>
-                            </ng-container>
-
-                            <!-- Weight Column -->
-                            <ng-container matColumnDef="gender">
-                                <mat-header-cell *matHeaderCellDef> Gender </mat-header-cell>
-                                <mat-cell *matCellDef="let element"> {{element.gender === 0 ? "male" : "female"}} </mat-cell>
-                            </ng-container>
-
-                            <!-- Symbol Column -->
                             <ng-container matColumnDef="charm">
                                 <mat-header-cell *matHeaderCellDef> Charm </mat-header-cell>
                                 <mat-cell *matCellDef="let element"> {{element.charm.name}} </mat-cell>
                             </ng-container>
 
+                            <!-- Weight Column -->
+                            <ng-container matColumnDef="age">
+                                <mat-header-cell *matHeaderCellDef> Age </mat-header-cell>
+                                <mat-cell *matCellDef="let element"> {{calculateAge(element.birthDay)}} </mat-cell>
+                            </ng-container>
+
+                            <!-- Symbol Column -->
+                            <ng-container matColumnDef="totalAccountBalance">
+                                <mat-header-cell *matHeaderCellDef> TotalAccountBalance </mat-header-cell>
+                                <mat-cell *matCellDef="let element"> {{element.}} </mat-cell>
+                            </ng-container>
+                            <ng-container matColumnDef="maximumBalance">
+                                <mat-header-cell *matHeaderCellDef> MaximumBalance </mat-header-cell>
+                                <mat-cell *matCellDef="let element"> {{element.charm.name}} </mat-cell>
+                            </ng-container>
+                            <ng-container matColumnDef="minimumBalance">
+                                <mat-header-cell *matHeaderCellDef> MinimumBalance </mat-header-cell>
+                                <mat-cell *matCellDef="let element"> {{element.charm.name}} </mat-cell>
+                            </ng-container>
                             <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
                             <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
                         </mat-table>
