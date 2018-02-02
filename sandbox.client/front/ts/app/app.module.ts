@@ -1,3 +1,7 @@
+import { ClientListComponent } from './components/clientList/client_list.component';
+
+import { ClientFormComponent } from './components/clientForm/client_form.component';
+
 import { NgModule } from "@angular/core";
 import { HttpModule, JsonpModule } from "@angular/http";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
@@ -7,22 +11,26 @@ import { LoginComponent } from "./input/login.component";
 import { MainFormComponent } from "./main_form/main_form.component";
 import { HttpService } from "./HttpService";
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MatButtonModule, MatPaginatorModule } from '@angular/material';
+import {
+  MatButtonModule, MatPaginatorModule, MatCheckboxModule, MatDialogModule,
+  MatSortModule, MatFormFieldModule, MatInputModule, MatDatepickerModule, MatNativeDateModule, MatSelectModule
+} from '@angular/material';
 import { MatTableModule } from '@angular/material/table';
+import { SelectionModel } from "@angular/cdk/collections";
 
 @NgModule({
   imports: [
     MatTableModule, MatPaginatorModule,
-    BrowserModule, HttpModule, JsonpModule, 
-    FormsModule, ReactiveFormsModule, BrowserAnimationsModule, 
-    MatButtonModule
+    BrowserModule, HttpModule, JsonpModule, MatDatepickerModule, MatNativeDateModule,
+    FormsModule, ReactiveFormsModule, BrowserAnimationsModule, MatSelectModule,
+    MatButtonModule, MatCheckboxModule, MatDialogModule, MatSortModule, MatFormFieldModule, MatInputModule
   ],
   declarations: [
-    RootComponent, LoginComponent, MainFormComponent
+    RootComponent, LoginComponent, MainFormComponent, ClientFormComponent, ClientListComponent
   ],
   bootstrap: [RootComponent],
   providers: [HttpService],
-  entryComponents: [],
+  entryComponents: [ClientFormComponent],
 })
 export class AppModule {
 }

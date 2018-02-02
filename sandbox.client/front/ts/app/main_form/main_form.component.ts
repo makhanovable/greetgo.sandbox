@@ -1,27 +1,30 @@
-import { Gender } from './../../model/ClientInfo';
+
 import { Component, EventEmitter, Output } from "@angular/core";
 import { UserInfo } from "../../model/UserInfo";
 import { HttpService } from "../HttpService";
-import { MatTableDataSource, MatPaginator } from "@angular/material";
+import { MatTableDataSource, MatPaginator, MatDialog } from "@angular/material";
 import { ViewChild } from "@angular/core/src/metadata/di";
-import { ClientInfo } from "../../model/ClientInfo";
+
 import { OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
+import { SelectionModel } from '@angular/cdk/collections';
+import { ClientFormComponent } from '../components/clientForm/client_form.component';
 
 @Component({
   selector: 'main-form-component',
-  template: require('./main_form-component.html'),
-  styles: [require('./main_form-component.css')],
+  template: require('./main_form.component.html'),
+  styles: [require('./main_form.component.css')],
 })
 export class MainFormComponent implements OnInit {
+  
   @Output() exit = new EventEmitter<void>();
 
   userInfo: UserInfo | null = null;
   loadUserInfoButtonEnabled: boolean = true;
   loadUserInfoError: string | null;
 
-  displayedColumns = ['fio', 'charm', 'age', 'totalAccountBalance', 'maximumBalance', 'minimumBalance'];
-  dataSource: MatTableDataSource<ClientInfo>;
-  tableElemets: ClientInfo[];
+
+  
+  
 
   constructor(private httpService: HttpService) { }
 
@@ -40,26 +43,21 @@ export class MainFormComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.tableElemets = [
-      { id: 1, birthDay: new Date("September 4, 1996"), patronymic: "D.", name: "Dauren", surName: "Amze", charm: { name: "ленивый" } } as ClientInfo
 
-    ];
-    this.dataSource = new MatTableDataSource<ClientInfo>(this.tableElemets);
 
   }
 
   pong() {
-    alert('pong')
+    console.log('pong')
   }
 
-  calculateAge(birthday) {
-    var ageDifMs = Date.now() - birthday.getTime();
-    var ageDate = new Date(ageDifMs);
-    return Math.abs(ageDate.getUTCFullYear() - 1970);
-  }
-  notImpl() {
-    alert("not Implemented")
-  }
+  
+
+  
+
+
+
+
 
 }
 

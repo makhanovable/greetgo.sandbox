@@ -1,0 +1,18 @@
+.client-form-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.client-form-container>* {
+    width: 100%;
+}
+
+.client-form-container .client-form-row {
+    display: flex;
+    flex-direction: row
+
+}
+
+.client-form-container .client-form-row mat-form-field {
+    margin: 15px;
+}

@@ -1,0 +1,49 @@
+<h1>hello i am client form component</h1>
+
+<div class="client-form-container">
+    <div class="client-form-row">
+        <mat-form-field>
+            <input matInput placeholder="Surname" [(ngModel)]="formData.name">
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput placeholder="Firstname" [(ngModel)]="formData.surname">
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput placeholder="Patronymic" [(ngModel)]="formData.patronymic">
+        </mat-form-field>
+    </div>
+
+    <div class="client-form-row">
+
+        <mat-form-field>
+            <mat-select placeholder="Gender" [(ngModel)]="formData.gender">
+                <mat-option *ngFor="let i of genders" value={{i}} >{{i}}</mat-option>
+                
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field>
+            <mat-select placeholder="Charm">
+                <mat-option value="ativist">ativist</mat-option>
+                <mat-option value="sleepy">sleepy</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput [matDatepicker]="picker" placeholder="Birth day">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+    </div>
+
+    
+    
+
+
+
+    <mat-form-field>
+        <input matInput placeholder="Input">
+    </mat-form-field>
+
+
+</div>
+
+<button mat-button (click)="save()">save</button>

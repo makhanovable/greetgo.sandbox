@@ -1,6 +1,6 @@
 package kz.greetgo.sandbox.controller.model;
 
-import kz.greetgo.sandbox.controller.enums.Gender;
+import kz.greetgo.sandbox.controller.enums.GenderType;
 
 import java.sql.Date;
 
@@ -13,7 +13,7 @@ public class ClientInfo {
     private String surSame;
     private String name;
     private String patronymic;
-    private Gender gender;
+    private GenderType genderType;
     private Date birthDate;
     private Charm charm;
 
@@ -49,12 +49,12 @@ public class ClientInfo {
         this.patronymic = patronymic;
     }
 
-    public Gender getGender() {
-        return gender;
+    public GenderType getGenderType() {
+        return genderType;
     }
 
-    public void setGender(Gender gender) {
-        this.gender = gender;
+    public void setGenderType(GenderType genderType) {
+        this.genderType = genderType;
     }
 
     public Date getBirthDate() {
