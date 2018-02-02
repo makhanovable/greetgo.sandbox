@@ -9,8 +9,8 @@ import kz.greetgo.sandbox.controller.model.UserInfo;
 import kz.greetgo.sandbox.controller.register.ClientListReportRegister;
 import kz.greetgo.sandbox.controller.register.model.ClientListReportInstance;
 import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportView;
-import kz.greetgo.sandbox.db.register_impl.report.client_list.ClientListReportViewPdf;
-import kz.greetgo.sandbox.db.register_impl.report.client_list.ClientListReportViewXlsx;
+import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportViewPdf;
+import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportViewXlsx;
 import kz.greetgo.sandbox.controller.util.Util;
 import kz.greetgo.sandbox.db.dao.AuthDao;
 import kz.greetgo.sandbox.db.dao.ClientListReportDao;
@@ -58,15 +58,14 @@ public class ClientListReportRegisterImpl implements ClientListReportRegister {
 
     switch (fileContentType) {
       case PDF:
-        reportView = new ClientListReportViewPdf();
+        reportView = new ClientListReportViewPdf(outputStream);
         break;
       default:
-        reportView = new ClientListReportViewXlsx();
+        reportView = new ClientListReportViewXlsx(outputStream);
         break;
     }
 
-    jdbc.get().execute(new GetClientListReport(outputStream, request,
+    jdbc.get().execute(new GetClientListReport(request,
       Util.getFullname(userInfo.surname, userInfo.name, userInfo.patronymic), reportView));
   }
-
 }

@@ -8,7 +8,6 @@ import kz.greetgo.sandbox.controller.register.report.client_list.model.ReportHea
 import kz.greetgo.sandbox.controller.register.report.client_list.model.ReportItemData;
 import kz.greetgo.sandbox.controller.util.Util;
 
-import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -18,16 +17,13 @@ import java.util.List;
 
 public class GetClientListReport extends GetClientList {
 
-  private final OutputStream outputStream;
   private final ClientRecordRequest request;
   private final ClientListReportView reportView;
   private final String authorName;
 
-  public GetClientListReport(OutputStream outputStream, ClientRecordRequest request, String authorName,
-                             ClientListReportView reportView) {
+  public GetClientListReport(ClientRecordRequest request, String authorName, ClientListReportView reportView) {
     super(request);
 
-    this.outputStream = outputStream;
     this.request = request;
     this.authorName = authorName;
     this.reportView = reportView;
@@ -39,7 +35,7 @@ public class GetClientListReport extends GetClientList {
 
     ReportHeaderData headerData = new ReportHeaderData();
     headerData.columnSortType = request.columnSortType;
-    reportView.start(outputStream, headerData);
+    reportView.start(headerData);
 
     try (PreparedStatement ps = connection.prepareStatement(sqlQuery.toString())) {
       int index = 1;

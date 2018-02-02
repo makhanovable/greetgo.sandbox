@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.db.register_impl.report.client_list.font;
+package kz.greetgo.sandbox.controller.register.report.client_list.font;
 
 import java.io.InputStream;
 

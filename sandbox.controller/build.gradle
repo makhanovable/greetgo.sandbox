@@ -2,5 +2,12 @@ dependencies {
   compile "kz.greetgo.mvc:greetgo.mvc:$greetgoMvcVersion"
   compile "kz.greetgo.depinject:greetgo.depinject:$depinjectVersion"
 
+  // https://mvnrepository.com/artifact/commons-io/commons-io
+  compile group: 'commons-io', name: 'commons-io', version: '2.6'
+  // https://mvnrepository.com/artifact/com.itextpdf/itextpdf
+  compile group: 'com.itextpdf', name: 'itextpdf', version: '5.5.12'
+  // https://mvnrepository.com/artifact/kz.greetgo/greetgo.msoffice
+  compile group: 'kz.greetgo', name: 'greetgo.msoffice', version: '0.4.23'
+
   compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.21'
 }

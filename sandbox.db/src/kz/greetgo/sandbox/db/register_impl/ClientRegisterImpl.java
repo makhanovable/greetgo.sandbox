@@ -142,7 +142,6 @@ public class ClientRegisterImpl implements ClientRegister {
     return clientListReportRegister.get().save(personId, request, fileContentType);
   }
 
-  @SuppressWarnings("Duplicates")
   @Override
   public void streamRecordList(String reportIdInstance, OutputStream outStream, RequestTunnel requestTunnel)
     throws Exception {
@@ -171,5 +170,4 @@ public class ClientRegisterImpl implements ClientRegister {
     clientListReportRegister.get().generate(outStream, clientListReportInstance.personId,
       ClientRecordRequest.deserialize(clientListReportInstance.request), fileContentType);
   }
-
 }
