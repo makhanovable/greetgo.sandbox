@@ -19,10 +19,6 @@ public interface AuthTestDao {
                        @Param("name") UserParamName name,
                        @Param("value") String value);
 
-  @Insert("insert into Person (id, accountName, encryptedPassword, blocked) " +
-    "values (#{id}, #{accountName}, #{encryptedPassword}, #{blocked})" +
-    "ON CONFLICT(accountName, encryptedPassword, blocked) " +
-    "DO UPDATE accountName=#{accountName}, #{encryptedPassword}=encryptedPassword, blocked=#{blocked}")
   void insertUser(@Param("id") String id,
                   @Param("accountName") String accountName,
                   @Param("encryptedPassword") String encryptedPassword,

@@ -5,8 +5,9 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.interfaces.RequestTunnel;
 import kz.greetgo.sandbox.controller.errors.InvalidParameter;
 import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.register.ClientListReportRegister;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.controller.register.TempSessionRegister;
+import kz.greetgo.sandbox.controller.register.model.ClientListReportInstance;
 import kz.greetgo.sandbox.controller.util.Util;
 import kz.greetgo.sandbox.db.dao.CharmDao;
 import kz.greetgo.sandbox.db.dao.ClientAddrDao;
@@ -31,7 +32,7 @@ public class ClientRegisterImpl implements ClientRegister {
   public BeanGetter<ClientAddrDao> clientAddrDao;
   public BeanGetter<ClientPhoneDao> clientPhoneDao;
   public BeanGetter<JdbcSandbox> jdbc;
-  public BeanGetter<TempSessionRegister> tempSessionRegister;
+  public BeanGetter<ClientListReportRegister> clientListReportRegister;
 
   @Override
   public long getCount(ClientRecordRequest request) {
@@ -136,16 +137,19 @@ public class ClientRegisterImpl implements ClientRegister {
 
 
   @Override
-  public String prepareRecordListStream(String personId) {
-    //TODO: finish tests
-
-    return null;
+  public String prepareRecordListStream(String personId, ClientRecordRequest request, FileContentType fileContentType)
+    throws Exception {
+    return clientListReportRegister.get().save(personId, request, fileContentType);
   }
 
+  @SuppressWarnings("Duplicates")
   @Override
-  public void streamRecordList(String token, OutputStream outStream, ClientRecordRequest request, FileContentType fileContentType, RequestTunnel requestTunnel) throws Exception {
-    tempSessionRegister.get().checkForValidity(token, requestTunnel.getTarget());
-    String personId = tempSessionRegister.get().remove(token);
+  public void streamRecordList(String reportIdInstance, OutputStream outStream, RequestTunnel requestTunnel)
+    throws Exception {
+    ClientListReportInstance clientListReportInstance =
+      clientListReportRegister.get().checkForValidity(reportIdInstance);
+
+    FileContentType fileContentType = FileContentType.valueOf(clientListReportInstance.fileTypeName);
 
     String contentType, fileType;
     switch (fileContentType) {
@@ -160,24 +164,12 @@ public class ClientRegisterImpl implements ClientRegister {
       default:
         throw new InvalidParameter();
     }
-
     requestTunnel.setResponseContentType(contentType);
     requestTunnel.setResponseHeader("Content-Disposition", "attachment; filename=\"client_records_" +
       LocalDateTime.now().format(DateTimeFormatter.ofPattern(Util.reportDatePattern)) + "." + fileType + "\"");
 
-    /*
-    List<ClientDot> clientDots = new ArrayList<>(db.get().clientStorage.values());
-    clientDots = this.getFilteredList(clientDots, request.nameFilter);
-    clientDots = this.getSortedList(clientDots, request.columnSortType, request.sortAscend);
-
-    switch (fileContentType) {
-      case PDF:
-        this.streamRecordListToPdf(outStream, request, clientDots, personId);
-        break;
-      case XLSX:
-        this.streamRecordListToXlsx(outStream, request, clientDots, personId);
-        break;
-    }*/
+    clientListReportRegister.get().generate(outStream, clientListReportInstance.personId,
+      ClientRecordRequest.deserialize(clientListReportInstance.request), fileContentType);
   }
 
 }

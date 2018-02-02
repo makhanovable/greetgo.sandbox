@@ -3,31 +3,31 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <changeSet author="nsmagulov" id="create-table-temp_session">
+  <changeSet author="nsmagulov" id="create-table-clientListReport">
     <sql endDelimiter=";;"><![CDATA[
-      CREATE TABLE temp_session (
-        token varchar(255) NOT NULL,
-        person_id varchar(255) NOT NULL,
-        url varchar(255) NOT NULL,
-        lifetime Timestamp,
+      CREATE TABLE client_list_report (
+        report_id_instance varchar (255) NOT NULL,
+        person_id varchar (255) NOT NULL,
+        client_record_request bytea NOT NULL,
+        file_type VARCHAR(255) NOT NULL
       )
     ]]></sql>
   </changeSet>
 
-  <changeSet author="nsmagulov" id="alter-table-tempSession-add-primary-key">
+  <changeSet author="nsmagulov" id="alter-table-clientListReport-add-primary-key">
     <sql endDelimiter=";;"><![CDATA[
-      ALTER TABLE temp_session
+      ALTER TABLE client_list_report
       ADD CONSTRAINT pk_tempSession
-      PRIMARY KEY(token)
+      PRIMARY KEY (report_id_instance)
     ]]></sql>
   </changeSet>
 
-  <changeSet author="nsmagulov" id="alter-table-tempSession-add-foreign-key">
+  <changeSet author="nsmagulov" id="alter-table-clientListReport-add-foreign-key">
     <sql endDelimiter=";;"><![CDATA[
-      ALTER TABLE temp_session
+      ALTER TABLE client_list_report
       ADD CONSTRAINT fk_tempSession_person
-      FOREIGN KEY(person_id)
-      REFERENCES Person(id)
+      FOREIGN KEY (person_id)
+      REFERENCES Person (id)
     ]]></sql>
   </changeSet>
 </databaseChangeLog>

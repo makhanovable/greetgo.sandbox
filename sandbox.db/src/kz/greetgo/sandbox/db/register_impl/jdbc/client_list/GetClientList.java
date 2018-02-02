@@ -9,7 +9,6 @@ import kz.greetgo.sandbox.controller.util.Util;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,7 +99,7 @@ public class GetClientList extends GetClientCommon implements ConnectionCallback
     sqlParamList.add(request.clientRecordCountToSkip);
   }
 
-  protected ClientRecord rsToRecord(ResultSet rs) throws SQLException {
+  protected ClientRecord rsToRecord(ResultSet rs) throws Exception {
     ClientRecord ret = new ClientRecord();
 
     ret.id = rs.getLong("id");

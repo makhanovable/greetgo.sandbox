@@ -2,9 +2,11 @@ package kz.greetgo.sandbox.controller.util;
 
 import kz.greetgo.util.RND;
 
+import java.security.SecureRandom;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Locale;
+import java.util.Random;
 
 public class Util {
 
@@ -18,7 +20,7 @@ public class Util {
     return Float.parseFloat(s);
   }
 
-  public static final String datePattern = "YYYY-MM-DD";
+  public static final String datePattern = "yyyy-MM-dd";
   public static final String reportDatePattern = "dd-MM-yyyy-hh-mm";
 
   public static LocalDate generateLocalDate() {
@@ -44,5 +46,18 @@ public class Util {
       b.append(patronymic);
 
     return b.toString().trim();
+  }
+
+  private static final char[] ALL = (RND.eng + RND.ENG + RND.DEG).toCharArray();
+  private static final Random rnd = new SecureRandom();
+
+  public static String generateRandomString(int length) {
+    StringBuilder sb = new StringBuilder(length);
+    int charsLength = ALL.length;
+    for (int i = 0; i < length; i++) {
+      sb.append(ALL[rnd.nextInt(charsLength)]);
+    }
+
+    return sb.toString();
   }
 }

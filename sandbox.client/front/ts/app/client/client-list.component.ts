@@ -93,11 +93,12 @@ export class ClientListComponent {
   }
 
   onClientRecordListDownloadButtonClick() {
-    this.httpService.get("/client/list/token").toPromise().then(result => {
+    this.httpService.get("/client/list/instance", {
+      'clientRecordRequest': JSON.stringify(this.request),
+      'fileContentType': JSON.stringify(this.downloadContentType)
+    }).toPromise().then(result => {
       window.open(this.httpService.url("/client/list/report" +
-        "?clientRecordRequest=" + JSON.stringify(this.request) +
-        "&fileContentType=" + JSON.stringify(this.downloadContentType) +
-        "&token=" + JSON.stringify(result.json())
+        "?instance=" + JSON.stringify(result.json())
       ));
     }, error => {
       console.log(error);
