@@ -5,8 +5,9 @@ import kz.greetgo.sandbox.controller.errors.AuthError;
 import kz.greetgo.sandbox.controller.model.ClientRecordRequest;
 import kz.greetgo.sandbox.controller.model.ColumnSortType;
 import kz.greetgo.sandbox.controller.model.FileContentType;
-import kz.greetgo.sandbox.controller.register.ClientListReportRegister;
+import kz.greetgo.sandbox.controller.register.ReportRegister;
 import kz.greetgo.sandbox.controller.register.model.ClientListReportInstance;
+import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportViewXlsx;
 import kz.greetgo.sandbox.db.stand.model.PersonDot;
 import kz.greetgo.sandbox.db.test.dao.AuthTestDao;
 import kz.greetgo.sandbox.db.test.dao.ClientListReportTestDao;
@@ -19,11 +20,11 @@ import java.io.OutputStream;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
-public class ClientListReportRegisterTest extends ParentTestNg {
+public class ReportRegisterTest extends ParentTestNg {
 
   public BeanGetter<AuthTestDao> authTestDao;
   public BeanGetter<ClientListReportTestDao> reportTestDao;
-  public BeanGetter<ClientListReportRegister> reportRegister;
+  public BeanGetter<ReportRegister> reportRegister;
 
   @Test
   public void method_save_exists() throws Exception {
@@ -118,7 +119,7 @@ public class ClientListReportRegisterTest extends ParentTestNg {
     expectedRequest.sortAscend = RND.bool();
     FileContentType expectedFileType = FileContentType.values()[RND.plusInt(FileContentType.values().length)];
 
-    reportRegister.get().generate(outputStream, expectedPersonDot.id, expectedRequest, expectedFileType);
+    reportRegister.get().generate(new ClientListReportViewXlsx(outputStream), expectedPersonDot.id, expectedRequest);
   }
 
   private void resetTables() {

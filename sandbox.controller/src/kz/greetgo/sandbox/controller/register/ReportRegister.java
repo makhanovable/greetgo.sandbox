@@ -1,12 +1,12 @@
 package kz.greetgo.sandbox.controller.register;
 
+import kz.greetgo.mvc.interfaces.RequestTunnel;
 import kz.greetgo.sandbox.controller.model.ClientRecordRequest;
 import kz.greetgo.sandbox.controller.model.FileContentType;
 import kz.greetgo.sandbox.controller.register.model.ClientListReportInstance;
+import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportView;
 
-import java.io.OutputStream;
-
-public interface ClientListReportRegister {
+public interface ReportRegister {
 
   /**
    * Сохраняет информацию о предстоящей сессии для загрузки отчета и возвращает идентификатор отчета
@@ -26,6 +26,7 @@ public interface ClientListReportRegister {
    */
   ClientListReportInstance checkForValidity(String reportIdInstance) throws Exception;
 
-  void generate(OutputStream outputStream, String personId, ClientRecordRequest request,
-                FileContentType fileContentType);
+  void prepareForGeneration(RequestTunnel requestTunnel, String fileName, FileContentType fileContentType);
+
+  void generate(ClientListReportView reportView, String personId, ClientRecordRequest request);
 }

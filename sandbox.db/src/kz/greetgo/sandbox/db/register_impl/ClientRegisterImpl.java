@@ -5,10 +5,12 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.interfaces.RequestTunnel;
 import kz.greetgo.sandbox.controller.errors.InvalidParameter;
 import kz.greetgo.sandbox.controller.model.*;
-import kz.greetgo.sandbox.controller.register.ClientListReportRegister;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.controller.register.ReportRegister;
 import kz.greetgo.sandbox.controller.register.model.ClientListReportInstance;
-import kz.greetgo.sandbox.controller.util.Util;
+import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportView;
+import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportViewPdf;
+import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportViewXlsx;
 import kz.greetgo.sandbox.db.dao.CharmDao;
 import kz.greetgo.sandbox.db.dao.ClientAddrDao;
 import kz.greetgo.sandbox.db.dao.ClientDao;
@@ -19,8 +21,6 @@ import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
 import java.io.OutputStream;
 import java.sql.Date;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +32,7 @@ public class ClientRegisterImpl implements ClientRegister {
   public BeanGetter<ClientAddrDao> clientAddrDao;
   public BeanGetter<ClientPhoneDao> clientPhoneDao;
   public BeanGetter<JdbcSandbox> jdbc;
-  public BeanGetter<ClientListReportRegister> clientListReportRegister;
+  public BeanGetter<ReportRegister> clientListReportRegister;
 
   @Override
   public long getCount(ClientRecordRequest request) {
@@ -135,7 +135,6 @@ public class ClientRegisterImpl implements ClientRegister {
     }
   }
 
-
   @Override
   public String prepareRecordListStream(String personId, ClientRecordRequest request, FileContentType fileContentType)
     throws Exception {
@@ -143,31 +142,25 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   @Override
-  public void streamRecordList(String reportIdInstance, OutputStream outStream, RequestTunnel requestTunnel)
+  public void streamRecordList(String reportIdInstance, OutputStream outputStream, RequestTunnel requestTunnel)
     throws Exception {
     ClientListReportInstance clientListReportInstance =
       clientListReportRegister.get().checkForValidity(reportIdInstance);
 
     FileContentType fileContentType = FileContentType.valueOf(clientListReportInstance.fileTypeName);
+    clientListReportRegister.get().prepareForGeneration(requestTunnel, "client_record", fileContentType);
 
-    String contentType, fileType;
+    ClientListReportView reportView;
     switch (fileContentType) {
       case PDF:
-        contentType = "application/pdf";
-        fileType = "pdf";
-        break;
-      case XLSX:
-        contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-        fileType = "xlsx";
+        reportView = new ClientListReportViewPdf(outputStream);
         break;
       default:
-        throw new InvalidParameter();
+        reportView = new ClientListReportViewXlsx(outputStream);
+        break;
     }
-    requestTunnel.setResponseContentType(contentType);
-    requestTunnel.setResponseHeader("Content-Disposition", "attachment; filename=\"client_records_" +
-      LocalDateTime.now().format(DateTimeFormatter.ofPattern(Util.reportDatePattern)) + "." + fileType + "\"");
 
-    clientListReportRegister.get().generate(outStream, clientListReportInstance.personId,
-      ClientRecordRequest.deserialize(clientListReportInstance.request), fileContentType);
+    clientListReportRegister.get().generate(reportView, clientListReportInstance.personId,
+      ClientRecordRequest.deserialize(clientListReportInstance.request));
   }
 }
