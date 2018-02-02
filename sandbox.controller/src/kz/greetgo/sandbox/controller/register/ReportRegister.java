@@ -13,6 +13,7 @@ public interface ReportRegister {
    */
   String saveClientListReportInstance(ClientListReportInstance reportInstance) throws Exception;
 
-  void generateClientListReport(String reportInstanceId, ClientListReportView view);
+  ClientListReportInstance getClientListReportInstance(String reportInstanceId) throws Exception;
 
+  void generateClientListReport(ClientListReportInstance reportInstance, ClientListReportView view) throws Exception;
 }

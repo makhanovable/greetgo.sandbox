@@ -2,11 +2,7 @@ package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.mvc.interfaces.RequestTunnel;
-import kz.greetgo.sandbox.controller.errors.AuthError;
-import kz.greetgo.sandbox.controller.errors.InvalidParameter;
 import kz.greetgo.sandbox.controller.model.ClientRecordRequest;
-import kz.greetgo.sandbox.controller.model.FileContentType;
 import kz.greetgo.sandbox.controller.model.UserInfo;
 import kz.greetgo.sandbox.controller.register.ReportRegister;
 import kz.greetgo.sandbox.controller.register.model.ClientListReportInstance;
@@ -16,9 +12,6 @@ import kz.greetgo.sandbox.db.dao.AuthDao;
 import kz.greetgo.sandbox.db.dao.ClientListReportDao;
 import kz.greetgo.sandbox.db.register_impl.jdbc.client_list.GetClientListReport;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 @Bean
 public class ReportRegisterImpl implements ReportRegister {
@@ -30,52 +23,28 @@ public class ReportRegisterImpl implements ReportRegister {
   private static final int REPORT_ID_LENGTH = 16;
 
   @Override
-  public String save(String personId, ClientRecordRequest request, FileContentType fileContentType) throws Exception {
-    String reportIdInstance = Util.generateRandomString(REPORT_ID_LENGTH);
+  public String saveClientListReportInstance(ClientListReportInstance reportInstance) throws Exception {
+    String reportInstanceId = Util.generateRandomString(REPORT_ID_LENGTH);
 
-    clientListReportDao.get().insert(reportIdInstance, personId, ClientRecordRequest.serialize(request),
-      fileContentType.name());
+    clientListReportDao.get().insert(reportInstanceId, reportInstance.personId,
+      ClientRecordRequest.serialize(reportInstance.request), reportInstance.fileTypeName);
 
-    return reportIdInstance;
+    return reportInstanceId;
   }
 
   @Override
-  public ClientListReportInstance checkForValidity(String reportIdInstance) {
-    ClientListReportInstance clientListReportInstance =
-      clientListReportDao.get().selectInstance(reportIdInstance);
+  public ClientListReportInstance getClientListReportInstance(String reportInstanceId) {
+    ClientListReportInstance reportInstance = clientListReportDao.get().selectInstance(reportInstanceId);
+    clientListReportDao.get().delete(reportInstanceId);
 
-    if (clientListReportInstance == null) throw new AuthError("Invalid report id");
-
-    clientListReportDao.get().delete(reportIdInstance);
-
-    return clientListReportInstance;
+    return reportInstance;
   }
 
   @Override
-  public void prepareForGeneration(RequestTunnel requestTunnel, String fileName, FileContentType fileContentType) {
-    String contentType, fileType;
-    switch (fileContentType) {
-      case PDF:
-        contentType = "application/pdf";
-        fileType = "pdf";
-        break;
-      case XLSX:
-        contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-        fileType = "xlsx";
-        break;
-      default:
-        throw new InvalidParameter();
-    }
-    requestTunnel.setResponseContentType(contentType);
-    requestTunnel.setResponseHeader("Content-Disposition", "attachment; filename=\"" + fileName + "_" +
-      LocalDateTime.now().format(DateTimeFormatter.ofPattern(Util.reportDatePattern)) + "." + fileType + "\"");
-  }
+  public void generateClientListReport(ClientListReportInstance reportInstance, ClientListReportView view) {
+    UserInfo userInfo = authDao.get().getUserInfo(reportInstance.personId);
 
-  @Override
-  public void generate(ClientListReportView reportView, String personId, ClientRecordRequest request) {
-    UserInfo userInfo = authDao.get().getUserInfo(personId);
-
-    jdbc.get().execute(new GetClientListReport(request,
-      Util.getFullname(userInfo.surname, userInfo.name, userInfo.patronymic), reportView));
+    jdbc.get().execute(new GetClientListReport(reportInstance.request,
+      Util.getFullname(userInfo.surname, userInfo.name, userInfo.patronymic), view));
   }
 }

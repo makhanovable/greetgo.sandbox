@@ -2,15 +2,10 @@ package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.mvc.interfaces.RequestTunnel;
 import kz.greetgo.sandbox.controller.errors.InvalidParameter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.register.ReportRegister;
-import kz.greetgo.sandbox.controller.register.model.ClientListReportInstance;
-import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportView;
-import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportViewPdf;
-import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportViewXlsx;
 import kz.greetgo.sandbox.db.dao.CharmDao;
 import kz.greetgo.sandbox.db.dao.ClientAddrDao;
 import kz.greetgo.sandbox.db.dao.ClientDao;
@@ -19,7 +14,6 @@ import kz.greetgo.sandbox.db.register_impl.jdbc.client_list.GetClientCount;
 import kz.greetgo.sandbox.db.register_impl.jdbc.client_list.GetClientList;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
-import java.io.OutputStream;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
@@ -133,34 +127,5 @@ public class ClientRegisterImpl implements ClientRegister {
       for (Phone phone : detailsToSave.phones)
         clientPhoneDao.get().insert(detailsToSave.id, phone.number, phone.type.name());
     }
-  }
-
-  @Override
-  public String prepareRecordListStream(String personId, ClientRecordRequest request, FileContentType fileContentType)
-    throws Exception {
-    return clientListReportRegister.get().save(personId, request, fileContentType);
-  }
-
-  @Override
-  public void streamRecordList(String reportIdInstance, OutputStream outputStream, RequestTunnel requestTunnel)
-    throws Exception {
-    ClientListReportInstance clientListReportInstance =
-      clientListReportRegister.get().checkForValidity(reportIdInstance);
-
-    FileContentType fileContentType = FileContentType.valueOf(clientListReportInstance.fileTypeName);
-    clientListReportRegister.get().prepareForGeneration(requestTunnel, "client_record", fileContentType);
-
-    ClientListReportView reportView;
-    switch (fileContentType) {
-      case PDF:
-        reportView = new ClientListReportViewPdf(outputStream);
-        break;
-      default:
-        reportView = new ClientListReportViewXlsx(outputStream);
-        break;
-    }
-
-    clientListReportRegister.get().generate(reportView, clientListReportInstance.personId,
-      ClientRecordRequest.deserialize(clientListReportInstance.request));
   }
 }
