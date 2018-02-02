@@ -45,21 +45,25 @@ public interface ClientRegister {
    */
   void saveDetails(ClientDetailsToSave detailsToSave);
 
-  /**
-   * Подготавливает временную сессию для загрузки файла и возвращает токен сессии
-   *
-   * @param personId идентификатор пользователя
-   * @return токен
-   */
-  String prepareRecordListStream(String personId);
 
   /**
-   * Возвращает полный список записей в выходной поток
+   * Сохраняет данные для загрузки файла из нового окна на клиенте
    *
-   * @param outStream       выходной поток
-   * @param request         принимаемые параметры страницы, сортировки и фильтрации в виде модели
-   * @param fileContentType тип контента для формирования файла
+   * @param personId        идентификатор персоны
+   * @param request         запрос фильтрации и сортировки
+   * @param fileContentType тип файлового контента
+   * @return возвращает идентификатор инстанции отчета
+   * @throws Exception
    */
-  void streamRecordList(String token, OutputStream outStream, ClientRecordRequest request, FileContentType fileContentType,
-                        RequestTunnel requestTunnel) throws Exception;
+  String prepareRecordListStream(String personId, ClientRecordRequest request, FileContentType fileContentType) throws Exception;
+
+  /**
+   * Выводит в поток отчет заранее запрошенный отчет
+   *
+   * @param reportIdInstance идентификатор отчета
+   * @param outStream        выходной поток файла
+   * @param requestTunnel    теннель контроллера
+   * @throws Exception
+   */
+  void streamRecordList(String reportIdInstance, OutputStream outStream, RequestTunnel requestTunnel) throws Exception;
 }

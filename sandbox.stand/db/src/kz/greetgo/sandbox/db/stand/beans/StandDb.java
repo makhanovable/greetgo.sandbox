@@ -7,7 +7,7 @@ import kz.greetgo.sandbox.controller.util.Util;
 import kz.greetgo.sandbox.db.stand.model.CharmDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.stand.model.PersonDot;
-import kz.greetgo.sandbox.db.stand.model.ReportSessionDot;
+import kz.greetgo.sandbox.db.stand.model.ReportInstanceDot;
 import kz.greetgo.util.RND;
 
 import java.io.BufferedReader;
@@ -22,7 +22,7 @@ public class StandDb implements HasAfterInject {
   public final Map<String, PersonDot> personStorage = new HashMap<>();
   public final Map<Long, ClientDot> clientStorage = new HashMap<>();
   public AtomicLong curClientId = new AtomicLong(0);
-  public final Map<String, ReportSessionDot> reportSessionStorage = new HashMap<>();
+  public final Map<String, ReportInstanceDot> clientListReportStorage = new HashMap<>();
 
   @Override
   public void afterInject() throws Exception {
@@ -165,7 +165,7 @@ public class StandDb implements HasAfterInject {
   }
 
   private void generateClients() {
-    for (int i = 0; i < 500; i++) {
+    for (int i = 0; i < 5000; i++) {
       ClientDot c = new ClientDot();
       c.id = clientStorage.size();
       c.surname = RND.str(RND.plusInt(5) + 5);

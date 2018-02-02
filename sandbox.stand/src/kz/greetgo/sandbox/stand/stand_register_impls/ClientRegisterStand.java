@@ -12,8 +12,9 @@ import kz.greetgo.mvc.interfaces.RequestTunnel;
 import kz.greetgo.sandbox.controller.errors.InvalidParameter;
 import kz.greetgo.sandbox.controller.errors.NotFound;
 import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.register.ClientListReportRegister;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.controller.register.TempSessionRegister;
+import kz.greetgo.sandbox.controller.register.model.ClientListReportInstance;
 import kz.greetgo.sandbox.controller.util.Util;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.CharmDot;
@@ -39,7 +40,7 @@ import java.util.stream.Stream;
 public class ClientRegisterStand implements ClientRegister {
 
   public BeanGetter<StandDb> db;
-  public BeanGetter<TempSessionRegister> tempSessionRegister;
+  public BeanGetter<ClientListReportRegister> clientListReportRegister;
 
   @Override
   public long getCount(ClientRecordRequest request) {
@@ -116,7 +117,6 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private List<ClientDot> getListByAge(List<ClientDot> clientDots, boolean ascend) {
-    //TODO: lambda + Integer.comparator?
     if (ascend) {
       clientDots.sort(new Comparator<ClientDot>() {
         public int compare(ClientDot o1, ClientDot o2) {
@@ -135,7 +135,6 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private List<ClientDot> getListByTotalAccountBalance(List<ClientDot> clientDots, boolean ascend) {
-    //TODO: lambda + Integer.comparator?
     if (ascend) {
       clientDots.sort(new Comparator<ClientDot>() {
         public int compare(ClientDot o1, ClientDot o2) {
@@ -154,7 +153,6 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private List<ClientDot> getListByMaxAccountBalance(List<ClientDot> clientDots, boolean ascend) {
-    //TODO: lambda + Integer.comparator?
     if (ascend) {
       clientDots.sort(new Comparator<ClientDot>() {
         public int compare(ClientDot o1, ClientDot o2) {
@@ -173,7 +171,6 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private List<ClientDot> getListByMinAccountBalance(List<ClientDot> clientDots, boolean ascend) {
-    //TODO: lambda + Integer.comparator?
     if (ascend) {
       clientDots.sort(new Comparator<ClientDot>() {
         public int compare(ClientDot o1, ClientDot o2) {
@@ -257,19 +254,20 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public String prepareRecordListStream(String personId) {
-
-    return tempSessionRegister.get().save(personId, "/client/list/report", 60);
+  public String prepareRecordListStream(String personId, ClientRecordRequest request, FileContentType fileContentType)
+    throws Exception {
+    return clientListReportRegister.get().save(personId, request, fileContentType);
   }
 
+  @SuppressWarnings("Duplicates")
   @Override
-  public void streamRecordList(String token, OutputStream outStream, ClientRecordRequest request,
-                               FileContentType fileContentType, RequestTunnel requestTunnel) throws Exception {
-    tempSessionRegister.get().checkForValidity(token, requestTunnel.getTarget());
-    String personId = tempSessionRegister.get().remove(token);
+  public void streamRecordList(String reportIdInstance, OutputStream outStream, RequestTunnel requestTunnel)
+    throws Exception {
+    ClientListReportInstance clientListReportInstance =
+      clientListReportRegister.get().checkForValidity(reportIdInstance);
 
     String contentType, fileType;
-    switch (fileContentType) {
+    switch (FileContentType.valueOf(clientListReportInstance.fileTypeName)) {
       case PDF:
         contentType = "application/pdf";
         fileType = "pdf";
@@ -285,20 +283,25 @@ public class ClientRegisterStand implements ClientRegister {
     requestTunnel.setResponseHeader("Content-Disposition", "attachment; filename=\"client_records_" +
       LocalDateTime.now().format(DateTimeFormatter.ofPattern(Util.reportDatePattern)) + "." + fileType + "\"");
 
-    List<ClientDot> clientDots = new ArrayList<>(db.get().clientStorage.values());
-    clientDots = this.getFilteredList(clientDots, request.nameFilter);
-    clientDots = this.getSortedList(clientDots, request.columnSortType, request.sortAscend);
+    ClientRecordRequest clientRecordRequest = ClientRecordRequest.deserialize(clientListReportInstance.request);
 
-    switch (fileContentType) {
+    List<ClientDot> clientDots = new ArrayList<>(db.get().clientStorage.values());
+    clientDots = this.getFilteredList(clientDots, clientRecordRequest.nameFilter);
+    clientDots = this.getSortedList(clientDots, clientRecordRequest.columnSortType, clientRecordRequest.sortAscend);
+
+    switch (FileContentType.valueOf(clientListReportInstance.fileTypeName)) {
       case PDF:
-        this.streamRecordListToPdf(outStream, request, clientDots, personId);
+        this.streamRecordListToPdf(outStream, clientRecordRequest, clientDots,
+          clientListReportInstance.personId);
         break;
       case XLSX:
-        this.streamRecordListToXlsx(outStream, request, clientDots, personId);
+        this.streamRecordListToXlsx(outStream, clientRecordRequest, clientDots,
+          clientListReportInstance.personId);
         break;
     }
   }
 
+  @SuppressWarnings("Duplicates")
   private void streamRecordListToXlsx(OutputStream outStream, ClientRecordRequest request, List<ClientDot> clientDots,
                                       String personId) {
     Xlsx document = new Xlsx();
@@ -317,7 +320,7 @@ public class ClientRegisterStand implements ClientRegister {
     sheet.style().font().setSize(14);
     sheet.style().font().setItalic(true);
     sheet.row().start();
-    sheet.cellStr(1, "Список клиентских записей  от " +
+    sheet.cellStr(1, "Список клиентских записей от " +
       LocalDateTime.now().format(DateTimeFormatter.ofPattern(Util.reportDatePattern)));
     sheet.row().finish();
     sheet.style().font().setItalic(false);

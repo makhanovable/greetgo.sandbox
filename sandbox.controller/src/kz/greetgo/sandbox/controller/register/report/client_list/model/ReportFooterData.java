@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.controller.report.client_list.model;
+package kz.greetgo.sandbox.controller.register.report.client_list.model;
 
 import java.util.Date;
 

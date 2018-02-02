@@ -853,6 +853,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(realClientDetails.name).isEqualTo("Имя");
     assertThat(realClientDetails.patronymic).isEqualTo("Отчество");
     assertThat(realClientDetails.gender).isEqualTo(Gender.MALE);
+    //TODO: different time date
+    //TODO: finish manual testing of views (main methods) and may be some tests
     assertThat(realClientDetails.birthdate).isEqualTo(new SimpleDateFormat(Util.datePattern).format(expectedDate));
     assertThat(realClientDetails.charmId).isEqualTo(charmHelperList.get(1).id);
     assertThat(realCharmIdSet.size()).isEqualTo(expectedCharmIdSet.size());
@@ -932,6 +934,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(realClientDetails.name).isEqualTo("lastname");
     assertThat(realClientDetails.patronymic).isEqualTo("patronymic");
     assertThat(realClientDetails.gender).isEqualTo(Gender.FEMALE);
+    System.out.println(realClientDetails.birthdate);
     assertThat(realClientDetails.birthdate).isEqualTo(new SimpleDateFormat(Util.datePattern).format(expectedDate));
     assertThat(realClientDetails.charmId).isEqualTo(charmHelperList.get(3).id);
     assertThat(realClientDetails.registrationAddressInfo.type).isEqualTo(AddressType.REGISTRATION);
