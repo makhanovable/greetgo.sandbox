@@ -1,8 +1,9 @@
 package kz.greetgo.sandbox.controller.register.model;
 
+import kz.greetgo.sandbox.controller.model.ClientRecordRequest;
+
 public class ClientListReportInstance {
-  public String reportIdInstance;
   public String personId;
-  public byte[] request;
-  public String fileTypeName;
+  public ClientRecordRequest request;
+  public String fileType;
 }
