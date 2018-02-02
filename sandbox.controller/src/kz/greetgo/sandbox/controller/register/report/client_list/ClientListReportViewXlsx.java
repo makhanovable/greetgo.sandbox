@@ -1,11 +1,10 @@
-package kz.greetgo.sandbox.db.register_impl.report.client_list;
+package kz.greetgo.sandbox.controller.register.report.client_list;
 
 import kz.greetgo.msoffice.xlsx.gen.Align;
 import kz.greetgo.msoffice.xlsx.gen.NumFmt;
 import kz.greetgo.msoffice.xlsx.gen.Sheet;
 import kz.greetgo.msoffice.xlsx.gen.Xlsx;
 import kz.greetgo.sandbox.controller.model.ColumnSortType;
-import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportView;
 import kz.greetgo.sandbox.controller.register.report.client_list.model.ReportFooterData;
 import kz.greetgo.sandbox.controller.register.report.client_list.model.ReportHeaderData;
 import kz.greetgo.sandbox.controller.register.report.client_list.model.ReportItemData;
@@ -22,10 +21,12 @@ public class ClientListReportViewXlsx implements ClientListReportView {
   private Xlsx document;
   private Sheet sheet;
 
-  @SuppressWarnings("Duplicates")
-  @Override
-  public void start(OutputStream outputStream, ReportHeaderData headerData) throws Exception {
+  public ClientListReportViewXlsx(OutputStream outputStream) {
     this.outputStream = outputStream;
+  }
+
+  @Override
+  public void start(ReportHeaderData headerData) throws Exception {
     document = new Xlsx();
     sheet = document.newSheet(true);
 
@@ -123,11 +124,11 @@ public class ClientListReportViewXlsx implements ClientListReportView {
     long startTime = System.currentTimeMillis();
 
     try (FileOutputStream outputStream = new FileOutputStream(file)) {
-      ClientListReportView view = new ClientListReportViewPdf();
+      ClientListReportView view = new ClientListReportViewPdf(outputStream);
 
       ReportHeaderData headerData = new ReportHeaderData();
       headerData.columnSortType = ColumnSortType.AGE;
-      view.start(outputStream, headerData);
+      view.start(headerData);
 
       ReportItemData reportItemData = new ReportItemData();
       for (int i = 0; i < 500; i++) {

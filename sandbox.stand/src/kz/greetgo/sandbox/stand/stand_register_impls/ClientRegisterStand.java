@@ -1,13 +1,7 @@
 package kz.greetgo.sandbox.stand.stand_register_impls;
 
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.*;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.msoffice.xlsx.gen.Align;
-import kz.greetgo.msoffice.xlsx.gen.NumFmt;
-import kz.greetgo.msoffice.xlsx.gen.Sheet;
-import kz.greetgo.msoffice.xlsx.gen.Xlsx;
 import kz.greetgo.mvc.interfaces.RequestTunnel;
 import kz.greetgo.sandbox.controller.errors.InvalidParameter;
 import kz.greetgo.sandbox.controller.errors.NotFound;
@@ -15,17 +9,22 @@ import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientListReportRegister;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.register.model.ClientListReportInstance;
+import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportView;
+import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportViewPdf;
+import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportViewXlsx;
+import kz.greetgo.sandbox.controller.register.report.client_list.model.ReportFooterData;
+import kz.greetgo.sandbox.controller.register.report.client_list.model.ReportHeaderData;
+import kz.greetgo.sandbox.controller.register.report.client_list.model.ReportItemData;
 import kz.greetgo.sandbox.controller.util.Util;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.CharmDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.stand.model.PersonDot;
-import kz.greetgo.sandbox.stand.launchers.LaunchStandServer;
 import kz.greetgo.sandbox.stand.util.PageUtils;
 
 import java.io.OutputStream;
-import java.net.URL;
-import java.nio.file.Paths;
+import java.sql.Date;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -259,7 +258,6 @@ public class ClientRegisterStand implements ClientRegister {
     return clientListReportRegister.get().save(personId, request, fileContentType);
   }
 
-  @SuppressWarnings("Duplicates")
   @Override
   public void streamRecordList(String reportIdInstance, OutputStream outStream, RequestTunnel requestTunnel)
     throws Exception {
@@ -283,181 +281,52 @@ public class ClientRegisterStand implements ClientRegister {
     requestTunnel.setResponseHeader("Content-Disposition", "attachment; filename=\"client_records_" +
       LocalDateTime.now().format(DateTimeFormatter.ofPattern(Util.reportDatePattern)) + "." + fileType + "\"");
 
-    ClientRecordRequest clientRecordRequest = ClientRecordRequest.deserialize(clientListReportInstance.request);
+    PersonDot personDot = db.get().personStorage.get(clientListReportInstance.personId);
 
+    this.generateReportView(outStream, ClientRecordRequest.deserialize(clientListReportInstance.request),
+      Util.getFullname(personDot.surname, personDot.name, personDot.patronymic), clientListReportInstance.fileTypeName);
+  }
+
+  private void generateReportView(OutputStream outputStream, ClientRecordRequest request, String authorName,
+                                  String fileTypeName) throws Exception {
     List<ClientDot> clientDots = new ArrayList<>(db.get().clientStorage.values());
-    clientDots = this.getFilteredList(clientDots, clientRecordRequest.nameFilter);
-    clientDots = this.getSortedList(clientDots, clientRecordRequest.columnSortType, clientRecordRequest.sortAscend);
+    clientDots = this.getFilteredList(clientDots, request.nameFilter);
+    clientDots = this.getSortedList(clientDots, request.columnSortType, request.sortAscend);
 
-    switch (FileContentType.valueOf(clientListReportInstance.fileTypeName)) {
+    ClientListReportView reportView;
+
+    switch (FileContentType.valueOf(fileTypeName)) {
       case PDF:
-        this.streamRecordListToPdf(outStream, clientRecordRequest, clientDots,
-          clientListReportInstance.personId);
+        reportView = new ClientListReportViewPdf(outputStream);
         break;
-      case XLSX:
-        this.streamRecordListToXlsx(outStream, clientRecordRequest, clientDots,
-          clientListReportInstance.personId);
+      default:
+        reportView = new ClientListReportViewXlsx(outputStream);
         break;
     }
+
+    ReportHeaderData headerData = new ReportHeaderData();
+    headerData.columnSortType = request.columnSortType;
+    reportView.start(headerData);
+
+    for (ClientDot clientDot : clientDots)
+      reportView.append(clientDotToReportItemData(clientDot));
+
+    ReportFooterData reportFooterData = new ReportFooterData();
+    reportFooterData.createdAt = Date.from(Instant.now());
+    reportFooterData.createdBy = authorName;
+    reportView.finish(reportFooterData);
   }
 
-  @SuppressWarnings("Duplicates")
-  private void streamRecordListToXlsx(OutputStream outStream, ClientRecordRequest request, List<ClientDot> clientDots,
-                                      String personId) {
-    Xlsx document = new Xlsx();
-    Sheet sheet = document.newSheet(true);
+  private ReportItemData clientDotToReportItemData(ClientDot clientDot) throws Exception {
+    ReportItemData ret = new ReportItemData();
 
-    int curCol = 1;
-    sheet.setWidth(curCol++, 45f);
-    sheet.setWidth(curCol++, 20f);
-    sheet.setWidth(curCol++, 15f);
-    sheet.setWidth(curCol++, 25f);
-    sheet.setWidth(curCol++, 25f);
-    sheet.setWidth(curCol, 25f);
+    ret.fullname = Util.getFullname(clientDot.surname, clientDot.name, clientDot.patronymic);
+    ret.charmName = clientDot.charm.name;
+    ret.age = clientDot.age;
+    ret.totalAccountBalance = Util.stringToFloat(clientDot.totalAccountBalance);
+    ret.maxAccountBalance = Util.stringToFloat(clientDot.maxAccountBalance);
+    ret.minAccountBalance = Util.stringToFloat(clientDot.minAccountBalance);
 
-    sheet.setDefaultRowHeight(20f);
-
-    sheet.style().font().setSize(14);
-    sheet.style().font().setItalic(true);
-    sheet.row().start();
-    sheet.cellStr(1, "Список клиентских записей от " +
-      LocalDateTime.now().format(DateTimeFormatter.ofPattern(Util.reportDatePattern)));
-    sheet.row().finish();
-    sheet.style().font().setItalic(false);
-
-    sheet.style().font().setSize(14);
-    sheet.row().start();
-    PersonDot personDot = db.get().personStorage.get(personId);
-    sheet.cellStr(1, "Сформирован для пользователя: " +
-      Util.getFullname(personDot.surname, personDot.name, personDot.patronymic));
-    sheet.row().finish();
-    sheet.skipRow();
-
-    sheet.style().alignment().setHorizontal(Align.center);
-    sheet.style().font().setSize(12);
-    sheet.style().font().setBold(true);
-    curCol = 1;
-    sheet.row().start();
-    sheet.cellStr(curCol++, "ФИО");
-    sheet.cellStr(curCol++, "Характер");
-    if (request.columnSortType == ColumnSortType.AGE) {
-      sheet.style().font().setItalic(true);
-      sheet.cellStr(curCol++, "Возраст");
-      sheet.style().font().setItalic(false);
-    } else {
-      sheet.cellStr(curCol++, "Возраст");
-    }
-    if (request.columnSortType == ColumnSortType.TOTALACCOUNTBALANCE) {
-      sheet.style().font().setItalic(true);
-      sheet.cellStr(curCol++, "Общий остаток счетов");
-      sheet.style().font().setItalic(false);
-    } else {
-      sheet.cellStr(curCol++, "Общий остаток счетов");
-    }
-    if (request.columnSortType == ColumnSortType.MAXACCOUNTBALANCE) {
-      sheet.style().font().setItalic(true);
-      sheet.cellStr(curCol++, "Максимальный остаток");
-      sheet.style().font().setItalic(false);
-    } else {
-      sheet.cellStr(curCol++, "Максимальный остаток");
-    }
-    if (request.columnSortType == ColumnSortType.MINACCOUNTBALANCE) {
-      sheet.style().font().setItalic(true);
-      sheet.cellStr(curCol, "Минимальный остаток");
-      sheet.style().font().setItalic(false);
-    } else {
-      sheet.cellStr(curCol, "Минимальный остаток");
-    }
-    sheet.row().finish();
-    sheet.style().font().setBold(false);
-
-    sheet.style().alignment().setHorizontal(Align.left);
-    sheet.style().font().setSize(14);
-    for (ClientDot clientDot : clientDots) {
-      curCol = 1;
-      sheet.row().start();
-      sheet.cellStr(curCol++, Util.getFullname(clientDot.surname, clientDot.name, clientDot.patronymic));
-      sheet.cellStr(curCol++, clientDot.charm.name);
-      sheet.cellInt(curCol++, clientDot.age);
-      sheet.cellDouble(curCol++, Util.stringToFloat(clientDot.totalAccountBalance), NumFmt.NUM_SIMPLE2);
-      sheet.cellDouble(curCol++, Util.stringToFloat(clientDot.maxAccountBalance), NumFmt.NUM_SIMPLE2);
-      sheet.cellDouble(curCol, Util.stringToFloat(clientDot.minAccountBalance), NumFmt.NUM_SIMPLE2);
-      sheet.row().finish();
-    }
-
-    document.complete(outStream);
-  }
-
-  private void streamRecordListToPdf(OutputStream outStream, ClientRecordRequest request, List<ClientDot> clientDots,
-                                     String personId) throws Exception {
-    URL resource = LaunchStandServer.class.getResource("/Roboto-Regular.ttf");
-    String fontPath = Paths.get(resource.toURI()).toAbsolutePath().toString();
-    BaseFont bf = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-    Font headerFont = new Font(bf, 10);
-    Font defaultFont = new Font(bf, 10);
-
-    Document document = new Document();
-    PdfWriter.getInstance(document, outStream);
-    document.open();
-
-    document.add(this.paragraphBuilder("Список клиентских записей  от " +
-      LocalDateTime.now().format(DateTimeFormatter.ofPattern(Util.reportDatePattern)), defaultFont, 10f));
-
-    PersonDot personDot = db.get().personStorage.get(personId);
-    document.add(this.paragraphBuilder("Сформирован для пользователя: " +
-      Util.getFullname(personDot.surname, personDot.name, personDot.patronymic), defaultFont, 10f));
-
-    float[] columnWidthWeights = {4, 4, 2, 3, 3, 3};
-    PdfPTable table = new PdfPTable(columnWidthWeights);
-    table.setWidthPercentage(100);
-
-    table.addCell(this.pdfPCellDefault(new PdfPCell(new Phrase("ФИО", headerFont))));
-    table.addCell(this.pdfPCellDefault(new PdfPCell(new Phrase("Характер", headerFont))));
-    table.addCell(this.pdfPCellHeaderBuilder("Возраст",
-      request.columnSortType == ColumnSortType.AGE, headerFont));
-    table.addCell(this.pdfPCellHeaderBuilder("Общий остаток счетов",
-      request.columnSortType == ColumnSortType.TOTALACCOUNTBALANCE, headerFont));
-    table.addCell(this.pdfPCellHeaderBuilder("Максимальный остаток",
-      request.columnSortType == ColumnSortType.MAXACCOUNTBALANCE, headerFont));
-    table.addCell(this.pdfPCellHeaderBuilder("Минимальный остаток",
-      request.columnSortType == ColumnSortType.MINACCOUNTBALANCE, headerFont));
-
-    this.pdfPCellDefault(table.getDefaultCell()).setBackgroundColor(GrayColor.GRAYWHITE);
-    for (ClientDot clientDot : clientDots) {
-      table.addCell(new Phrase(Util.getFullname(clientDot.surname, clientDot.name, clientDot.patronymic), defaultFont));
-      table.addCell(new Phrase(clientDot.charm.name, defaultFont));
-      table.addCell(new Phrase(String.valueOf(clientDot.age), defaultFont));
-      table.addCell(new Phrase(String.format(Util.floatFormat, Util.stringToFloat(clientDot.totalAccountBalance)), defaultFont));
-      table.addCell(new Phrase(String.format(Util.floatFormat, Util.stringToFloat(clientDot.maxAccountBalance)), defaultFont));
-      table.addCell(new Phrase(String.format(Util.floatFormat, Util.stringToFloat(clientDot.minAccountBalance)), defaultFont));
-    }
-
-    document.add(table);
-    document.close();
-  }
-
-  private PdfPCell pdfPCellHeaderBuilder(String text, boolean sort, Font font) {
-    PdfPCell cell = new PdfPCell(new Phrase(text, font));
-    if (sort)
-      cell.setBackgroundColor(new BaseColor(102, 144, 102));
-    else
-      cell.setBackgroundColor(new BaseColor(191, 191, 191));
-
-    return this.pdfPCellDefault(cell);
-  }
-
-  private PdfPCell pdfPCellDefault(PdfPCell cell) {
-    cell.setUseAscender(true);
-    cell.setUseDescender(true);
-    cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-    cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-
-    return cell;
-  }
-
-  private Paragraph paragraphBuilder(String text, Font font, float spaceAfter) {
-    Paragraph paragraph = new Paragraph(text, font);
-    paragraph.setSpacingAfter(spaceAfter);
-    return paragraph;
+    return ret;
   }
 }

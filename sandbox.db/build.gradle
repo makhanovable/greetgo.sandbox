@@ -10,13 +10,6 @@ dependencies {
   compile group: 'org.liquibase', name: 'liquibase-core', version: '3.5.1'
   compile group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.1.1'
 
-  // https://mvnrepository.com/artifact/commons-io/commons-io
-  compile group: 'commons-io', name: 'commons-io', version: '2.6'
-  // https://mvnrepository.com/artifact/com.itextpdf/itextpdf
-  compile group: 'com.itextpdf', name: 'itextpdf', version: '5.5.12'
-  // https://mvnrepository.com/artifact/kz.greetgo/greetgo.msoffice
-  compile group: 'kz.greetgo', name: 'greetgo.msoffice', version: '0.4.23'
-
   testCompile "kz.greetgo.depinject:greetgo.depinject.testng:$depinjectVersion"
   testCompile project(':sandbox.stand:db').sourceSets.main.output
 

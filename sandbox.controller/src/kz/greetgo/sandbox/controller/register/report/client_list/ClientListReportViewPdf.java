@@ -1,9 +1,8 @@
-package kz.greetgo.sandbox.db.register_impl.report.client_list;
+package kz.greetgo.sandbox.controller.register.report.client_list;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import kz.greetgo.sandbox.controller.model.ColumnSortType;
-import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportView;
 import kz.greetgo.sandbox.controller.register.report.client_list.model.ReportFooterData;
 import kz.greetgo.sandbox.controller.register.report.client_list.model.ReportHeaderData;
 import kz.greetgo.sandbox.controller.register.report.client_list.model.ReportItemData;
@@ -16,11 +15,12 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
 
-import static kz.greetgo.sandbox.db.register_impl.report.client_list.font.FontFactory.FONT_NAME_ROBOTO;
-import static kz.greetgo.sandbox.db.register_impl.report.client_list.font.FontFactory.getRoboto;
+import static kz.greetgo.sandbox.controller.register.report.client_list.font.FontFactory.FONT_NAME_ROBOTO;
+import static kz.greetgo.sandbox.controller.register.report.client_list.font.FontFactory.getRoboto;
 
-public class ClientListReportViewPdf implements ClientListReportView {
+public class ClientListReportViewPdf extends PdfPageEventHelper implements ClientListReportView {
 
+  private OutputStream outputStream;
   private Document document;
   private PdfPTable table;
   private Font defaultFont;
@@ -28,10 +28,15 @@ public class ClientListReportViewPdf implements ClientListReportView {
 
   private static final long tableFlushTime = 1000;
 
+  public ClientListReportViewPdf(OutputStream outputStream) {
+    this.outputStream = outputStream;
+  }
+
   @Override
-  public void start(OutputStream outputStream, ReportHeaderData headerData) throws Exception {
+  public void start(ReportHeaderData headerData) throws Exception {
     document = new Document();
-    PdfWriter.getInstance(document, outputStream);
+    PdfWriter writer = PdfWriter.getInstance(document, outputStream);
+    writer.setPageEvent(this);
     document.open();
     BaseFont baseFont = BaseFont.createFont(FONT_NAME_ROBOTO, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, true,
       IOUtils.toByteArray(getRoboto()), null);
@@ -87,6 +92,20 @@ public class ClientListReportViewPdf implements ClientListReportView {
 
   }
 
+  @Override
+  public void onEndPage(PdfWriter writer, Document document) {
+    try {
+      addFooter(writer);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void addFooter(PdfWriter writer) throws Exception {
+    ColumnText.showTextAligned(writer.getDirectContent(),
+      Element.ALIGN_CENTER, new Phrase("" + writer.getPageNumber()), 300f, 20f, 0);
+  }
+
   private Paragraph paragraphBuilder(String text, Font font, float spaceAfter) {
     Paragraph paragraph = new Paragraph(text, font);
     paragraph.setSpacingAfter(spaceAfter);
@@ -118,11 +137,11 @@ public class ClientListReportViewPdf implements ClientListReportView {
     long startTime = System.currentTimeMillis();
 
     try (FileOutputStream outputStream = new FileOutputStream(file)) {
-      ClientListReportView view = new ClientListReportViewPdf();
+      ClientListReportView view = new ClientListReportViewPdf(outputStream);
 
       ReportHeaderData headerData = new ReportHeaderData();
       headerData.columnSortType = ColumnSortType.AGE;
-      view.start(outputStream, headerData);
+      view.start(headerData);
 
       ReportItemData reportItemData = new ReportItemData();
       for (int i = 0; i < 500000; i++) {
