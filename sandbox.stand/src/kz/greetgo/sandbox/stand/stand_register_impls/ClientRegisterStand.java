@@ -3,11 +3,10 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.interfaces.RequestTunnel;
-import kz.greetgo.sandbox.controller.errors.InvalidParameter;
 import kz.greetgo.sandbox.controller.errors.NotFound;
 import kz.greetgo.sandbox.controller.model.*;
-import kz.greetgo.sandbox.controller.register.ClientListReportRegister;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.controller.register.ReportRegister;
 import kz.greetgo.sandbox.controller.register.model.ClientListReportInstance;
 import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportView;
 import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportViewPdf;
@@ -25,8 +24,6 @@ import kz.greetgo.sandbox.stand.util.PageUtils;
 import java.io.OutputStream;
 import java.sql.Date;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -39,7 +36,7 @@ import java.util.stream.Stream;
 public class ClientRegisterStand implements ClientRegister {
 
   public BeanGetter<StandDb> db;
-  public BeanGetter<ClientListReportRegister> clientListReportRegister;
+  public BeanGetter<ReportRegister> clientListReportRegister;
 
   @Override
   public long getCount(ClientRecordRequest request) {
@@ -259,43 +256,18 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public void streamRecordList(String reportIdInstance, OutputStream outStream, RequestTunnel requestTunnel)
+  public void streamRecordList(String reportIdInstance, OutputStream outputStream, RequestTunnel requestTunnel)
     throws Exception {
     ClientListReportInstance clientListReportInstance =
       clientListReportRegister.get().checkForValidity(reportIdInstance);
 
-    String contentType, fileType;
-    switch (FileContentType.valueOf(clientListReportInstance.fileTypeName)) {
-      case PDF:
-        contentType = "application/pdf";
-        fileType = "pdf";
-        break;
-      case XLSX:
-        contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-        fileType = "xlsx";
-        break;
-      default:
-        throw new InvalidParameter();
-    }
-    requestTunnel.setResponseContentType(contentType);
-    requestTunnel.setResponseHeader("Content-Disposition", "attachment; filename=\"client_records_" +
-      LocalDateTime.now().format(DateTimeFormatter.ofPattern(Util.reportDatePattern)) + "." + fileType + "\"");
+    FileContentType fileContentType = FileContentType.valueOf(clientListReportInstance.fileTypeName);
+    clientListReportRegister.get().prepareForGeneration(requestTunnel, "client_record", fileContentType);
 
     PersonDot personDot = db.get().personStorage.get(clientListReportInstance.personId);
 
-    this.generateReportView(outStream, ClientRecordRequest.deserialize(clientListReportInstance.request),
-      Util.getFullname(personDot.surname, personDot.name, personDot.patronymic), clientListReportInstance.fileTypeName);
-  }
-
-  private void generateReportView(OutputStream outputStream, ClientRecordRequest request, String authorName,
-                                  String fileTypeName) throws Exception {
-    List<ClientDot> clientDots = new ArrayList<>(db.get().clientStorage.values());
-    clientDots = this.getFilteredList(clientDots, request.nameFilter);
-    clientDots = this.getSortedList(clientDots, request.columnSortType, request.sortAscend);
-
     ClientListReportView reportView;
-
-    switch (FileContentType.valueOf(fileTypeName)) {
+    switch (fileContentType) {
       case PDF:
         reportView = new ClientListReportViewPdf(outputStream);
         break;
@@ -303,6 +275,15 @@ public class ClientRegisterStand implements ClientRegister {
         reportView = new ClientListReportViewXlsx(outputStream);
         break;
     }
+
+    this.generateReportView(reportView, ClientRecordRequest.deserialize(clientListReportInstance.request),
+      Util.getFullname(personDot.surname, personDot.name, personDot.patronymic));
+  }
+
+  private void generateReportView(ClientListReportView reportView, ClientRecordRequest request, String authorName) throws Exception {
+    List<ClientDot> clientDots = new ArrayList<>(db.get().clientStorage.values());
+    clientDots = this.getFilteredList(clientDots, request.nameFilter);
+    clientDots = this.getSortedList(clientDots, request.columnSortType, request.sortAscend);
 
     ReportHeaderData headerData = new ReportHeaderData();
     headerData.columnSortType = request.columnSortType;

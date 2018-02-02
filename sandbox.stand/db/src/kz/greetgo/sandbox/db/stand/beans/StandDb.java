@@ -165,7 +165,7 @@ public class StandDb implements HasAfterInject {
   }
 
   private void generateClients() {
-    for (int i = 0; i < 5000; i++) {
+    for (int i = 0; i < 500; i++) {
       ClientDot c = new ClientDot();
       c.id = clientStorage.size();
       c.surname = RND.str(RND.plusInt(5) + 5);

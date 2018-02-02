@@ -2,11 +2,13 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.mvc.interfaces.RequestTunnel;
 import kz.greetgo.sandbox.controller.errors.AuthError;
 import kz.greetgo.sandbox.controller.model.ClientRecordRequest;
 import kz.greetgo.sandbox.controller.model.FileContentType;
-import kz.greetgo.sandbox.controller.register.ClientListReportRegister;
+import kz.greetgo.sandbox.controller.register.ReportRegister;
 import kz.greetgo.sandbox.controller.register.model.ClientListReportInstance;
+import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportView;
 import kz.greetgo.sandbox.controller.util.Util;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.ReportInstanceDot;
@@ -14,7 +16,7 @@ import kz.greetgo.sandbox.db.stand.model.ReportInstanceDot;
 import java.io.OutputStream;
 
 @Bean
-public class ClientListReportRegisterStand implements ClientListReportRegister {
+public class ReportRegisterStand implements ReportRegister {
 
   public BeanGetter<StandDb> db;
 
@@ -50,7 +52,12 @@ public class ClientListReportRegisterStand implements ClientListReportRegister {
   }
 
   @Override
-  public void generate(OutputStream outputStream, String personId, ClientRecordRequest request, FileContentType fileContentType) {
+  public void prepareForGeneration(RequestTunnel requestTunnel, String fileName, FileContentType fileContentType) {
+
+  }
+
+  @Override
+  public void generate(ClientListReportView reportView, String personId, ClientRecordRequest request) {
 
   }
 
