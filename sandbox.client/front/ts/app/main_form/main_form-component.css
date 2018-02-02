@@ -1,0 +1,14 @@
+/* @import "~@angular/material/prebuilt-themes/indigo-pink.css"; */
+/* @import "../../../../node_modules/@angular/material/prebuilt-themes/indigo-pink.css"; */
+
+.table-container {
+    display: flex;
+    flex-direction: column;
+    min-width: 300px;
+    padding: 50px;
+}
+
+.mat-table {
+    overflow: auto;
+    max-height: 500px;
+}

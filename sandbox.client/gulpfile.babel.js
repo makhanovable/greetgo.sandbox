@@ -157,6 +157,15 @@ task('copy:jquery', function () {
   ], {base: 'node_modules/jquery/dist'})
     .pipe(gulp.dest(outDir()));
 });
+
+task('copy:material-thremes', function () {
+  return gulp.src([
+    "node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
+
+  ]).pipe(gulp.dest(outDir()));
+});
+
+
 task('copy:jquery-contextMenu', par(function () {
   return gulp.src([
     "node_modules/jquery-contextmenu/dist/*.min.js",
@@ -191,6 +200,7 @@ task('copy', par(
   , 'copy:bootstrap-fonts'
   , 'copy:jquery'
   , 'copy:jquery-contextMenu'
+  , 'copy:material-thremes'
   , 'copy:img-svg', 'copy:img-gif', 'copy:img-png'
 ));
 

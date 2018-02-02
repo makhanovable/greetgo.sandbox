@@ -1,59 +1,15 @@
-import {Component, EventEmitter, Output} from "@angular/core";
-import {UserInfo} from "../../model/UserInfo";
-import {HttpService} from "../HttpService";
+import { Gender } from './../../model/ClientInfo';
+import { Component, EventEmitter, Output } from "@angular/core";
+import { UserInfo } from "../../model/UserInfo";
+import { HttpService } from "../HttpService";
+import { MatTableDataSource, MatPaginator } from "@angular/material";
+import { ViewChild } from "@angular/core/src/metadata/di";
+import { ClientInfo } from "../../model/ClientInfo";
 
 @Component({
   selector: 'main-form-component',
-  template: `
-    <div>
-      <h2>Main Form Component</h2>
-
-      <button (click)="exit.emit()">Выход</button>
-
-      <div *ngIf="!userInfo">
-        <button [disabled]="!loadUserInfoButtonEnabled" (click)="loadUserInfoButtonClicked()">
-          Загрузить данные пользователя
-        </button>
-        <div *ngIf="loadUserInfoError">
-          {{loadUserInfoError}}
-        </div>
-      </div>
-      <div *ngIf="userInfo">
-
-        <table>
-          <tbody>
-
-          <tr>
-            <td>ID</td>
-            <td>&nbsp;:&nbsp;</td>
-            <td><b>{{userInfo.id}}</b></td>
-          </tr>
-          <tr>
-            <td>Account name</td>
-            <td>&nbsp;:&nbsp;</td>
-            <td><b>{{userInfo.accountName}}</b></td>
-          </tr>
-          <tr>
-            <td>Surname</td>
-            <td>&nbsp;:&nbsp;</td>
-            <td><b>{{userInfo.surname}}</b></td>
-          </tr>
-          <tr>
-            <td>Name</td>
-            <td>&nbsp;:&nbsp;</td>
-            <td><b>{{userInfo.name}}</b></td>
-          </tr>
-          <tr>
-            <td>Patronymic</td>
-            <td>&nbsp;:&nbsp;</td>
-            <td><b>{{userInfo.patronymic}}</b></td>
-          </tr>
-
-          </tbody>
-        </table>
-
-      </div>
-    </div>`,
+  template: require('./main_form-component.html'),
+  styles: [require('./main_form-component.css')],
 })
 export class MainFormComponent {
   @Output() exit = new EventEmitter<void>();
@@ -62,7 +18,10 @@ export class MainFormComponent {
   loadUserInfoButtonEnabled: boolean = true;
   loadUserInfoError: string | null;
 
-  constructor(private httpService: HttpService) {}
+  displayedColumns = ['id', 'FIO', 'gender', 'charm'];
+  dataSource = new MatTableDataSource<ClientInfo>(ELEMENT_DATA);
+
+  constructor(private httpService: HttpService) { }
 
   loadUserInfoButtonClicked() {
     this.loadUserInfoButtonEnabled = false;
@@ -77,4 +36,23 @@ export class MainFormComponent {
       this.userInfo = null;
     });
   }
+
+  pong() {
+    alert('hello')
+  }
+  notImpl(){
+    alert("not Implemented")
+  }
+
 }
+
+const ELEMENT_DATA: any[] = [
+   { age: "21", name: "Dauren", surName: "amze", gender: Gender.MALE, charm: { name: "ленивый" } }
+  , { age: "21", name: "Dauren", surName: "amze", gender: Gender.MALE, charm: { name: "ленивый" } }
+  , { age: "21", name: "Dauren", surName: "amze", gender: Gender.MALE, charm: { name: "ленивый" } }
+  , { age: "21", name: "Dauren", surName: "amze", gender: Gender.MALE, charm: { name: "ленивый" } }
+  , { age: "21", name: "Dauren", surName: "amze", gender: Gender.MALE, charm: { name: "ленивый" } }
+  , { age: "21", name: "Dauren", surName: "amze", gender: Gender.MALE, charm: { name: "ленивый" } }
+  , { age: "21", name: "Dauren", surName: "amze", gender: Gender.MALE, charm: { name: "ленивый" } }
+
+];
