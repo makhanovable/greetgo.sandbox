@@ -118,7 +118,7 @@ public class ClientListReportViewXlsx implements ClientListReportView {
   }
 
   public static void main(String[] args) throws Exception {
-    File file = new File("build/report/test.xlsx");
+    File file = new File("build/report/ClientListReportViewXlsx.xlsx");
     file.getParentFile().mkdirs();
 
     long startTime = System.currentTimeMillis();

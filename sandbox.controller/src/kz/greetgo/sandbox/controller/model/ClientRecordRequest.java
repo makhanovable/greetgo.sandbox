@@ -1,6 +1,11 @@
 package kz.greetgo.sandbox.controller.model;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 public class ClientRecordRequest implements Serializable {
   public long clientRecordCountToSkip;
@@ -9,19 +14,30 @@ public class ClientRecordRequest implements Serializable {
   public boolean sortAscend;
   public String nameFilter;
 
-  public static byte[] serialize(ClientRecordRequest request) throws Exception {
-    ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+  public static byte[] serialize(ClientRecordRequest request) {
+    if (request == null) return null;
 
-    ObjectOutputStream oOut = new ObjectOutputStream(bOut);
-    oOut.writeObject(request);
+    try {
+      ByteArrayOutputStream bOut = new ByteArrayOutputStream();
 
-    return bOut.toByteArray();
+      ObjectOutputStream oOut = new ObjectOutputStream(bOut);
+      oOut.writeObject(request);
+
+      return bOut.toByteArray();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  public static ClientRecordRequest deserialize(byte[] serial) throws Exception {
-    ByteArrayInputStream bIn = new ByteArrayInputStream(serial);
-    ObjectInputStream oIn = new ObjectInputStream(bIn);
 
-    return (ClientRecordRequest) oIn.readObject();
+  public static ClientRecordRequest deserialize(byte[] serial) {
+    try {
+      ByteArrayInputStream bIn = new ByteArrayInputStream(serial);
+      ObjectInputStream oIn = new ObjectInputStream(bIn);
+
+      return (ClientRecordRequest) oIn.readObject();
+    } catch (IOException | ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
   }
 }
