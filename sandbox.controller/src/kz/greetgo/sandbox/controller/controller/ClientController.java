@@ -70,16 +70,8 @@ public class ClientController implements Controller {
                                     @Par("fileContentType") @Json FileContentType fileContentType) throws Exception {
     ClientListReportInstance clientListReportInstance = new ClientListReportInstance();
     clientListReportInstance.personId = personId;
-
-    clientListReportInstance.request = new ClientRecordRequest();
-    clientListReportInstance.request.clientRecordCount = request.clientRecordCount;
-    clientListReportInstance.request.clientRecordCountToSkip = request.clientRecordCountToSkip;
-    clientListReportInstance.request.nameFilter = request.nameFilter;
-    clientListReportInstance.request.columnSortType = request.columnSortType;
-    clientListReportInstance.request.sortAscend = request.sortAscend;
-
+    clientListReportInstance.request = request;
     clientListReportInstance.fileTypeName = fileContentType.name();
-
     return reportRegister.get().saveClientListReportInstance(clientListReportInstance);
   }
 
