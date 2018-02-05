@@ -16,7 +16,6 @@ import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -30,38 +29,21 @@ public class ReportRegisterTest extends ParentTestNg {
   public void method_save_exists() throws Exception {
     this.resetTables();
 
-    String id = RND.str(10);
-    authTestDao.get().insertUser(id, "account", "1234", 0);
+    String expectedPersonId = RND.str(10);
+    authTestDao.get().insertUser(expectedPersonId, "account", "1234", 0);
 
-    ClientRecordRequest request = new ClientRecordRequest();
-    request.clientRecordCount = 0;
-    request.clientRecordCountToSkip = 0;
-    request.nameFilter = "";
-    request.columnSortType = ColumnSortType.NONE;
-    request.sortAscend = false;
-
-    String expectedToken = reportRegister.get().save(id, request, FileContentType.PDF);
+    ClientListReportInstance reportInstance = new ClientListReportInstance();
+    reportInstance.personId = expectedPersonId;
+    reportInstance.request = new ClientRecordRequest();
+    reportInstance.request.clientRecordCount = 0;
+    reportInstance.request.clientRecordCountToSkip = 0;
+    reportInstance.request.nameFilter = "";
+    reportInstance.request.columnSortType = ColumnSortType.NONE;
+    reportInstance.request.sortAscend = false;
+    reportInstance.fileTypeName = FileContentType.PDF.name();
+    String expectedToken = reportRegister.get().saveClientListReportInstance(reportInstance);
 
     assertThat(reportTestDao.get().selectTokenExists(expectedToken)).isEqualTo(true);
-  }
-
-  @Test(expectedExceptions = AuthError.class)
-  public void method_checkSessionForValidity_invalidToken() throws Exception {
-    this.resetTables();
-
-    String id = RND.str(10);
-    authTestDao.get().insertUser(id, "account", "1234", 0);
-
-    ClientRecordRequest request = new ClientRecordRequest();
-    request.clientRecordCount = 0;
-    request.clientRecordCountToSkip = 0;
-    request.nameFilter = "";
-    request.columnSortType = ColumnSortType.NONE;
-    request.sortAscend = false;
-
-    String token = reportRegister.get().save(id, request, FileContentType.PDF);
-
-    reportRegister.get().checkForValidity(token + RND.str(3));
   }
 
   @Test(expectedExceptions = AuthError.class)
@@ -69,33 +51,34 @@ public class ReportRegisterTest extends ParentTestNg {
     this.resetTables();
 
     String expectedPersonId = RND.str(10);
-    authTestDao.get().insertUser(expectedPersonId, RND.str(10), RND.str(10), RND.plusInt(1));
+    authTestDao.get().insertUser(expectedPersonId, "account", "1234", 0);
 
-    ClientRecordRequest expectedRequest = new ClientRecordRequest();
-    expectedRequest.clientRecordCount = RND.plusInt(100);
-    expectedRequest.clientRecordCountToSkip = RND.plusInt(100);
-    expectedRequest.nameFilter = RND.str(5);
-    expectedRequest.columnSortType = ColumnSortType.values()[RND.plusInt(ColumnSortType.values().length)];
-    expectedRequest.sortAscend = RND.bool();
-    FileContentType expectedFileType = FileContentType.values()[RND.plusInt(FileContentType.values().length)];
+    ClientListReportInstance reportInstance = new ClientListReportInstance();
+    reportInstance.personId = expectedPersonId;
+    reportInstance.request = new ClientRecordRequest();
+    reportInstance.request.clientRecordCount = 0;
+    reportInstance.request.clientRecordCountToSkip = 0;
+    reportInstance.request.nameFilter = "";
+    reportInstance.request.columnSortType = ColumnSortType.NONE;
+    reportInstance.request.sortAscend = false;
+    reportInstance.fileTypeName = FileContentType.PDF.name();
+    String expectedToken = reportRegister.get().saveClientListReportInstance(reportInstance);
 
-    String expectedReportIdInstance = reportRegister.get().save(expectedPersonId, expectedRequest, expectedFileType);
+    ClientListReportInstance realReportInstance = reportRegister.get().getClientListReportInstance(expectedPersonId);
+    //TODO: deserialize in batis?
+    ClientRecordRequest realRequest = realReportInstance.request;
 
-    ClientListReportInstance realReportInstance = reportRegister.get().checkForValidity(expectedPersonId);
-    ClientRecordRequest realRequest = ClientRecordRequest.deserialize(realReportInstance.request);
-
-    assertThat(realReportInstance.reportIdInstance).isEqualTo(expectedReportIdInstance);
     assertThat(realReportInstance.personId).isEqualTo(expectedPersonId);
-    assertThat(realRequest.clientRecordCount).isEqualTo(expectedRequest.clientRecordCount);
-    assertThat(realRequest.clientRecordCountToSkip).isEqualTo(expectedRequest.clientRecordCountToSkip);
-    assertThat(realRequest.nameFilter).isEqualTo(expectedRequest.nameFilter);
-    assertThat(realRequest.columnSortType).isEqualTo(expectedRequest.columnSortType);
-    assertThat(realRequest.sortAscend).isEqualTo(expectedRequest.sortAscend);
-    assertThat(FileContentType.valueOf(realReportInstance.fileTypeName)).isEqualTo(expectedFileType);
+    assertThat(realRequest.clientRecordCount).isEqualTo(reportInstance.request.clientRecordCount);
+    assertThat(realRequest.clientRecordCountToSkip).isEqualTo(reportInstance.request.clientRecordCountToSkip);
+    assertThat(realRequest.nameFilter).isEqualTo(reportInstance.request.nameFilter);
+    assertThat(realRequest.columnSortType).isEqualTo(reportInstance.request.columnSortType);
+    assertThat(realRequest.sortAscend).isEqualTo(reportInstance.request.sortAscend);
+    assertThat(realReportInstance.fileTypeName).isEqualTo(reportInstance.fileTypeName);
   }
 
   @Test
-  public void method_generate_ok_noCheck() {
+  public void method_generate_ok_noCheck() throws Exception {
     this.resetTables();
 
     PersonDot expectedPersonDot = new PersonDot();
@@ -110,16 +93,21 @@ public class ReportRegisterTest extends ParentTestNg {
 
     authTestDao.get().insertPersonDot(expectedPersonDot);
 
-    OutputStream outputStream = new ByteArrayOutputStream();
-    ClientRecordRequest expectedRequest = new ClientRecordRequest();
-    expectedRequest.clientRecordCount = RND.plusInt(100);
-    expectedRequest.clientRecordCountToSkip = RND.plusInt(100);
-    expectedRequest.nameFilter = RND.str(5);
-    expectedRequest.columnSortType = ColumnSortType.values()[RND.plusInt(ColumnSortType.values().length)];
-    expectedRequest.sortAscend = RND.bool();
-    FileContentType expectedFileType = FileContentType.values()[RND.plusInt(FileContentType.values().length)];
+    ClientListReportInstance reportInstance = new ClientListReportInstance();
+    reportInstance.personId = expectedPersonDot.id;
+    reportInstance.request = new ClientRecordRequest();
+    reportInstance.request.clientRecordCount = 0;
+    reportInstance.request.clientRecordCountToSkip = 0;
+    reportInstance.request.nameFilter = "";
+    reportInstance.request.columnSortType = ColumnSortType.NONE;
+    reportInstance.request.sortAscend = false;
+    reportInstance.fileTypeName = FileContentType.PDF.name();
 
-    reportRegister.get().generate(new ClientListReportViewXlsx(outputStream), expectedPersonDot.id, expectedRequest);
+    ClientListReportInstance realReportInstance = reportRegister.get()
+      .getClientListReportInstance(expectedPersonDot.id);
+
+    reportRegister.get()
+      .generateClientListReport(reportInstance, new ClientListReportViewXlsx(new ByteArrayOutputStream()));
   }
 
   private void resetTables() {
