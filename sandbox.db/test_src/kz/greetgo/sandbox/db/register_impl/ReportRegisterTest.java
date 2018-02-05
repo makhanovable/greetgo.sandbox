@@ -7,15 +7,12 @@ import kz.greetgo.sandbox.controller.model.ColumnSortType;
 import kz.greetgo.sandbox.controller.model.FileContentType;
 import kz.greetgo.sandbox.controller.register.ReportRegister;
 import kz.greetgo.sandbox.controller.register.model.ClientListReportInstance;
-import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportViewXlsx;
 import kz.greetgo.sandbox.db.stand.model.PersonDot;
 import kz.greetgo.sandbox.db.test.dao.AuthTestDao;
 import kz.greetgo.sandbox.db.test.dao.ClientListReportTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
-
-import java.io.ByteArrayOutputStream;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -106,8 +103,13 @@ public class ReportRegisterTest extends ParentTestNg {
     ClientListReportInstance realReportInstance = reportRegister.get()
       .getClientListReportInstance(expectedPersonDot.id);
 
-    reportRegister.get()
-      .generateClientListReport(reportInstance, new ClientListReportViewXlsx(new ByteArrayOutputStream()));
+    ClientListReportViewFake view = new ClientListReportViewFake();
+
+    reportRegister.get().generateClientListReport(reportInstance, view);
+
+    assertThat(view.headerData.columnSortType).isEqualTo(ColumnSortType.AGE);
+    assertThat(view.list).hasSize(4);
+    assertThat(view.list.get(0).age).isEqualTo(123);
   }
 
   private void resetTables() {
