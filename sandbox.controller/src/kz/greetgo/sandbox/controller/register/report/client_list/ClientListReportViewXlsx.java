@@ -85,13 +85,13 @@ public class ClientListReportViewXlsx implements ClientListReportView {
     }
     sheet.row().finish();
     sheet.style().font().setBold(false);
+
+    sheet.style().alignment().setHorizontal(Align.left);
+    sheet.style().font().setSize(14);
   }
 
   @Override
   public void append(ReportItemData itemData) throws Exception {
-    sheet.style().alignment().setHorizontal(Align.left);
-    sheet.style().font().setSize(14);
-
     int curCol = 1;
     sheet.row().start();
     sheet.cellStr(curCol++, itemData.fullname);

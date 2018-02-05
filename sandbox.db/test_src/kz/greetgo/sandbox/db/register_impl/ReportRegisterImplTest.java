@@ -10,13 +10,12 @@ import kz.greetgo.sandbox.controller.register.model.ClientListReportInstance;
 import kz.greetgo.sandbox.db.stand.model.PersonDot;
 import kz.greetgo.sandbox.db.test.dao.AuthTestDao;
 import kz.greetgo.sandbox.db.test.dao.ClientListReportTestDao;
-import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
-public class ReportRegisterTest extends ParentTestNg {
+public class ReportRegisterImplTest extends ClientCommonTest {
 
   public BeanGetter<AuthTestDao> authTestDao;
   public BeanGetter<ClientListReportTestDao> reportTestDao;
@@ -62,7 +61,6 @@ public class ReportRegisterTest extends ParentTestNg {
     String expectedToken = reportRegister.get().saveClientListReportInstance(reportInstance);
 
     ClientListReportInstance realReportInstance = reportRegister.get().getClientListReportInstance(expectedPersonId);
-    //TODO: deserialize in batis?
     ClientRecordRequest realRequest = realReportInstance.request;
 
     assertThat(realReportInstance.personId).isEqualTo(expectedPersonId);
@@ -75,7 +73,7 @@ public class ReportRegisterTest extends ParentTestNg {
   }
 
   @Test
-  public void method_generate_ok_noCheck() throws Exception {
+  public void method_generate_ok() throws Exception {
     this.resetTables();
 
     PersonDot expectedPersonDot = new PersonDot();
@@ -96,7 +94,7 @@ public class ReportRegisterTest extends ParentTestNg {
     reportInstance.request.clientRecordCount = 0;
     reportInstance.request.clientRecordCountToSkip = 0;
     reportInstance.request.nameFilter = "";
-    reportInstance.request.columnSortType = ColumnSortType.NONE;
+    reportInstance.request.columnSortType = ColumnSortType.AGE;
     reportInstance.request.sortAscend = false;
     reportInstance.fileTypeName = FileContentType.PDF.name();
 

@@ -9,11 +9,13 @@ public class ClientListReportInstance {
 
   @SuppressWarnings("unused")
   public void setRequestBytes(byte[] data) {
+    System.out.println("setRequestBytes");
     request = ClientRecordRequest.deserialize(data);
   }
 
   @SuppressWarnings("unused")
   public byte[] getRequestBytes() {
+    System.out.println("getRequestBytes");
     return ClientRecordRequest.serialize(request);
   }
 }
