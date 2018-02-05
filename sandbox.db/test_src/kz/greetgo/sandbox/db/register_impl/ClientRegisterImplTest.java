@@ -1,12 +1,8 @@
 package kz.greetgo.sandbox.db.register_impl;
 
-import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.errors.InvalidParameter;
 import kz.greetgo.sandbox.controller.model.*;
-import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.util.Util;
-import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
-import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
@@ -22,10 +18,8 @@ import java.util.stream.Collectors;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
-public class ClientRegisterImplTest extends ParentTestNg {
+public class ClientRegisterImplTest extends ClientCommonTest {
 
-  public BeanGetter<ClientRegister> clientRegister;
-  public BeanGetter<ClientTestDao> clientTestDao;
 
   @Test
   public void method_getCount_filterEmpty() {

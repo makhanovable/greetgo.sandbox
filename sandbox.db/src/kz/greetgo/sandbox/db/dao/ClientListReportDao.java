@@ -17,7 +17,7 @@ public interface ClientListReportDao {
 
   @Select("SELECT report_id_instance as reportIdInstance, " +
     "  person_id as personId, " +
-    "  client_record_request as request, " +
+    "  client_record_request as requestBytes, " +
     "  file_type as fileTypeName " +
     "FROM client_list_report " +
     "WHERE report_id_instance = #{report_id_instance}")

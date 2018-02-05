@@ -1,6 +1,11 @@
 package kz.greetgo.sandbox.controller.register.report.client_list;
 
-import com.itextpdf.text.*;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.*;
 import kz.greetgo.sandbox.controller.model.ColumnSortType;
 import kz.greetgo.sandbox.controller.register.report.client_list.model.ReportFooterData;
@@ -131,7 +136,7 @@ public class ClientListReportViewPdf extends PdfPageEventHelper implements Clien
   }
 
   public static void main(String[] args) throws Exception {
-    File file = new File("build/report/test.pdf");
+    File file = new File("build/report/ClientListReportViewPdf.pdf");
     file.getParentFile().mkdirs();
 
     long startTime = System.currentTimeMillis();
@@ -144,7 +149,7 @@ public class ClientListReportViewPdf extends PdfPageEventHelper implements Clien
       view.start(headerData);
 
       ReportItemData reportItemData = new ReportItemData();
-      for (int i = 0; i < 500000; i++) {
+      for (int i = 0; i < 500_000; i++) {
         reportItemData.fullname = RND.str(RND.plusInt(30) + 10);
         reportItemData.age = RND.plusInt(100) + 18;
         reportItemData.charmName = RND.str(30) + 10;
@@ -152,6 +157,10 @@ public class ClientListReportViewPdf extends PdfPageEventHelper implements Clien
         reportItemData.minAccountBalance = (float) RND.plusDouble(100000, 2) - 50000;
         reportItemData.maxAccountBalance = (float) RND.plusDouble(100000, 2) - 50000;
         view.append(reportItemData);
+
+        if (i % 1000 == 0) {
+          System.out.println("i = " + i);
+        }
       }
 
       ReportFooterData reportFooterData = new ReportFooterData();
