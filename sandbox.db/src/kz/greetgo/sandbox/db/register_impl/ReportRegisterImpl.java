@@ -2,7 +2,6 @@ package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.ClientRecordRequest;
 import kz.greetgo.sandbox.controller.model.UserInfo;
 import kz.greetgo.sandbox.controller.register.ReportRegister;
 import kz.greetgo.sandbox.controller.register.model.ClientListReportInstance;
@@ -26,8 +25,7 @@ public class ReportRegisterImpl implements ReportRegister {
   public String saveClientListReportInstance(ClientListReportInstance reportInstance) throws Exception {
     String reportInstanceId = Util.generateRandomString(REPORT_ID_LENGTH);
 
-    clientListReportDao.get().insert(reportInstanceId, reportInstance.personId,
-      ClientRecordRequest.serialize(reportInstance.request), reportInstance.fileTypeName);
+    clientListReportDao.get().insert(reportInstanceId, reportInstance);
 
     return reportInstanceId;
   }
