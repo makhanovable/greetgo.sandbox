@@ -1,3 +1,4 @@
+import { AppService } from './AppService';
 import { ClientListComponent } from './components/clientList/client_list.component';
 
 import { ClientFormComponent } from './components/clientForm/client_form.component';
@@ -17,10 +18,11 @@ import {
 } from '@angular/material';
 import { MatTableModule } from '@angular/material/table';
 import { SelectionModel } from "@angular/cdk/collections";
+import { TextMaskModule } from 'angular2-text-mask';
 
 @NgModule({
   imports: [
-    MatTableModule, MatPaginatorModule,
+    MatTableModule, MatPaginatorModule, TextMaskModule,
     BrowserModule, HttpModule, JsonpModule, MatDatepickerModule, MatNativeDateModule,
     FormsModule, ReactiveFormsModule, BrowserAnimationsModule, MatSelectModule,
     MatButtonModule, MatCheckboxModule, MatDialogModule, MatSortModule, MatFormFieldModule, MatInputModule
@@ -29,7 +31,7 @@ import { SelectionModel } from "@angular/cdk/collections";
     RootComponent, LoginComponent, MainFormComponent, ClientFormComponent, ClientListComponent
   ],
   bootstrap: [RootComponent],
-  providers: [HttpService],
+  providers: [HttpService, AppService],
   entryComponents: [ClientFormComponent],
 })
 export class AppModule {

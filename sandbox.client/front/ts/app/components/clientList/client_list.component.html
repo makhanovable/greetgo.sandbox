@@ -7,10 +7,20 @@
                     <div class="table-container mat-elevation-z8">
                         <div class="example-header">
                             <mat-form-field>
-                                <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
+                                <input matInput placeholder="Filter" [(ngModel)]="filter">
+
                             </mat-form-field>
+                            <mat-form-field>
+                                <mat-select placeholder="Order by" [(value)]="selectedOrder" >
+                                    <mat-option *ngFor="let item of orderByColumns; let i = index" [value]="i">
+                                        {{ item }}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                            <button mat-button (click)="applyFilter()" >search</button>
+
                         </div>
-                        
+
                         <mat-table #table [dataSource]="dataSource" matSort>
 
                             <ng-container matColumnDef="select">
@@ -30,11 +40,11 @@
                             </ng-container>
                             <ng-container matColumnDef="charm">
                                 <mat-header-cell *matHeaderCellDef> Charm </mat-header-cell>
-                                <mat-cell *matCellDef="let element"> {{element.charm.name}} </mat-cell>
+                                <mat-cell *matCellDef="let element"> {{charmsMap[element.charmId].name}} </mat-cell>
                             </ng-container>
                             <ng-container matColumnDef="age">
                                 <mat-header-cell *matHeaderCellDef mat-sort-header> Age </mat-header-cell>
-                                <mat-cell *matCellDef="let element"> {{calculateAge(element.birthDay)}} </mat-cell>
+                                <mat-cell *matCellDef="let element"> {{element.age }} </mat-cell>
                             </ng-container>
                             <ng-container matColumnDef="totalAccountBalance">
                                 <mat-header-cell *matHeaderCellDef mat-sort-header> Balance </mat-header-cell>

@@ -5,45 +5,102 @@
         <mat-form-field>
             <input matInput placeholder="Surname" [(ngModel)]="formData.name">
         </mat-form-field>
+
         <mat-form-field>
             <input matInput placeholder="Firstname" [(ngModel)]="formData.surname">
         </mat-form-field>
+
         <mat-form-field>
             <input matInput placeholder="Patronymic" [(ngModel)]="formData.patronymic">
         </mat-form-field>
-    </div>
-
-    <div class="client-form-row">
 
         <mat-form-field>
             <mat-select placeholder="Gender" [(ngModel)]="formData.gender">
-                <mat-option *ngFor="let i of genders" value={{i}} >{{i}}</mat-option>
-                
+                <mat-option value=0>Male</mat-option>
+                <mat-option value=1>Famale</mat-option>
             </mat-select>
         </mat-form-field>
+
         <mat-form-field>
-            <mat-select placeholder="Charm">
-                <mat-option value="ativist">ativist</mat-option>
-                <mat-option value="sleepy">sleepy</mat-option>
+            <mat-select placeholder="Charm" [(value)]="formData.charmId">
+                <mat-option *ngFor="let charm of charms" value="{{charm.id}}">{{charm.name}}</mat-option>
+
             </mat-select>
         </mat-form-field>
+
         <mat-form-field>
-            <input matInput [matDatepicker]="picker" placeholder="Birth day">
+            <input matInput [matDatepicker]="picker" placeholder="Birth day" [(ngModel)]="formData.birthDate">
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
         </mat-form-field>
     </div>
 
-    
-    
+    <span>Register address:</span>
+
+    <div class="client-form-row address">
+
+        <mat-form-field>
+            <input matInput placeholder="Street">
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput placeholder="Home">
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput placeholder="Flat">
+        </mat-form-field>
+    </div>
+    <span>Actual address:</span>
+
+    <div class="client-form-row address">
+        <mat-form-field>
+            <input matInput placeholder="Street">
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput placeholder="Home">
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput placeholder="Flat">
+        </mat-form-field>
+    </div>
+
+    <!-- <span>Telephones:</span> -->
+
+    <div class="telephones">
+
+        <span>Work phones:</span>
+        <div class="client-form-row">
+            <mat-form-field *ngFor="let phone of workPhones">
+                <input matInput placeholder="{{getPhoneLabel(phone.type)}}" [textMask]="{mask: phoneMask}" [(ngModel)]="phone.number">
+            </mat-form-field>
+            <button mat-button (click)="addNumber(workPhones[0].type)" >add number</button>
+
+        </div>
+        <span>Home phones:</span>
+        <div class="client-form-row">
+            <mat-form-field *ngFor="let phone of homePhones">
+                <input matInput placeholder="{{getPhoneLabel(phone.type)}}" [textMask]="{mask: phoneMask}" [(ngModel)]="phone.number">
+            </mat-form-field>
+            <button mat-button (click)="addNumber(homePhones[0].type)">add number</button>
+            
+        </div>
+        <span>Mobile phones:</span>
+        <div class="client-form-row">
+            <mat-form-field *ngFor="let phone of mobilePhones">
+                <input matInput placeholder="{{getPhoneLabel(phone.type)}}" [textMask]="{mask: phoneMask}" [(ngModel)]="phone.number">
+            </mat-form-field>
+            <button mat-button (click)="addNumber(mobilePhones[0].type)">add number</button>
+            
+        </div>
+    </div>
 
 
 
-    <mat-form-field>
-        <input matInput placeholder="Input">
-    </mat-form-field>
+
+
 
 
 </div>
 
+
+<button mat-button (click)="exit()">cancel</button>
 <button mat-button (click)="save()">save</button>

@@ -1,3 +1,5 @@
+import { HttpService } from './../../HttpService';
+import { Charm } from './../../../model/Charm';
 import { ClientInfo } from './../../../model/ClientInfo';
 
 import { Component, ViewChild, OnInit } from '@angular/core';
@@ -7,8 +9,8 @@ import { ClientFormComponent } from '../clientForm/client_form.component';
 
 
 @Component({
-    selector: 'client-list-component',
     template: require('./client_list.component.html'),
+    selector: 'client-list-component',
     styles: [require('./client_list.component.css')],
 })
 export class ClientListComponent implements OnInit {
@@ -16,65 +18,87 @@ export class ClientListComponent implements OnInit {
     displayedColumns = ['select', 'fio', 'charm', 'age', 'totalAccountBalance', 'maximumBalance', 'minimumBalance'];
     dataSource: MatTableDataSource<ClientInfo>;
 
+    charmsMap: any[] = [];
+    charmsArray: Charm[];
+
     tableElemets: ClientInfo[];
     selection = new SelectionModel<ClientInfo>(true, []);
 
+    filter: string = ''
+    orderByColumns: string[] = ['Age', 'Total account balance', 'Maximum balance', 'Minimum balance'];
+    selectedOrder = 0;
+    curPage: number = 0;
+    rowsPerPage: number = 10;
+
     @ViewChild(MatSort) sort: MatSort;
 
-    constructor(public dialog: MatDialog) {
+    constructor(public dialog: MatDialog, private httpService: HttpService) {
 
     }
 
     ngOnInit() {
-
-        this.initTableData();
-        this.initMatTable();
+        this.loadTableData(undefined, this.curPage, this.rowsPerPage);
+        this.loadChamrs();
     }
 
-    initTableData() {
-        this.tableElemets = [
-            {
-                id: 1, birthDay: new Date("September 4, 1996"), patronymic: ".",
-                name: "Harry", surname: "Potter", charm: { name: "ленивый" },
-                totalAccountBalance: 1, maximumBalance: 2, minimumBalance: 3
-            },
-            {
-                id: 2, birthDay: new Date("September 4, 1996"), patronymic: "Minata",
-                name: "Naruto", surname: "Uzum", charm: { name: "ленивый" },
-                totalAccountBalance: 2, maximumBalance: 1, minimumBalance: 3
-            },
-            {
-                id: 3, birthDay: new Date("September 4, 1996"), patronymic: "D.",
-                name: "Dinara", surname: "Amze", charm: { name: "ленивый" },
-                totalAccountBalance: 3, maximumBalance: 0, minimumBalance: 3
-            },
-            {
-                id: 4, birthDay: new Date("September 13, 2000"), patronymic: "D.",
-                name: "Dauren", surname: "Amze", charm: { name: "ленивый" },
-                totalAccountBalance: 4, maximumBalance: -1, minimumBalance: 3
-            },
+    loadChamrs() {
+        this.charmsArray = [{ id: "0", name: "ленивый" }, { id: "3", name: "пунктуальный" }] as Charm[];
+        this.charmsArray.forEach(element => {
+            this.charmsMap[element.id] = element;
+        });
 
-        ] as ClientInfo[];
+    }
+
+    loadTableData(filter: string, pageNumber: number, rowsPerPage: number) {
+
+        this.httpService.get("/client/get", {
+
+        }).toPromise().then(res => {
+            this.tableElemets = JSON.parse(res.text()) as ClientInfo[];
+            
+            this.initMatTable();
+            console.log(res);
+            console.log(this.tableElemets);
+        }).catch(error => {
+            console.log(error);
+        
+        })
+
+        // this.tableElemets = [
+        //     {
+        //         id: 1, age: 17, patronymic: ".",
+        //         name: "Harry", surname: "Potter", charmId:"0",
+        //         totalAccountBalance: 1, maximumBalance: 2, minimumBalance: 3
+        //     },
+        //     {
+        //         id: 2, age: 17, patronymic: "Minata",
+        //         name: "Naruto", surname: "Uzum", charmId:"0",
+        //         totalAccountBalance: 2, maximumBalance: 1, minimumBalance: 3
+        //     },
+        //     {
+        //         id: 3, age: 17, patronymic: "D.",
+        //         name: "Dinara", surname: "Amze", charmId:"0",
+        //         totalAccountBalance: 3, maximumBalance: 0, minimumBalance: 3
+        //     },
+        //     {
+        //         id: 4, age: 17, patronymic: "D.",
+        //         name: "Dauren", surname: "Amze", charmId:"0",
+        //         totalAccountBalance: 4, maximumBalance: -1, minimumBalance: 3
+        //     },
+
+        // ] as ClientInfo[];
+
+        // this.initMatTable();
     }
 
     initMatTable() {
+        this.selection.clear();
         this.dataSource = new MatTableDataSource<ClientInfo>(this.tableElemets);
-        this.dataSource.filterPredicate = this.filterPredicate;
         this.dataSource.sort = this.sort
     }
 
-    filterPredicate(data, filter) {
-        if (data.name.toLowerCase().indexOf(filter) >= 0
-            || data.surname.toLowerCase().indexOf(filter) >= 0
-            || data.patronymic.toLowerCase().indexOf(filter) >= 0)
-            return true;
-        return false
-    };
-
-    calculateAge(birthday) {
-        var ageDifMs = Date.now() - birthday.getTime();
-        var ageDate = new Date(ageDifMs);
-        return Math.abs(ageDate.getUTCFullYear() - 1970);
+    applyFilter() {
+        this.loadTableData(this.filter, this.curPage, this.rowsPerPage);
     }
 
     add() {
@@ -113,8 +137,13 @@ export class ClientListComponent implements OnInit {
     openClientModalForm(selected): void {
         let dialogRef = this.dialog.open(ClientFormComponent, {
             // minWidth: '250px',
+            maxWidth: "1000px",
+            // position: {top:"100px"} ,
+
             data: {
+                charms: this.charmsArray,
                 item: selected,
+
             }
         });
 
@@ -122,7 +151,7 @@ export class ClientListComponent implements OnInit {
             let tmp: ClientInfo = result as ClientInfo;
             console.log('The dialog was closed');
             console.log(result);
-            
+
             if (result) {
                 for (let i = 0; i < this.tableElemets.length; i++) {
                     if (this.tableElemets[i].id == tmp.id) {
@@ -137,20 +166,11 @@ export class ClientListComponent implements OnInit {
         });
     }
 
-    applyFilter(filterValue: string) {
-        filterValue = filterValue.trim();
-        filterValue = filterValue.toLowerCase();
-        this.dataSource.filter = filterValue;
-    }
-
-    notImpl() {
-        alert("not Implemented")
-    }
     ping() {
         console.log('pong')
     }
 
-    //a-b
+    //set a- set b
     ClientInfoArrayDiff(a: ClientInfo[], b: ClientInfo[]): ClientInfo[] {
 
         var tmp = [];
@@ -166,5 +186,11 @@ export class ClientListComponent implements OnInit {
 
         return diff;
     }
+
+    // calculateAge(birthday) {
+    //     var ageDifMs = Date.now() - birthday.getTime();
+    //     var ageDate = new Date(ageDifMs);
+    //     return Math.abs(ageDate.getUTCFullYear() - 1970);
+    // }
 
 }

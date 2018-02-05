@@ -1,18 +1,21 @@
 .client-form-container {
     display: flex;
     flex-direction: column;
-}
-
-.client-form-container>* {
     width: 100%;
 }
 
-.client-form-container .client-form-row {
+.client-form-row {
     display: flex;
-    flex-direction: row
+    flex-direction: row;
+    flex-wrap: wrap;
 
 }
 
-.client-form-container .client-form-row mat-form-field {
-    margin: 15px;
+.client-form-row mat-form-field {
+    padding: 10px;
+    width: 33%;
+}
+
+.address{
+    padding: 10px; background-color: #f2f4f7
 }

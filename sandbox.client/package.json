@@ -25,6 +25,7 @@
     "@types/jquery.contextmenu": "^1.7.33",
     "@types/node": "^8.0.28",
     "angular2-template-loader": "^0.6.2",
+    "angular2-text-mask": "^8.0.4",
     "assets-webpack-plugin": "^3.5.1",
     "babel-core": "^6.26.0",
     "babel-preset-es2015": "^6.24.1",
