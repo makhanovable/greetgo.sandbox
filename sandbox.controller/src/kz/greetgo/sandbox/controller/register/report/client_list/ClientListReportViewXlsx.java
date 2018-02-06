@@ -107,6 +107,7 @@ public class ClientListReportViewXlsx implements ClientListReportView {
 
   @Override
   public void finish(ReportFooterData footerData) throws Exception {
+    sheet.skipRow();
     sheet.style().font().setSize(14);
     sheet.row().start();
     sheet.cellStr(1, "Сформирован для пользователя: " + footerData.createdBy);
@@ -126,7 +127,7 @@ public class ClientListReportViewXlsx implements ClientListReportView {
     long startTime = System.currentTimeMillis();
 
     try (FileOutputStream outputStream = new FileOutputStream(file)) {
-      ClientListReportView view = new ClientListReportViewPdf(outputStream);
+      ClientListReportView view = new ClientListReportViewXlsx(outputStream);
 
       ReportHeaderData headerData = new ReportHeaderData();
       headerData.columnSortType = ColumnSortType.AGE;

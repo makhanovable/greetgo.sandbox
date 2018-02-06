@@ -18,7 +18,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 public class ClientRegisterImplTest extends ClientCommonTest {
 
-
   @Test
   public void method_getCount_filterEmpty() {
     this.resetClientTablesAll();
@@ -328,7 +327,6 @@ public class ClientRegisterImplTest extends ClientCommonTest {
       assertThat(realRecordList.get(i).maxAccountBalance).isEqualTo(expectedMaxMoneyList.get(i));
   }
 
-  //here
   @Test
   public void method_getRecordList_sortMinAccountBalanceAscend() {
     this.resetClientTablesAll();
@@ -774,8 +772,7 @@ public class ClientRegisterImplTest extends ClientCommonTest {
     expectedClientDetailsToSave.phones.add(this.phoneBuilder("111111", PhoneType.WORK));
     expectedClientDetailsToSave.phones.add(this.phoneBuilder("222222", PhoneType.OTHER));
 
-    clientRegister.get().saveDetails(expectedClientDetailsToSave);
-
+    ClientRecord realClientRecord = clientRegister.get().save(expectedClientDetailsToSave);
     ClientDetails realClientDetails = clientTestDao.get().selectRowById(expectedId);
     realClientDetails.factualAddressInfo =
       clientTestDao.get().selectRowByClientAndTypeTableClientAddr(expectedId, AddressType.FACTUAL.name());
@@ -812,6 +809,14 @@ public class ClientRegisterImplTest extends ClientCommonTest {
       phone.number.equals("111111") && phone.type == PhoneType.WORK)).isEqualTo(true);
     assertThat(realClientDetails.phones.stream().anyMatch(phone ->
       phone.number.equals("222222") && phone.type == PhoneType.OTHER)).isEqualTo(true);
+
+    assertThat(realClientRecord).isNotNull();
+    assertThat(realClientRecord.fullName).isEqualTo("surname lastname patronymic");
+    assertThat(realClientRecord.age).isEqualTo(Util.getAge(expectedDate));
+    assertThat(realClientRecord.charmName).isEqualTo(charmHelperList.get(3).name);
+    assertThat(realClientRecord.totalAccountBalance).isEqualTo(Util.floatToString(0));
+    assertThat(realClientRecord.maxAccountBalance).isEqualTo(Util.floatToString(0));
+    assertThat(realClientRecord.minAccountBalance).isEqualTo(Util.floatToString(0));
   }
 
   @Test
@@ -861,7 +866,7 @@ public class ClientRegisterImplTest extends ClientCommonTest {
     expectedClientDetailsToSave.phones.add(this.phoneBuilder("111111", PhoneType.WORK));
     expectedClientDetailsToSave.phones.add(this.phoneBuilder("222222", PhoneType.OTHER));
 
-    clientRegister.get().saveDetails(expectedClientDetailsToSave);
+    ClientRecord realClientRecord = clientRegister.get().save(expectedClientDetailsToSave);
 
     ClientDetails realClientDetails = clientTestDao.get().selectRowById(expectedId);
     realClientDetails.factualAddressInfo =
@@ -903,6 +908,14 @@ public class ClientRegisterImplTest extends ClientCommonTest {
       phone.number.equals("222222") && phone.type == PhoneType.OTHER)).isEqualTo(true);
     assertThat(realClientDetails.phones.stream().anyMatch(phone ->
       phone.number.equals("+72822590121") && phone.type == PhoneType.HOME)).isEqualTo(true);
+
+    assertThat(realClientRecord).isNotNull();
+    assertThat(realClientRecord.fullName).isEqualTo("surname lastname patronymic");
+    assertThat(realClientRecord.age).isEqualTo(Util.getAge(expectedDate));
+    assertThat(realClientRecord.charmName).isEqualTo(charmHelperList.get(1).name);
+    assertThat(realClientRecord.totalAccountBalance).isEqualTo(Util.floatToString(0));
+    assertThat(realClientRecord.maxAccountBalance).isEqualTo(Util.floatToString(0));
+    assertThat(realClientRecord.minAccountBalance).isEqualTo(Util.floatToString(0));
   }
 
   @Test(expectedExceptions = InvalidParameter.class)
@@ -972,7 +985,7 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test(expectedExceptions = InvalidParameter.class)
   public void method_saveDetails_detailsNull() {
-    clientRegister.get().saveDetails(null);
+    clientRegister.get().save(null);
   }
 
   @Test(expectedExceptions = InvalidParameter.class)
@@ -986,6 +999,6 @@ public class ClientRegisterImplTest extends ClientCommonTest {
     clientDetailsToSave.birthdate = "";
     clientDetailsToSave.charmId = 0;
 
-    clientRegister.get().saveDetails(clientDetailsToSave);
+    clientRegister.get().save(clientDetailsToSave);
   }
 }

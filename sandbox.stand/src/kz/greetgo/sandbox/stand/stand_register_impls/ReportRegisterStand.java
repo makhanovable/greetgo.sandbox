@@ -90,7 +90,7 @@ public class ReportRegisterStand implements ReportRegister {
 
     ret.fullname = Util.getFullname(clientDot.surname, clientDot.name, clientDot.patronymic);
     ret.charmName = clientDot.charm.name;
-    ret.age = clientDot.age;
+    ret.age = Util.getAge(clientDot.birthDate);
     ret.totalAccountBalance = Util.stringToFloat(clientDot.totalAccountBalance);
     ret.maxAccountBalance = Util.stringToFloat(clientDot.maxAccountBalance);
     ret.minAccountBalance = Util.stringToFloat(clientDot.minAccountBalance);

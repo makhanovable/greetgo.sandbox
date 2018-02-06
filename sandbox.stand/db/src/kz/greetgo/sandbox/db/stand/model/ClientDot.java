@@ -20,7 +20,6 @@ public class ClientDot {
   public AddressInfo registrationAddressInfo;
   public List<Phone> phones;
 
-  public int age;
   public String totalAccountBalance;
   public String maxAccountBalance;
   public String minAccountBalance;
@@ -58,7 +57,7 @@ public class ClientDot {
 
     ret.id = id;
     ret.fullName = Util.getFullname(surname, name, patronymic);
-    ret.age = age;
+    ret.age = Util.getAge(birthDate);
     ret.charmName = charm.name;
     ret.totalAccountBalance = totalAccountBalance;
     ret.maxAccountBalance = maxAccountBalance;
@@ -67,7 +66,9 @@ public class ClientDot {
     return ret;
   }
 
-  public void toClientDot(ClientDetailsToSave clientDetailsToSave, Long id, Map<Integer, CharmDot> charmStorage) {
+  public void toClientDot(ClientDetailsToSave clientDetailsToSave, Long id, Map<Integer, CharmDot> charmStorage,
+                          boolean wasCreated) {
+    this.id = id;
     surname = clientDetailsToSave.surname;
     name = clientDetailsToSave.name;
     patronymic = clientDetailsToSave.patronymic;
@@ -96,14 +97,17 @@ public class ClientDot {
 
     phones.addAll(clientDetailsToSave.phones);
 
-    if (id != null) {
-      this.id = id;
-      generateAgeAndBalance(this);
-    }
+    if (wasCreated)
+      declareBalance(this);
   }
 
-  public static void generateAgeAndBalance(ClientDot clientDot) {
-    clientDot.age = RND.plusInt(40) + 18;
+  public static void declareBalance(ClientDot clientDot) {
+    clientDot.totalAccountBalance = Util.floatToString(0);
+    clientDot.maxAccountBalance = Util.floatToString(0);
+    clientDot.minAccountBalance = Util.floatToString(0);
+  }
+
+  public static void generateBalance(ClientDot clientDot) {
     clientDot.totalAccountBalance = Util.floatToString((float) RND.plusDouble(100000, Util.decimalNum) - 50000);
     clientDot.maxAccountBalance = Util.floatToString((float) RND.plusDouble(100000, Util.decimalNum) - 50000);
     clientDot.minAccountBalance = Util.floatToString((float) RND.plusDouble(100000, Util.decimalNum) - 50000);

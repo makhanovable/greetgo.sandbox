@@ -12,6 +12,7 @@ import kz.greetgo.sandbox.db.dao.ClientDao;
 import kz.greetgo.sandbox.db.dao.ClientPhoneDao;
 import kz.greetgo.sandbox.db.register_impl.jdbc.client_list.GetClientCount;
 import kz.greetgo.sandbox.db.register_impl.jdbc.client_list.GetClientList;
+import kz.greetgo.sandbox.db.register_impl.jdbc.client_list.GetClientRecord;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
 import java.sql.Date;
@@ -80,7 +81,7 @@ public class ClientRegisterImpl implements ClientRegister {
     } else {
       if (!clientDao.get().selectExistsRowById(id)) throw new InvalidParameter();
 
-      resClientDetails = clientDao.get().selectRowById(id);
+      resClientDetails = clientDao.get().selectDetailsById(id);
       resClientDetails.charmList = charmDao.get().selectActualCharms();
       resClientDetails.registrationAddressInfo =
         clientAddrDao.get().selectRowByClientAndType(id, AddressType.REGISTRATION.name());
@@ -94,13 +95,15 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   @Override
-  public void saveDetails(ClientDetailsToSave detailsToSave) {
+  public ClientRecord save(ClientDetailsToSave detailsToSave) {
     if (detailsToSave == null) throw new InvalidParameter();
     if (detailsToSave.id != null && !clientDao.get().selectExistsRowById(detailsToSave.id))
       throw new InvalidParameter();
 
+    long id;
+
     if (detailsToSave.id == null) {
-      long id = clientDao.get().selectNextIdSeq();
+      id = clientDao.get().selectNextIdSeq();
 
       clientDao.get().insert(id, detailsToSave.surname, detailsToSave.name,
         detailsToSave.patronymic, detailsToSave.gender.name(), Date.valueOf(detailsToSave.birthdate),
@@ -113,19 +116,23 @@ public class ClientRegisterImpl implements ClientRegister {
       for (Phone phone : detailsToSave.phones)
         clientPhoneDao.get().insert(id, phone.number, phone.type.name());
     } else {
-      clientDao.get().update(detailsToSave.id, detailsToSave.surname, detailsToSave.name,
+      id = detailsToSave.id;
+
+      clientDao.get().update(id, detailsToSave.surname, detailsToSave.name,
         detailsToSave.patronymic, detailsToSave.gender.name(), Date.valueOf(detailsToSave.birthdate),
         detailsToSave.charmId);
-      clientAddrDao.get().update(detailsToSave.id, AddressType.REGISTRATION.name(), detailsToSave.registrationAddressInfo.street,
+      clientAddrDao.get().update(id, AddressType.REGISTRATION.name(), detailsToSave.registrationAddressInfo.street,
         detailsToSave.registrationAddressInfo.house, detailsToSave.registrationAddressInfo.flat);
-      clientAddrDao.get().update(detailsToSave.id, AddressType.FACTUAL.name(), detailsToSave.factualAddressInfo.street,
+      clientAddrDao.get().update(id, AddressType.FACTUAL.name(), detailsToSave.factualAddressInfo.street,
         detailsToSave.factualAddressInfo.house, detailsToSave.factualAddressInfo.flat);
 
       for (Phone phone : detailsToSave.deletedPhones)
-        clientPhoneDao.get().updateSetDisabled(detailsToSave.id, phone.number);
+        clientPhoneDao.get().updateSetDisabled(id, phone.number);
 
       for (Phone phone : detailsToSave.phones)
-        clientPhoneDao.get().insert(detailsToSave.id, phone.number, phone.type.name());
+        clientPhoneDao.get().insert(id, phone.number, phone.type.name());
     }
+
+    return jdbc.get().execute(new GetClientRecord(id)).get(0);
   }
 }

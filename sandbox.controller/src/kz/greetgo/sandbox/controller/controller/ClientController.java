@@ -57,9 +57,10 @@ public class ClientController implements Controller {
   }
 
   @MethodFilter(POST)
+  @ToJson
   @Mapping("/save")
-  public void saveDetails(@Par("clientDetailsToSave") @Json ClientDetailsToSave detailsToSave) {
-    clientRegister.get().saveDetails(detailsToSave);
+  public ClientRecord saveDetails(@Par("clientDetailsToSave") @Json ClientDetailsToSave detailsToSave) {
+    return clientRegister.get().save(detailsToSave);
   }
 
   @MethodFilter(GET)

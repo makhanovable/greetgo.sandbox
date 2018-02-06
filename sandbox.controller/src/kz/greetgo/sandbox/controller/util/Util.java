@@ -18,6 +18,10 @@ public class Util {
     return String.format(Locale.US, "%f", f);
   }
 
+  public static String floatToString(float f, String format) {
+    return String.format(Locale.US, format, f);
+  }
+
   public static float stringToFloat(String s) {
     return Float.parseFloat(s);
   }
@@ -33,6 +37,9 @@ public class Util {
     return Date.valueOf(generateLocalDate());
   }
 
+  public static int getAge(String stringBirthDate) {
+    return getAge(LocalDate.parse(stringBirthDate));
+  }
 
   public static int getAge(Date birthDate) {
     return getAge(birthDate.toLocalDate());

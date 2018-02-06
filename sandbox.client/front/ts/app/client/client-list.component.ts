@@ -36,7 +36,6 @@ export class ClientListComponent {
   }
 
   private refreshClientRecordList() {
-    this.selectedRecordId = null;
     this.updatePageNumeration();
     this.getClientRecordList();
   }
@@ -123,7 +122,6 @@ export class ClientListComponent {
   onSortingButtonClick(columnSortTypeName: string, sortAscend: boolean) {
     this.request.columnSortType = columnSortTypeName as ColumnSortType;
     this.request.sortAscend = sortAscend;
-    this.curPageNum = 0;
 
     this.refreshClientRecordList();
   }
@@ -161,6 +159,21 @@ export class ClientListComponent {
   }
 
   onModalClose(event: any) {
-    this.refreshClientRecordList();
+    let clientRecord: ClientRecord = event.clientRecord;
+    let isAddOperation: boolean = event.isAddOperation;
+
+    if (clientRecord == null)
+      return;
+
+    if (isAddOperation) {
+      this.records.unshift(new ClientRecord().assign(clientRecord));
+      this.selectedRecordId = clientRecord.id;
+    } else {
+      for (let record of  this.records)
+        if (record.id == clientRecord.id) {
+          record.assign(clientRecord);
+          break;
+        }
+    }
   }
 }

@@ -1,6 +1,7 @@
 package kz.greetgo.sandbox.db.dao;
 
 import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.util.Util;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
@@ -20,7 +21,7 @@ public interface ClientDao {
     "to_char(birth_date, '" + Util.datePattern + "') as birthdate, charm as charmId " +
     "FROM client " +
     "WHERE id=#{id} AND actual=1")
-  ClientDetails selectRowById(@Param("id") long id);
+  ClientDetails selectDetailsById(@Param("id") long id);
 
   @Select("SELECT nextval('client_id_seq')")
   long selectNextIdSeq();
