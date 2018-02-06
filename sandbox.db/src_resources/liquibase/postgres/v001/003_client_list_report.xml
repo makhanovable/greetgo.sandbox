@@ -6,7 +6,7 @@
   <changeSet author="nsmagulov" id="create-table-clientListReport">
     <sql endDelimiter=";;"><![CDATA[
       CREATE TABLE client_list_report (
-        report_id_instance varchar (255) NOT NULL,
+        report_instance_id varchar (255) NOT NULL,
         person_id varchar (255) NOT NULL,
         client_record_request bytea NOT NULL,
         file_type VARCHAR(255) NOT NULL
@@ -18,7 +18,7 @@
     <sql endDelimiter=";;"><![CDATA[
       ALTER TABLE client_list_report
       ADD CONSTRAINT pk_tempSession
-      PRIMARY KEY (report_id_instance)
+      PRIMARY KEY (report_instance_id)
     ]]></sql>
   </changeSet>
 

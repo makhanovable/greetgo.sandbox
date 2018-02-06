@@ -23,13 +23,12 @@ public abstract class GetClientCommon {
     sqlQuery.append("WHERE cl.actual=1 ");
 
     if (!request.nameFilter.isEmpty()) {
-      // TODO: make lower case in java?
-      sqlQuery.append("AND (LOWER(cl.surname) LIKE LOWER(?) OR " +
-        "LOWER(cl.name) LIKE LOWER(?) OR " +
-        "LOWER(cl.patronymic) LIKE LOWER(?)) ");
-      sqlParamList.add("%" + request.nameFilter + "%");
-      sqlParamList.add("%" + request.nameFilter + "%");
-      sqlParamList.add("%" + request.nameFilter + "%");
+      sqlQuery.append("AND (LOWER(cl.surname) LIKE ? OR " +
+        "LOWER(cl.name) LIKE ? OR " +
+        "LOWER(cl.patronymic) LIKE ?) ");
+      sqlParamList.add("%" + request.nameFilter.toLowerCase() + "%");
+      sqlParamList.add("%" + request.nameFilter.toLowerCase() + "%");
+      sqlParamList.add("%" + request.nameFilter.toLowerCase() + "%");
     }
 
     group();

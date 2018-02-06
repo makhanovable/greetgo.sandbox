@@ -8,11 +8,13 @@ import kz.greetgo.sandbox.controller.model.ColumnSortType;
 import kz.greetgo.sandbox.controller.register.report.client_list.model.ReportFooterData;
 import kz.greetgo.sandbox.controller.register.report.client_list.model.ReportHeaderData;
 import kz.greetgo.sandbox.controller.register.report.client_list.model.ReportItemData;
+import kz.greetgo.sandbox.controller.util.Util;
 import kz.greetgo.util.RND;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.concurrent.TimeUnit;
 
 public class ClientListReportViewXlsx implements ClientListReportView {
@@ -111,7 +113,7 @@ public class ClientListReportViewXlsx implements ClientListReportView {
     sheet.row().finish();
 
     sheet.row().start();
-    sheet.cellStr(1, "Дата: " + footerData.createdAt);
+    sheet.cellStr(1, "Дата: " + new SimpleDateFormat(Util.reportDatePattern).format(footerData.createdAt));
     sheet.row().finish();
 
     document.complete(outputStream);
@@ -135,9 +137,9 @@ public class ClientListReportViewXlsx implements ClientListReportView {
         reportItemData.fullname = RND.str(RND.plusInt(40) + 10);
         reportItemData.age = RND.plusInt(100) + 18;
         reportItemData.charmName = RND.str(40) + 10;
-        reportItemData.totalAccountBalance = (float) RND.plusDouble(100000, 2) - 50000;
-        reportItemData.minAccountBalance = (float) RND.plusDouble(100000, 2) - 50000;
-        reportItemData.maxAccountBalance = (float) RND.plusDouble(100000, 2) - 50000;
+        reportItemData.totalAccountBalance = (float) RND.plusDouble(100000, Util.decimalNum) - 50000;
+        reportItemData.minAccountBalance = (float) RND.plusDouble(100000, Util.decimalNum) - 50000;
+        reportItemData.maxAccountBalance = (float) RND.plusDouble(100000, Util.decimalNum) - 50000;
         view.append(reportItemData);
       }
 

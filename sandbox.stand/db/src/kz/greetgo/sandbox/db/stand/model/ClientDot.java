@@ -104,9 +104,9 @@ public class ClientDot {
 
   public static void generateAgeAndBalance(ClientDot clientDot) {
     clientDot.age = RND.plusInt(40) + 18;
-    clientDot.totalAccountBalance = Util.floatToString((float) RND.plusDouble(100000, 2) - 50000);
-    clientDot.maxAccountBalance = Util.floatToString((float) RND.plusDouble(100000, 2) - 50000);
-    clientDot.minAccountBalance = Util.floatToString((float) RND.plusDouble(100000, 2) - 50000);
+    clientDot.totalAccountBalance = Util.floatToString((float) RND.plusDouble(100000, Util.decimalNum) - 50000);
+    clientDot.maxAccountBalance = Util.floatToString((float) RND.plusDouble(100000, Util.decimalNum) - 50000);
+    clientDot.minAccountBalance = Util.floatToString((float) RND.plusDouble(100000, Util.decimalNum) - 50000);
   }
 
   @Override

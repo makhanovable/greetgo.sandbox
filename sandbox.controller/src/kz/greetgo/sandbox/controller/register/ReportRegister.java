@@ -13,7 +13,21 @@ public interface ReportRegister {
    */
   String saveClientListReportInstance(ClientListReportInstance reportInstance) throws Exception;
 
+  /**
+   * Возвращает заранее сохраненые данные для отчета
+   *
+   * @param reportInstanceId идентификатор отчета
+   * @return объект
+   * @throws Exception
+   */
   ClientListReportInstance getClientListReportInstance(String reportInstanceId) throws Exception;
 
+  /**
+   * Генерирует отчетный файл
+   *
+   * @param reportInstance идентификатор отчета
+   * @param view           вид отчета
+   * @throws Exception
+   */
   void generateClientListReport(ClientListReportInstance reportInstance, ClientListReportView view) throws Exception;
 }

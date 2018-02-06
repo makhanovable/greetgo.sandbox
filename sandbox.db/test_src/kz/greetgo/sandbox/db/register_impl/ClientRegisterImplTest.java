@@ -3,11 +3,9 @@ package kz.greetgo.sandbox.db.register_impl;
 import kz.greetgo.sandbox.controller.errors.InvalidParameter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.util.Util;
-import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
 import java.sql.Date;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -23,7 +21,7 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_getCount_filterEmpty() {
-    this.resetTablesAll();
+    this.resetClientTablesAll();
     List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
 
     long expectedClientCount = 40;
@@ -40,7 +38,7 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_getCount_filter() {
-    this.resetTablesAll();
+    this.resetClientTablesAll();
     List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
 
     String dummyName = "null";
@@ -70,7 +68,7 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_getCount_filterWithIgnoredCase() {
-    this.resetTablesAll();
+    this.resetClientTablesAll();
     List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
 
     String dummyName = "null";
@@ -102,33 +100,23 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_getRecordList_default() {
-    this.resetTablesAll();
-    List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
+    this.resetClientTablesAll();
 
-    Set<Long> expectedIdSet = new HashSet<>();
-    expectedIdSet.add(this.insertClient("Нурбакыт", "Айбек", "Смагулович", Gender.EMPTY.name(), LocalDate.now(),
-      charmHelperList.get(0).id));
-    expectedIdSet.add(this.insertClient("а", "б", "в", Gender.EMPTY.name(), LocalDate.now(),
-      charmHelperList.get(0).id));
-    for (int i = 0; i < 5; i++)
-      expectedIdSet.add(this.insertClient(charmHelperList));
-    expectedIdSet.add(this.insertClient("Игорев", "Игорь", "Игоревич", Gender.EMPTY.name(), LocalDate.now(),
-      charmHelperList.get(0).id));
-    expectedIdSet.add(this.insertClient("Нурланов", "Нурлан", "Нурланович", Gender.EMPTY.name(), LocalDate.now(),
-      charmHelperList.get(0).id));
+    ClientRecordSetHelper clientRecordSetHelper = getRecordList_default();
+    Set<Long> expectedIdSet = clientRecordSetHelper.clientRecordSet.stream()
+      .map(clientRecord -> clientRecord.id).collect(Collectors.toSet());
 
-    ClientRecordRequest clientRecordRequest =
-      this.clientRecordRequestBuilder(0, expectedIdSet.size() + 5, ColumnSortType.NONE, false, "");
-    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordRequest);
+    List<ClientRecord> realRecordList =
+      clientRegister.get().getRecordList(clientRecordSetHelper.clientRecordRequest);
 
-    assertThat(realRecordList.size()).isEqualTo(expectedIdSet.size());
+    assertThat(realRecordList.size()).isEqualTo(clientRecordSetHelper.clientRecordSet.size());
     for (ClientRecord clientRecord : realRecordList)
       assertThat(clientRecord.id).isIn(expectedIdSet);
   }
 
   @Test
   public void method_getRecordList_defaultWithPagination_atBeginning() {
-    this.resetTablesAll();
+    this.resetClientTablesAll();
     List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
 
     Set<Long> expectedIdSet = new HashSet<>();
@@ -152,13 +140,13 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_getRecordList_defaultWithPagination_atMiddle() {
-    this.resetTablesAll();
+    this.resetClientTablesAll();
     List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
 
     Set<Long> skippedIdSet = new HashSet<>();
     Set<Long> expectedIdSet = new HashSet<>();
     for (int i = 0; i < 10; i++)
-      skippedIdSet.add(this.insertClient(charmHelperList));
+      skippedIdSet.add(this.insertClient(charmHelperList).id);
     expectedIdSet.add(this.insertClient("ПУСТО", "ПУСТО", "ПУСТО", Gender.EMPTY.name(), LocalDate.now(),
       charmHelperList.get(0).id));
     expectedIdSet.add(this.insertClient("ч", "т", "о", Gender.EMPTY.name(), LocalDate.now(),
@@ -179,13 +167,13 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_getRecordList_defaultWithPagination_atEnd() {
-    this.resetTablesAll();
+    this.resetClientTablesAll();
     List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
 
     Set<Long> skippedIdSet = new HashSet<>();
     Set<Long> expectedIdSet = new HashSet<>();
     for (int i = 0; i < 10; i++)
-      skippedIdSet.add(this.insertClient(charmHelperList));
+      skippedIdSet.add(this.insertClient(charmHelperList).id);
     expectedIdSet.add(this.insertClient("ПУСТО", "ПУСТО", "ПУСТО", Gender.EMPTY.name(), LocalDate.now(),
       charmHelperList.get(0).id));
     expectedIdSet.add(this.insertClient("ч", "т", "о", Gender.EMPTY.name(), LocalDate.now(),
@@ -204,13 +192,13 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_getRecordList_defaultWithPagination_onCut() {
-    this.resetTablesAll();
+    this.resetClientTablesAll();
     List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
 
     Set<Long> skippedIdSet = new HashSet<>();
     Set<Long> expectedIdSet = new HashSet<>();
     for (int i = 0; i < 10; i++)
-      skippedIdSet.add(this.insertClient(charmHelperList));
+      skippedIdSet.add(this.insertClient(charmHelperList).id);
     expectedIdSet.add(this.insertClient("ПУСТО", "ПУСТО", "ПУСТО", Gender.EMPTY.name(), LocalDate.now(),
       charmHelperList.get(0).id));
     expectedIdSet.add(this.insertClient("ч", "т", "о", Gender.EMPTY.name(), LocalDate.now(),
@@ -229,12 +217,12 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_getRecordList_defaultWithPagination_atCountExceed() {
-    this.resetTablesAll();
+    this.resetClientTablesAll();
     List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
 
     Set<Long> skippedIdSet = new HashSet<>();
     for (int i = 0; i < 12; i++)
-      skippedIdSet.add(this.insertClient(charmHelperList));
+      skippedIdSet.add(this.insertClient(charmHelperList).id);
     skippedIdSet.add(this.insertClient("ПУСТО", "ПУСТО", "ПУСТО", Gender.EMPTY.name(), LocalDate.now(),
       charmHelperList.get(0).id));
     skippedIdSet.add(this.insertClient("ч", "т", "о", Gender.EMPTY.name(), LocalDate.now(),
@@ -251,20 +239,13 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_getRecordList_sortAgeAscend() {
-    this.resetTablesAll();
-    List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
+    this.resetClientTablesAll();
 
-    List<Integer> expectedAgeList = new ArrayList<>();
-    for (int i = 0; i < 10; i++) {
-      int age = RND.plusInt(50) + 10;
-      expectedAgeList.add(age);
-      this.insertClient("", "", "", Gender.EMPTY.name(), LocalDate.now().minusYears(age), charmHelperList.get(0).id);
-    }
-    expectedAgeList.sort((o1, o2) -> Integer.compare(o1, o2));
+    ClientRecordListHelper clientRecordListHelper = getRecordList_sortAgeAscend();
+    List<Integer> expectedAgeList = clientRecordListHelper.clientRecordList.stream()
+      .map(clientRecord -> clientRecord.age).collect(Collectors.toList());
 
-    ClientRecordRequest clientRecordRequest =
-      this.clientRecordRequestBuilder(0, expectedAgeList.size() + 10, ColumnSortType.AGE, true, "");
-    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordRequest);
+    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordListHelper.clientRecordRequest);
 
     assertThat(realRecordList.size()).isEqualTo(expectedAgeList.size());
     for (int i = 0; i < realRecordList.size(); i++)
@@ -273,20 +254,14 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_getRecordList_sortAgeDescend() {
-    this.resetTablesAll();
-    List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
+    this.resetClientTablesAll();
 
-    List<Integer> expectedAgeList = new ArrayList<>();
-    for (int i = 0; i < 10; i++) {
-      int age = RND.plusInt(50) + 10;
-      expectedAgeList.add(age);
-      this.insertClient("", "", "", Gender.EMPTY.name(), LocalDate.now().minusYears(age), charmHelperList.get(0).id);
-    }
-    expectedAgeList.sort((o1, o2) -> Integer.compare(o2, o1));
+    ClientRecordListHelper clientRecordListHelper = getRecordList_sortAgeDescend();
+    List<Integer> expectedAgeList = clientRecordListHelper.clientRecordList.stream()
+      .map(clientRecord -> clientRecord.age).collect(Collectors.toList());
 
-    ClientRecordRequest clientRecordRequest =
-      this.clientRecordRequestBuilder(0, expectedAgeList.size() + 10, ColumnSortType.AGE, false, "");
-    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordRequest);
+    List<ClientRecord> realRecordList =
+      clientRegister.get().getRecordList(clientRecordListHelper.clientRecordRequest);
 
     assertThat(realRecordList.size()).isEqualTo(expectedAgeList.size());
     for (int i = 0; i < realRecordList.size(); i++)
@@ -295,267 +270,155 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_getRecordList_sortTotalAccountBalanceAscend() {
-    this.resetTablesAll();
-    List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
+    this.resetClientTablesAll();
 
-    List<Float> expectedTotalMoneyList = new ArrayList<>();
-    long id;
-    for (int i = 0; i < 10; i++) {
-      id = this.insertClient(charmHelperList);
-      float totalMoney = 0;
-      for (int j = 0; j < RND.plusInt(4) + 1; j++) {
-        float money = RND.plusInt(100000) - 50000 + RND.rnd.nextFloat();
-        totalMoney += money;
-        this.insertClientAccount(id, money, "", new Timestamp(0));
-      }
-      expectedTotalMoneyList.add(totalMoney);
-    }
-    expectedTotalMoneyList.sort((o1, o2) -> Float.compare(o1, o2));
+    ClientRecordListHelper clientRecordListHelper = getRecordList_sortTotalAccountBalanceAscend();
+    List<String> expectedTotalMoneyList = clientRecordListHelper.clientRecordList.stream()
+      .map(clientRecord -> clientRecord.totalAccountBalance).collect(Collectors.toList());
 
-    ClientRecordRequest clientRecordRequest =
-      this.clientRecordRequestBuilder(0, expectedTotalMoneyList.size() + 10,
-        ColumnSortType.TOTALACCOUNTBALANCE, true, "");
-    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordRequest);
+    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordListHelper.clientRecordRequest);
 
     assertThat(realRecordList.size()).isEqualTo(expectedTotalMoneyList.size());
     for (int i = 0; i < realRecordList.size(); i++)
-      assertThat(Util.stringToFloat(realRecordList.get(i).totalAccountBalance))
-        .isEqualTo(expectedTotalMoneyList.get(i));
+      assertThat(realRecordList.get(i).totalAccountBalance).isEqualTo(expectedTotalMoneyList.get(i));
   }
 
   @Test
   public void method_getRecordList_sortTotalAccountBalanceDescend() {
-    this.resetTablesAll();
-    List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
+    this.resetClientTablesAll();
 
-    List<Float> expectedTotalMoneyList = new ArrayList<>();
-    for (int i = 0; i < 20; i++) {
-      long id = this.insertClient(charmHelperList);
-      float totalMoney = 0;
-      for (int j = 0; j < RND.plusInt(4) + 1; j++) {
-        float money = RND.plusInt(200000) - 100000 + RND.rnd.nextFloat();
-        totalMoney += money;
-        this.insertClientAccount(id, money, "", new Timestamp(0));
-      }
-      expectedTotalMoneyList.add(totalMoney);
-    }
-    expectedTotalMoneyList.sort((o1, o2) -> Float.compare(o2, o1));
+    ClientRecordListHelper clientRecordListHelper = getRecordList_sortTotalAccountBalanceDescend();
+    List<String> expectedTotalMoneyList = clientRecordListHelper.clientRecordList.stream()
+      .map(clientRecord -> clientRecord.totalAccountBalance).collect(Collectors.toList());
 
-    ClientRecordRequest clientRecordRequest = this.clientRecordRequestBuilder(0,
-      expectedTotalMoneyList.size() + 10, ColumnSortType.TOTALACCOUNTBALANCE, false, "");
-    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordRequest);
+    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordListHelper.clientRecordRequest);
 
     assertThat(realRecordList.size()).isEqualTo(expectedTotalMoneyList.size());
     for (int i = 0; i < realRecordList.size(); i++)
-      assertThat(Util.stringToFloat(realRecordList.get(i).totalAccountBalance))
-        .isEqualTo(expectedTotalMoneyList.get(i));
+      assertThat(realRecordList.get(i).totalAccountBalance).isEqualTo(expectedTotalMoneyList.get(i));
   }
 
   @Test
   public void method_getRecordList_sortMaxAccountBalanceAscend() {
-    this.resetTablesAll();
-    List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
+    this.resetClientTablesAll();
 
-    List<Float> expectedMaxMoneyList = new ArrayList<>();
-    for (int i = 0; i < 10; i++) {
-      long id = this.insertClient(charmHelperList);
-      List<Float> moneyList = new ArrayList<>();
-      for (int j = 0; j < RND.plusInt(5) + 1; j++) {
-        float money = RND.plusInt(100000) - 50000 + RND.rnd.nextFloat();
-        moneyList.add(money);
-        this.insertClientAccount(id, money, "", new Timestamp(0));
-      }
-      expectedMaxMoneyList.add((float) moneyList.stream().mapToDouble(m -> m).max().getAsDouble());
-    }
-    expectedMaxMoneyList.sort((o1, o2) -> Float.compare(o1, o2));
+    ClientRecordListHelper clientRecordListHelper = getRecordList_sortMaxAccountBalanceAscend();
+    List<String> expectedMaxMoneyList = clientRecordListHelper.clientRecordList.stream()
+      .map(clientRecord -> clientRecord.maxAccountBalance).collect(Collectors.toList());
 
-    ClientRecordRequest clientRecordRequest = this.clientRecordRequestBuilder(0,
-      expectedMaxMoneyList.size() + 10, ColumnSortType.MAXACCOUNTBALANCE, true, "");
-    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordRequest);
+    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordListHelper.clientRecordRequest);
 
     assertThat(realRecordList.size()).isEqualTo(expectedMaxMoneyList.size());
     for (int i = 0; i < realRecordList.size(); i++)
-      assertThat(Util.stringToFloat(realRecordList.get(i).maxAccountBalance))
-        .isEqualTo(expectedMaxMoneyList.get(i));
+      assertThat(realRecordList.get(i).maxAccountBalance).isEqualTo(expectedMaxMoneyList.get(i));
   }
 
   @Test
   public void method_getRecordList_sortMaxAccountBalanceDescend() {
-    this.resetTablesAll();
-    List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
+    this.resetClientTablesAll();
 
-    List<Float> expectedMaxMoneyList = new ArrayList<>();
-    for (int i = 0; i < 20; i++) {
-      long id = this.insertClient(charmHelperList);
-      List<Float> moneyList = new ArrayList<>();
-      for (int j = 0; j < RND.plusInt(4) + 1; j++) {
-        float money = RND.plusInt(200000) - 100000 + RND.rnd.nextFloat();
-        moneyList.add(money);
-        this.insertClientAccount(id, money, "", new Timestamp(0));
-      }
-      expectedMaxMoneyList.add((float) moneyList.stream().mapToDouble(m -> m).max().getAsDouble());
-    }
-    expectedMaxMoneyList.sort((o1, o2) -> Float.compare(o2, o1));
+    ClientRecordListHelper clientRecordListHelper = getRecordList_sortMaxAccountBalanceDescend();
+    List<String> expectedMaxMoneyList = clientRecordListHelper.clientRecordList.stream()
+      .map(clientRecord -> clientRecord.maxAccountBalance).collect(Collectors.toList());
 
-    ClientRecordRequest clientRecordRequest = this.clientRecordRequestBuilder(0,
-      expectedMaxMoneyList.size() + 10, ColumnSortType.MAXACCOUNTBALANCE, false, "");
-    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordRequest);
+    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordListHelper.clientRecordRequest);
 
     assertThat(realRecordList.size()).isEqualTo(expectedMaxMoneyList.size());
     for (int i = 0; i < realRecordList.size(); i++)
-      assertThat(Util.stringToFloat(realRecordList.get(i).maxAccountBalance))
-        .isEqualTo(expectedMaxMoneyList.get(i));
+      assertThat(realRecordList.get(i).maxAccountBalance).isEqualTo(expectedMaxMoneyList.get(i));
   }
 
+  //here
   @Test
   public void method_getRecordList_sortMinAccountBalanceAscend() {
-    this.resetTablesAll();
-    List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
+    this.resetClientTablesAll();
 
-    List<Float> expectedMinMoneyList = new ArrayList<>();
-    for (int i = 0; i < 10; i++) {
-      long id = this.insertClient(charmHelperList);
-      List<Float> moneyList = new ArrayList<>();
-      for (int j = 0; j < RND.plusInt(6) + 1; j++) {
-        float money = RND.plusInt(100000) - 50000 + RND.rnd.nextFloat();
-        moneyList.add(money);
-        this.insertClientAccount(id, money, "", new Timestamp(0));
-      }
-      expectedMinMoneyList.add((float) moneyList.stream().mapToDouble(m -> m).min().getAsDouble());
-    }
-    expectedMinMoneyList.sort((o1, o2) -> Float.compare(o1, o2));
+    ClientRecordListHelper clientRecordListHelper = getRecordList_sortMinAccountBalanceAscend();
+    List<String> expectedMinMoneyList = clientRecordListHelper.clientRecordList.stream()
+      .map(clientRecord -> clientRecord.minAccountBalance).collect(Collectors.toList());
 
-    ClientRecordRequest clientRecordRequest = this.clientRecordRequestBuilder(0,
-      expectedMinMoneyList.size() + 10, ColumnSortType.MINACCOUNTBALANCE, true, "");
-    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordRequest);
+    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordListHelper.clientRecordRequest);
 
-    assertThat(realRecordList.size()).isEqualTo(expectedMinMoneyList.size());
+    assertThat(realRecordList.size()).isEqualTo(clientRecordListHelper.clientRecordList.size());
     for (int i = 0; i < realRecordList.size(); i++)
-      assertThat(Util.stringToFloat(realRecordList.get(i).minAccountBalance))
-        .isEqualTo(expectedMinMoneyList.get(i));
+      assertThat(realRecordList.get(i).minAccountBalance).isEqualTo(expectedMinMoneyList.get(i));
   }
 
   @Test
   public void method_getRecordList_sortMinAccountBalanceDescend() {
-    this.resetTablesAll();
-    List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
+    this.resetClientTablesAll();
 
-    List<Float> expectedMinMoneyList = new ArrayList<>();
-    for (int i = 0; i < 20; i++) {
-      long id = this.insertClient(charmHelperList);
-      List<Float> moneyList = new ArrayList<>();
-      for (int j = 0; j < RND.plusInt(3) + 1; j++) {
-        float money = RND.plusInt(200000) - 100000 + RND.rnd.nextFloat();
-        moneyList.add(money);
-        this.insertClientAccount(id, money, "", new Timestamp(0));
-      }
-      expectedMinMoneyList.add((float) moneyList.stream().mapToDouble(m -> m).min().getAsDouble());
-    }
-    expectedMinMoneyList.sort((o1, o2) -> Float.compare(o2, o1));
+    ClientRecordListHelper clientRecordListHelper = getRecordList_sortMinAccountBalanceDescend();
+    List<String> expectedMinMoneyList = clientRecordListHelper.clientRecordList.stream()
+      .map(clientRecord -> clientRecord.minAccountBalance).collect(Collectors.toList());
 
-    ClientRecordRequest clientRecordRequest = this.clientRecordRequestBuilder(0,
-      expectedMinMoneyList.size() + 10, ColumnSortType.MINACCOUNTBALANCE, false, "");
-    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordRequest);
+    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordListHelper.clientRecordRequest);
 
-    assertThat(realRecordList.size()).isEqualTo(expectedMinMoneyList.size());
+    assertThat(realRecordList.size()).isEqualTo(clientRecordListHelper.clientRecordList.size());
     for (int i = 0; i < realRecordList.size(); i++)
-      assertThat(Util.stringToFloat(realRecordList.get(i).minAccountBalance))
-        .isEqualTo(expectedMinMoneyList.get(i));
+      assertThat(realRecordList.get(i).minAccountBalance).isEqualTo(expectedMinMoneyList.get(i));
   }
 
   @Test
   public void method_getRecordList_filter() {
-    this.resetTablesAll();
-    List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
+    this.resetClientTablesAll();
 
-    String dummyName = "null";
-    Set<Long> expectedIdSet = new HashSet<>();
-    for (int i = 0; i < 3; i++)
-      this.insertClient(dummyName, charmHelperList);
-    expectedIdSet.add(this.insertClient("Далана", "квала", "Смук", Gender.EMPTY.name(), LocalDate.now(),
-      charmHelperList.get(0).id));
-    for (int i = 0; i < 3; i++)
-      this.insertClient(dummyName, charmHelperList);
-    expectedIdSet.add(this.insertClient("русская", "буква", "Игоревич", Gender.EMPTY.name(), LocalDate.now(),
-      charmHelperList.get(0).id));
-    expectedIdSet.add(this.insertClient("Квентин", "джон", "Нурланович", Gender.EMPTY.name(), LocalDate.now(),
-      charmHelperList.get(0).id));
-    for (int i = 0; i < 3; i++)
-      this.insertClient(dummyName, charmHelperList);
+    ClientRecordSetHelper clientRecordSetHelper = getRecordList_filter();
+    Set<Long> expectedIdSet = clientRecordSetHelper.clientRecordSet.stream()
+      .map(clientRecord -> clientRecord.id).collect(Collectors.toSet());
+    Set<String> expectedFullnameSet = clientRecordSetHelper.clientRecordSet.stream()
+      .map(clientRecord -> clientRecord.fullName).collect(Collectors.toSet());
 
-    ClientRecordRequest clientRecordRequest =
-      this.clientRecordRequestBuilder(0, expectedIdSet.size(), ColumnSortType.NONE, false, "кв");
-    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordRequest);
+    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordSetHelper.clientRecordRequest);
 
-    assertThat(realRecordList.size()).isEqualTo(expectedIdSet.size());
+    assertThat(realRecordList.size()).isEqualTo(clientRecordSetHelper.clientRecordSet.size());
     for (ClientRecord clientRecord : realRecordList) {
       assertThat(clientRecord.id).isIn(expectedIdSet);
-      assertThat(clientRecord.fullName)
-        .isIn("Далана квала Смук", "русская буква Игоревич", "Квентин джон Нурланович");
+      assertThat(clientRecord.fullName).isIn(expectedFullnameSet);
     }
   }
 
   @Test
   public void method_getRecordList_filterOnEmptyName() {
-    this.resetTablesAll();
-    List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
+    this.resetClientTablesAll();
 
-    Set<Long> expectedIdSet = new HashSet<>();
-    expectedIdSet.add(this.insertClient("", "", "", Gender.EMPTY.name(), LocalDate.now(),
-      charmHelperList.get(0).id));
-    expectedIdSet.add(this.insertClient("asd", "", "dsa", Gender.EMPTY.name(), LocalDate.now(),
-      charmHelperList.get(0).id));
-    expectedIdSet.add(this.insertClient("NULL", "null", "", Gender.EMPTY.name(), LocalDate.now(),
-      charmHelperList.get(0).id));
+    ClientRecordSetHelper clientRecordSetHelper = getRecordList_filterOnEmptyName();
+    Set<Long> expectedIdSet = clientRecordSetHelper.clientRecordSet.stream()
+      .map(clientRecord -> clientRecord.id).collect(Collectors.toSet());
+    Set<String> expectedFullnameSet = clientRecordSetHelper.clientRecordSet.stream()
+      .map(clientRecord -> clientRecord.fullName).collect(Collectors.toSet());
 
-    ClientRecordRequest clientRecordRequest =
-      this.clientRecordRequestBuilder(0, expectedIdSet.size(), ColumnSortType.NONE, false, "");
-    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordRequest);
+    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordSetHelper.clientRecordRequest);
 
     assertThat(realRecordList.size()).isEqualTo(expectedIdSet.size());
     for (ClientRecord clientRecord : realRecordList) {
       assertThat(clientRecord.id).isIn(expectedIdSet);
-      assertThat(clientRecord.fullName)
-        .isIn("", "asd dsa", "NULL null");
+      assertThat(clientRecord.fullName).isIn(expectedFullnameSet);
     }
   }
 
   @Test
   public void method_getRecordList_filterWithIgnoredCase() {
-    this.resetTablesAll();
-    List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
+    this.resetClientTablesAll();
 
-    String dummyName = "null";
-    Set<Long> expectedIdSet = new HashSet<>();
-    for (int i = 0; i < 3; i++)
-      this.insertClient(dummyName, charmHelperList);
-    expectedIdSet.add(this.insertClient("игорев", "квала", "Смук", Gender.EMPTY.name(), LocalDate.now(),
-      charmHelperList.get(0).id));
-    for (int i = 0; i < 3; i++)
-      this.insertClient(dummyName, charmHelperList);
-    expectedIdSet.add(this.insertClient("русская", "Игорь", "Игоревич", Gender.EMPTY.name(), LocalDate.now(),
-      charmHelperList.get(0).id));
-    expectedIdSet.add(this.insertClient("Квентин", "джон", "Пигоревич", Gender.EMPTY.name(), LocalDate.now(),
-      charmHelperList.get(0).id));
-    for (int i = 0; i < 3; i++)
-      this.insertClient(dummyName, charmHelperList);
+    ClientRecordSetHelper clientRecordSetHelper = getRecordList_filterWithIgnoredCase();
+    Set<Long> expectedIdSet = clientRecordSetHelper.clientRecordSet.stream()
+      .map(clientRecord -> clientRecord.id).collect(Collectors.toSet());
+    Set<String> expectedFullnameSet = clientRecordSetHelper.clientRecordSet.stream()
+      .map(clientRecord -> clientRecord.fullName).collect(Collectors.toSet());
 
-    ClientRecordRequest clientRecordRequest =
-      this.clientRecordRequestBuilder(0, expectedIdSet.size() + 3, ColumnSortType.NONE, false, "иГоР");
-    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordRequest);
+    List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordSetHelper.clientRecordRequest);
 
     assertThat(realRecordList.size()).isEqualTo(expectedIdSet.size());
     for (ClientRecord clientRecord : realRecordList) {
       assertThat(clientRecord.id).isIn(expectedIdSet);
-      assertThat(clientRecord.fullName)
-        .isIn("игорев квала Смук", "русская Игорь Игоревич", "Квентин джон Пигоревич");
+      assertThat(clientRecord.fullName).isIn(expectedFullnameSet);
     }
   }
 
-
   @Test
   public void method_getRecordList_filterWithPagination_atBeginning() {
-    this.resetTablesAll();
+    this.resetClientTablesAll();
     List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
 
     String dummyName = "null";
@@ -589,7 +452,7 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_getRecordList_filterWithPagination_atMiddle() {
-    this.resetTablesAll();
+    this.resetClientTablesAll();
     List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
 
     String dummyName = "null";
@@ -624,7 +487,7 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_getRecordList_filterWithPagination_atEnd() {
-    this.resetTablesAll();
+    this.resetClientTablesAll();
     List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
 
     String dummyName = "null";
@@ -661,7 +524,7 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_getRecordList_filterWithPagination_onCut() {
-    this.resetTablesAll();
+    this.resetClientTablesAll();
     List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
 
     String dummyName = "null";
@@ -697,7 +560,7 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_getRecordList_filterWithPagination_atCountExceed() {
-    this.resetTablesAll();
+    this.resetClientTablesAll();
     List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
 
     String dummyName = "null";
@@ -724,16 +587,16 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_removeDetails_default_single() {
-    this.resetTablesAll();
+    this.resetClientTablesAll();
     List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
 
     Set<Long> expectedIdSet = new HashSet<>();
     Long removingId;
     for (int i = 0; i < 4; i++)
-      expectedIdSet.add(this.insertClient(charmHelperList));
-    removingId = this.insertClient(charmHelperList);
+      expectedIdSet.add(this.insertClient(charmHelperList).id);
+    removingId = this.insertClient(charmHelperList).id;
     for (int i = 0; i < 4; i++)
-      expectedIdSet.add(this.insertClient(charmHelperList));
+      expectedIdSet.add(this.insertClient(charmHelperList).id);
 
     assertThat(clientTestDao.get().selectCountTableClient()).isEqualTo(expectedIdSet.size() + 1);
     assertThat(clientTestDao.get().selectExistSingleTableClient(removingId)).isEqualTo(true);
@@ -746,19 +609,19 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_removeDetails_default_several() {
-    this.resetTablesAll();
+    this.resetClientTablesAll();
     List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
 
     Set<Long> expectedIdSet = new HashSet<>();
     List<Long> removingIdSet = new ArrayList<>();
-    removingIdSet.add(this.insertClient(charmHelperList));
+    removingIdSet.add(this.insertClient(charmHelperList).id);
     for (int i = 0; i < 4; i++)
-      expectedIdSet.add(this.insertClient(charmHelperList));
-    removingIdSet.add(this.insertClient(charmHelperList));
+      expectedIdSet.add(this.insertClient(charmHelperList).id);
+    removingIdSet.add(this.insertClient(charmHelperList).id);
     for (int i = 0; i < 4; i++)
-      expectedIdSet.add(this.insertClient(charmHelperList));
-    removingIdSet.add(this.insertClient(charmHelperList));
-    removingIdSet.add(this.insertClient(charmHelperList));
+      expectedIdSet.add(this.insertClient(charmHelperList).id);
+    removingIdSet.add(this.insertClient(charmHelperList).id);
+    removingIdSet.add(this.insertClient(charmHelperList).id);
 
     assertThat(clientTestDao.get().selectCountTableClient()).isEqualTo(expectedIdSet.size() + removingIdSet.size());
     for (Long removingId : removingIdSet)
@@ -774,7 +637,7 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_getDetails_addOperation() {
-    this.resetTablesAll();
+    this.resetClientTablesAll();
     List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
 
     int charmIdToSkip = charmHelperList.get(2).id;
@@ -809,7 +672,7 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_getDetails_editOperation() {
-    this.resetTablesAll();
+    this.resetClientTablesAll();
     List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
 
     clientTestDao.get().updateDisableSingleTableCharm(charmHelperList.get(3).id);
@@ -847,8 +710,6 @@ public class ClientRegisterImplTest extends ClientCommonTest {
     assertThat(realClientDetails.name).isEqualTo("Имя");
     assertThat(realClientDetails.patronymic).isEqualTo("Отчество");
     assertThat(realClientDetails.gender).isEqualTo(Gender.MALE);
-    //TODO: different time date
-    //TODO: finish manual testing of views (main methods) and may be some tests
     assertThat(realClientDetails.birthdate).isEqualTo(new SimpleDateFormat(Util.datePattern).format(expectedDate));
     assertThat(realClientDetails.charmId).isEqualTo(charmHelperList.get(1).id);
     assertThat(realCharmIdSet.size()).isEqualTo(expectedCharmIdSet.size());
@@ -875,7 +736,7 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_saveDetails_addOperation() {
-    this.resetTablesAll();
+    this.resetClientTablesAll();
     List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
 
     long expectedId;
@@ -885,7 +746,7 @@ public class ClientRegisterImplTest extends ClientCommonTest {
       this.insertClient(charmHelperList);
     for (int i = 0; i < 4; i++)
       this.insertClient(charmHelperList);
-    expectedId = this.insertClient(charmHelperList) + 1;
+    expectedId = this.insertClient(charmHelperList).id + 1;
 
     ClientDetailsToSave expectedClientDetailsToSave = new ClientDetailsToSave();
     expectedClientDetailsToSave.id = null;
@@ -928,7 +789,6 @@ public class ClientRegisterImplTest extends ClientCommonTest {
     assertThat(realClientDetails.name).isEqualTo("lastname");
     assertThat(realClientDetails.patronymic).isEqualTo("patronymic");
     assertThat(realClientDetails.gender).isEqualTo(Gender.FEMALE);
-    System.out.println(realClientDetails.birthdate);
     assertThat(realClientDetails.birthdate).isEqualTo(new SimpleDateFormat(Util.datePattern).format(expectedDate));
     assertThat(realClientDetails.charmId).isEqualTo(charmHelperList.get(3).id);
     assertThat(realClientDetails.registrationAddressInfo.type).isEqualTo(AddressType.REGISTRATION);
@@ -956,7 +816,7 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
   @Test
   public void method_saveDetails_editOperation() {
-    this.resetTablesAll();
+    this.resetClientTablesAll();
     List<CharmHelper> charmHelperList = this.declareAndInsertCharms();
 
     long expectedId;
@@ -1045,11 +905,6 @@ public class ClientRegisterImplTest extends ClientCommonTest {
       phone.number.equals("+72822590121") && phone.type == PhoneType.HOME)).isEqualTo(true);
   }
 
-  @Test
-  public void method_streamRecordList_manually() {
-
-  }
-
   @Test(expectedExceptions = InvalidParameter.class)
   public void method_getCount_requestNull() {
     clientRegister.get().getCount(null);
@@ -1120,13 +975,6 @@ public class ClientRegisterImplTest extends ClientCommonTest {
     clientRegister.get().saveDetails(null);
   }
 
-  private static class CharmHelper {
-    int id;
-    String name;
-    String description;
-    float energy;
-  }
-
   @Test(expectedExceptions = InvalidParameter.class)
   public void method_saveDetails_idExists() {
     ClientDetailsToSave clientDetailsToSave = new ClientDetailsToSave();
@@ -1139,105 +987,5 @@ public class ClientRegisterImplTest extends ClientCommonTest {
     clientDetailsToSave.charmId = 0;
 
     clientRegister.get().saveDetails(clientDetailsToSave);
-  }
-
-  private CharmHelper declareAndInsertCharm(String name, String description, float energy) {
-    int id = clientTestDao.get().selectSeqIdNextValueTableCharm();
-    clientTestDao.get().insertCharm(id, name, description, energy);
-
-    CharmHelper charmHelper = new CharmHelper();
-    charmHelper.id = id;
-    charmHelper.name = name;
-    charmHelper.description = description;
-    charmHelper.energy = energy;
-
-    return charmHelper;
-  }
-
-  private List<CharmHelper> declareAndInsertCharms() {
-    List<CharmHelper> charmHelperList = new ArrayList<>();
-
-    charmHelperList.add(this.declareAndInsertCharm("Не указан", "Неизвестно", 0f));
-    charmHelperList.add(this.declareAndInsertCharm("Спокойный", "Само спокойствие", 10f));
-    charmHelperList.add(this.declareAndInsertCharm("Буйный", "Лучше лишний раз не трогать", 30f));
-    charmHelperList.add(this.declareAndInsertCharm("Загадочный", "О чем он думает?", 8f));
-    charmHelperList.add(this.declareAndInsertCharm("Открытый", "С ним приятно общаться!", 20f));
-    charmHelperList.add(this.declareAndInsertCharm("Понимающий", "Он всегда выслушает", 15f));
-    charmHelperList.add(this.declareAndInsertCharm("Консервативный", "Скучно...", 5f));
-
-    return charmHelperList;
-  }
-
-  private void insertClientPhone(long client, String number, PhoneType type) {
-    clientTestDao.get().insertClientPhone(client, number, type.name());
-  }
-
-  private void insertClientAddress(long client, AddressType addressType, String street, String house, String flat) {
-    clientTestDao.get().insertClientAddr(client, addressType.name(), street, house, flat);
-  }
-
-  private long insertClientAccount(long clientId, float money, String code, Timestamp timestamp) {
-    long id = clientTestDao.get().selectSeqIdNextValueTableClientAccount();
-    clientTestDao.get().insertClientAccount(id, clientId, money, code, timestamp);
-    return id;
-  }
-
-  private long insertClient(List<CharmHelper> charmHelperList) {
-    long id = clientTestDao.get().selectSeqIdNextValueTableClient();
-    clientTestDao.get().insertClient(id, RND.str(RND.plusInt(5) + 5), RND.str(RND.plusInt(5) + 5),
-      RND.str(RND.plusInt(5) + 5), Gender.values()[RND.plusInt(Gender.values().length)].name(), Util.generateDate(),
-      charmHelperList.get(RND.plusInt(charmHelperList.size())).id);
-    return id;
-  }
-
-  private long insertClient(String dummyName, List<CharmHelper> charmHelperList) {
-    long id = clientTestDao.get().selectSeqIdNextValueTableClient();
-    clientTestDao.get().insertClient(id, dummyName, dummyName, dummyName,
-      Gender.values()[RND.plusInt(Gender.values().length)].name(), Util.generateDate(),
-      charmHelperList.get(RND.plusInt(charmHelperList.size())).id);
-    return id;
-  }
-
-  private long insertClient(String surname, String name, String patronymic, String gender, LocalDate date, int charmId) {
-    long id = clientTestDao.get().selectSeqIdNextValueTableClient();
-    clientTestDao.get().insertClient(id, surname, name, patronymic, gender, Date.valueOf(date), charmId);
-    return id;
-  }
-
-  private long insertClient(String surname, String name, String patronymic, String gender, Date date, int charmId) {
-    long id = clientTestDao.get().selectSeqIdNextValueTableClient();
-    clientTestDao.get().insertClient(id, surname, name, patronymic, gender, date, charmId);
-    return id;
-  }
-
-  private void updateClient(long id, String surname, String name, String patronymic, String gender, Date date, int charmId) {
-    clientTestDao.get().updateClient(id, surname, name, patronymic, gender, date, charmId);
-  }
-
-  private Phone phoneBuilder(String number, PhoneType type) {
-    Phone phone = new Phone();
-    phone.number = number;
-    phone.type = type;
-
-    return phone;
-  }
-
-  private ClientRecordRequest clientRecordRequestBuilder(long clientRecordCountToSkip, long clientRecordCount,
-                                                         ColumnSortType columnSortType, boolean sortAscend,
-                                                         String nameFilter) {
-    ClientRecordRequest clientRecordRequest = new ClientRecordRequest();
-    clientRecordRequest.clientRecordCountToSkip = clientRecordCountToSkip;
-    clientRecordRequest.clientRecordCount = clientRecordCount;
-    clientRecordRequest.columnSortType = columnSortType;
-    clientRecordRequest.sortAscend = sortAscend;
-    clientRecordRequest.nameFilter = nameFilter;
-
-    return clientRecordRequest;
-  }
-
-  private void resetTablesAll() {
-    clientTestDao.get().deleteAllTableClientPhone();
-    clientTestDao.get().deleteAllTableClient();
-    clientTestDao.get().deleteAllTableCharm();
   }
 }
