@@ -30,6 +30,8 @@ public class StandDb implements HasAfterInject {
     this.parsePersons();
     this.parseClients();
     this.generateClients();
+
+    curClientId.set(clientStorage.size());
   }
 
   private void parseCharms() throws Exception {
@@ -140,8 +142,6 @@ public class StandDb implements HasAfterInject {
             throw new RuntimeException("Unknown command " + command);
         }
       }
-
-      curClientId.set(lineNo);
     }
   }
 
@@ -159,7 +159,7 @@ public class StandDb implements HasAfterInject {
     c.registrationAddressInfo = this.generateAddressInfo(AddressType.REGISTRATION);
     c.phones = this.generatePhones();
 
-    ClientDot.generateAgeAndBalance(c);
+    ClientDot.generateBalance(c);
 
     clientStorage.put(c.id, c);
   }
@@ -178,7 +178,7 @@ public class StandDb implements HasAfterInject {
       c.registrationAddressInfo = this.generateAddressInfo(AddressType.REGISTRATION);
       c.phones = this.generatePhones();
 
-      ClientDot.generateAgeAndBalance(c);
+      ClientDot.generateBalance(c);
 
       clientStorage.put(c.id, c);
     }

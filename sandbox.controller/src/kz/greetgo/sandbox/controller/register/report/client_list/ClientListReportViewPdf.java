@@ -1,11 +1,6 @@
 package kz.greetgo.sandbox.controller.register.report.client_list;
 
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
+import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import kz.greetgo.sandbox.controller.model.ColumnSortType;
 import kz.greetgo.sandbox.controller.register.report.client_list.model.ReportFooterData;
@@ -18,6 +13,7 @@ import org.apache.commons.io.IOUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.concurrent.TimeUnit;
 
 import static kz.greetgo.sandbox.controller.register.report.client_list.font.FontFactory.FONT_NAME_ROBOTO;
@@ -92,7 +88,8 @@ public class ClientListReportViewPdf extends PdfPageEventHelper implements Clien
     table.setComplete(true);
     document.add(table);
     document.add(this.paragraphBuilder("Сформирован для пользователя: " + footerData.createdBy, defaultFont, 10f));
-    document.add(this.paragraphBuilder("Дата: " + footerData.createdAt, defaultFont, 10f));
+    document.add(this.paragraphBuilder("Дата: " +
+      new SimpleDateFormat(Util.reportDatePattern).format(footerData.createdAt), defaultFont, 10f));
     document.close();
 
   }
@@ -149,18 +146,14 @@ public class ClientListReportViewPdf extends PdfPageEventHelper implements Clien
       view.start(headerData);
 
       ReportItemData reportItemData = new ReportItemData();
-      for (int i = 0; i < 500_000; i++) {
+      for (int i = 0; i < 500; i++) {
         reportItemData.fullname = RND.str(RND.plusInt(30) + 10);
         reportItemData.age = RND.plusInt(100) + 18;
         reportItemData.charmName = RND.str(30) + 10;
-        reportItemData.totalAccountBalance = (float) RND.plusDouble(100000, 2) - 50000;
-        reportItemData.minAccountBalance = (float) RND.plusDouble(100000, 2) - 50000;
-        reportItemData.maxAccountBalance = (float) RND.plusDouble(100000, 2) - 50000;
+        reportItemData.totalAccountBalance = (float) RND.plusDouble(100000, Util.decimalNum) - 50000;
+        reportItemData.minAccountBalance = (float) RND.plusDouble(100000, Util.decimalNum) - 50000;
+        reportItemData.maxAccountBalance = (float) RND.plusDouble(100000, Util.decimalNum) - 50000;
         view.append(reportItemData);
-
-        if (i % 1000 == 0) {
-          System.out.println("i = " + i);
-        }
       }
 
       ReportFooterData reportFooterData = new ReportFooterData();

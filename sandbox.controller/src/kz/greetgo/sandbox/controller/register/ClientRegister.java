@@ -40,10 +40,10 @@ public interface ClientRegister {
   ClientDetails getDetails(Long id);
 
   /**
-   * Сохранение новых или изменение существующих клиентских деталей
+   * Возвращает клиентскую запись после сохранения или изменения клиентских деталей
    *
    * @param detailsToSave клиентские детали
+   * @return клиентская запись
    */
-  void saveDetails(ClientDetailsToSave detailsToSave);
-
+  ClientRecord save(ClientDetailsToSave detailsToSave);
 }

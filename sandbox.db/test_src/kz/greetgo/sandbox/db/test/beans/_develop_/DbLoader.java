@@ -39,7 +39,7 @@ public class DbLoader {
       .forEach(authTestDao.get()::insertPersonDot);
 
     standDb.get().charmStorage.values().forEach(charmDot -> {
-      clientTestDao.get().insertCharm(charmDot.id, charmDot.name, RND.str(10), (float) RND.plusDouble(100, 4));
+      clientTestDao.get().insertCharm(charmDot.id, charmDot.name, RND.str(10), (float) RND.plusDouble(100, Util.decimalNum));
       System.out.println(charmDot);
     });
 
@@ -60,7 +60,7 @@ public class DbLoader {
 
       for (int i = 0; i < RND.plusInt(5); i++) {
         clientTestDao.get().insertClientAccount(clientTestDao.get().selectSeqIdNextValueTableClientAccount(),
-          id, (float) (RND.plusDouble(500000, 6) - 1000000), RND.str(10), new Timestamp(Util.generateDate().getTime()));
+          id, (float) (RND.plusDouble(500000, Util.decimalNum) - 1000000), RND.str(10), new Timestamp(Util.generateDate().getTime()));
       }
     });
 

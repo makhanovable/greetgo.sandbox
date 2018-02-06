@@ -80,13 +80,13 @@ public class PageUtils {
     if (ascend) {
       clientDots.sort(new Comparator<ClientDot>() {
         public int compare(ClientDot o1, ClientDot o2) {
-          return o1.age - o2.age;
+          return Util.getAge(o1.birthDate) - Util.getAge(o2.birthDate);
         }
       });
     } else {
       clientDots.sort(new Comparator<ClientDot>() {
         public int compare(ClientDot o1, ClientDot o2) {
-          return o2.age - o1.age;
+          return Util.getAge(o2.birthDate) - Util.getAge(o1.birthDate);
         }
       });
     }

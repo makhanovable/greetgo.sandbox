@@ -96,19 +96,22 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public void saveDetails(ClientDetailsToSave detailsToSave) {
+  public ClientRecord save(ClientDetailsToSave detailsToSave) {
     Map<Long, ClientDot> clientDotMap = db.get().clientStorage;
     ClientDot clientDot;
-    long id = db.get().curClientId.getAndIncrement();
-    db.get().curClientId.set(id + 1);
 
     if (detailsToSave.id == null) {
+      long id = db.get().curClientId.getAndIncrement();
+      db.get().curClientId.set(id + 1);
+
       clientDot = new ClientDot();
-      clientDot.toClientDot(detailsToSave, id, db.get().charmStorage);
+      clientDot.toClientDot(detailsToSave, id, db.get().charmStorage, true);
       clientDotMap.put(id, clientDot);
     } else {
       clientDot = clientDotMap.get(detailsToSave.id);
-      clientDot.toClientDot(detailsToSave, null, db.get().charmStorage);
+      clientDot.toClientDot(detailsToSave, detailsToSave.id, db.get().charmStorage, false);
     }
+
+    return clientDot.toClientRecord();
   }
 }

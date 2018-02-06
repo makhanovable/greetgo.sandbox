@@ -175,7 +175,7 @@
         <button *ngFor="let pageNum of pageNums"
                 class="btn btn-default"
                 [ngClass]="{'active': pageNum == curPageNum + 1}"
-                (click)="onPageNumberButtonClick(pageNum-1)">
+                (click)="onPageNumberButtonClick(pageNum - 1)">
           {{pageNum}}
         </button>
       </div>

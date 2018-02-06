@@ -5,15 +5,21 @@ import kz.greetgo.util.RND;
 import java.security.SecureRandom;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.Locale;
 import java.util.Random;
 
 public class Util {
 
   public static final String floatFormat = "%.2f";
+  public static final int decimalNum = 2;
 
   public static String floatToString(float f) {
     return String.format(Locale.US, "%f", f);
+  }
+
+  public static String floatToString(float f, String format) {
+    return String.format(Locale.US, format, f);
   }
 
   public static float stringToFloat(String s) {
@@ -29,6 +35,23 @@ public class Util {
 
   public static Date generateDate() {
     return Date.valueOf(generateLocalDate());
+  }
+
+  public static int getAge(String stringBirthDate) {
+    return getAge(LocalDate.parse(stringBirthDate));
+  }
+
+  public static int getAge(Date birthDate) {
+    return getAge(birthDate.toLocalDate());
+  }
+
+  public static int getAge(LocalDate birthDate) {
+    LocalDate currentDate = LocalDate.now();
+
+    if (birthDate != null)
+      return Period.between(birthDate, currentDate).getYears();
+    else
+      return 0;
   }
 
   public static String getFullname(String surname, String name, String patronymic) {

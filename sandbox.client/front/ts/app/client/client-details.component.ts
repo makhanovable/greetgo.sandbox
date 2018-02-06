@@ -5,13 +5,14 @@ import {Gender} from "../../model/Gender";
 import {PhoneType} from "../../model/PhoneType";
 import {Phone} from "../../model/Phone";
 import {ClientDetailsToSave} from "../../model/ClientDetailsToSave";
+import {ClientRecord} from "../../model/ClientRecord";
 
 @Component({
   selector: 'client-details-component',
   template: require('./client-details-component.html'),
   styles: [require('./client-details-component.css')],
 })
-// Взято с https://embed.plnkr.co/7kqyiW97CI696Ixn020g/
+
 export class ClientDetailsComponent {
   @Output() onModalCloseOutput = new EventEmitter<any>();
 
@@ -62,10 +63,13 @@ export class ClientDetailsComponent {
     });
   }
 
-  hide() {
+  hide(clientRecord: ClientRecord, isAddOperation: boolean) {
     this.isAnimating = false;
     setTimeout(() => this.isVisible = false, 300);
-    setTimeout(() => this.onModalCloseOutput.emit(true), 300);
+    setTimeout(() => this.onModalCloseOutput.emit({
+      clientRecord: clientRecord,
+      isAddOperation: isAddOperation
+    }), 300);
   }
 
   onPhoneAppendButtonClick() {
@@ -85,9 +89,6 @@ export class ClientDetailsComponent {
 
     this.curPhoneList.push(Phone.copy(this.phoneToAdd));
     this.setDefaultPhone();
-
-    console.log(this.curPhoneList);
-    console.log(this.deletedPhoneList);
   }
 
   onPhoneRemoveButtonClick(phone: Phone, idx: number) {
@@ -95,9 +96,6 @@ export class ClientDetailsComponent {
       this.deletedPhoneList.push(phone);
 
     this.curPhoneList.splice(idx, 1);
-
-    console.log(this.curPhoneList);
-    console.log(this.deletedPhoneList);
   }
 
   //TODO: rawClientDetails скорее всего не нежно, т. к. используется ngModel связка с this.clientDetails
@@ -131,14 +129,18 @@ export class ClientDetailsComponent {
     this.httpService.post("/client/save", {
       "clientDetailsToSave": JSON.stringify(clientDetailsToSave)
     }).toPromise().then(result => {
-      this.hide();
+      if (clientDetailsToSave.id == null)
+        this.hide(result.json() as ClientRecord, true);
+      else
+        this.hide(result.json() as ClientRecord, false);
+
     }, error => {
       console.log(error);
     });
   }
 
   cancelClientRecordEdit() {
-    this.hide();
+    this.hide(null, false);
   }
 
   //TODO: если нужно будет закрывать форму при нажатии вне нее, то раскомментить
