@@ -1,8 +1,9 @@
 package kz.greetgo.sandbox.controller.model;
-import kz.greetgo.sandbox.controller.enums.GenderType;
 
-import java.util.Date;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 public class ClientInfo {
     public int id;
@@ -14,4 +15,5 @@ public class ClientInfo {
     public float totalAccountBalance;
     public float maximumBalance;
     public float minimumBalance;
+
 }

@@ -2,20 +2,27 @@
     display: flex;
     flex-direction: column;
     min-width: 300px;
-    padding: 50px;
+    padding: 25px;
 }
 
 .mat-table {
-    overflow: auto;
-    max-height: 500px;
+    /* overflow: auto; */
+    /* max-height: 500px; */
 }
 
 .mat-header-cell.mat-sort-header-sorted {
     color: black;
 }
 
-.control button{
-    width: 50px;
-    height: 50px;
-    font-size: 35px;
+.client-list {
+    display: flex;
+    flex-direction: row;
+    /* width: 50%; */
+
+}
+
+.control {
+    width: 40px;
+    display: flex;
+    flex-direction: column;
 }

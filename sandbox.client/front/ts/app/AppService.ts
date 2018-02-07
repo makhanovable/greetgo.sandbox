@@ -1,6 +1,6 @@
 import { ClientInfo } from './../model/ClientInfo';
 import { HttpService } from './HttpService';
-import { Charm } from './../model/Charm';
+
 import { Injectable } from '@angular/core';
 
 

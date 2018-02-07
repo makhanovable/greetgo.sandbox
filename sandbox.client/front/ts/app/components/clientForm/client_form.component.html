@@ -1,6 +1,6 @@
 <h1>hello i am client form component</h1>
 
-<div class="client-form-container">
+<div class="client-form-container" *ngIf="formData">
     <div class="client-form-row">
         <mat-form-field>
             <input matInput placeholder="Surname" [(ngModel)]="formData.name">
@@ -16,8 +16,8 @@
 
         <mat-form-field>
             <mat-select placeholder="Gender" [(ngModel)]="formData.gender">
-                <mat-option value=0>Male</mat-option>
-                <mat-option value=1>Famale</mat-option>
+                <mat-option value="MALE">Male</mat-option>
+                <mat-option value="FEMALE">Famale</mat-option>
             </mat-select>
         </mat-form-field>
 
@@ -35,63 +35,45 @@
         </mat-form-field>
     </div>
 
-    <span>Register address:</span>
-
-    <div class="client-form-row address">
-
-        <mat-form-field>
-            <input matInput placeholder="Street">
-        </mat-form-field>
-        <mat-form-field>
-            <input matInput placeholder="Home">
-        </mat-form-field>
-        <mat-form-field>
-            <input matInput placeholder="Flat">
-        </mat-form-field>
-    </div>
     <span>Actual address:</span>
+    
 
-    <div class="client-form-row address">
+    <div class="client-form-row obscured">
+
         <mat-form-field>
-            <input matInput placeholder="Street">
+            <input matInput placeholder="Street" [(ngModel)]="formData.actualAddress.street">
         </mat-form-field>
         <mat-form-field>
-            <input matInput placeholder="Home">
+            <input matInput placeholder="House" [(ngModel)]="formData.actualAddress.house">
         </mat-form-field>
         <mat-form-field>
-            <input matInput placeholder="Flat">
+            <input matInput placeholder="Flat" [(ngModel)]="formData.actualAddress.flat">
+        </mat-form-field>
+    </div>
+    
+
+    <span>Register address:</span>
+    
+    <div class="client-form-row obscured">
+        <mat-form-field>
+            <input matInput placeholder="Street" [(ngModel)]="formData.registerAddress.street">
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput placeholder="House" [(ngModel)]="formData.registerAddress.house">
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput placeholder="Flat" [(ngModel)]="formData.registerAddress.flat">
         </mat-form-field>
     </div>
 
-    <!-- <span>Telephones:</span> -->
-
-    <div class="telephones">
-
-        <span>Work phones:</span>
-        <div class="client-form-row">
-            <mat-form-field *ngFor="let phone of workPhones">
-                <input matInput placeholder="{{getPhoneLabel(phone.type)}}" [textMask]="{mask: phoneMask}" [(ngModel)]="phone.number">
-            </mat-form-field>
-            <button mat-button (click)="addNumber(workPhones[0].type)" >add number</button>
-
-        </div>
-        <span>Home phones:</span>
-        <div class="client-form-row">
-            <mat-form-field *ngFor="let phone of homePhones">
-                <input matInput placeholder="{{getPhoneLabel(phone.type)}}" [textMask]="{mask: phoneMask}" [(ngModel)]="phone.number">
-            </mat-form-field>
-            <button mat-button (click)="addNumber(homePhones[0].type)">add number</button>
-            
-        </div>
-        <span>Mobile phones:</span>
-        <div class="client-form-row">
-            <mat-form-field *ngFor="let phone of mobilePhones">
-                <input matInput placeholder="{{getPhoneLabel(phone.type)}}" [textMask]="{mask: phoneMask}" [(ngModel)]="phone.number">
-            </mat-form-field>
-            <button mat-button (click)="addNumber(mobilePhones[0].type)">add number</button>
-            
-        </div>
+    <span>Telephones:</span>
+    <div class="client-form-row obscured">
+        <mat-form-field *ngFor="let phone of formData.phoneNumbers">
+            <input matInput placeholder="{{getPhoneLabel(phone.type)}}" [textMask]="{mask: phoneMask}" [(ngModel)]="phone.number">
+        </mat-form-field>
+        <!-- <button mat-button (click)="addNumber(workPhones[0].type)">add number</button> -->
     </div>
+
 
 
 

@@ -14,7 +14,7 @@ import { HttpService } from "./HttpService";
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   MatButtonModule, MatPaginatorModule, MatCheckboxModule, MatDialogModule,
-  MatSortModule, MatFormFieldModule, MatInputModule, MatDatepickerModule, MatNativeDateModule, MatSelectModule
+  MatSortModule, MatFormFieldModule, MatInputModule, MatDatepickerModule, MatNativeDateModule, MatSelectModule, MatIconModule, MatToolbarModule, MatExpansionModule
 } from '@angular/material';
 import { MatTableModule } from '@angular/material/table';
 import { SelectionModel } from "@angular/cdk/collections";
@@ -22,7 +22,7 @@ import { TextMaskModule } from 'angular2-text-mask';
 
 @NgModule({
   imports: [
-    MatTableModule, MatPaginatorModule, TextMaskModule,
+    MatTableModule, MatPaginatorModule, TextMaskModule, MatIconModule, MatToolbarModule, MatExpansionModule,
     BrowserModule, HttpModule, JsonpModule, MatDatepickerModule, MatNativeDateModule,
     FormsModule, ReactiveFormsModule, BrowserAnimationsModule, MatSelectModule,
     MatButtonModule, MatCheckboxModule, MatDialogModule, MatSortModule, MatFormFieldModule, MatInputModule

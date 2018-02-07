@@ -1,6 +1,6 @@
 import { ClientPhone } from './ClientPhone';
 import { ClientAddress } from './ClientAddress';
-import { Charm } from './Charm';
+
 import { GenderType } from '../enums/GenderType';
 
 export class ClientInfo {
@@ -16,11 +16,11 @@ export class ClientInfo {
     public minimumBalance: number;
 
     //manually loading data.
-    public birthDate: Date = new Date();
-    public actualAddresses: ClientAddress;
-    public registerAddresses: ClientAddress;
+    public birthDate: Date;
+    public actualAddress: ClientAddress;
+    public registerAddress: ClientAddress;
 
-    public phoneNumbers: ClientPhone[] = [];
+    public phoneNumbers: ClientPhone[];
     public gender: GenderType;
 }
 

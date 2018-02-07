@@ -1,0 +1,9 @@
+.main-form{
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+}
+
+.main-form > * {
+    margin-top: 25px;
+}

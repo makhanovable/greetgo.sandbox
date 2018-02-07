@@ -1,91 +1,82 @@
-<div class="container">
-    <div class="row">
-        <div class="col-md-10">
-            <div class="row">
-                <div class="table">
+<div class="client-list">
+    <div class="table">
 
-                    <div class="table-container mat-elevation-z8">
-                        <div class="example-header">
-                            <mat-form-field>
-                                <input matInput placeholder="Filter" [(ngModel)]="filter">
-
-                            </mat-form-field>
-                            <mat-form-field>
-                                <mat-select placeholder="Order by" [(value)]="selectedOrder" >
-                                    <mat-option *ngFor="let item of orderByColumns; let i = index" [value]="i">
-                                        {{ item }}
-                                    </mat-option>
-                                </mat-select>
-                            </mat-form-field>
-                            <button mat-button (click)="applyFilter()" >search</button>
-
-                        </div>
-
-                        <mat-table #table [dataSource]="dataSource" matSort>
-
-                            <ng-container matColumnDef="select">
-                                <mat-header-cell *matHeaderCellDef>
-                                    <mat-checkbox (change)="$event ? masterToggle() : null" [checked]="selection.hasValue() && isAllSelected()" [indeterminate]="selection.hasValue() && !isAllSelected()">
-                                    </mat-checkbox>
-                                </mat-header-cell>
-                                <mat-cell *matCellDef="let row">
-                                    <mat-checkbox (click)="$event.stopPropagation()" (change)="$event ? selection.toggle(row) : null" [checked]="selection.isSelected(row)">
-                                    </mat-checkbox>
-                                </mat-cell>
-                            </ng-container>
-
-                            <ng-container matColumnDef="fio">
-                                <mat-header-cell *matHeaderCellDef> Full name </mat-header-cell>
-                                <mat-cell *matCellDef="let element"> {{[element.surname, element.name, element.patronymic].join(' ') }} </mat-cell>
-                            </ng-container>
-                            <ng-container matColumnDef="charm">
-                                <mat-header-cell *matHeaderCellDef> Charm </mat-header-cell>
-                                <mat-cell *matCellDef="let element"> {{charmsMap[element.charmId].name}} </mat-cell>
-                            </ng-container>
-                            <ng-container matColumnDef="age">
-                                <mat-header-cell *matHeaderCellDef mat-sort-header> Age </mat-header-cell>
-                                <mat-cell *matCellDef="let element"> {{element.age }} </mat-cell>
-                            </ng-container>
-                            <ng-container matColumnDef="totalAccountBalance">
-                                <mat-header-cell *matHeaderCellDef mat-sort-header> Balance </mat-header-cell>
-                                <mat-cell *matCellDef="let element"> {{element.totalAccountBalance}} </mat-cell>
-                            </ng-container>
-                            <ng-container matColumnDef="maximumBalance">
-                                <mat-header-cell *matHeaderCellDef mat-sort-header> MaxBalance </mat-header-cell>
-                                <mat-cell *matCellDef="let element"> {{element.maximumBalance}} </mat-cell>
-                            </ng-container>
-
-                            <ng-container matColumnDef="minimumBalance">
-                                <mat-header-cell *matHeaderCellDef mat-sort-header> MinBalance </mat-header-cell>
-                                <mat-cell *matCellDef="let element"> {{element.minimumBalance}} </mat-cell>
-                            </ng-container>
-
-
-                            <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-                            <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-                        </mat-table>
-
-                        <mat-paginator #paginator [pageSize]="10">
-                            <!-- [pageSizeOptions]="[5, 10, 20]" -->
-                        </mat-paginator>
-                    </div>
-                </div>
+        <div class="table-container mat-elevation-z8">
+            <div class="example-header">
+                <mat-form-field>
+                    <input matInput placeholder="Filter" [(ngModel)]="filter">
+                </mat-form-field>
+                <button mat-button (click)="applyFilter(true)">search</button>
             </div>
-        </div>
-        <div class="col-md-2">
-            <div class="control">
 
-                <div class="row">
-                    <button mat-raised-button (click)="add()">+</button>
-                </div>
-                <div class="row">
-                    <button mat-raised-button [disabled]="selection.isEmpty()" (click)="removeSelectedItems()" color="warn">-</button>
-                </div>
-                <div class="row">
-                    <button mat-raised-button [disabled]="!(selection.selected.length == 1)" (click)="editSelectedItem()" color="primary"> ...</button>
-                </div>
+            <mat-table #table [dataSource]="dataSource" matSort>
 
-            </div>
+                <ng-container matColumnDef="select">
+                    <mat-header-cell *matHeaderCellDef>
+                        <mat-checkbox (change)="$event ? masterToggle() : null" [checked]="selection.hasValue() && isAllSelected()" [indeterminate]="selection.hasValue() && !isAllSelected()">
+                        </mat-checkbox>
+                    </mat-header-cell>
+                    <mat-cell *matCellDef="let row">
+                        <mat-checkbox (click)="$event.stopPropagation()" (change)="$event ? selection.toggle(row) : null" [checked]="selection.isSelected(row)">
+                        </mat-checkbox>
+                    </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="fio">
+                    <mat-header-cell *matHeaderCellDef> Full name </mat-header-cell>
+                    <mat-cell *matCellDef="let element"> {{[element.surname, element.name, element.patronymic].join(' ') }} </mat-cell>
+                </ng-container>
+                <ng-container matColumnDef="charm">
+                    <mat-header-cell *matHeaderCellDef> Charm </mat-header-cell>
+                    <mat-cell *matCellDef="let element"> {{charmsMap[element.charmId].name}} </mat-cell>
+                </ng-container>
+                <ng-container matColumnDef="age">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> Age </mat-header-cell>
+                    <mat-cell *matCellDef="let element"> {{element.age }} </mat-cell>
+                </ng-container>
+                <ng-container matColumnDef="totalAccountBalance">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> Balance </mat-header-cell>
+                    <mat-cell *matCellDef="let element"> {{element.totalAccountBalance}} </mat-cell>
+                </ng-container>
+                <ng-container matColumnDef="maximumBalance">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> MaxBalance </mat-header-cell>
+                    <mat-cell *matCellDef="let element"> {{element.maximumBalance}} </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="minimumBalance">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> MinBalance </mat-header-cell>
+                    <mat-cell *matCellDef="let element"> {{element.minimumBalance}} </mat-cell>
+                </ng-container>
+
+
+                <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+            </mat-table>
+
+            <mat-paginator #paginator [pageSize]="10" [pageSizeOptions]="[1, 5, 10, 20]">
+
+            </mat-paginator>
+
         </div>
+    </div>
+
+
+    <div class="control">
+
+
+        <button mat-icon-button (click)="add()">
+            <mat-icon>add</mat-icon>
+        </button>
+
+
+        <button mat-icon-button [disabled]="!(selection.selected.length == 1)" (click)="editSelectedItem()">
+            <mat-icon>edit</mat-icon>
+        </button>
+
+        <button mat-icon-button [disabled]="selection.isEmpty()" (click)="removeSelectedItems()" color="warn">
+            <mat-icon>delete</mat-icon>
+        </button>
+
+
     </div>
 </div>

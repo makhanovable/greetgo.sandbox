@@ -16,6 +16,7 @@
     width: 33%;
 }
 
-.address{
-    padding: 10px; background-color: #f2f4f7
+.obscured{
+    padding: 20px; 
+    background-color: #f2f4f7
 }

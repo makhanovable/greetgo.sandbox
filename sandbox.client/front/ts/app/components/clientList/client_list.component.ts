@@ -1,11 +1,14 @@
+import { ClientFilter } from './../../../model/ClientFilter';
+import { CharmInfo } from './../../../model/CharmInfo';
 import { HttpService } from './../../HttpService';
-import { Charm } from './../../../model/Charm';
+
 import { ClientInfo } from './../../../model/ClientInfo';
 
 import { Component, ViewChild, OnInit } from '@angular/core';
-import { MatTableDataSource, MatDialog, MatSort } from '@angular/material';
+import { MatTableDataSource, MatDialog, MatSort, MatPaginator } from '@angular/material';
 import { SelectionModel } from '@angular/cdk/collections';
 import { ClientFormComponent } from '../clientForm/client_form.component';
+import { take } from 'rxjs/operators/take';
 
 
 @Component({
@@ -19,90 +22,99 @@ export class ClientListComponent implements OnInit {
     dataSource: MatTableDataSource<ClientInfo>;
 
     charmsMap: any[] = [];
-    charmsArray: Charm[];
+    charmsArray: CharmInfo[];
 
     tableElemets: ClientInfo[];
     selection = new SelectionModel<ClientInfo>(true, []);
 
     filter: string = ''
-    orderByColumns: string[] = ['Age', 'Total account balance', 'Maximum balance', 'Minimum balance'];
-    selectedOrder = 0;
-    curPage: number = 0;
-    rowsPerPage: number = 10;
+    selectedOrder = 'fio';
+    desc:number = 0;
 
     @ViewChild(MatSort) sort: MatSort;
+    @ViewChild(MatPaginator) paginator: MatPaginator;
 
     constructor(public dialog: MatDialog, private httpService: HttpService) {
 
     }
 
     ngOnInit() {
-        this.loadTableData(undefined, this.curPage, this.rowsPerPage);
+        this.paginator.pageSize = 10;
         this.loadChamrs();
+        this.paginator.page.subscribe(change => {
+            this.applyFilter(false);
+        })
+        this.applyFilter(true);
+
+        this.sort.sortChange.subscribe(data=>{
+            this.desc = data['direction'] === 'desc' ? 1 : 0;
+            this.selectedOrder = data['direction'] === '' ? "" : data['active'] 
+            this.applyFilter(false);            
+        }, error =>{
+            console.log(error);
+        })
     }
+
 
     loadChamrs() {
-        this.charmsArray = [{ id: "0", name: "ленивый" }, { id: "3", name: "пунктуальный" }] as Charm[];
-        this.charmsArray.forEach(element => {
-            this.charmsMap[element.id] = element;
-        });
+        this.httpService.get("/charm/list").toPromise().then(res => {
+            this.charmsArray = JSON.parse(res.text()) as CharmInfo[];
+            this.charmsArray.forEach(element => {
+                this.charmsMap[element.id] = element;
 
+            });
+        }).catch(error => {
+            console.log(error);
+        })
     }
 
-    loadTableData(filter: string, pageNumber: number, rowsPerPage: number) {
+    loadTableData(filter: ClientFilter) {
 
-        this.httpService.get("/client/get", {
+        this.httpService.get("/client/list", {
+            limit: filter.limit,
+            page: filter.pageIndex,
+            filter: filter.filter,
+            orderBy: filter.orderBy,
+            desc: filter.desc,
 
         }).toPromise().then(res => {
             this.tableElemets = JSON.parse(res.text()) as ClientInfo[];
-            
             this.initMatTable();
-            console.log(res);
-            console.log(this.tableElemets);
         }).catch(error => {
             console.log(error);
-        
         })
-
-        // this.tableElemets = [
-        //     {
-        //         id: 1, age: 17, patronymic: ".",
-        //         name: "Harry", surname: "Potter", charmId:"0",
-        //         totalAccountBalance: 1, maximumBalance: 2, minimumBalance: 3
-        //     },
-        //     {
-        //         id: 2, age: 17, patronymic: "Minata",
-        //         name: "Naruto", surname: "Uzum", charmId:"0",
-        //         totalAccountBalance: 2, maximumBalance: 1, minimumBalance: 3
-        //     },
-        //     {
-        //         id: 3, age: 17, patronymic: "D.",
-        //         name: "Dinara", surname: "Amze", charmId:"0",
-        //         totalAccountBalance: 3, maximumBalance: 0, minimumBalance: 3
-        //     },
-        //     {
-        //         id: 4, age: 17, patronymic: "D.",
-        //         name: "Dauren", surname: "Amze", charmId:"0",
-        //         totalAccountBalance: 4, maximumBalance: -1, minimumBalance: 3
-        //     },
-
-        // ] as ClientInfo[];
-
-        // this.initMatTable();
     }
 
     initMatTable() {
         this.selection.clear();
-        this.dataSource = new MatTableDataSource<ClientInfo>(this.tableElemets);
-        this.dataSource.sort = this.sort
+        this.dataSource = new MatTableDataSource<ClientInfo>(this.tableElemets);        
     }
 
-    applyFilter() {
-        this.loadTableData(this.filter, this.curPage, this.rowsPerPage);
+    applyFilter(getAmount: boolean) {
+
+        let clientFilter = new ClientFilter()
+        clientFilter.filter = this.filter;
+        clientFilter.desc = this.desc;
+        clientFilter.limit = this.paginator.pageSize;
+        clientFilter.pageIndex = this.paginator.pageIndex;
+        clientFilter.orderBy = this.selectedOrder.toLowerCase();
+
+        if (getAmount) {            
+            this.httpService.get("/client/amount", {
+                filter: clientFilter.filter,
+            }).toPromise().then(res => {
+                this.paginator.length = Number.parseInt(res.text());
+                //
+                this.loadTableData(clientFilter);
+            }).catch(error => {
+                console.log(error);
+            })
+        } else {
+            this.loadTableData(clientFilter);
+        }
     }
 
-    add() {
-        console.log('add button clicked')
+    add() {        
         this.openClientModalForm(undefined);
     }
 
@@ -111,10 +123,22 @@ export class ClientListComponent implements OnInit {
     }
 
     removeSelectedItems() {
-        // TODO send removed items to server
-        var diff = this.ClientInfoArrayDiff(this.tableElemets, this.selection.selected);
-        this.tableElemets = diff;
-        this.updateMatTable()
+        var answer = confirm('are you sure? ' + this.selection.selected.length + ' client will be removed');
+        if(answer) {
+            let ids = [];
+            this.selection.selected.forEach(element => {
+               ids.push(element.id) 
+            });
+    
+            this.httpService.get("/client/remove", {
+                ids: ids
+            }).toPromise().then(res => {                
+                this.applyFilter(true);
+            }).catch(error => {
+                console.log(error)
+            }) 
+        }
+                
     }
 
     updateMatTable() {
@@ -148,44 +172,19 @@ export class ClientListComponent implements OnInit {
         });
 
         dialogRef.afterClosed().subscribe(result => {
-            let tmp: ClientInfo = result as ClientInfo;
-            console.log('The dialog was closed');
-            console.log(result);
-
-            if (result) {
-                for (let i = 0; i < this.tableElemets.length; i++) {
-                    if (this.tableElemets[i].id == tmp.id) {
-                        this.tableElemets[i] = tmp;
-                        this.updateMatTable();
-                        return;
-                    }
-                }
-                this.tableElemets.push(tmp);
-                this.updateMatTable();
-            }
+            this.applyFilter(true);
         });
     }
 
     ping() {
-        console.log('pong')
+        this.httpService.get("/client/ping").toPromise().then(res => {
+            console.log(res)
+        }).catch(error => {
+            console.log(error)
+        })
     }
 
-    //set a- set b
-    ClientInfoArrayDiff(a: ClientInfo[], b: ClientInfo[]): ClientInfo[] {
-
-        var tmp = [];
-        var diff: ClientInfo[] = [];
-
-        b.forEach(element => {
-            tmp[element.id] = true;
-        });
-
-        for (let i = 0; i < a.length; i++)
-            if (!tmp[a[i].id])
-                diff.push(a[i])
-
-        return diff;
-    }
+    
 
     // calculateAge(birthday) {
     //     var ageDifMs = Date.now() - birthday.getTime();

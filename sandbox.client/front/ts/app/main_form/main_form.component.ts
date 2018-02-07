@@ -29,6 +29,7 @@ export class MainFormComponent implements OnInit {
   constructor(private httpService: HttpService) { }
 
   loadUserInfoButtonClicked() {
+
     this.loadUserInfoButtonEnabled = false;
     this.loadUserInfoError = null;
 

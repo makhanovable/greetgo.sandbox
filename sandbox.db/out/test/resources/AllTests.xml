@@ -1,0 +1,17 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="All Db Test Suite" parallel="false" verbose="1">
+  <listeners>
+    <listener class-name="kz.greetgo.sandbox.db.test.util.TestNgRecreateDbListener"/>
+  </listeners>
+
+  <test name="All DB Tests">
+    <groups>
+      <run>
+        <exclude name="left"/>
+      </run>
+    </groups>
+    <packages>
+      <package name="kz.greetgo.sandbox.*"/>
+    </packages>
+  </test>
+</suite>
