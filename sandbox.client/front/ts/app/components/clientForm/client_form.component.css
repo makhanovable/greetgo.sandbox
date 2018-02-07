@@ -1,0 +1,22 @@
+.client-form-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.client-form-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+
+}
+
+.client-form-row mat-form-field {
+    padding: 10px;
+    width: 33%;
+}
+
+.obscured{
+    padding: 20px; 
+    background-color: #f2f4f7
+}

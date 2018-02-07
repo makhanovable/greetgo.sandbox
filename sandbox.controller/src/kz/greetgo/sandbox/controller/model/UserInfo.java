@@ -1,7 +1,5 @@
 package kz.greetgo.sandbox.controller.model;
 
-
-
 public class UserInfo {
   public String id;
   public String accountName;

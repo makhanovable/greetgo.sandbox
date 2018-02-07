@@ -1,0 +1,88 @@
+<h1>hello i am client form component</h1>
+
+<div class="client-form-container" *ngIf="formData">
+    <div class="client-form-row">
+        <mat-form-field>
+            <input matInput placeholder="Surname" [(ngModel)]="formData.name">
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput placeholder="Firstname" [(ngModel)]="formData.surname">
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput placeholder="Patronymic" [(ngModel)]="formData.patronymic">
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-select placeholder="Gender" [(ngModel)]="formData.gender">
+                <mat-option value="MALE">Male</mat-option>
+                <mat-option value="FEMALE">Famale</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-select placeholder="Charm" [(value)]="formData.charmId">
+                <mat-option *ngFor="let charm of charms" value="{{charm.id}}">{{charm.name}}</mat-option>
+
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput [matDatepicker]="picker" placeholder="Birth day" [(ngModel)]="formData.birthDate">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+    </div>
+
+    <span>Actual address:</span>
+    
+
+    <div class="client-form-row obscured">
+
+        <mat-form-field>
+            <input matInput placeholder="Street" [(ngModel)]="formData.actualAddress.street">
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput placeholder="House" [(ngModel)]="formData.actualAddress.house">
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput placeholder="Flat" [(ngModel)]="formData.actualAddress.flat">
+        </mat-form-field>
+    </div>
+    
+
+    <span>Register address:</span>
+    
+    <div class="client-form-row obscured">
+        <mat-form-field>
+            <input matInput placeholder="Street" [(ngModel)]="formData.registerAddress.street">
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput placeholder="House" [(ngModel)]="formData.registerAddress.house">
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput placeholder="Flat" [(ngModel)]="formData.registerAddress.flat">
+        </mat-form-field>
+    </div>
+
+    <span>Telephones:</span>
+    <div class="client-form-row obscured">
+        <mat-form-field *ngFor="let phone of formData.phoneNumbers">
+            <input matInput placeholder="{{getPhoneLabel(phone.type)}}" [textMask]="{mask: phoneMask}" [(ngModel)]="phone.number">
+        </mat-form-field>
+        <!-- <button mat-button (click)="addNumber(workPhones[0].type)">add number</button> -->
+    </div>
+
+
+
+
+
+
+
+
+</div>
+
+
+<button mat-button (click)="exit()">cancel</button>
+<button mat-button (click)="save()">save</button>

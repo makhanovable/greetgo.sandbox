@@ -45,7 +45,7 @@ export class HttpService {
     return this.prefix() + urlSuffix;
   }
 
-  public get(urlSuffix: string, keyValue?: { [key: string]: string | number | null }): Observable<Response> {
+  public get(urlSuffix: string, keyValue?: { [key: string]: any[] | string | number | null }): Observable<Response> {
     let post: string = '';
 
     if (keyValue) {
@@ -55,6 +55,11 @@ export class HttpService {
       for (let key in keyValue) {
         let value = keyValue[key];
         if (value) {
+
+          if(Array.isArray(keyValue[key])) {
+            value = (keyValue[key] as any[]).join("|");
+          }
+
           data.append(key, value as string);
           appended = true;
         }
@@ -72,10 +77,11 @@ export class HttpService {
     return ob;
   }
 
-  public post(urlSuffix: string, keyValue: { [key: string]: string | number | boolean | null }): Observable<Response> {
+  public post(urlSuffix: string, keyValue: { [key: string]: string | number | boolean | null | any[] }): Observable<Response> {
     let data = new URLSearchParams();
     for (let key in keyValue) {
       let value = keyValue[key];
+      
       if (value) data.append(key, value as string);
     }
 
@@ -85,7 +91,9 @@ export class HttpService {
     return this.http.post(this.url(urlSuffix), data.toString(), ob.get());
   }
 
-  public delete(urlSuffix: string, keyValue?: { [key: string]: string | number | boolean | null }): Observable<Response> {
+  
+
+  public delete(urlSuffix: string, keyValue?: { [key: string]: | string | number | boolean | null }): Observable<Response> {
     let post: string = '';
 
     if (keyValue) {
