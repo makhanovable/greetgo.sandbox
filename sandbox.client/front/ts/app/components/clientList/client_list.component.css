@@ -1,28 +1,22 @@
 .table-container {
-    display: flex;
-    flex-direction: column;
-    min-width: 300px;
-    padding: 25px;
-}
-
-.mat-table {
-    /* overflow: auto; */
-    /* max-height: 500px; */
+  display: flex;
+  flex-direction: column;
+  min-width: 300px;
+  padding: 25px;
 }
 
 .mat-header-cell.mat-sort-header-sorted {
-    color: black;
+  color: black;
 }
 
 .client-list {
-    display: flex;
-    flex-direction: row;
-    /* width: 50%; */
-
+  display: flex;
+  flex-direction: row;
+  min-width: 1000px;
 }
 
 .control {
-    width: 40px;
-    display: flex;
-    flex-direction: column;
+  width: 40px;
+  display: flex;
+  flex-direction: column;
 }

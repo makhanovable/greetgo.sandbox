@@ -1,9 +1,21 @@
-.main-form{
-    display: flex;
-    flex-direction: column;
-    width: 50%;
+.main-form {
+  display: flex;
+  flex-direction: column;
+  /* width: 50%; */
+  align-items: center;
+
 }
 
 .main-form > * {
-    margin-top: 25px;
+  margin-top: 25px;
 }
+
+mat-toolbar > * {
+  width: 100%;
+}
+
+mat-toolbar > .right {
+  display: flex;
+  justify-content: flex-end;
+}
+

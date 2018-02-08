@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface CharmRegister {
 
-    List<CharmInfo> getAll();
+  List<CharmInfo> getAll();
 
 }

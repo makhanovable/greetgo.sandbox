@@ -7,17 +7,17 @@ import java.time.ZoneId;
 import java.util.Date;
 
 public class AgeCalculator {
-    public static int calculateAge(Date birth, Date current) {
-        LocalDate birthDate = asLocalDate(birth);
-        LocalDate currentDate = asLocalDate(current);
-        if ((birthDate != null) && (currentDate != null)) {
-            return Period.between(birthDate, currentDate).getYears();
-        } else {
-            return 0;
-        }
+  public static int calculateAge(Date birth, Date current) {
+    LocalDate birthDate = asLocalDate(birth);
+    LocalDate currentDate = asLocalDate(current);
+    if ((birthDate != null) && (currentDate != null)) {
+      return Period.between(birthDate, currentDate).getYears();
+    } else {
+      return 0;
     }
+  }
 
-    private static LocalDate asLocalDate(Date date) {
-        return Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
-    }
+  private static LocalDate asLocalDate(Date date) {
+    return Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
+  }
 }

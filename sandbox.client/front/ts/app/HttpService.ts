@@ -45,7 +45,7 @@ export class HttpService {
     return this.prefix() + urlSuffix;
   }
 
-  public get(urlSuffix: string, keyValue?: { [key: string]: any[] | string | number | null }): Observable<Response> {
+  public get(urlSuffix: string, keyValue?: { [key: string]: | string | number | null }): Observable<Response> {
     let post: string = '';
 
     if (keyValue) {
@@ -55,11 +55,6 @@ export class HttpService {
       for (let key in keyValue) {
         let value = keyValue[key];
         if (value) {
-
-          if(Array.isArray(keyValue[key])) {
-            value = (keyValue[key] as any[]).join("|");
-          }
-
           data.append(key, value as string);
           appended = true;
         }
