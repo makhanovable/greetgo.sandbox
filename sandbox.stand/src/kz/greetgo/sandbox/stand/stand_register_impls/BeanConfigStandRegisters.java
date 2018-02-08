@@ -8,4 +8,5 @@ import kz.greetgo.sandbox.db.stand.beans.BeanConfigStandDb;
 @BeanConfig
 @BeanScanner
 @Include({BeanConfigStandDb.class})
-public class BeanConfigStandRegisters {}
+public class BeanConfigStandRegisters {
+}

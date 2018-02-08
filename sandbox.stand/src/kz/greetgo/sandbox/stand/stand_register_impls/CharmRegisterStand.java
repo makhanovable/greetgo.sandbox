@@ -11,22 +11,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Bean
-public class CharmRegisterStand implements CharmRegister{
+public class CharmRegisterStand implements CharmRegister {
 
-    public BeanGetter<StandDb> db;
+  @SuppressWarnings("WeakerAccess")
+  public BeanGetter<StandDb> db;
 
-    // FIXME: 2/8/18 Почему тут непонятный класс?
-    private class X {
-        public int y = 5;
+  @Override
+  public List<CharmInfo> getAll() {
+    List<CharmInfo> list = new ArrayList<>();
+
+    for (CharmDot charmDot : db.get().charmStorage.values()) {
+      list.add(charmDot.toCharmInfo());
     }
-
-    @Override
-    public List<CharmInfo> getAll(){
-        List<CharmInfo> list = new ArrayList<>();
-
-        for(CharmDot charmDot: db.get().charmStorage.values()) {
-            list.add(charmDot.toCharmInfo());
-        }
-        return list;
-    }
+    return list;
+  }
 }
