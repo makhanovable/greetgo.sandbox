@@ -55,6 +55,7 @@ public class ClientController implements Controller {
         return this.clientRegister.get().getClientsSize(filter);
     }
 
+    // FIXME: 2/8/18 Передавай лист с клиента, а не склеенный стринг. Название метода должно быть понятным.
     @ToJson
     @Mapping("/remove")
     public float lol(@Par("ids") String ids){

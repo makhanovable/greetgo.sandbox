@@ -12,6 +12,8 @@ import { Number } from 'core-js/library/web/timers';
 import { AddressType } from '../../../enums/AddressType';
 import { error } from 'util';
 
+// FIXME: 2/8/18 Ставь ; где надо. Убери ненужные импорты. Не засоряй консоль, перед коммитом убирай консоль.лог
+
 @Component({
     selector: 'client-form-component',
     template: require('./client_form.component.html'),

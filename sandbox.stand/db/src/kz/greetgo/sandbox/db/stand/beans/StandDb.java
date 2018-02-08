@@ -7,16 +7,15 @@ import kz.greetgo.sandbox.controller.enums.GenderType;
 import kz.greetgo.sandbox.controller.enums.PhoneNumberType;
 import kz.greetgo.sandbox.db.stand.model.*;
 
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.time.LocalDate;
-
 import java.util.*;
 
 @Bean
 public class StandDb implements HasAfterInject {
   public final Map<String, PersonDot> personStorage = new HashMap<>();
+
+  //// FIXME: 2/8/18 Сделай больше клиентов, например 10-20. И их данные должны быть понятнымим и читабельными
   public final Map<Integer, ClientDot> clientStorage = new HashMap<>();
   public Integer nextClientId = 0;
   public final Map<Integer, CharmDot> charmStorage = new HashMap<>();
@@ -58,9 +57,9 @@ public class StandDb implements HasAfterInject {
       }
     }
 
-    String [] charms = {"ленивый", "Loyal", "Patient", "Loving"};
+    String[] charms = {"ленивый", "Loyal", "Patient", "Loving"};
 
-    for(int i = 0; i < charms.length; i++) {
+    for (int i = 0; i < charms.length; i++) {
       CharmDot charm = new CharmDot();
       charm.id = i;
       charm.name = charms[i];
@@ -77,7 +76,6 @@ public class StandDb implements HasAfterInject {
     clientDot.charmId = 0;
     clientDot.birthDate = new Date("09/13/1996");
     clientDot.gender = GenderType.MALE;
-
 
 
     this.clientStorage.put(clientDot.id, clientDot);

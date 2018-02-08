@@ -15,6 +15,7 @@ public class CharmRegisterStand implements CharmRegister{
 
     public BeanGetter<StandDb> db;
 
+    // FIXME: 2/8/18 Почему тут непонятный класс?
     private class X {
         public int y = 5;
     }

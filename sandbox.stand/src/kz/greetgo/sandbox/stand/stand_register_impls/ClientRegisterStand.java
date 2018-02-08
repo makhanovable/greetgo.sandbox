@@ -67,6 +67,7 @@ public class ClientRegisterStand implements ClientRegister {
         if(addresses != null) {
 
             for(ClientAddressDot address: addresses ) {
+                //Убери систем аут. Используй логгеры вместо них
                 System.out.println(address.type);
 
                 if(address.type == AddressType.REG){

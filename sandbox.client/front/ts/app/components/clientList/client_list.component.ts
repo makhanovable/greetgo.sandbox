@@ -10,6 +10,7 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { ClientFormComponent } from '../clientForm/client_form.component';
 import { take } from 'rxjs/operators/take';
 
+// FIXME: 2/8/18 Ставь ; где надо. Убери ненужные импорты. Не засоряй консоль, перед коммитом убирай консоль.лог
 
 @Component({
     template: require('./client_list.component.html'),
