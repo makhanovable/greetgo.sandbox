@@ -4,9 +4,7 @@ package kz.greetgo.sandbox.db.stand.model;
 import kz.greetgo.sandbox.controller.enums.PhoneNumberType;
 import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
 
-import java.io.Serializable;
-
-public class ClientPhoneNumberDot implements Serializable {
+public class ClientPhoneNumberDot {
   public int clientId;
   public String number;
   public PhoneNumberType type;

@@ -2,15 +2,14 @@ package kz.greetgo.sandbox.db.stand.beans;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.HasAfterInject;
+import kz.greetgo.sandbox.controller.enums.AddressType;
+import kz.greetgo.sandbox.controller.enums.GenderType;
+import kz.greetgo.sandbox.controller.enums.PhoneNumberType;
 import kz.greetgo.sandbox.db.stand.model.*;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 @SuppressWarnings("unused")
 @Bean
@@ -71,21 +70,57 @@ public class StandDb implements HasAfterInject {
       this.charmStorage.put(charm.id, charm);
     }
 
-    try {
-      ObjectInputStream ois = new ObjectInputStream(getClass().getResourceAsStream("initClients.ser"));
-      this.clientStorage = (HashMap) ois.readObject();
-      ois.close();
-      ois = new ObjectInputStream(getClass().getResourceAsStream("initClientPhoneNumbers.ser"));
-      this.clientPhoneNumberStorage = (HashMap) ois.readObject();
-      ois.close();
-      ois = new ObjectInputStream(getClass().getResourceAsStream("initClientAddresses.ser"));
-      this.clientAddressStorage = (HashMap) ois.readObject();
-      ois.close();
-    } catch (Exception e) {
-      System.out.println(e.toString());
-    }
 
+    String[] names = {"Brent", "Joshua", "Tomothy", "Douglas", "Johnny", "Gwendolyn", "Timmothy", "Lynn", "Annette", "Eduardo",
+      "Manuel", "Sean", "Jared", "Chloe", "Carla", "Ray", "Karl", "Carl", "Riley", "Michele",
+      "Lydia", "Evan", "Letitia", "Melvin", "Jamie", "Jonathan", "Sean", "Brooklyn", "Margie", "Potter",
+      "Ruby", "Deann", "Ronnie", "Alyssa", "Julia", "Leroy", "Eddie", "Johnni", "Max", "Joshua",
+      "Marian", "Patrick", "Rafael", "Henry", "Terry", "Cameron", "Lester", "Andy", "Gilbert", "Raul",
+      "Dylan", "Allen", "Priscilla", "Jacob", "Lucy", "Jackie", "William", "Hilda", "Andre", "Javier",
+      "Lewis", "Samantha", "Lee", "Louise", "Franklin", "Ethan", "Jimmie", "Vicki", "Jeffery", "Cody",
+      "Jennifer", "Guy", "Dave", "Madison", "Judy", "Annette", "Pamela", "Ian", "Ronald", "Stephen",
+      "Heather", "Claire", "Tony", "Marion", "Stephen", "Edwin", "Kirk", "Dennis", "Liam", "Delores"};
+
+    Random rnd = new Random(666);
+
+    int items = (int) Math.floor(names.length / 3);
+
+    for (int i = 0; i < items; i++) {
+      ClientDot clientDot = new ClientDot();
+      clientDot.id = i;
+      clientDot.name = names[i];
+      clientDot.surname = names[(i + items)];
+      clientDot.patronymic = names[(i + items * 2)];
+      clientDot.charmId = rnd.nextInt(charms.length);
+      clientDot.birthDate = rndDate(rnd);
+      clientDot.gender = rnd.nextInt(2) == 0 ? GenderType.MALE : GenderType.FEMALE;
+      this.clientStorage.put(i, clientDot);
+
+      List<ClientAddressDot> addrList = new ArrayList<>();
+      ClientAddressDot clientAddress = new ClientAddressDot();
+      clientAddress.street = names[rnd.nextInt(names.length)];
+      clientAddress.house = rnd.nextInt(100) + 1 + "";
+      clientAddress.flat = rnd.nextInt(100) + 1 + "";
+      clientAddress.clientId = i;
+      clientAddress.type = rnd.nextInt(2) == 0 ? AddressType.FACT : AddressType.REG;
+      addrList.add(clientAddress);
+      this.clientAddressStorage.put(i, addrList);
+
+      List<ClientPhoneNumberDot> numberList = new ArrayList<>();
+      for (int j = 0; j < 3; j++) {
+        ClientPhoneNumberDot number = new ClientPhoneNumberDot();
+        number.number = "" + (7000000000l + rnd.nextLong() % 1000000000l);
+        number.type = rnd.nextInt(2) == 0 ? PhoneNumberType.MOBILE : PhoneNumberType.WORK;
+        number.clientId = i;
+        numberList.add(number);
+      }
+      this.clientPhoneNumberStorage.put(i, numberList);
+    }
     nextClientId = this.clientStorage.size() + 1000;
+  }
+
+  private Date rndDate(Random rnd) {
+    return new Date(-946771200000L + (Math.abs(rnd.nextLong()) % (70L * 365 * 24 * 60 * 60 * 1000)));
   }
 
   @SuppressWarnings("unused")
