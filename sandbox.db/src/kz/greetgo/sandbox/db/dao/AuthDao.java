@@ -12,14 +12,14 @@ public interface AuthDao {
   String getUserParam(@Param("personId") String personId,
                       @Param("name") UserParamName name);
 
-  @Select("select id from Person where accountName = #{accountName} " +
+  @Select("select ciaId from Person where accountName = #{accountName} " +
     "and encryptedPassword = #{encryptedPassword} and blocked = 0")
   String selectPersonIdByAccountAndPassword(@Param("accountName") String accountName,
                                             @Param("encryptedPassword") String encryptedPassword);
 
-  @Select("select accountName from Person where id = #{personId}")
+  @Select("select accountName from Person where ciaId = #{personId}")
   String accountNameByPersonId(@Param("personId") String personId);
 
-  @Select("select * from Person where id = #{personId}")
+  @Select("select * from Person where ciaId = #{personId}")
   UserInfo getUserInfo(@Param("personId") String personId);
 }

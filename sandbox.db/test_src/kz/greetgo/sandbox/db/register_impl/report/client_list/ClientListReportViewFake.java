@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.db.register_impl;
+package kz.greetgo.sandbox.db.register_impl.report.client_list;
 
 import kz.greetgo.sandbox.controller.register.report.client_list.ClientListReportView;
 import kz.greetgo.sandbox.controller.register.report.client_list.model.ReportFooterData;

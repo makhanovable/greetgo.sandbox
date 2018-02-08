@@ -21,21 +21,21 @@ public interface ClientTestDao {
   @Select("SELECT COUNT(*) FROM client WHERE actual=1")
   long selectCountTableClient();
 
-  @Select("SELECT EXISTS (SELECT true FROM client WHERE id=#{id} AND actual=1)")
-  boolean selectExistSingleTableClient(@Param("id") long id);
+  @Select("SELECT EXISTS (SELECT true FROM client WHERE ciaId=#{ciaId} AND actual=1)")
+  boolean selectExistSingleTableClient(@Param("ciaId") long id);
 
   @Select("SELECT nextval('client_id_seq')")
   long selectSeqIdNextValueTableClient();
 
-  @Select("SELECT id, surname, name, patronymic, gender, " +
+  @Select("SELECT ciaId, surname, name, patronymic, gender, " +
     "to_char(birth_date, '" + Util.datePattern + "') as birthdate, charm as charmId " +
     "FROM client " +
-    "WHERE id=#{id} AND actual=1")
-  ClientDetails selectRowById(@Param("id") long id);
+    "WHERE ciaId=#{ciaId} AND actual=1")
+  ClientDetails selectRowById(@Param("ciaId") long id);
 
-  @Insert("INSERT INTO client (id, surname, name, patronymic, gender, birth_date, charm) " +
-    "VALUES (#{id}, #{surname}, #{name}, #{patronymic}, #{gender}, #{birth_date}, #{charm})")
-  void insertClient(@Param("id") long id,
+  @Insert("INSERT INTO client (ciaId, surname, name, patronymic, gender, birth_date, charm) " +
+    "VALUES (#{ciaId}, #{surname}, #{name}, #{patronymic}, #{gender}, #{birth_date}, #{charm})")
+  void insertClient(@Param("ciaId") long id,
                     @Param("surname") String surname,
                     @Param("name") String name,
                     @Param("patronymic") String patronymic,
@@ -46,8 +46,8 @@ public interface ClientTestDao {
   @Update("UPDATE client " +
     "SET surname=#{surname}, name=#{name}, patronymic=#{patronymic}, " +
     "gender=#{gender}, birth_date=#{birth_date}, charm=#{charm}" +
-    "WHERE id=#{id}")
-  void updateClient(@Param("id") long id,
+    "WHERE ciaId=#{ciaId}")
+  void updateClient(@Param("ciaId") long id,
                     @Param("surname") String surname,
                     @Param("name") String name,
                     @Param("patronymic") String patronymic,
@@ -62,12 +62,12 @@ public interface ClientTestDao {
   @Select("SELECT nextval('charm_id_seq')")
   int selectSeqIdNextValueTableCharm();
 
-  @Update("UPDATE charm SET actual=0 WHERE id=#{id}")
-  void updateDisableSingleTableCharm(@Param("id") int id);
+  @Update("UPDATE charm SET actual=0 WHERE ciaId=#{ciaId}")
+  void updateDisableSingleTableCharm(@Param("ciaId") int id);
 
-  @Insert("INSERT INTO charm (id, name, description, energy) " +
-    "VALUES (#{id}, #{name}, #{description}, #{energy})")
-  void insertCharm(@Param("id") int id,
+  @Insert("INSERT INTO charm (ciaId, name, description, energy) " +
+    "VALUES (#{ciaId}, #{name}, #{description}, #{energy})")
+  void insertCharm(@Param("ciaId") int id,
                    @Param("name") String name,
                    @Param("description") String description,
                    @Param("energy") float energy);
@@ -75,9 +75,9 @@ public interface ClientTestDao {
   @Select("SELECT nextval('client_account_id_seq')")
   long selectSeqIdNextValueTableClientAccount();
 
-  @Insert("INSERT INTO client_account (id, client, money, number, registered_at) " +
-    "VALUES (#{id}, #{client}, #{money}, #{number}, #{registered_at})")
-  void insertClientAccount(@Param("id") long id,
+  @Insert("INSERT INTO client_account (ciaId, client, money, number, registered_at) " +
+    "VALUES (#{ciaId}, #{client}, #{money}, #{number}, #{registered_at})")
+  void insertClientAccount(@Param("ciaId") long id,
                            @Param("client") long client,
                            @Param("money") float money,
                            @Param("number") String number,

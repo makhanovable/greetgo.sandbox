@@ -17,7 +17,6 @@ public class MigrationController {
     return DriverManager.getConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password());
   }
 
-
   public void migrate() throws Exception {
     //... .... ...
 

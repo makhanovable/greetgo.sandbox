@@ -33,7 +33,6 @@ public class MigrateCommonTests extends ParentTestNg {
     connection = null;
   }
 
-
   protected void createCiaFile(File inFile) throws Exception {
     try (PrintStream pr = new PrintStream(inFile, "UTF-8")) {
       pr.print("<cia>\n" +
@@ -92,7 +91,6 @@ public class MigrateCommonTests extends ParentTestNg {
         return ret;
       }
     }
-
   }
 
   private Map<String, Object> rsToMap(List<String> fields, ResultSet rs) throws SQLException {
@@ -103,12 +101,10 @@ public class MigrateCommonTests extends ParentTestNg {
       }
     }
 
-    {
-      Map<String, Object> ret = new HashMap<>();
-      for (String field : fields) {
-        ret.put(field, rs.getObject(field));
-      }
-      return ret;
+    Map<String, Object> ret = new HashMap<>();
+    for (String field : fields) {
+      ret.put(field, rs.getObject(field));
     }
+    return ret;
   }
 }
