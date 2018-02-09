@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+// FIXME: 2/9/18 балансы должны быть разными
+
 @Bean
 public class ClientRegisterStand implements ClientRegister {
 
