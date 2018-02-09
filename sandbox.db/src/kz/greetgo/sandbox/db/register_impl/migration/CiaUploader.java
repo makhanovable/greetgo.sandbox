@@ -101,7 +101,7 @@ public class CiaUploader extends CommonSaxHandler {
     }
     if (path.equals(TAG_CLIENT)) {
       clientData = new ClientData();
-      clientData.ciaId = attributes.getValue("ciaId");
+      clientData.ciaId = attributes.getValue("id");
       curClientInstanceId++;
       return;
     }

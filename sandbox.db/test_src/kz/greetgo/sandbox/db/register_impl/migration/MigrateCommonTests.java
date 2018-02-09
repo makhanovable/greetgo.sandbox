@@ -1,6 +1,7 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.sandbox.db.test.dao.MigrationTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -19,6 +20,7 @@ import java.util.Map;
 public class MigrateCommonTests extends ParentTestNg {
 
   public BeanGetter<MigrationController> migrationController;
+  public BeanGetter<MigrationTestDao> migrationTestDao;
 
   protected Connection connection;
 

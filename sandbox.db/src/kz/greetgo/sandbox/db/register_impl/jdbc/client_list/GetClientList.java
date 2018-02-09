@@ -41,7 +41,7 @@ public class GetClientList extends GetClientCommon implements ConnectionCallback
   @Override
   protected void select() {
     sqlQuery.append("SELECT " +
-      "cl.ciaId, " +
+      "cl.id, " +
       "cl.surname, " +
       "cl.name, " +
       "cl.patronymic, " +
@@ -54,13 +54,13 @@ public class GetClientList extends GetClientCommon implements ConnectionCallback
 
   @Override
   protected void from() {
-    sqlQuery.append("LEFT JOIN charm AS ch ON cl.charm=ch.ciaId " +
-      "LEFT JOIN client_account AS cl_ac ON cl.ciaId=cl_ac.client ");
+    sqlQuery.append("LEFT JOIN charm AS ch ON cl.charm=ch.id " +
+      "LEFT JOIN client_account AS cl_ac ON cl.id=cl_ac.client ");
   }
 
   @Override
   protected void group() {
-    sqlQuery.append("GROUP BY cl.ciaId, ch.name ");
+    sqlQuery.append("GROUP BY cl.id, ch.name ");
   }
 
   @Override
@@ -88,7 +88,7 @@ public class GetClientList extends GetClientCommon implements ConnectionCallback
       else
         sqlQuery.append("DESC ");
     } else
-      sqlQuery.append("cl.ciaId ");
+      sqlQuery.append("cl.id ");
   }
 
   @Override
@@ -102,7 +102,7 @@ public class GetClientList extends GetClientCommon implements ConnectionCallback
   protected ClientRecord rsToRecord(ResultSet rs) throws Exception {
     ClientRecord ret = new ClientRecord();
 
-    ret.id = rs.getLong("ciaId");
+    ret.id = rs.getLong("id");
     ret.fullName = Util.getFullname(rs.getString("surname"), rs.getString("name"), rs.getString("patronymic"));
     ret.charmName = rs.getString("charmName");
     ret.age = rs.getInt("age");

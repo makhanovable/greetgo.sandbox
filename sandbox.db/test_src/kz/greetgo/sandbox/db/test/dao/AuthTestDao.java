@@ -19,19 +19,19 @@ public interface AuthTestDao {
                        @Param("name") UserParamName name,
                        @Param("value") String value);
 
-  void insertUser(@Param("ciaId") String id,
+  void insertUser(@Param("id") String id,
                   @Param("accountName") String accountName,
                   @Param("encryptedPassword") String encryptedPassword,
                   @Param("blocked") int blocked
   );
 
-  @Update("update Person set ${fieldName} = #{fieldValue} where ciaId = #{ciaId}")
-  void updatePersonField(@Param("ciaId") String id,
+  @Update("update Person set ${fieldName} = #{fieldValue} where id = #{id}")
+  void updatePersonField(@Param("id") String id,
                          @Param("fieldName") String fieldName,
                          @Param("fieldValue") Object fieldValue);
 
-  @Insert("insert into Person (  ciaId,    accountName,    surname,    name,    patronymic,    encryptedPassword, blocked) " +
-    "                  values (#{ciaId}, #{accountName}, #{surname}, #{name}, #{patronymic}, #{encryptedPassword}, 0)")
+  @Insert("insert into Person (  id,    accountName,    surname,    name,    patronymic,    encryptedPassword, blocked) " +
+    "                  values (#{id}, #{accountName}, #{surname}, #{name}, #{patronymic}, #{encryptedPassword}, 0)")
   void insertPersonDot(PersonDot personDot);
 
   @Update("UPDATE Person SET blocked=1")

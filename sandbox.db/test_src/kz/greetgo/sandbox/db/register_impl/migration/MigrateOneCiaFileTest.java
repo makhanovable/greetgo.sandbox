@@ -1,11 +1,14 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.sandbox.controller.model.AddressType;
+import kz.greetgo.sandbox.controller.model.Gender;
 import kz.greetgo.sandbox.controller.model.PhoneType;
 import kz.greetgo.sandbox.controller.util.Util;
+import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -22,10 +25,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
 
   @Test
   public void uploadData() throws Exception {
-    File inFile = new File("build/MigrateOneCiaFileTest/cia_" + Util.generateRandomString(16) + ".xml");
-    inFile.getParentFile().mkdirs();
-
-    createCiaFile(inFile);
+    File inFile = this.prepareReadyFileCommon();
 
     MigrateOneCiaFile oneCiaFile = new MigrateOneCiaFile();
     oneCiaFile.connection = connection;
@@ -36,6 +36,8 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     List<Map<String, Object>> recordList =
       toListMap("SELECT * FROM " + oneCiaFile.tmpClientTableName + " ORDER BY instance_id");
     assertThat(recordList).hasSize(2);
+    assertThat(recordList.get(0).get("cia_id")).isEqualTo("4-DU8-32-H7");
+    assertThat(recordList.get(1).get("cia_id")).isEqualTo("4-DU8-32-ss");
     assertThat(recordList.get(0).get("surname")).isEqualTo("Иванов");
     assertThat(recordList.get(1).get("surname")).isEqualTo("Петров");
     assertThat(recordList.get(0).get("name")).isEqualTo("Иван");
@@ -89,6 +91,96 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     assertThat(phoneRecordList.get(idx).get("type")).isEqualTo(PhoneType.WORK.name());
     assertThat(phoneRecordList.get(idx++).get("number")).isEqualTo("+7-123-111-00-33 вн. 3344");
     assertThat(phoneRecordList.get(idx).get("type")).isEqualTo(PhoneType.WORK.name());
-    assertThat(phoneRecordList.get(idx).get("number")).isEqualTo("+7-123-111-00-33 вн. 3343");
+    assertThat(phoneRecordList.get(idx++).get("number")).isEqualTo("+7-123-111-00-33 вн. 3343");
+
+    assertThat(phoneRecordList.get(idx).get("type")).isEqualTo(PhoneType.HOME.name());
+    assertThat(phoneRecordList.get(idx).get("number")).isEqualTo("+7-123-333-22-33");
+  }
+
+  @Test
+  public void processErrors() throws Exception {
+    MigrateOneCiaFile oneCiaFile = new MigrateOneCiaFile();
+    oneCiaFile.connection = connection;
+    oneCiaFile.prepareTmpTables();
+
+    long instanceId = 0;
+    List<String> surnameErrorCiaIdList = new ArrayList<>();
+    surnameErrorCiaIdList.add(this.insertClientForError(oneCiaFile.tmpClientTableName, instanceId++, null, RND.str(10),
+      RND.str(10)));
+    surnameErrorCiaIdList.add(this.insertClientForError(oneCiaFile.tmpClientTableName, instanceId++, "", RND.str(10),
+      RND.str(10)));
+    surnameErrorCiaIdList.add(this.insertClientForError(oneCiaFile.tmpClientTableName, instanceId++, "    ",
+      RND.str(10), RND.str(10)));
+
+    List<String> nameErrorCiaIdList = new ArrayList<>();
+    nameErrorCiaIdList.add(this.insertClientForError(oneCiaFile.tmpClientTableName, instanceId++, RND.str(10), "   ",
+      RND.str(10)));
+    nameErrorCiaIdList.add(this.insertClientForError(oneCiaFile.tmpClientTableName, instanceId++, RND.str(10), null,
+      RND.str(10)));
+    nameErrorCiaIdList.add(this.insertClientForError(oneCiaFile.tmpClientTableName, instanceId++, RND.str(10), "",
+      RND.str(10)));
+
+    List<String> birthErrorCiaIdList = new ArrayList<>();
+    birthErrorCiaIdList.add(this.insertClientForError(oneCiaFile.tmpClientTableName, instanceId++, null));
+    birthErrorCiaIdList.add(this.insertClientForError(oneCiaFile.tmpClientTableName, instanceId++, ""));
+    birthErrorCiaIdList.add(this.insertClientForError(oneCiaFile.tmpClientTableName, instanceId++, "  "));
+    birthErrorCiaIdList.add(this.insertClientForError(oneCiaFile.tmpClientTableName, instanceId++, "1000-01-10"));
+    birthErrorCiaIdList.add(this.insertClientForError(oneCiaFile.tmpClientTableName, instanceId++, "2017-12-12"));
+
+    this.insertClientForError(oneCiaFile.tmpClientTableName, instanceId++);
+    this.insertClientForError(oneCiaFile.tmpClientTableName, instanceId);
+
+    oneCiaFile.processErrors();
+
+    List<Map<String, Object>> recordList =
+      toListMap("SELECT * FROM " + oneCiaFile.tmpClientTableName + " WHERE error IS NOT NULL " +
+        "ORDER BY instance_id ASC");
+
+    assertThat(recordList.size())
+      .isEqualTo(surnameErrorCiaIdList.size() + nameErrorCiaIdList.size() + birthErrorCiaIdList.size());
+    int idx = 0;
+    for (String surnameErrorCiaId : surnameErrorCiaIdList) {
+      assertThat(recordList.get(idx).get("cia_id")).isEqualTo(surnameErrorCiaId);
+      idx++;
+    }
+    for (String nameErrorCiaId : nameErrorCiaIdList) {
+      assertThat(recordList.get(idx).get("cia_id")).isEqualTo(nameErrorCiaId);
+      idx++;
+    }
+    for (String birthErrorCiaId : birthErrorCiaIdList) {
+      assertThat(recordList.get(idx).get("cia_id")).isEqualTo(birthErrorCiaId);
+      idx++;
+    }
+  }
+
+  private File prepareReadyFileCommon() throws Exception {
+    File inFile = new File("build/MigrateOneCiaFileTest/cia_" + Util.generateRandomString(16) + ".xml");
+    inFile.getParentFile().mkdirs();
+
+    createCiaFile(inFile);
+
+    return inFile;
+  }
+
+  private String insertClientForError(String tmpTableName, long instanceId) {
+    String ciaId = RND.str(8);
+    migrationTestDao.get().insertClient(tmpTableName, instanceId, ciaId, RND.str(10), RND.str(10), RND.str(10),
+      Gender.values()[RND.plusInt(Gender.values().length)].name(), RND.str(10), null, "1989-10-10", 0, null);
+    return ciaId;
+  }
+
+  private String insertClientForError(String tmpTableName, long instanceId, String surname, String name,
+                                      String patronymic) {
+    String ciaId = RND.str(8);
+    migrationTestDao.get().insertClient(tmpTableName, instanceId, ciaId, surname, name, patronymic,
+      Gender.values()[RND.plusInt(Gender.values().length)].name(), RND.str(10), null, "1989-10-10", 0, null);
+    return ciaId;
+  }
+
+  private String insertClientForError(String tmpTableName, long instanceId, String birthDate) {
+    String ciaId = RND.str(8);
+    migrationTestDao.get().insertClient(tmpTableName, instanceId, ciaId, RND.str(10), RND.str(10), RND.str(10),
+      Gender.values()[RND.plusInt(Gender.values().length)].name(), RND.str(10), null, birthDate, 0, null);
+    return ciaId;
   }
 }

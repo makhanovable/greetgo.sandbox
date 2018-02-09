@@ -24,9 +24,16 @@ public class MigrateOneCiaFile {
   String tmpClientPhoneTableName;
   String tmpCharmTableName;
 
+  static final String clientTableNameToReplace = "client_to_replace";
+  static final String clientAddressTableNameToReplace = "client_address_to_replace";
+  static final String clientPhoneTableNameToReplace = "client_phone_to_replace";
+
+  private static final String datePattern = "YYYY-MM-DD";
+
   public void migrate() throws Exception {
     prepareTmpTables();
     uploadData();
+    processErrors();
     migrateData();
     downloadErrors();
   }
@@ -41,7 +48,7 @@ public class MigrateOneCiaFile {
     tmpClientPhoneTableName = "tmp_migration_phone_" + additionalId;
     tmpCharmTableName = "tmp_migration_charm_" + additionalId;
 
-    exec("CREATE TABLE client_to_replace (" +
+    exec("CREATE TABLE " + clientTableNameToReplace + " (" +
       "  instance_id bigint NOT NULL, " +
       "  cia_id varchar(64), " +
       "  surname varchar(256), " +
@@ -56,7 +63,7 @@ public class MigrateOneCiaFile {
       "  PRIMARY KEY(instance_id)" +
       ")");
 
-    exec("CREATE TABLE client_address_to_replace (" +
+    exec("CREATE TABLE " + clientAddressTableNameToReplace + " (" +
       "  instance_id bigint NOT NULL, " +
       "  type varchar(64) NOT NULL, " +
       "  street varchar(128), " +
@@ -65,20 +72,20 @@ public class MigrateOneCiaFile {
       "  PRIMARY KEY(instance_id, type)" +
       ")");
 
-    exec("CREATE TABLE client_phone_to_replace (" +
+    exec("CREATE TABLE " + clientPhoneTableNameToReplace + " (" +
       "  instance_id bigint NOT NULL, " +
       "  number varchar(64) NOT NULL, " +
       "  type varchar(128), " +
       "  PRIMARY KEY(instance_id, number)" +
       ")");
-
+/*
     exec("CREATE TABLE charm_to_replace (" +
       "  id int NOT NULL, " +
       "  name varchar(128) NOT NULL, " +
       "  description varchar(128), " +
       "  energy real, " +
       "  PRIMARY KEY(id)" +
-      ")");
+      ")");*/
   }
 
   void uploadData() throws Exception {
@@ -101,19 +108,46 @@ public class MigrateOneCiaFile {
     connection.setAutoCommit(true);
   }
 
+  void processErrors() throws SQLException {
+    //TODO: чтобы ускорить загрузку мб убрать проверку ошибки на нул?
+    exec("UPDATE " + clientTableNameToReplace + " " +
+      "SET error = " + "\'Пустое значение surname у ciaId = \'" + "||cia_id " +
+      "WHERE surname IS NULL OR length(trim(surname)) = 0 "
+    );
+
+    exec("UPDATE " + clientTableNameToReplace + " " +
+      "SET error = " + "\'Пустое значение name у ciaId = \'" + "||cia_id " +
+      "WHERE error IS NULL AND (name IS NULL OR length(trim(name)) = 0) "
+    );
+
+    exec("UPDATE " + clientTableNameToReplace + " " +
+      "SET error = " + "\'Пустое значение birth у ciaId = \'" + "||cia_id " +
+      "WHERE error IS NULL AND (birth_date IS NULL OR length(trim(birth_date)) = 0) "
+    );
+
+    exec("UPDATE " + clientTableNameToReplace + " " +
+      "SET error = " + "\'Неправильное значение birth у ciaId = \'" + "||cia_id" +
+      " ||\'. Возраст должен быть между 1000 и 3 годами\' " +
+      "WHERE error IS NULL AND " +
+      "  (extract(YEAR FROM age(to_date(birth_date, \'" + datePattern + "\'))) <= 3 OR " +
+      "  extract(YEAR FROM age(to_date(birth_date, \'" + datePattern + "\'))) >= 1000) "
+    );
+  }
+
   void migrateData() throws SQLException {
-    exec("INSERT INTO client SELECT * FROM client_to_replace, client_address_to_replace");
+    exec("INSERT INTO client SELECT * FROM " + clientTableNameToReplace + ", " + clientAddressTableNameToReplace + ")");
   }
 
   void downloadErrors() {
 
   }
 
-  private void exec(String sql) throws SQLException {
-    sql = sql.replaceAll("client_to_replace", tmpClientTableName);
-    sql = sql.replaceAll("client_address_to_replace", tmpClientAddressTableName);
-    sql = sql.replaceAll("client_phone_to_replace", tmpClientPhoneTableName);
-    sql = sql.replaceAll("charm_to_replace", tmpCharmTableName);
+  void exec(String sql) throws SQLException {
+    sql = sql.replaceAll(clientTableNameToReplace, tmpClientTableName);
+    sql = sql.replaceAll(clientAddressTableNameToReplace, tmpClientAddressTableName);
+    sql = sql.replaceAll(clientPhoneTableNameToReplace, tmpClientPhoneTableName);
+
+    System.out.println(sql);
 
     try (Statement statement = connection.createStatement()) {
       statement.execute(sql);

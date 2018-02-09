@@ -25,10 +25,10 @@ public class GetClientRecord extends GetClientList implements ConnectionCallback
     sqlQuery.append("FROM client AS cl ");
     from();
 
-    sqlQuery.append("WHERE cl.ciaId = ? ");
+    sqlQuery.append("WHERE cl.id = ? ");
     sqlParamList.add(clientId);
 
-    sqlQuery.append("GROUP BY cl.ciaId, ch.name");
+    sqlQuery.append("GROUP BY cl.id, ch.name");
   }
 
   public List<ClientRecord> doInConnection(Connection connection) throws Exception {
