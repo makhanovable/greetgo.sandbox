@@ -13,13 +13,13 @@ public class ClientDot {
 
   private BeanGetter<StandDb> db;
 
-  public int id;
+  public String id;
   public String surname;
   public String name;
   public String patronymic;
   public Date birthDate;
   public GenderType gender;
-  public int charmId;
+  public String charmId;
 
   public String getFIO() {
     return new StringBuilder(this.name).append(this.surname).append(this.patronymic).toString();

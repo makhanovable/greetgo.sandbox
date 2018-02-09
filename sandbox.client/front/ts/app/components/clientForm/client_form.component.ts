@@ -13,7 +13,6 @@ import {AddressType} from "../../../enums/AddressType";
   template: require('./client_form.component.html'),
   styles: [require('./client_form.component.css')],
 })
-// FIXME: 2/9/18 убери везде console.log после того, как закончил реализацию
 export class ClientFormComponent implements OnInit {
 
   formData: ClientInfo;
@@ -132,8 +131,6 @@ export class ClientFormComponent implements OnInit {
   }
 
   saveButton() {
-    // FIXME: 2/9/18 зачем тут алерт?
-    alert(this.canSave())
     if (this.canSave())
       this.save(this.formData);
   }

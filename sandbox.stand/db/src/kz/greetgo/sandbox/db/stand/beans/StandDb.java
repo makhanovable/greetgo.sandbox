@@ -6,6 +6,7 @@ import kz.greetgo.sandbox.controller.enums.AddressType;
 import kz.greetgo.sandbox.controller.enums.GenderType;
 import kz.greetgo.sandbox.controller.enums.PhoneNumberType;
 import kz.greetgo.sandbox.db.stand.model.*;
+import kz.greetgo.sandbox.db.stand.tools.IdGenerator;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -16,16 +17,17 @@ import java.util.*;
 public class StandDb implements HasAfterInject {
   public final Map<String, PersonDot> personStorage = new HashMap<>();
 
-  public Map<Integer, ClientDot> clientStorage = new HashMap<>();
-  public Integer nextClientId = 0;
-  public final Map<Integer, CharmDot> charmStorage = new HashMap<>();
+  public Map<String, ClientDot> clientStorage = new HashMap<>();
+  public final Map<String, CharmDot> charmStorage = new HashMap<>();
 
-  public Map<Integer, List<ClientPhoneNumberDot>> clientPhoneNumberStorage = new HashMap<>();
-  public Map<Integer, List<ClientAddressDot>> clientAddressStorage = new HashMap<>();
+  public Map<String, List<ClientPhoneNumberDot>> clientPhoneNumberStorage = new HashMap<>();
+  public Map<String, List<ClientAddressDot>> clientAddressStorage = new HashMap<>();
 
-  public final Map<Integer, ClientAccountDot> clientAccountStorage = new HashMap<>();
-  public final Map<Integer, ClientAccountTransactionDot> clientAccountTransactionStorage = new HashMap<>();
-  public final Map<Integer, TransactionTypeDot> transactionTypeStorage = new HashMap<>();
+  public final Map<String, ClientAccountDot> clientAccountStorage = new HashMap<>();
+  public final Map<String, ClientAccountTransactionDot> clientAccountTransactionStorage = new HashMap<>();
+  public final Map<String, TransactionTypeDot> transactionTypeStorage = new HashMap<>();
+
+  IdGenerator gen = new IdGenerator();
 
   @SuppressWarnings("unchecked")
   @Override
@@ -60,14 +62,17 @@ public class StandDb implements HasAfterInject {
     }
 
     String[] charms = {"Lazy", "Loyal", "Patient", "Loving"};
+    List<String> charmsIds = new ArrayList<>();
 
-    for (int i = 0; i < charms.length; i++) {
-      CharmDot charm = new CharmDot();
-      charm.id = i;
-      charm.name = charms[i];
-      charm.description = "some description";
-      charm.energy = new Random().nextFloat();
-      this.charmStorage.put(charm.id, charm);
+    for (String charm : charms) {
+      CharmDot charmdot = new CharmDot();
+      charmdot.id = this.gen.newId();
+      charmdot.name = charm;
+      charmdot.description = "some description";
+      charmdot.energy = new Random().nextFloat();
+
+      charmsIds.add(charmdot.id);
+      this.charmStorage.put(charmdot.id, charmdot);
     }
 
 
@@ -87,36 +92,36 @@ public class StandDb implements HasAfterInject {
 
     for (int i = 0; i < items; i++) {
       ClientDot clientDot = new ClientDot();
-      clientDot.id = i;
+      clientDot.id = this.gen.newId();
       clientDot.name = names[i];
       clientDot.surname = names[(i + items)];
       clientDot.patronymic = names[(i + items * 2)];
-      clientDot.charmId = rnd.nextInt(charms.length);
+      clientDot.charmId = charmsIds.get(rnd.nextInt(charms.length));
       clientDot.birthDate = rndDate(rnd);
       clientDot.gender = rnd.nextInt(2) == 0 ? GenderType.MALE : GenderType.FEMALE;
-      this.clientStorage.put(i, clientDot);
+      this.clientStorage.put(clientDot.id, clientDot);
 
       List<ClientAddressDot> addrList = new ArrayList<>();
       ClientAddressDot clientAddress = new ClientAddressDot();
       clientAddress.street = names[rnd.nextInt(names.length)];
       clientAddress.house = rnd.nextInt(100) + 1 + "";
       clientAddress.flat = rnd.nextInt(100) + 1 + "";
-      clientAddress.clientId = i;
+      clientAddress.clientId = clientDot.id;
       clientAddress.type = rnd.nextInt(2) == 0 ? AddressType.FACT : AddressType.REG;
       addrList.add(clientAddress);
-      this.clientAddressStorage.put(i, addrList);
+      this.clientAddressStorage.put(clientDot.id, addrList);
 
       List<ClientPhoneNumberDot> numberList = new ArrayList<>();
       for (int j = 0; j < 3; j++) {
         ClientPhoneNumberDot number = new ClientPhoneNumberDot();
-        number.number = "" + (7000000000l + rnd.nextLong() % 1000000000l);
+        number.number = "" + (7000000000L + rnd.nextLong() % 1000000000L);
         number.type = rnd.nextInt(2) == 0 ? PhoneNumberType.MOBILE : PhoneNumberType.WORK;
-        number.clientId = i;
+        number.clientId = clientDot.id;
         numberList.add(number);
       }
-      this.clientPhoneNumberStorage.put(i, numberList);
+      this.clientPhoneNumberStorage.put(clientDot.id, numberList);
     }
-    nextClientId = this.clientStorage.size() + 1000;
+
   }
 
   private Date rndDate(Random rnd) {

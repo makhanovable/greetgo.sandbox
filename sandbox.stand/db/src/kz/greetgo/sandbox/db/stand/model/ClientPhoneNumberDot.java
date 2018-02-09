@@ -5,7 +5,7 @@ import kz.greetgo.sandbox.controller.enums.PhoneNumberType;
 import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
 
 public class ClientPhoneNumberDot {
-  public int clientId;
+  public String clientId;
   public String number;
   public PhoneNumberType type;
 
@@ -13,7 +13,7 @@ public class ClientPhoneNumberDot {
 
   }
 
-  public ClientPhoneNumberDot(int clientId, ClientPhoneNumber clientPhoneNumber) {
+  public ClientPhoneNumberDot(String clientId, ClientPhoneNumber clientPhoneNumber) {
     this.clientId = clientId;
     this.type = clientPhoneNumber.type;
     this.number = clientPhoneNumber.number;

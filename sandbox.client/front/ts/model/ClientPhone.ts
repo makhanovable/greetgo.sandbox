@@ -1,5 +1,5 @@
 export class ClientPhone {
-    public clientId: number;
-    public number: string;
-    public type: any;
+  public clientId: string;
+  public number: string;
+  public type: any;
 }
