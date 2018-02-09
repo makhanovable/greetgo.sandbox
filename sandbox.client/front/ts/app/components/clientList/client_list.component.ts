@@ -12,6 +12,8 @@ import {ClientFormComponent} from "../clientForm/client_form.component";
   selector: 'client-list-component',
   styles: [require('./client_list.component.css')],
 })
+// FIXME: 2/9/18 проверь почему при смене страницы таблицы (и других действиях) на сервер идет два запроса
+// FIXME: 2/9/18 при нажатии на "cancel" в окне редактирования/добавления не нужно обновлять таблицу
 export class ClientListComponent implements OnInit {
 
   displayedColumns = ['select', 'fio', 'charm', 'age', 'totalAccountBalance', 'maximumBalance', 'minimumBalance'];
