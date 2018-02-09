@@ -3,9 +3,7 @@ package kz.greetgo.sandbox.db.stand.model;
 import kz.greetgo.sandbox.controller.enums.AddressType;
 import kz.greetgo.sandbox.controller.model.ClientAddress;
 
-import java.io.Serializable;
-
-public class ClientAddressDot implements Serializable {
+public class ClientAddressDot {
   public int clientId;
   public AddressType type;
   public String street;

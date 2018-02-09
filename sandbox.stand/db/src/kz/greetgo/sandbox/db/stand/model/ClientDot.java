@@ -7,10 +7,9 @@ import kz.greetgo.sandbox.controller.model.ClientInfo;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.tools.AgeCalculator;
 
-import java.io.Serializable;
 import java.util.Date;
 
-public class ClientDot implements Serializable {
+public class ClientDot {
 
   private BeanGetter<StandDb> db;
 

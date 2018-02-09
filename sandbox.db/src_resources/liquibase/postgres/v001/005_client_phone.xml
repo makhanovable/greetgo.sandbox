@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet author="damze" id="create-table-ClientPhone">
+    <sql endDelimiter=";;"><![CDATA[
+      create table ClientPhone (
+        client integer NOT NULL,
+        number character varying(100) NOT NULL,
+        type character varying(100) NOT NULL,
+        PRIMARY KEY (client, number),
+        FOREIGN KEY (client)
+          REFERENCES Client (id) MATCH SIMPLE
+          ON DELETE CASCADE
+      )
+    ]]></sql>
+  </changeSet>
+
+
+</databaseChangeLog>

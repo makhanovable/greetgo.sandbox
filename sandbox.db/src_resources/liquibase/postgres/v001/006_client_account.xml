@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet author="damze" id="create-table-ClientAccount">
+    <sql endDelimiter=";;"><![CDATA[
+      create table ClientAccount (
+        id integer NOT NULL,
+        client integer NOT NULL,
+        money real NOT NULL,
+        number character varying(100) NOT NULL,
+        registeredAt timestamp with time zone NOT NULL,
+
+        PRIMARY KEY (id),
+        FOREIGN KEY (client) REFERENCES Client (id) MATCH SIMPLE
+      )
+    ]]></sql>
+  </changeSet>
+
+
+</databaseChangeLog>
