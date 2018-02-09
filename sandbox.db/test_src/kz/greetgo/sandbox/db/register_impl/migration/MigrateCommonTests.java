@@ -1,6 +1,7 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.sandbox.db.test.dao.MigrationTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -19,6 +20,7 @@ import java.util.Map;
 public class MigrateCommonTests extends ParentTestNg {
 
   public BeanGetter<MigrationController> migrationController;
+  public BeanGetter<MigrationTestDao> migrationTestDao;
 
   protected Connection connection;
 
@@ -32,7 +34,6 @@ public class MigrateCommonTests extends ParentTestNg {
     connection.close();
     connection = null;
   }
-
 
   protected void createCiaFile(File inFile) throws Exception {
     try (PrintStream pr = new PrintStream(inFile, "UTF-8")) {
@@ -92,7 +93,6 @@ public class MigrateCommonTests extends ParentTestNg {
         return ret;
       }
     }
-
   }
 
   private Map<String, Object> rsToMap(List<String> fields, ResultSet rs) throws SQLException {
@@ -103,12 +103,10 @@ public class MigrateCommonTests extends ParentTestNg {
       }
     }
 
-    {
-      Map<String, Object> ret = new HashMap<>();
-      for (String field : fields) {
-        ret.put(field, rs.getObject(field));
-      }
-      return ret;
+    Map<String, Object> ret = new HashMap<>();
+    for (String field : fields) {
+      ret.put(field, rs.getObject(field));
     }
+    return ret;
   }
 }

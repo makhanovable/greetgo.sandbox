@@ -8,6 +8,7 @@ import kz.greetgo.sandbox.controller.register.ReportRegister;
 import kz.greetgo.sandbox.controller.register.model.ClientListReportInstance;
 import kz.greetgo.sandbox.controller.register.report.client_list.model.ReportItemData;
 import kz.greetgo.sandbox.controller.util.Util;
+import kz.greetgo.sandbox.db.register_impl.report.client_list.ClientListReportViewFake;
 import kz.greetgo.sandbox.db.stand.model.PersonDot;
 import kz.greetgo.sandbox.db.test.dao.AuthTestDao;
 import kz.greetgo.sandbox.db.test.dao.ClientListReportTestDao;
