@@ -111,7 +111,7 @@ public class MigrateOneCiaFile {
   void processErrors() throws SQLException {
     //TODO: чтобы ускорить загрузку мб убрать проверку ошибки на нул?
     exec("UPDATE " + clientTableNameToReplace + " " +
-      "SET error = " + "\'Пустое значение surname у ciaId = \'" + "||cia_id " +
+      "SET error = 'Пустое значение surname у ciaId = '||cia_id " +
       "WHERE surname IS NULL OR length(trim(surname)) = 0 "
     );
 

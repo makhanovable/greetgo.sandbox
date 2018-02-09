@@ -105,12 +105,12 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
 
     long instanceId = 0;
     List<String> surnameErrorCiaIdList = new ArrayList<>();
-    surnameErrorCiaIdList.add(this.insertClientForError(oneCiaFile.tmpClientTableName, instanceId++, null, RND.str(10),
-      RND.str(10)));
-    surnameErrorCiaIdList.add(this.insertClientForError(oneCiaFile.tmpClientTableName, instanceId++, "", RND.str(10),
-      RND.str(10)));
-    surnameErrorCiaIdList.add(this.insertClientForError(oneCiaFile.tmpClientTableName, instanceId++, "    ",
-      RND.str(10), RND.str(10)));
+    surnameErrorCiaIdList.add(
+      this.insertClientForError(oneCiaFile.tmpClientTableName, instanceId++, null, RND.str(10), RND.str(10)));
+    surnameErrorCiaIdList.add(
+      this.insertClientForError(oneCiaFile.tmpClientTableName, instanceId++, "", RND.str(10), RND.str(10)));
+    surnameErrorCiaIdList.add(
+      this.insertClientForError(oneCiaFile.tmpClientTableName, instanceId++, "    ", RND.str(10), RND.str(10)));
 
     List<String> nameErrorCiaIdList = new ArrayList<>();
     nameErrorCiaIdList.add(this.insertClientForError(oneCiaFile.tmpClientTableName, instanceId++, RND.str(10), "   ",
@@ -141,6 +141,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     int idx = 0;
     for (String surnameErrorCiaId : surnameErrorCiaIdList) {
       assertThat(recordList.get(idx).get("cia_id")).isEqualTo(surnameErrorCiaId);
+      assertThat(recordList.get(idx).get("error")).isEqualTo("No value in field surname, cia_id = " + surnameErrorCiaId);
       idx++;
     }
     for (String nameErrorCiaId : nameErrorCiaIdList) {
