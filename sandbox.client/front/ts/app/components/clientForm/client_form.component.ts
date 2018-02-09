@@ -131,6 +131,7 @@ export class ClientFormComponent implements OnInit {
   }
 
   saveButton() {
+    // FIXME: 2/9/18 зачем тут алерт?
     alert(this.canSave())
     if (this.canSave())
       this.save(this.formData);
