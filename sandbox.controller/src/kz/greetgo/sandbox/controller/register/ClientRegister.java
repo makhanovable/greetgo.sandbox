@@ -11,9 +11,9 @@ public interface ClientRegister {
 
   int getClientsSize(String filter);
 
-  float remove(List<Integer> id);
+  float remove(List<String> id);
 
-  ClientForm info(int id);
+  ClientForm info(String id);
 
   void add(ClientForm clientForm);
 

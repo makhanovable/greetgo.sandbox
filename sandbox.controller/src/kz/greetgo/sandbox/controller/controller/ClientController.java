@@ -43,13 +43,13 @@ public class ClientController implements Controller {
 
   @ToJson
   @Mapping("/remove")
-  public float removeClients(@Par("ids") @Json List<Integer> ids) {
+  public float removeClients(@Par("ids") @Json List<String> ids) {
     return this.clientRegister.get().remove(ids);
   }
 
   @ToJson
   @Mapping("/info")
-  public ClientForm info(@Par("id") int id) {
+  public ClientForm info(@Par("id") String id) {
     return this.clientRegister.get().info(id);
   }
 

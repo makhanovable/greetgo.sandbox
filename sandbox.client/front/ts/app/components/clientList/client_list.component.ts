@@ -46,21 +46,18 @@ export class ClientListComponent implements OnInit {
       this.desc = data['direction'] === 'desc' ? 1 : 0;
       this.selectedOrder = data['direction'] === '' ? "" : data['active'];
       this.applyFilter(false);
-    }, error => {
-      console.log(error);
-    })
+    });
   }
 
   loadChamrs() {
     this.httpService.get("/charm/list").toPromise().then(res => {
       this.charmsArray = JSON.parse(res.text()) as CharmInfo[];
       this.charmsArray.forEach(element => {
-        this.charmsMap[element.id] = element;
+        this.charmsMap[element.id] = element.name;
 
       });
-    }).catch(error => {
-      console.log(error);
-    })
+      
+    });
   }
 
   loadTableData(filter: ClientFilter) {
@@ -75,9 +72,8 @@ export class ClientListComponent implements OnInit {
     }).toPromise().then(res => {
       this.tableElemets = JSON.parse(res.text()) as ClientInfo[];
       this.initMatTable();
-    }).catch(error => {
-      console.log(error);
-    })
+
+    });
   }
 
   initMatTable() {
@@ -101,9 +97,7 @@ export class ClientListComponent implements OnInit {
         this.paginator.length = Number.parseInt(res.text());
         //
         this.loadTableData(clientFilter);
-      }).catch(error => {
-        console.log(error);
-      })
+      });
     } else {
       this.loadTableData(clientFilter);
     }
@@ -124,16 +118,13 @@ export class ClientListComponent implements OnInit {
       this.selection.selected.forEach(element => {
         ids.push(element.id)
       });
-      console.log(JSON.stringify(ids));
-
+      
       //noinspection JSUnusedLocalSymbols
       this.httpService.get("/client/remove", {
         ids: JSON.stringify(ids)
       }).toPromise().then(res => {
         this.applyFilter(true);
-      }).catch(error => {
-        console.log(error)
-      })
+      });
     }
 
   }

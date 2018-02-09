@@ -22,6 +22,7 @@ public class ClientRegisterStand implements ClientRegister {
 
   @SuppressWarnings("WeakerAccess")
   public BeanGetter<StandDb> db;
+  IdGenerator gen = new IdGenerator();
 
   @Override
   public boolean update(ClientForm clientForm) {
@@ -36,7 +37,7 @@ public class ClientRegisterStand implements ClientRegister {
   @Override
   public void add(ClientForm clientForm) {
     ClientDot clientDot = new ClientDot(clientForm);
-    clientDot.id = db.get().nextClientId++;
+    clientDot.id = this.gen.newId();
     setClientData(clientDot, clientForm);
   }
 
@@ -61,7 +62,7 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public ClientForm info(int id) {
+  public ClientForm info(String id) {
     ClientForm clientForm = this.db.get().clientStorage.get(id).toClientForm();
     this.setDetails(clientForm);
     return clientForm;
@@ -138,7 +139,7 @@ public class ClientRegisterStand implements ClientRegister {
     for (ClientInfo clientInfo : subList) {
 
       if (db.get().clientAccountStorage.entrySet().iterator().hasNext()) {
-        Map.Entry<Integer, ClientAccountDot> entry = db.get().clientAccountStorage.entrySet().iterator().next();
+        Map.Entry<String, ClientAccountDot> entry = db.get().clientAccountStorage.entrySet().iterator().next();
         clientInfo.totalAccountBalance = entry.getValue().money;
         clientInfo.maximumBalance = entry.getValue().money;
         clientInfo.minimumBalance = entry.getValue().money;
@@ -162,16 +163,16 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public float remove(List<Integer> ids) {
+  public float remove(List<String> ids) {
 
     int success = 0;
-    for (int id : ids) {
+    for (String id : ids) {
       success += remove(id) ? 1 : 0;
     }
     return success / ids.size();
   }
 
-  private boolean remove(int id) {
+  private boolean remove(String id) {
     db.get().clientAddressStorage.remove(id);
     db.get().clientPhoneNumberStorage.remove(id);
     return db.get().clientStorage.remove(id) != null;

@@ -131,7 +131,6 @@ export class ClientFormComponent implements OnInit {
   }
 
   saveButton() {
-    alert(this.canSave())
     if (this.canSave())
       this.save(this.formData);
   }
