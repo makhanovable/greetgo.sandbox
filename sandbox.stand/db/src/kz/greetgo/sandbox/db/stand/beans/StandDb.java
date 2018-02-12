@@ -6,7 +6,6 @@ import kz.greetgo.sandbox.controller.enums.AddressType;
 import kz.greetgo.sandbox.controller.enums.GenderType;
 import kz.greetgo.sandbox.controller.enums.PhoneNumberType;
 import kz.greetgo.sandbox.db.stand.model.*;
-import kz.greetgo.sandbox.db.stand.tools.IdGenerator;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -23,11 +22,9 @@ public class StandDb implements HasAfterInject {
   public Map<String, List<ClientPhoneNumberDot>> clientPhoneNumberStorage = new HashMap<>();
   public Map<String, List<ClientAddressDot>> clientAddressStorage = new HashMap<>();
 
-  public final Map<String, ClientAccountDot> clientAccountStorage = new HashMap<>();
+  public final Map<String, List<ClientAccountDot>> clientAccountStorage = new HashMap<>();
   public final Map<String, ClientAccountTransactionDot> clientAccountTransactionStorage = new HashMap<>();
   public final Map<String, TransactionTypeDot> transactionTypeStorage = new HashMap<>();
-
-  IdGenerator gen = new IdGenerator();
 
   @SuppressWarnings("unchecked")
   @Override
@@ -66,7 +63,7 @@ public class StandDb implements HasAfterInject {
 
     for (String charm : charms) {
       CharmDot charmdot = new CharmDot();
-      charmdot.id = this.gen.newId();
+      charmdot.id = this.rndId();
       charmdot.name = charm;
       charmdot.description = "some description";
       charmdot.energy = new Random().nextFloat();
@@ -92,7 +89,7 @@ public class StandDb implements HasAfterInject {
 
     for (int i = 0; i < items; i++) {
       ClientDot clientDot = new ClientDot();
-      clientDot.id = this.gen.newId();
+      clientDot.id = this.rndId();
       clientDot.name = names[i];
       clientDot.surname = names[(i + items)];
       clientDot.patronymic = names[(i + items * 2)];
@@ -120,8 +117,24 @@ public class StandDb implements HasAfterInject {
         numberList.add(number);
       }
       this.clientPhoneNumberStorage.put(clientDot.id, numberList);
+
+      List<ClientAccountDot> clientAccountDots = new ArrayList<>();
+      for (int j = 0; j < 3; j++) {
+        ClientAccountDot cad = new ClientAccountDot();
+        cad.id = this.rndId();
+        cad.number = this.rndId();
+        cad.money = rnd.nextFloat() * 10000;
+        cad.clientId = clientDot.id;
+        clientAccountDots.add(cad);
+      }
+      this.clientAccountStorage.put(clientDot.id, clientAccountDots);
+
     }
 
+  }
+
+  private String rndId() {
+    return UUID.randomUUID().toString().substring(0, 16);
   }
 
   private Date rndDate(Random rnd) {
