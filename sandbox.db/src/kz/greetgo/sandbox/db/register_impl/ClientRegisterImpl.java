@@ -1,17 +1,24 @@
 package kz.greetgo.sandbox.db.register_impl;
 
 
-import kz.greetgo.sandbox.controller.model.ClientForm;
-import kz.greetgo.sandbox.controller.model.ClientInfo;
+import kz.greetgo.depinject.core.Bean;
+import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.sandbox.controller.model.ClientDetail;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.db.dao.ClientDao;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.List;
 
+@Bean
 public class ClientRegisterImpl implements ClientRegister {
 
+  public BeanGetter<ClientDao> clientDao;
+
   @Override
-  public List<ClientInfo> getClientInfoList(int limit, int page, String filter, String orderBy, int desc) {
+  public List<ClientRecord> getClientInfoList(int limit, int page, String filter, String orderBy, int desc) {
 
     throw new NotImplementedException();
   }
@@ -27,17 +34,17 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   @Override
-  public ClientForm info(String id) {
+  public ClientDetail info(String id) {
     throw new NotImplementedException();
   }
 
   @Override
-  public void add(ClientForm clientForm) {
+  public void add(ClientToSave clientToSave) {
     throw new NotImplementedException();
   }
 
   @Override
-  public boolean update(ClientForm clientForm) {
+  public boolean update(ClientToSave clientToSave) {
     throw new NotImplementedException();
   }
 }

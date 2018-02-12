@@ -1,10 +1,5 @@
-import {ClientPhone} from "./ClientPhone";
-import {ClientAddress} from "./ClientAddress";
-
-import {GenderType} from "../enums/GenderType";
-
 export class ClientInfo {
-  //table data
+
   public id: string;
   public name: string;
   public patronymic: string;
@@ -14,14 +9,6 @@ export class ClientInfo {
   public totalAccountBalance: number;
   public maximumBalance: number;
   public minimumBalance: number;
-
-  //manually loading data.
-  public birthDate: Date;
-  public actualAddress: ClientAddress;
-  public registerAddress: ClientAddress;
-
-  public phoneNumbers: ClientPhone[];
-  public gender: GenderType;
 }
 
 

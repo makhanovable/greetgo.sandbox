@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.controller.model;
+package kz.greetgo.sandbox.controller.enums;
 
 public class TransactionType {
   public int id;

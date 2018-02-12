@@ -1,21 +1,22 @@
 package kz.greetgo.sandbox.controller.register;
 
-import kz.greetgo.sandbox.controller.model.ClientForm;
-import kz.greetgo.sandbox.controller.model.ClientInfo;
+import kz.greetgo.sandbox.controller.model.ClientDetail;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
 
 import java.util.List;
 
 public interface ClientRegister {
 
-  List<ClientInfo> getClientInfoList(int limit, int page, String filter, String orderBy, int desc);
+  List<ClientRecord> getClientInfoList(int limit, int page, String filter, String orderBy, int desc);
 
   int getClientsSize(String filter);
 
   float remove(List<String> id);
 
-  ClientForm info(String id);
+  ClientDetail info(String id);
 
-  void add(ClientForm clientForm);
+  void add(ClientToSave clientDetail);
 
-  boolean update(ClientForm clientForm);
+  boolean update(ClientToSave clientDetail);
 }

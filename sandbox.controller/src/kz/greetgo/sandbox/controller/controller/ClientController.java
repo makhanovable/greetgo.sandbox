@@ -7,8 +7,9 @@ import kz.greetgo.mvc.annotations.Mapping;
 import kz.greetgo.mvc.annotations.Par;
 import kz.greetgo.mvc.annotations.ToJson;
 import kz.greetgo.mvc.interfaces.RequestTunnel;
-import kz.greetgo.sandbox.controller.model.ClientForm;
-import kz.greetgo.sandbox.controller.model.ClientInfo;
+import kz.greetgo.sandbox.controller.model.ClientDetail;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.util.Controller;
 
@@ -30,8 +31,8 @@ public class ClientController implements Controller {
 
   @ToJson
   @Mapping("/list")
-  public List<ClientInfo> list(@Par("limit") int limit, @Par("page") int page, @Par("filter") String filter,
-                               @Par("orderBy") String orderBy, @Par("desc") int desc) {
+  public List<ClientRecord> list(@Par("limit") int limit, @Par("page") int page, @Par("filter") String filter,
+                                 @Par("orderBy") String orderBy, @Par("desc") int desc) {
 
     return clientRegister.get().getClientInfoList(limit, page, filter, orderBy, desc);
   }
@@ -50,17 +51,17 @@ public class ClientController implements Controller {
 
   @ToJson
   @Mapping("/info")
-  public ClientForm info(@Par("id") String id) {
+  public ClientDetail info(@Par("id") String id) {
     return this.clientRegister.get().info(id);
   }
 
   @ToJson
   @Mapping("/addOrUpdate")
-  public String addOrUpdate(@Par("client") @Json ClientForm clientForm) {
-    if (clientForm.id != null)
-      return this.clientRegister.get().update(clientForm) ? "ok" : "bad";
+  public String addOrUpdate(@Par("client") @Json ClientToSave clientToSave) {
+    if (clientToSave.id != null)
+      return this.clientRegister.get().update(clientToSave) ? "ok" : "bad";
     else
-      this.clientRegister.get().add(clientForm);
+      this.clientRegister.get().add(clientToSave);
     return "ok";
   }
 

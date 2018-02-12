@@ -3,9 +3,10 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.enums.AddressType;
-import kz.greetgo.sandbox.controller.model.ClientForm;
-import kz.greetgo.sandbox.controller.model.ClientInfo;
+import kz.greetgo.sandbox.controller.model.ClientDetail;
 import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
@@ -16,6 +17,7 @@ import kz.greetgo.sandbox.db.stand.model.ClientPhoneNumberDot;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("ConstantConditions")
 @Bean
 public class ClientRegisterStand implements ClientRegister {
 
@@ -24,57 +26,56 @@ public class ClientRegisterStand implements ClientRegister {
   private IdGenerator gen = new IdGenerator();
 
   @Override
-  public boolean update(ClientForm clientForm) {
-    if (db.get().clientStorage.get(clientForm.id) == null)
+  public boolean update(ClientToSave clientToSave) {
+    if (db.get().clientStorage.get(clientToSave.id) == null)
       return false;
-    ClientDot clientDot = new ClientDot(clientForm);
-
-    setClientData(clientDot, clientForm);
+    ClientDot clientDot = new ClientDot(clientToSave);
+    setClientData(clientDot, clientToSave);
     return true;
   }
 
   @Override
-  public void add(ClientForm clientForm) {
-    ClientDot clientDot = new ClientDot(clientForm);
+  public void add(ClientToSave clientToSave) {
+    ClientDot clientDot = new ClientDot(clientToSave);
     clientDot.id = this.gen.newId();
-    setClientData(clientDot, clientForm);
+    setClientData(clientDot, clientToSave);
   }
 
   @Override
-  public ClientForm info(String id) {
-    ClientForm clientForm = this.db.get().clientStorage.get(id).toClientForm();
-    this.setDetails(clientForm);
-    return clientForm;
+  public ClientDetail info(String id) {
+    ClientDetail clientDetail = this.db.get().clientStorage.get(id).toClientForm();
+    this.setDetails(clientDetail);
+    return clientDetail;
   }
 
 
   @SuppressWarnings("StringBufferReplaceableByString")
   @Override
-  public List<ClientInfo> getClientInfoList(int limit, int page, String filter, String orderBy, int desc) {
+  public List<ClientRecord> getClientInfoList(int limit, int page, String filter, String orderBy, int desc) {
 
     //filtering
-    List<ClientInfo> list = this.getFilteredClientInfo(filter);
+    List<ClientRecord> list = this.getFilteredClientInfo(filter);
     int clientInfoSize = list.size();
     if (limit * page > clientInfoSize)
       return null;
 
-    for (ClientInfo clientInfo : list) {
+    for (ClientRecord clientRecord : list) {
 
-      List<ClientAccountDot> clientAccountDots = this.db.get().clientAccountStorage.get(clientInfo.id);
+      List<ClientAccountDot> clientAccountDots = this.db.get().clientAccountStorage.get(clientRecord.id);
       if (clientAccountDots != null) {
         ClientAccountDot[] arr = new ClientAccountDot[clientAccountDots.size()];
         clientAccountDots.toArray(arr);
 
-        clientInfo.totalAccountBalance = arr[0].money;
-        clientInfo.minimumBalance = arr[0].money;
-        clientInfo.maximumBalance = arr[0].money;
+        clientRecord.totalAccountBalance = arr[0].money;
+        clientRecord.minimumBalance = arr[0].money;
+        clientRecord.maximumBalance = arr[0].money;
 
         for (int i = 1; i < arr.length; i++) {
-          clientInfo.totalAccountBalance += arr[i].money;
-          if (clientInfo.minimumBalance > arr[0].money)
-            clientInfo.minimumBalance = arr[0].money;
-          if (clientInfo.maximumBalance < arr[0].money)
-            clientInfo.maximumBalance = arr[0].money;
+          clientRecord.totalAccountBalance += arr[i].money;
+          if (clientRecord.minimumBalance > arr[0].money)
+            clientRecord.minimumBalance = arr[0].money;
+          if (clientRecord.maximumBalance < arr[0].money)
+            clientRecord.maximumBalance = arr[0].money;
         }
       }
 
@@ -85,7 +86,7 @@ public class ClientRegisterStand implements ClientRegister {
     String order = orderBy != null ? orderBy.toLowerCase().trim() : "";
     list.sort((o1, o2) -> {
       if (desc == 1) {
-        ClientInfo tmp = o1;
+        ClientRecord tmp = o1;
         o1 = o2;
         o2 = tmp;
       }
@@ -108,7 +109,7 @@ public class ClientRegisterStand implements ClientRegister {
     //splicing
     int fromIndex = limit * page;
     int endindex = fromIndex + limit <= clientInfoSize ? fromIndex + limit : clientInfoSize;
-    
+
     return list.subList(fromIndex, endindex);
   }
 
@@ -134,8 +135,8 @@ public class ClientRegisterStand implements ClientRegister {
     return db.get().clientStorage.remove(id) != null;
   }
 
-  private List<ClientInfo> getFilteredClientInfo(String filter) {
-    List<ClientInfo> list = new ArrayList<>();
+  private List<ClientRecord> getFilteredClientInfo(String filter) {
+    List<ClientRecord> list = new ArrayList<>();
     List<ClientDot> clientDots = new ArrayList<>(db.get().clientStorage.values());
     if (filter != null) {
       String[] filsers = filter.trim().split(" ");
@@ -155,48 +156,60 @@ public class ClientRegisterStand implements ClientRegister {
     return list;
   }
 
-  private void setClientData(ClientDot clientDot, ClientForm clientForm) {
+  private void setClientData(ClientDot clientDot, ClientToSave clientToSave) {
     db.get().clientStorage.put(clientDot.id, clientDot);
 
-    List<ClientAddressDot> addresses = new ArrayList<>();
-    if (clientForm.registerAddress != null)
-      addresses.add(new ClientAddressDot(clientDot.id, clientForm.registerAddress));
-    if (clientForm.actualAddress != null)
-      addresses.add(new ClientAddressDot(clientDot.id, clientForm.actualAddress));
+    List<ClientAddressDot> addresses = db.get().clientAddressStorage.get(clientDot.id);
+    if (addresses == null)
+      addresses = new ArrayList<>();
+
+    if (clientToSave.actualAddress != null) {
+      addresses.add(new ClientAddressDot(clientDot.id, clientToSave.actualAddress));
+    }
+    if (clientToSave.registerAddress != null) {
+      addresses.add(new ClientAddressDot(clientDot.id, clientToSave.registerAddress));
+    }
 
     db.get().clientAddressStorage.put(clientDot.id, addresses);
 
-    List<ClientPhoneNumberDot> numbers = new ArrayList<>();
-    for (ClientPhoneNumber number : clientForm.phoneNumbers)
+
+    List<ClientPhoneNumberDot> numbers = db.get().clientPhoneNumberStorage.get(clientDot.id);
+
+    for (ClientPhoneNumber number : clientToSave.toDeleteNumbers) {
+      ClientPhoneNumberDot found = numbers.stream().filter(o -> o.number.equals(number.number)).findFirst().get();
+      numbers.remove(found);
+    }
+
+    for (ClientPhoneNumber number : clientToSave.toSave) {
+
+      Boolean found = numbers.stream().anyMatch(o -> o.number.equals(number.number));
+      if (found) {
+        ClientPhoneNumberDot clientPhoneNumberDot = numbers.stream().filter(o -> o.number.equals(number.number)).findFirst().get();
+        numbers.remove(clientPhoneNumberDot);
+      }
       numbers.add(new ClientPhoneNumberDot(clientDot.id, number));
-
-//        db.get().clientPhoneNumberStorage.
+    }
     db.get().clientPhoneNumberStorage.put(clientDot.id, numbers);
-
   }
 
-  private void setDetails(ClientForm clientForm) {
-    List<ClientAddressDot> addresses = db.get().clientAddressStorage.get(clientForm.id);
+  private void setDetails(ClientDetail clientDetail) {
+    List<ClientAddressDot> addresses = db.get().clientAddressStorage.get(clientDetail.id);
     if (addresses != null) {
-
       for (ClientAddressDot address : addresses) {
-        //Убери систем аут. Используй логгеры вместо них
-        System.out.println(address.type);
-
         if (address.type == AddressType.REG) {
-          clientForm.registerAddress = address.toClientAddress();
+          clientDetail.registerAddress = address.toClientAddress();
         } else if (address.type == AddressType.FACT) {
-          clientForm.actualAddress = address.toClientAddress();
+          clientDetail.actualAddress = address.toClientAddress();
         }
       }
     }
 
-    List<ClientPhoneNumberDot> numbers = db.get().clientPhoneNumberStorage.get(clientForm.id);
+    List<ClientPhoneNumberDot> numbers = db.get().clientPhoneNumberStorage.get(clientDetail.id);
     if (numbers != null) {
 
-      clientForm.phoneNumbers = new ArrayList<>();
+      clientDetail.phoneNumbers = new ArrayList<>();
       for (ClientPhoneNumberDot dot : numbers) {
-        clientForm.phoneNumbers.add(dot.toClientPhoneNumber());
+        clientDetail.phoneNumbers.add(dot.toClientPhoneNumber());
       }
     }
   }

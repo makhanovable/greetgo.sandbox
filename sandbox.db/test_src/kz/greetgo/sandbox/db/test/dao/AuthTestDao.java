@@ -35,4 +35,5 @@ public interface AuthTestDao {
   @Insert("insert into Person (  id,    accountName,    surname,    name,    patronymic,    encryptedPassword, blocked) " +
     "                  values (#{id}, #{accountName}, #{surname}, #{name}, #{patronymic}, #{encryptedPassword}, 0)")
   void insertPersonDot(PersonDot personDot);
+
 }
