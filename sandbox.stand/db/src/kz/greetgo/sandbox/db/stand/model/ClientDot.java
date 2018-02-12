@@ -20,7 +20,7 @@ public class ClientDot {
   public String patronymic;
   public Date birthDate;
   public GenderType gender;
-  public String charmId;
+  public String charm;
 
   @SuppressWarnings("StringBufferReplaceableByString")
   public String getFIO() {
@@ -38,7 +38,7 @@ public class ClientDot {
     this.gender = clientToSave.gender;
     this.patronymic = clientToSave.patronymic;
     this.birthDate = clientToSave.birthDate;
-    this.charmId = clientToSave.charmId;
+    this.charm = clientToSave.charm;
   }
 
 
@@ -48,7 +48,7 @@ public class ClientDot {
     clientRecord.name = this.name;
     clientRecord.surname = this.surname;
     clientRecord.patronymic = this.patronymic;
-    clientRecord.charmId = this.charmId;
+    clientRecord.charmId = this.charm;
     clientRecord.age = AgeCalculator.calculateAge(this.birthDate, new Date());
 
     return clientRecord;
@@ -60,7 +60,7 @@ public class ClientDot {
     clientDetail.name = this.name;
     clientDetail.surname = this.surname;
     clientDetail.patronymic = this.patronymic;
-    clientDetail.charmId = this.charmId;
+    clientDetail.charm = this.charm;
     clientDetail.birthDate = this.birthDate;
     clientDetail.gender = gender;
     return clientDetail;

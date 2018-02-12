@@ -4,7 +4,7 @@ import kz.greetgo.sandbox.controller.enums.AddressType;
 import kz.greetgo.sandbox.controller.model.ClientAddress;
 
 public class ClientAddressDot {
-  public String clientId;
+  public String client;
   public AddressType type;
   public String street;
   public String house;
@@ -14,8 +14,8 @@ public class ClientAddressDot {
 
   }
 
-  public ClientAddressDot(String clientId, ClientAddress clientAddress) {
-    this.clientId = clientId;
+  public ClientAddressDot(String client, ClientAddress clientAddress) {
+    this.client = client;
     this.flat = clientAddress.flat;
     this.street = clientAddress.street;
     this.house = clientAddress.house;
@@ -27,7 +27,7 @@ public class ClientAddressDot {
     clientAddress.type = type;
     clientAddress.flat = flat;
     clientAddress.house = house;
-    clientAddress.clientId = clientId;
+    clientAddress.client = client;
     clientAddress.street = street;
     return clientAddress;
   }
