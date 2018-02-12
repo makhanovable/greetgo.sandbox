@@ -14,6 +14,7 @@ import kz.greetgo.sandbox.controller.util.Controller;
 
 import java.util.List;
 
+@SuppressWarnings("WeakerAccess")
 @Bean
 @Mapping("/client")
 public class ClientController implements Controller {
@@ -54,16 +55,14 @@ public class ClientController implements Controller {
   }
 
   @ToJson
-  @Mapping("/add")
-  public String add(@Par("client") @Json ClientForm clientForm) {
-    this.clientRegister.get().add(clientForm);
+  @Mapping("/addOrUpdate")
+  public String addOrUpdate(@Par("client") @Json ClientForm clientForm) {
+    if (clientForm.id != null)
+      return this.clientRegister.get().update(clientForm) ? "ok" : "bad";
+    else
+      this.clientRegister.get().add(clientForm);
     return "ok";
   }
 
-  @ToJson
-  @Mapping("/update")
-  public String update(@Par("client") @Json ClientForm clientForm) {
-    return this.clientRegister.get().update(clientForm) ? "ok" : "bad";
-  }
 
 }

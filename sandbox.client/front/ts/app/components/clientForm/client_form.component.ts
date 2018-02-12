@@ -141,9 +141,8 @@ export class ClientFormComponent implements OnInit {
 
   save(toSave: ClientInfo) {
 
-    let url = this.newForm ? "/client/update" : "/client/add";
+    let url = "/client/addOrUpdate";
     let finalObject = Object.assign({}, toSave);
-
     if (!(toSave.actualAddress.street || toSave.actualAddress.house || toSave.actualAddress.flat))
       delete finalObject.actualAddress;
     if (!(toSave.registerAddress.street || toSave.registerAddress.house || toSave.registerAddress.flat))
@@ -166,7 +165,7 @@ export class ClientFormComponent implements OnInit {
   }
 
   exit() {
-    this.dialogRef.close();
+    this.dialogRef.close("cancel");
   }
 
 }

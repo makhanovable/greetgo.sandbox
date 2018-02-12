@@ -26,7 +26,7 @@
 
         <ng-container matColumnDef="fio">
           <mat-header-cell *matHeaderCellDef> Full name</mat-header-cell>
-          <mat-cell *matCellDef="let element"> {{[element.surname, element.name, element.patronymic].join(' ') }}
+          <mat-cell *matCellDef="let element"> {{[element.name, element.surname, element.patronymic].join(' ') }}
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="charm">
