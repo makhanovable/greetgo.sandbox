@@ -12,7 +12,7 @@ public class ClientToSave {
   public String patronymic;
   public Date birthDate;
   public GenderType gender;
-  public String charmId;
+  public String charm;
 
   public ClientAddress actualAddress;
   public ClientAddress registerAddress;

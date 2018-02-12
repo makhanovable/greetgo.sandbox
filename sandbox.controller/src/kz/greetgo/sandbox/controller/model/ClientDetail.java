@@ -7,12 +7,12 @@ import java.util.List;
 
 public class ClientDetail {
   public String id;
-  public String surname;
   public String name;
+  public String surname;
   public String patronymic;
   public Date birthDate;
   public GenderType gender;
-  public String charmId;
+  public String charm;
   public ClientAddress actualAddress;
   public ClientAddress registerAddress;
   public List<ClientPhoneNumber> phoneNumbers;
