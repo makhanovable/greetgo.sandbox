@@ -22,7 +22,7 @@
     </mat-form-field>
 
     <mat-form-field>
-      <mat-select placeholder="Charm" [(ngModel)]="formData.charmId" required>
+      <mat-select placeholder="Charm" [(ngModel)]="formData.charm" required>
         <mat-option *ngFor="let charm of charms" value="{{charm.id}}">{{charm.name}}</mat-option>
       </mat-select>
     </mat-form-field>

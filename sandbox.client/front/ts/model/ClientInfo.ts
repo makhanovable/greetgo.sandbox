@@ -5,7 +5,7 @@ export class ClientInfo {
   public patronymic: string;
   public surname: string;
   public age: number;
-  public charmId: string;
+  public charm: string;
   public totalAccountBalance: number;
   public maximumBalance: number;
   public minimumBalance: number;

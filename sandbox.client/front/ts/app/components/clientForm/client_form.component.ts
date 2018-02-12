@@ -31,14 +31,6 @@ export class ClientFormComponent implements OnInit {
 
   requiredFields = new ClientInfo;
 
-  // requiredFields = {
-  //   name: true,
-  //   surname: true,
-  //   patronymic: true,
-  //   charmId: true,
-  //   birthDate: true
-  // }
-
   constructor(public dialogRef: MatDialogRef<ClientFormComponent>,
               @Inject(MAT_DIALOG_DATA) public data: any,
               private httpService: HttpService, private http: Http) {
@@ -57,13 +49,13 @@ export class ClientFormComponent implements OnInit {
       this.formData.actualAddress.type = AddressType.FACT;
       this.fillMissingPhones();
     }
-    this.charms = this.data.charms
+    this.charms = this.data.charms;
 
   }
 
   loadEditableData(id: number): ClientInfo {
 
-    this.httpService.get("/client/info", {
+    this.httpService.get("/client/detail", {
       id: id,
     }).toPromise().then(res => {
       this.formData = JSON.parse(res.text()) as ClientDetail;
@@ -86,7 +78,7 @@ export class ClientFormComponent implements OnInit {
         });
       }
       else {
-        this.formData.phoneNumbers = []
+        this.formData.phoneNumbers = [];
       }
 
       this.fillMissingPhones();
@@ -137,7 +129,7 @@ export class ClientFormComponent implements OnInit {
   }
 
   canSave() {
-    return this.formData.name && this.formData.surname && this.formData.birthDate && this.formData.gender && this.formData.charmId && this.formData.patronymic;
+    return this.formData.name && this.formData.surname && this.formData.birthDate && this.formData.gender && this.formData.charm && this.formData.patronymic;
   }
 
   save() {
@@ -148,8 +140,8 @@ export class ClientFormComponent implements OnInit {
     if (this.formData.registerAddress.street || this.formData.registerAddress.house || this.formData.registerAddress.flat)
       toSave.registerAddress = this.formData.registerAddress;
 
-    toSave.toDeleteNumbers = []
-    toSave.toSave = []
+    toSave.toDeleteNumbers = [];
+    toSave.toSave = [];
 
     this.formData.phoneNumbers.forEach(element => {
 
