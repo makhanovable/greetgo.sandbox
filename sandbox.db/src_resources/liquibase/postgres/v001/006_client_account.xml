@@ -12,8 +12,7 @@
         number character varying(100) NOT NULL,
         registeredAt timestamp with time zone NOT NULL,
 
-        PRIMARY KEY (id),
-        FOREIGN KEY (client) REFERENCES Client (id) MATCH SIMPLE
+        PRIMARY KEY (id)
       )
     ]]></sql>
   </changeSet>

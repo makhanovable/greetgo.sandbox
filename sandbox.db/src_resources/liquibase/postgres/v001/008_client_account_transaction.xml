@@ -11,11 +11,7 @@
         money real NOT NULL,
         registeredAt timestamp with time zone NOT NULL,
         type character varying(35) NOT NULL,
-
-        PRIMARY KEY (id),
-        FOREIGN KEY (account) REFERENCES ClientAccount (id) MATCH SIMPLE,
-        FOREIGN KEY (type) REFERENCES ClientAccount (id) MATCH SIMPLE
-
+        PRIMARY KEY (id)
       )
     ]]></sql>
   </changeSet>

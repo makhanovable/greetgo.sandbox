@@ -13,6 +13,7 @@
         gender character varying(10) NOT NULL,
         birthDate date NOT NULL,
         charm character varying(32) NOT NULL,
+        actual boolean,
         PRIMARY KEY (id)
       )
     ]]></sql>

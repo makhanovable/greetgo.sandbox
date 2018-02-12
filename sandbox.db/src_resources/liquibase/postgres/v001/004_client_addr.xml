@@ -11,10 +11,7 @@
         street character varying(100) NOT NULL,
         house character varying(100) NOT NULL,
         flat character varying(100),
-        PRIMARY KEY (client, type),
-        FOREIGN KEY (client)
-          REFERENCES Client (id) MATCH SIMPLE
-          ON DELETE CASCADE
+        PRIMARY KEY (client, type)
       )
     ]]></sql>
   </changeSet>
