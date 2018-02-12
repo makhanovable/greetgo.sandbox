@@ -13,6 +13,7 @@ import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
+@SuppressWarnings("WeakerAccess")
 public class CharmRegisterImplTest extends ParentTestNg {
 
   public BeanGetter<CharmRegister> charmRegister;
@@ -22,6 +23,7 @@ public class CharmRegisterImplTest extends ParentTestNg {
   @Test
   void insertTest() {
     this.charmTestDao.get().clear();
+
     CharmDot cd = new CharmDot();
     cd.id = idGenerator.get().newId();
     cd.energy = (float) RND.plusDouble(10D, 10);
@@ -38,7 +40,5 @@ public class CharmRegisterImplTest extends ParentTestNg {
 
     assertThat(charmlist.size()).isEqualTo(1);
     assertThat(charmlist.get(0).name.equals(cd.name) && charmlist.get(0).id.equals(cd.id)).isTrue();
-
-
   }
 }

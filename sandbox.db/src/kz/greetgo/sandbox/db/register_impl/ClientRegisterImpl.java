@@ -3,6 +3,7 @@ package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.sandbox.controller.enums.AddressType;
 import kz.greetgo.sandbox.controller.model.ClientDetail;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientToSave;
@@ -34,8 +35,11 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   @Override
-  public ClientDetail info(String id) {
-    throw new NotImplementedException();
+  public ClientDetail detail(String id) {
+    ClientDetail clientDetail = this.clientDao.get().detail(id);
+    clientDetail.actualAddress = this.clientDao.get().getAddresses(id, AddressType.FACT);
+    clientDetail.registerAddress = this.clientDao.get().getAddresses(id, AddressType.REG);
+    return clientDetail;
   }
 
   @Override
