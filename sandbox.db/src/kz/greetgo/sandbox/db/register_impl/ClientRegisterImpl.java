@@ -1,47 +1,43 @@
 package kz.greetgo.sandbox.db.register_impl;
 
 
-import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.ClientForm;
 import kz.greetgo.sandbox.controller.model.ClientInfo;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.db.dao.ClientDao;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.List;
 
 public class ClientRegisterImpl implements ClientRegister {
 
-  public BeanGetter<ClientDao> clientDao;
-
-  @Override
-  public void add(ClientForm clientForm) {
-
-  }
-  
   @Override
   public List<ClientInfo> getClientInfoList(int limit, int page, String filter, String orderBy, int desc) {
-    return null;
+
+    throw new NotImplementedException();
   }
 
   @Override
   public int getClientsSize(String filter) {
-    return 0;
+    throw new NotImplementedException();
   }
 
   @Override
-  public float remove(List<Integer> id) {
-    return 0;
+  public float remove(List<String> id) {
+    throw new NotImplementedException();
   }
 
   @Override
-  public ClientForm info(int id) {
-    return null;
+  public ClientForm info(String id) {
+    throw new NotImplementedException();
   }
 
-
+  @Override
+  public void add(ClientForm clientForm) {
+    throw new NotImplementedException();
+  }
 
   @Override
   public boolean update(ClientForm clientForm) {
-    return false;
+    throw new NotImplementedException();
   }
 }

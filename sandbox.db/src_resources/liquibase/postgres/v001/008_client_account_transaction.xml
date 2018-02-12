@@ -6,11 +6,11 @@
   <changeSet author="damze" id="create-table-ClientAccountTransaction">
     <sql endDelimiter=";;"><![CDATA[
       create table ClientAccountTransaction (
-        id integer NOT NULL,
-        account integer NOT NULL,
+        id character varying(35) NOT NULL,
+        account character varying(35) NOT NULL,
         money real NOT NULL,
         registeredAt timestamp with time zone NOT NULL,
-        type integer NOT NULL,
+        type character varying(35) NOT NULL,
 
         PRIMARY KEY (id),
         FOREIGN KEY (account) REFERENCES ClientAccount (id) MATCH SIMPLE,

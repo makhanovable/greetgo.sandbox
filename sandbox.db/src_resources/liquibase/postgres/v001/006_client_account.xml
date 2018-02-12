@@ -6,8 +6,8 @@
   <changeSet author="damze" id="create-table-ClientAccount">
     <sql endDelimiter=";;"><![CDATA[
       create table ClientAccount (
-        id integer NOT NULL,
-        client integer NOT NULL,
+        id character varying(35) NOT NULL,
+        client character varying(35) NOT NULL,
         money real NOT NULL,
         number character varying(100) NOT NULL,
         registeredAt timestamp with time zone NOT NULL,

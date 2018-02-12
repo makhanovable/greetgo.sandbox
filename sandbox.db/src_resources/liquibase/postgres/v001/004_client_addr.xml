@@ -6,7 +6,7 @@
   <changeSet author="damze" id="create-table-ClientAddr">
     <sql endDelimiter=";;"><![CDATA[
       create table ClientAddr (
-        client integer NOT NULL,
+        client character varying(35) NOT NULL,
         type character varying(100) NOT NULL,
         street character varying(100) NOT NULL,
         house character varying(100) NOT NULL,
