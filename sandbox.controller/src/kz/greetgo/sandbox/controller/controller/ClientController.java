@@ -50,9 +50,9 @@ public class ClientController implements Controller {
   }
 
   @ToJson
-  @Mapping("/info")
-  public ClientDetail info(@Par("id") String id) {
-    return this.clientRegister.get().info(id);
+  @Mapping("/detail")
+  public ClientDetail detail(@Par("id") String id) {
+    return this.clientRegister.get().detail(id);
   }
 
   @ToJson
