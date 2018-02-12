@@ -42,7 +42,7 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public ClientDetail info(String id) {
+  public ClientDetail detail(String id) {
     ClientDetail clientDetail = this.db.get().clientStorage.get(id).toClientForm();
     this.setDetails(clientDetail);
     return clientDetail;

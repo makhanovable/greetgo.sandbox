@@ -14,7 +14,7 @@ public interface ClientRegister {
 
   float remove(List<String> id);
 
-  ClientDetail info(String id);
+  ClientDetail detail(String id);
 
   void add(ClientToSave clientDetail);
 
