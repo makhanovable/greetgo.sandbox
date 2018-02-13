@@ -54,14 +54,13 @@ public interface ClientDao {
   @Update("update ClientPhone set number=#{number} where client=#{client} and number=#{oldNumber}")
   void updatePhone(ClientPhoneNumberToSave number);
 
-  //  @Update("update Client set actual=#{actual} where id in #{ids}")
-  @Select("<script> update Client set actual=#{actual} WHERE id IN " +
+  @Update("<script> update Client set actual=#{actual} WHERE id IN " +
     "<foreach item='item' index='index' collection='ids'" +
     " open='(' separator=',' close=')'>" +
     " #{item}" +
     "</foreach>" +
     "</script>")
-  void changeClientsActuality(@Param("ids") List<String> ids, @Param("actual") Boolean actual);
+  int changeClientsActuality(@Param("ids") List<String> ids, @Param("actual") Boolean actual);
 
 
 }

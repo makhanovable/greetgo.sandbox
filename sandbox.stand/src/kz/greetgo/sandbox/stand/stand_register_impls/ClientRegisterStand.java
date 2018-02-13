@@ -117,13 +117,13 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public float remove(List<String> ids) {
+  public int remove(List<String> ids) {
 
     int success = 0;
     for (String id : ids) {
       success += remove(id) ? 1 : 0;
     }
-    return success / ids.size();
+    return success;
   }
 
   private boolean remove(String id) {

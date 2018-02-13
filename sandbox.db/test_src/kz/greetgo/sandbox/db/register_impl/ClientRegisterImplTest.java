@@ -27,6 +27,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public BeanGetter<ClientTestDao> clientTestDao;
   public BeanGetter<IdGenerator> idGenerator;
 
+
   @Test
   void removeClientsTest() {
     this.clientTestDao.get().clear();
@@ -40,13 +41,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     //
     //
-    this.clientRegister.get().remove(ids);
+    int deleted = this.clientRegister.get().remove(ids);
     //
     //
 
+    assertThat(deleted).isEqualTo(ids.size());
     List<ClientDot> list = new ArrayList<>();
     assertThat(list).isEmpty();
-    
+
 //    for (String id : ids) {
 //      assertThat(list.stream().anyMatch(o -> o.id.equals(id))).isFalse();
 //    }

@@ -12,7 +12,7 @@ public interface ClientRegister {
 
   int getClientsSize(String filter);
 
-  float remove(List<String> id);
+  int remove(List<String> id);
 
   ClientDetail detail(String id);
 
