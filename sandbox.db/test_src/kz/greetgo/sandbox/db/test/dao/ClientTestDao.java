@@ -25,7 +25,6 @@ public interface ClientTestDao {
     "values (#{client}, #{type}, #{street}, #{house}, #{flat})")
   void insertAddress(ClientAddressDot address);
 
-
   @Select("select id, name, surname, patronymic, birthDate, gender, charm from client where id=#{id}")
   @Results({
     @Result(property = "id", column = "id"),

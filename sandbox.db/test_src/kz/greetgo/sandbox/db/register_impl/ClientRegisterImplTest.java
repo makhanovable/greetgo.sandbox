@@ -31,6 +31,38 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public BeanGetter<IdGenerator> idGenerator;
 
   @Test
+  public void updateClientTest() {
+    this.clientTestDao.get().clear();
+    ClientDot c = this.rndClientDot();
+    this.clientTestDao.get().insertClientDot(c);
+    ClientPhoneNumberDot number1 = rndPhoneNumber(c.id, PhoneNumberType.WORK);
+    this.clientTestDao.get().insertPhone(number1);
+    ClientAddressDot actualAddress = rndAddress(c.id, AddressType.FACT);
+    ClientAddressDot registerAddress = rndAddress(c.id, AddressType.REG);
+    this.clientTestDao.get().insertAddress(actualAddress);
+    this.clientTestDao.get().insertAddress(registerAddress);
+
+    ClientToSave client = rndClientToSave(c.id);
+    client.toDeleteNumbers.add(number1.toClientPhoneNumber());
+
+    //
+    //
+    this.clientRegister.get().update(client);
+    //
+    //
+
+    ClientDetail clientDetail = this.clientTestDao.get().detail(client.id);
+    this.assertClientDetail(clientDetail, new ClientDot(client));
+    ClientAddress regAddress = this.clientTestDao.get().getAddres(client.id, AddressType.REG);
+    ClientAddress actAddress = this.clientTestDao.get().getAddres(client.id, AddressType.FACT);
+    List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(client.id);
+    assertThat(numberList.isEmpty()).isFalse();
+    assertThat(numberList.size()).isEqualTo(client.toSave.size());
+    assertThat(numberList.stream().allMatch(o -> o.number.equals(number1.number))).isFalse();
+
+  }
+
+  @Test
   public void addClientTest() {
     this.clientTestDao.get().clear();
     ClientToSave client = rndClientToSave(null);
