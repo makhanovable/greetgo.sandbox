@@ -65,12 +65,29 @@ public class ClientRegisterImpl implements ClientRegister {
       this.clientDao.get().insertAddress(clientToSave.registerAddress);
     }
 
-
-//    throw new NotImplementedException();
   }
 
   @Override
   public boolean update(ClientToSave clientToSave) {
-    throw new NotImplementedException();
+    try {
+      this.clientDao.get().updateClient(clientToSave);
+      if (clientToSave.toDeleteNumbers != null) {
+        for (ClientPhoneNumber cpn : clientToSave.toDeleteNumbers) {
+          this.clientDao.get().changeNumberActuality(cpn.client, cpn.number, false);
+        }
+      }
+      if (clientToSave.toSave != null) {
+        for (ClientPhoneNumber cpn : clientToSave.toSave) {
+          cpn.client = clientToSave.id;
+          this.clientDao.get().insertPhone(cpn);
+        }
+      }
+
+      return true;
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return false;
+
   }
 }

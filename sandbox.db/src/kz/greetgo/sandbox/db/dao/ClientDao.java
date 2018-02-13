@@ -4,16 +4,18 @@ import kz.greetgo.sandbox.controller.enums.AddressType;
 import kz.greetgo.sandbox.controller.model.ClientAddress;
 import kz.greetgo.sandbox.controller.model.ClientDetail;
 import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
+@SuppressWarnings("SameParameterValue")
 public interface ClientDao {
 
-  @Select("select count(1) from Client c where c.name")
-  int countByFilter(@Param("filter") String filter);
+//  @Select("select count(1) from Client c where c.name")
+//  int countByFilter(@Param("filter") String filter);
 
-  @Select("select sount(1) from Client")
+  @Select("select count(1) from Client")
   int countAll();
 
   @Select("select id, name, surname, patronymic, birthDate, gender, charm from client where id=#{id}")
@@ -24,11 +26,11 @@ public interface ClientDao {
   })
   ClientDetail detail(@Param("id") String id);
 
-  @Select("select client, number, type from ClientPhone where client=#{client}")
+  @Select("select client, number, type from ClientPhone where client=#{client} and actual=true")
   List<ClientPhoneNumber> getNumbersById(String client);
 
   @Select("select client, type, street, house, flat from ClientAddr where client=#{client} and type=#{type}")
-  ClientAddress getAddresses(@Param("client") String client, @Param("type") AddressType type);
+  ClientAddress getAddres(@Param("client") String client, @Param("type") AddressType type);
 
   @Insert("insert into ClientPhone (client, number, type) " +
     "values (#{client}, #{number}, #{type})")
@@ -36,7 +38,17 @@ public interface ClientDao {
 
   @Insert("insert into ClientAddr (client, type, street, house, flat) " +
     "values (#{client}, #{type}, #{street}, #{house}, #{flat})")
-  void insertAddress(ClientPhoneNumber phone);
+  void insertAddress(ClientAddress address);
 
+  @Insert("insert into Client (id, name, surname, patronymic, birthDate, gender, charm) " +
+    "values (#{id}, #{name}, #{surname}, #{patronymic}, #{birthDate}, #{gender}, #{charm})")
+  void insertClient(ClientToSave client);
+
+  @Update("update Client set (name, surname, patronymic, birthDate, gender, charm) = " +
+    "(#{name}, #{surname}, #{patronymic}, #{birthDate}, #{gender}, #{charm}) where id=#{id}")
+  void updateClient(ClientToSave client);
+
+  @Update("update ClientPhone set actual=#{actual} where client=#{client}")
+  void changeNumberActuality(@Param("client") String client, @Param("number") String number, @Param("actual") Boolean actual);
 
 }
