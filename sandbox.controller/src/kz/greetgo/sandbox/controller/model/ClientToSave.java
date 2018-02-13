@@ -17,6 +17,8 @@ public class ClientToSave {
   public ClientAddress actualAddress;
   public ClientAddress registerAddress;
 
-  public List<ClientPhoneNumber> toSave;
-  public List<ClientPhoneNumber> toDeleteNumbers;
+  public List<ClientPhoneNumberToSave> numersToSave;
+  public List<ClientPhoneNumber> numbersToDelete;
+
+
 }

@@ -2,7 +2,6 @@ import {ClientPhone} from "../../../model/ClientPhone";
 import {ClientAddress} from "../../../model/ClientAddress";
 import {ClientToSave} from "../../../model/ClientToSave";
 import {ClientDetail} from "../../../model/ClientDetail";
-import {Http} from "@angular/http";
 import {PhoneNumberType} from "../../../enums/PhoneNumberType";
 import {HttpService} from "../../HttpService";
 import {ClientInfo} from "../../../model/ClientInfo";
@@ -20,7 +19,7 @@ export class ClientFormComponent implements OnInit {
   formData: ClientDetail;
 
   charms: any[];
-  phoneMask: any[] = ['+', '7', ' ', '(', /[1-9]/, /\d/, /\d/, ')', ' ', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/];
+  phoneMask: any[] = ['+', '7', ' ', '(', /[0-9]/, /\d/, /\d/, ')', ' ', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/];
   newForm: boolean = false;
 
   requiredPhoneNumbers = {
@@ -29,11 +28,9 @@ export class ClientFormComponent implements OnInit {
     "MOBILE": 3,
   };
 
-  requiredFields = new ClientInfo;
-
   constructor(public dialogRef: MatDialogRef<ClientFormComponent>,
               @Inject(MAT_DIALOG_DATA) public data: any,
-              private httpService: HttpService, private http: Http) {
+              private httpService: HttpService) {
   }
 
   ngOnInit() {
@@ -72,7 +69,7 @@ export class ClientFormComponent implements OnInit {
 
       if (this.formData.phoneNumbers) {
         this.formData.phoneNumbers.forEach(element => {
-          element['old'] = element.number
+          element['oldNumber'] = element.number;
           this.requiredPhoneNumbers[element.type] = this.requiredPhoneNumbers[element.type] - 1;
           element.type = this.getPhoneType(element.type);
         });
@@ -95,6 +92,18 @@ export class ClientFormComponent implements OnInit {
       this.formData.phoneNumbers.push({number: "", type: PhoneNumberType.WORK} as ClientPhone);
     for (let i = 0; i < this.requiredPhoneNumbers["MOBILE"]; i++)
       this.formData.phoneNumbers.push({number: "", type: PhoneNumberType.MOBILE} as ClientPhone);
+
+    this.formData.phoneNumbers.sort((a, b) => {
+      let nameA = a.type;
+      let nameB = b.type;
+      if (nameA < nameB) {
+        return -1;
+      }
+      if (nameA > nameB) {
+        return 1;
+      }
+      return 0;
+    });
 
   }
 
@@ -140,28 +149,21 @@ export class ClientFormComponent implements OnInit {
     if (this.formData.registerAddress.street || this.formData.registerAddress.house || this.formData.registerAddress.flat)
       toSave.registerAddress = this.formData.registerAddress;
 
-    toSave.toDeleteNumbers = [];
-    toSave.toSave = [];
+    toSave.numbersToDelete = [];
+    toSave.numersToSave = [];
 
     this.formData.phoneNumbers.forEach(element => {
 
-      if (element['old'] && element.number == "") {
+      if (element['oldNumber'] && element.number == "") {
         element.number = element['old'];
-        delete element['old'];
-        toSave.toDeleteNumbers.push(element);
+        delete element['oldNumber'];
+        toSave.numbersToDelete.push(element);
       }
-      else if (element['old'] && element.number != element['old']) {
-
-        let toDelete = new ClientPhone;
-        toDelete.clientId = element.clientId;
-        toDelete.number = element['old'];
-        toDelete.type = element.type;
-        toSave.toDeleteNumbers.push(toDelete)
-        delete element['old'];
-        toSave.toSave.push(element);
-
-      } else if (!element['old'] && element.number != "") {
-        toSave.toSave.push(element);
+      else if (element['oldNumber'] && element.number != element['oldNumber']) {
+        toSave.numersToSave.push(element);
+      } else if (!element['oldNumber'] && element.number != "") {
+        element['oldNumber'] = null;
+        toSave.numersToSave.push(element);
       }
 
     });

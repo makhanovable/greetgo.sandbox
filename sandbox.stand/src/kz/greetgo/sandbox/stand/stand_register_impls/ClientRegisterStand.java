@@ -3,10 +3,7 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.enums.AddressType;
-import kz.greetgo.sandbox.controller.model.ClientDetail;
-import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.controller.model.ClientToSave;
+import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
@@ -175,19 +172,23 @@ public class ClientRegisterStand implements ClientRegister {
 
     List<ClientPhoneNumberDot> numbers = db.get().clientPhoneNumberStorage.get(clientDot.id);
 
-    for (ClientPhoneNumber number : clientToSave.toDeleteNumbers) {
+    for (ClientPhoneNumber number : clientToSave.numbersToDelete) {
       ClientPhoneNumberDot found = numbers.stream().filter(o -> o.number.equals(number.number)).findFirst().get();
       numbers.remove(found);
     }
 
-    for (ClientPhoneNumber number : clientToSave.toSave) {
-
-      Boolean found = numbers.stream().anyMatch(o -> o.number.equals(number.number));
-      if (found) {
-        ClientPhoneNumberDot clientPhoneNumberDot = numbers.stream().filter(o -> o.number.equals(number.number)).findFirst().get();
-        numbers.remove(clientPhoneNumberDot);
+    for (ClientPhoneNumberToSave number : clientToSave.numersToSave) {
+      if (number.oldNumber == null)
+        numbers.add(new ClientPhoneNumberDot(clientDot.id, number));
+      else {
+        Boolean found = numbers.stream().anyMatch(o -> o.number.equals(number.oldNumber));
+        if (found) {
+          ClientPhoneNumberDot clientPhoneNumberDot = numbers.stream().filter(o -> o.number.equals(number.oldNumber)).findFirst().get();
+          numbers.remove(clientPhoneNumberDot);
+        }
+        numbers.add(new ClientPhoneNumberDot(clientDot.id, number));
       }
-      numbers.add(new ClientPhoneNumberDot(clientDot.id, number));
+
     }
     db.get().clientPhoneNumberStorage.put(clientDot.id, numbers);
   }

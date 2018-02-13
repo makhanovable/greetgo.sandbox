@@ -17,8 +17,8 @@ export class ClientToSave {
   public actualAddress: ClientAddress;
   public registerAddress: ClientAddress;
   
-  public toSave: ClientPhone[];
-  public toDeleteNumbers: ClientPhone[];
+  public numersToSave: ClientPhone[];
+  public numbersToDelete: ClientPhone[];
   
   constructor(data?: ClientDetail){
     if(data) {
