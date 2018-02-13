@@ -24,8 +24,6 @@ public class MigrateOneCiaFile {
   String tmpClientPhoneTableName;
   String tmpCharmTableName;
 
-  private static final String datePattern = "YYYY-MM-DD";
-
   public void migrate() throws Exception {
     prepareTmpTables();
     uploadData();
@@ -128,8 +126,8 @@ public class MigrateOneCiaFile {
       "SET error = " +
       "  'Значение birth выходит за рамки у ciaId = '||cia_id||'. Возраст должен быть между 3 и 1000 годами' " +
       "WHERE error IS NULL AND " +
-      "  (extract(YEAR FROM age(to_date(birth_date, \'" + datePattern + "\'))) <= 3 OR " +
-      "  extract(YEAR FROM age(to_date(birth_date, \'" + datePattern + "\'))) >= 1000) "
+      "  (extract(YEAR FROM age(to_date(birth_date, \'" + "YYYY-MM-DD" + "\'))) <= 3 OR " +
+      "  extract(YEAR FROM age(to_date(birth_date, \'" + "YYYY-MM-DD" + "\'))) >= 1000) "
     );
   }
 
@@ -145,7 +143,7 @@ public class MigrateOneCiaFile {
   // Статус = 1, если не имеется ошибки
   void migrateData_status1() throws SQLException {
     exec("UPDATE client_to_replace " +
-      "SET status = 1, birth_date_typed = to_date(birth_date, '" + datePattern + "') " +
+      "SET status = 1, birth_date_typed = to_date(birth_date, 'YYYY-MM-DD') " +
       "WHERE error IS NULL AND status = 0");
   }
 
@@ -173,7 +171,11 @@ public class MigrateOneCiaFile {
     );
   }
 
-  // Заполнение таблицы charm до того, как присваивать статус 3
+  /**
+   * Заполнение таблицы charm до того, как присваивать статус 3
+   *
+   * @throws SQLException проброс для удобства
+   */
   void migrateData_status3_fillCharmTable() throws SQLException {
     exec("INSERT INTO charm(id, name) " +
       "SELECT nextval('charm_id_seq') AS charm_id, charm_dictionary.name " +
