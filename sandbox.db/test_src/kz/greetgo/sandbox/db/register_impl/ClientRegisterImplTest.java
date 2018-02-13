@@ -15,6 +15,7 @@ import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     this.clientTestDao.get().clear();
 
     List<ClientDot> clients = new ArrayList<>();
-    for (int i = 0; i < RND.plusInt(1000); i++) {
+    for (int i = 0; i < RND.plusInt(10000); i++) {
       ClientDot cd = this.rndClientDot();
       this.clientTestDao.get().insertClientDot(cd);
       clients.add(cd);
@@ -61,7 +62,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
         //
         //
 
-        long expected = clients.stream().filter(o -> o.getFIO().toLowerCase().contains(filter.toLowerCase())).count();
+        List<String> list = Arrays.asList(filter.trim().split(" "));
+        long expected = clients.stream().filter(o -> list.stream().anyMatch(x -> o.getFIO().toLowerCase().contains(x.toLowerCase()))).count();
         assertThat(result).isEqualTo(expected);
       }
 
