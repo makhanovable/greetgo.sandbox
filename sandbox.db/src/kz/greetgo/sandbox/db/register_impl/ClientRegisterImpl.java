@@ -26,14 +26,18 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   @Override
-  public int getClientsSize(String filter) {
-    throw new NotImplementedException();
+  public long getClientsSize(String filter) {
+    if (filter == null)
+      return this.clientDao.get().countAll();
+    String[] filters = filter.trim().split(" ");
+    filter = String.join("|", filters);
+    filter = "%" + filter.toLowerCase() + "%";
+    return this.clientDao.get().countByFilter(filter);
   }
 
   @Override
   public int remove(List<String> id) {
     return this.clientDao.get().changeClientsActuality(id, false);
-
   }
 
   @Override

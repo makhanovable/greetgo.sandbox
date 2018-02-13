@@ -9,8 +9,8 @@ import java.util.List;
 @SuppressWarnings("SameParameterValue")
 public interface ClientDao {
 
-//  @Select("select count(1) from Client c where c.name")
-//  int countByFilter(@Param("filter") String filter);
+  @Select("select count(1) from Client c where lower(concat(c.name, c.surname, c.patronymic)) like #{filter}")
+  int countByFilter(@Param("filter") String filter);
 
   @Select("select count(1) from Client")
   int countAll();
