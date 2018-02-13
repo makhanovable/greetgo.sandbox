@@ -26,22 +26,47 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public BeanGetter<ClientRegister> clientRegister;
   public BeanGetter<ClientTestDao> clientTestDao;
   public BeanGetter<IdGenerator> idGenerator;
-  
+
+  @Test
+  void removeClientsTest() {
+    this.clientTestDao.get().clear();
+    List<String> ids = new ArrayList<>();
+
+    for (int i = 0; i < RND.plusInt(200); i++) {
+      ClientDot cd = this.rndClientDot();
+      this.clientTestDao.get().insertClientDot(cd);
+      ids.add(cd.id);
+    }
+
+    //
+    //
+    this.clientRegister.get().remove(ids);
+    //
+    //
+
+    List<ClientDot> list = new ArrayList<>();
+    assertThat(list).isEmpty();
+    
+//    for (String id : ids) {
+//      assertThat(list.stream().anyMatch(o -> o.id.equals(id))).isFalse();
+//    }
+
+  }
 
   @Test
   public void updateClientTest() {
     this.clientTestDao.get().clear();
-    ClientDot c = this.rndClientDot();
-    this.clientTestDao.get().insertClientDot(c);
-    ClientAddressDot actualAddress = rndAddress(c.id, AddressType.FACT);
-    ClientAddressDot registerAddress = rndAddress(c.id, AddressType.REG);
+    ClientDot cd = this.rndClientDot();
+    this.clientTestDao.get().insertClientDot(cd);
+    ClientAddressDot actualAddress = rndAddress(cd.id, AddressType.FACT);
+    ClientAddressDot registerAddress = rndAddress(cd.id, AddressType.REG);
     this.clientTestDao.get().insertAddress(actualAddress);
     this.clientTestDao.get().insertAddress(registerAddress);
 
-    ClientToSave test1 = rndClientToSave(c.id); // +ClientDetail +2addresses +3numbers
+    ClientToSave test1 = rndClientToSave(cd.id); // +ClientDetail +2addresses +3numbers
     //test1
     {
-      ClientPhoneNumberDot number1 = rndPhoneNumber(c.id, PhoneNumberType.WORK);
+      ClientPhoneNumberDot number1 = rndPhoneNumber(cd.id, PhoneNumberType.WORK);
       this.clientTestDao.get().insertPhone(number1); // number directly insterted to db
       test1.numbersToDelete.add(number1.toClientPhoneNumber());  // -1 number
 
@@ -68,7 +93,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //test2
     {
 
-      ClientToSave test2 = rndClientToSave(c.id);
+      ClientToSave test2 = rndClientToSave(cd.id);
 
       List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(test2.id);
       assertThat(numberList.isEmpty()).isFalse();
