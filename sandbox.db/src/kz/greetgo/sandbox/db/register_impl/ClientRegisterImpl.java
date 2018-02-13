@@ -32,8 +32,9 @@ public class ClientRegisterImpl implements ClientRegister {
 
   @Override
   public float remove(List<String> id) {
-
-    throw new NotImplementedException();
+    this.clientDao.get().changeClientsActuality(id, false);
+//    throw new NotImplementedException();
+    return 0f;
   }
 
   @Override
