@@ -13,7 +13,7 @@ import java.util.List;
 
 public interface ClientTestDao {
 
-  @Select("select id from Client")
+  @Select("select id from Client where actual=true")
   List<ClientDot> getAllIds();
 
   @Insert("insert into Client (id, name, surname, patronymic, gender, birthDate, charm) " +
