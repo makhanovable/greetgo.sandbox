@@ -33,9 +33,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   @Test
   public void addClientTest() {
     this.clientTestDao.get().clear();
-    String id = idGenerator.get().newId();
-    ClientToSave client = rndClientToSave(id);
-
+    ClientToSave client = rndClientToSave(null);
 
     //
     //
@@ -45,13 +43,15 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     ClientDetail clientDetail = this.clientTestDao.get().detail(client.id);
     this.assertClientDetail(clientDetail, new ClientDot(client));
-    ClientAddress regAddress = this.clientTestDao.get().getAddres(id, AddressType.REG);
-    ClientAddress actAddress = this.clientTestDao.get().getAddres(id, AddressType.FACT);
-    this.assertClientAddres(actAddress, new ClientAddressDot(id, client.actualAddress));
-    this.assertClientAddres(regAddress, new ClientAddressDot(id, client.registerAddress));
+    ClientAddress regAddress = this.clientTestDao.get().getAddres(client.id, AddressType.REG);
+    ClientAddress actAddress = this.clientTestDao.get().getAddres(client.id, AddressType.FACT);
+    this.assertClientAddres(actAddress, new ClientAddressDot(client.id, client.actualAddress));
+    this.assertClientAddres(regAddress, new ClientAddressDot(client.id, client.registerAddress));
 
-    List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(id);
-    this.assertPhoneNumber(numberList.get(0), new ClientPhoneNumberDot(id, client.toSave.get(0)));
+    List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(client.id);
+    assertThat(numberList.isEmpty()).isFalse();
+    assertThat(numberList.size()).isEqualTo(client.toSave.size());
+    this.assertPhoneNumber(numberList.get(0), new ClientPhoneNumberDot(client.id, client.toSave.get(0)));
 
   }
 
@@ -86,6 +86,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   }
 
+  @SuppressWarnings("SameParameterValue")
   private ClientToSave rndClientToSave(String id) {
     ClientToSave client = new ClientToSave();
     client.id = id;
@@ -96,13 +97,13 @@ public class ClientRegisterImplTest extends ParentTestNg {
     client.birthDate = RND.dateYears(1996, 2018);
     client.charm = RND.str(10);
 
-    client.actualAddress = rndAddress(id, AddressType.REG).toClientAddress();
+    client.actualAddress = rndAddress(id, AddressType.FACT).toClientAddress();
     client.registerAddress = rndAddress(id, AddressType.REG).toClientAddress();
 
     client.toSave = new ArrayList<>();
     client.toSave.add(rndPhoneNumber(id, PhoneNumberType.WORK).toClientPhoneNumber());
-    client.toSave.add(rndPhoneNumber(id, PhoneNumberType.MOBILE).toClientPhoneNumber());
-    client.toSave.add(rndPhoneNumber(id, PhoneNumberType.HOME).toClientPhoneNumber());
+//    client.toSave.add(rndPhoneNumber(id, PhoneNumberType.MOBILE).toClientPhoneNumber());
+//    client.toSave.add(rndPhoneNumber(id, PhoneNumberType.HOME).toClientPhoneNumber());
 
     return client;
   }
@@ -129,11 +130,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   private ClientAddressDot rndAddress(String id, AddressType type) {
     ClientAddressDot address = new ClientAddressDot();
-    address.street = RND.str(10);
     address.client = id;
-    address.house = RND.str(10);
     address.type = type;
 
+    address.street = RND.str(10);
+    address.house = RND.str(10);
     return address;
   }
 

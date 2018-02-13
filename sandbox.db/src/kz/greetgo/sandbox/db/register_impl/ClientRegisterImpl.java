@@ -5,6 +5,7 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.enums.AddressType;
 import kz.greetgo.sandbox.controller.model.ClientDetail;
+import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
@@ -13,10 +14,13 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.List;
 
+@SuppressWarnings("WeakerAccess")
 @Bean
 public class ClientRegisterImpl implements ClientRegister {
 
   public BeanGetter<ClientDao> clientDao;
+  public BeanGetter<IdGenerator> idGenerator;
+
 
   @Override
   public List<ClientRecord> getClientInfoList(int limit, int page, String filter, String orderBy, int desc) {
@@ -37,14 +41,32 @@ public class ClientRegisterImpl implements ClientRegister {
   @Override
   public ClientDetail detail(String id) {
     ClientDetail clientDetail = this.clientDao.get().detail(id);
-    clientDetail.actualAddress = this.clientDao.get().getAddresses(id, AddressType.FACT);
-    clientDetail.registerAddress = this.clientDao.get().getAddresses(id, AddressType.REG);
+    clientDetail.actualAddress = this.clientDao.get().getAddres(id, AddressType.FACT);
+    clientDetail.registerAddress = this.clientDao.get().getAddres(id, AddressType.REG);
     return clientDetail;
   }
 
   @Override
   public void add(ClientToSave clientToSave) {
-    throw new NotImplementedException();
+    clientToSave.id = this.idGenerator.get().newId();
+    this.clientDao.get().insertClient(clientToSave);
+
+    for (ClientPhoneNumber cpn : clientToSave.toSave) {
+      cpn.client = clientToSave.id;
+      this.clientDao.get().insertPhone(cpn);
+    }
+
+    if (clientToSave.actualAddress != null) {
+      clientToSave.actualAddress.client = clientToSave.id;
+      this.clientDao.get().insertAddress(clientToSave.actualAddress);
+    }
+    if (clientToSave.registerAddress != null) {
+      clientToSave.registerAddress.client = clientToSave.id;
+      this.clientDao.get().insertAddress(clientToSave.registerAddress);
+    }
+
+
+//    throw new NotImplementedException();
   }
 
   @Override
