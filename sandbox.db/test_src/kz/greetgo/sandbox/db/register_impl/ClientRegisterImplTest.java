@@ -132,6 +132,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     client.actualAddress = rndAddress(id, AddressType.FACT).toClientAddress();
     client.registerAddress = rndAddress(id, AddressType.REG).toClientAddress();
 
+    client.toDeleteNumbers = new ArrayList<>();
     client.toSave = new ArrayList<>();
     client.toSave.add(rndPhoneNumber(id, PhoneNumberType.WORK).toClientPhoneNumber());
 //    client.toSave.add(rndPhoneNumber(id, PhoneNumberType.MOBILE).toClientPhoneNumber());

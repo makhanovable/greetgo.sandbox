@@ -33,7 +33,7 @@ public interface ClientTestDao {
   })
   ClientDetail detail(@Param("id") String id);
 
-  @Select("select client, number, type from ClientPhone where client=#{client}")
+  @Select("select client, number, type from ClientPhone where client=#{client} and actual=true")
   List<ClientPhoneNumber> getNumbersById(String client);
 
   @Select("select client, type, street, house, flat from ClientAddr where client=#{client} and type=#{type}")
