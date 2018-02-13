@@ -10,7 +10,7 @@ public interface ClientRegister {
 
   List<ClientRecord> getClientInfoList(int limit, int page, String filter, String orderBy, int desc);
 
-  int getClientsSize(String filter);
+  long getClientsSize(String filter);
 
   int remove(List<String> id);
 

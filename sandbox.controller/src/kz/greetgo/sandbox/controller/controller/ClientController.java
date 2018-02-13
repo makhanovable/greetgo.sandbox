@@ -39,7 +39,7 @@ public class ClientController implements Controller {
 
   @ToJson
   @Mapping("/amount")
-  public int getAmount(@Par("filter") String filter) {
+  public long getAmount(@Par("filter") String filter) {
     return this.clientRegister.get().getClientsSize(filter);
   }
 

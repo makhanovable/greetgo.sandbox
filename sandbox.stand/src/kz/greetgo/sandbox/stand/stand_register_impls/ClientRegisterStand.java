@@ -111,7 +111,7 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public int getClientsSize(String filter) {
+  public long getClientsSize(String filter) {
 
     return this.getFilteredClientInfo(filter).size();
   }
