@@ -3,10 +3,16 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <!-- v001 -->
-  <include file="liquibase/postgres/v001/000_common.xml"/>
-  <include file="liquibase/postgres/v001/001_person.xml"/>
-  <include file="liquibase/postgres/v001/002_client.xml"/>
-  <include file="liquibase/postgres/v001/003_client_list_report.xml"/>
-  <include file="liquibase/postgres/v001/004_migration.xml"/>
+  <changeSet author="nsmagulov" id="create_function_isDateCustom">
+    <sql endDelimiter=";;"><![CDATA[
+      CREATE OR REPLACE FUNCTION is_date_custom(s varchar) RETURNS BOOLEAN AS $$
+      BEGIN
+        PERFORM s::date;
+          RETURN true;
+        EXCEPTION WHEN OTHERS THEN
+          RETURN false;
+      END;
+      $$ LANGUAGE plpgsql
+    ]]></sql>
+  </changeSet>
 </databaseChangeLog>

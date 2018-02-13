@@ -22,20 +22,24 @@ public class CiaUploader extends CommonSaxHandler {
   private PreparedStatement clientAddressPrepareStatement;
   private PreparedStatement clientPhonePrepareStatement;
 
+  private int curClientRecordNum = 0;
+  private int curClientAddressRecordNum = 0;
+  private int curClientPhoneRecordNum = 0;
+
   private void prepare() throws SQLException {
     clientPrepareStatement = connection.prepareStatement(
-      "INSERT INTO " + clientTable + " (instance_id, cia_id, surname, name, patronymic, gender, birth_date, charm_name) " +
+      "INSERT INTO " + clientTable + " (record_no, cia_id, surname, name, patronymic, gender, birth_date, charm_name) " +
         "VALUES(?, ?, ?, ?, ?, ?, ?, ?)"
     );
 
     clientAddressPrepareStatement = connection.prepareStatement(
-      "INSERT INTO " + clientAddressTable + " (instance_id, type, street, house, flat) " +
-        "VALUES(?, ?, ?, ?, ?)"
+      "INSERT INTO " + clientAddressTable + " (record_no, client_record_no, type, street, house, flat) " +
+        "VALUES(?, ?, ?, ?, ?, ?)"
     );
 
     clientPhonePrepareStatement = connection.prepareStatement(
-      "INSERT INTO " + clientPhoneTable + " (instance_id, number, type) " +
-        "VALUES(?, ?, ?)"
+      "INSERT INTO " + clientPhoneTable + " (record_no, client_record_no, number, type) " +
+        "VALUES(?, ?, ?, ?)"
     );
   }
 
@@ -45,7 +49,7 @@ public class CiaUploader extends CommonSaxHandler {
 
   private void setClientPrepareStatement() throws SQLException {
     int idx = 1;
-    clientPrepareStatement.setInt(idx++, curClientInstanceId);
+    clientPrepareStatement.setInt(idx++, curClientRecordNum);
     clientPrepareStatement.setString(idx++, clientData.ciaId);
     clientPrepareStatement.setString(idx++, clientData.surname);
     clientPrepareStatement.setString(idx++, clientData.name);
@@ -57,7 +61,8 @@ public class CiaUploader extends CommonSaxHandler {
 
   private void setClientAddressPrepareStatement() throws SQLException {
     int idx = 1;
-    clientAddressPrepareStatement.setInt(idx++, curClientInstanceId);
+    clientAddressPrepareStatement.setInt(idx++, curClientAddressRecordNum);
+    clientAddressPrepareStatement.setInt(idx++, curClientRecordNum);
     clientAddressPrepareStatement.setString(idx++, clientAddressData.type);
     clientAddressPrepareStatement.setString(idx++, clientAddressData.street);
     clientAddressPrepareStatement.setString(idx++, clientAddressData.house);
@@ -66,12 +71,11 @@ public class CiaUploader extends CommonSaxHandler {
 
   private void setClientPhonePrepareStatement() throws SQLException {
     int idx = 1;
-    clientPhonePrepareStatement.setInt(idx++, curClientInstanceId);
+    clientPhonePrepareStatement.setInt(idx++, curClientPhoneRecordNum);
+    clientPhonePrepareStatement.setInt(idx++, curClientRecordNum);
     clientPhonePrepareStatement.setString(idx++, clientPhoneData.number);
     clientPhonePrepareStatement.setString(idx, clientPhoneData.type);
   }
-
-  private int curClientInstanceId = 0;
 
   private static final String TAG_CIA = "/cia";
   private static final String TAG_CLIENT = TAG_CIA + "/client";
@@ -102,7 +106,7 @@ public class CiaUploader extends CommonSaxHandler {
     if (path.equals(TAG_CLIENT)) {
       clientData = new ClientData();
       clientData.ciaId = attributes.getValue("id");
-      curClientInstanceId++;
+      curClientRecordNum++;
       return;
     }
     if (path.equals(TAG_CLIENT_SURNAME)) {
@@ -135,42 +139,21 @@ public class CiaUploader extends CommonSaxHandler {
       clientAddressData.street = attributes.getValue("street");
       clientAddressData.house = attributes.getValue("house");
       clientAddressData.flat = attributes.getValue("flat");
+      curClientAddressRecordNum++;
 
       this.addClientAddressToBatch();
-
       return;
     }
     if (path.equals(TAG_CLIENT_ADDRESS_REGISTRATION)) {
+      clientAddressData.clientRecordNo = curClientRecordNum;
       clientAddressData.type = AddressType.REGISTRATION.name();
       clientAddressData.street = attributes.getValue("street");
       clientAddressData.house = attributes.getValue("house");
       clientAddressData.flat = attributes.getValue("flat");
+      curClientAddressRecordNum++;
+
       this.addClientAddressToBatch();
       return;
-    }
-  }
-
-  private void addClientAddressToBatch() throws SQLException {
-    setClientAddressPrepareStatement();
-    clientAddressPrepareStatement.addBatch();
-
-    curClientAddressBatchCount++;
-    if (curClientAddressBatchCount > maxBatchSize) {
-      clientAddressPrepareStatement.executeBatch();
-      connection.commit();
-      curClientAddressBatchCount = 0;
-    }
-  }
-
-  private void addClientPhoneToBatch() throws SQLException {
-    setClientPhonePrepareStatement();
-    clientPhonePrepareStatement.addBatch();
-
-    curClientPhoneBatchCount++;
-    if (curClientPhoneBatchCount > maxBatchSize) {
-      clientPhonePrepareStatement.executeBatch();
-      connection.commit();
-      curClientPhoneBatchCount = 0;
     }
   }
 
@@ -201,22 +184,13 @@ public class CiaUploader extends CommonSaxHandler {
           throw new RuntimeException("There is no such phone in model enum");
         }
       }
+      curClientPhoneRecordNum++;
 
       this.addClientPhoneToBatch();
       return;
     }
     if (path.equals(TAG_CLIENT)) {
-      setClientPrepareStatement();
-      clientPrepareStatement.addBatch();
-      curClientBatchCount++;
-      totalClientBatchCount++;
-
-      if (curClientBatchCount > maxBatchSize) {
-        clientPrepareStatement.executeBatch();
-        connection.commit();
-        curClientBatchCount = 0;
-      }
-
+      this.addClientToBatch();
       return;
     }
     if (path.equals(TAG_CIA)) {
@@ -244,6 +218,43 @@ public class CiaUploader extends CommonSaxHandler {
         connection.commit();
 
       return;
+    }
+  }
+
+  private void addClientToBatch() throws SQLException {
+    setClientPrepareStatement();
+    clientPrepareStatement.addBatch();
+
+    totalClientBatchCount++;
+    curClientBatchCount++;
+    if (curClientBatchCount > maxBatchSize) {
+      clientPrepareStatement.executeBatch();
+      connection.commit();
+      curClientBatchCount = 0;
+    }
+  }
+
+  private void addClientAddressToBatch() throws SQLException {
+    setClientAddressPrepareStatement();
+    clientAddressPrepareStatement.addBatch();
+
+    curClientAddressBatchCount++;
+    if (curClientAddressBatchCount > maxBatchSize) {
+      clientAddressPrepareStatement.executeBatch();
+      connection.commit();
+      curClientAddressBatchCount = 0;
+    }
+  }
+
+  private void addClientPhoneToBatch() throws SQLException {
+    setClientPhonePrepareStatement();
+    clientPhonePrepareStatement.addBatch();
+
+    curClientPhoneBatchCount++;
+    if (curClientPhoneBatchCount > maxBatchSize) {
+      clientPhonePrepareStatement.executeBatch();
+      connection.commit();
+      curClientPhoneBatchCount = 0;
     }
   }
 }
