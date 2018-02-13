@@ -9,9 +9,9 @@ import java.util.List;
 @SuppressWarnings("SameParameterValue")
 public interface ClientDao {
 
-  @Select("select c.id, c.name, c.surname, c.patronymic, date_part('year',age(c.birthDate)), c.charm,  " +
+  @Select("select c.id, c.name, c.surname, c.patronymic, date_part('year',age(c.birthDate)), c.charm, " +
     "ca.totalAccountBalance, ca.maximumBalance, ca.minimumBalance from Client c " +
-    "join (select client, max(money) maximumBalance, min(money) minimumBalance, sum(money) totalAccountBalance from ClientAccount group by client) ca on ca.client=c.id " +
+    "left join (select client, max(money) maximumBalance, min(money) minimumBalance, sum(money) totalAccountBalance from ClientAccount group by client) ca on ca.client=c.id " +
     "where lower(concat(c.name, c.surname, c.patronymic)) like #{filter} " +
     "order by ${orderBy} ${order} limit ${limit} offset ${offset} ")
   List<ClientRecord> getClients(@Param("limit") int limit, @Param("offset") int offset, @Param("filter") String filter,

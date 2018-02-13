@@ -66,6 +66,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
       return fio1.compareTo(fio2);
     });
 
+    assertThat(result).isNotEmpty();
     for (int i = 0; i < result.size(); i++) {
       assertThat(filtered.get(i + page * limit).id.equals(result.get(i).id)).isTrue();
     }
