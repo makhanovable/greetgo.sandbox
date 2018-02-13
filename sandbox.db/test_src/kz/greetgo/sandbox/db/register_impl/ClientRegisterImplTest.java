@@ -29,11 +29,54 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
 
   @Test
+  void getClientsSizeTest() {
+    this.clientTestDao.get().clear();
+
+    List<ClientDot> clients = new ArrayList<>();
+    for (int i = 0; i < RND.plusInt(1000); i++) {
+      ClientDot cd = this.rndClientDot();
+      this.clientTestDao.get().insertClientDot(cd);
+      clients.add(cd);
+    }
+
+    //test1
+    {
+      String filter = null;
+      long result = this.clientRegister.get().getClientsSize(filter);
+      assertThat(result).isEqualTo(clients.size());
+    }
+    //test2
+    {
+      String[] filters = {
+        clients.get(RND.plusInt(clients.size())).name,
+        clients.get(RND.plusInt(clients.size())).surname,
+        clients.get(RND.plusInt(clients.size())).patronymic,
+        clients.get(RND.plusInt(clients.size())).getFIO()};
+
+      for (String filter : filters) {
+
+        //
+        //
+        long result = this.clientRegister.get().getClientsSize(filter);
+        //
+        //
+
+        long expected = clients.stream().filter(o -> o.getFIO().toLowerCase().contains(filter.toLowerCase())).count();
+        assertThat(result).isEqualTo(expected);
+      }
+
+
+    }
+
+
+  }
+
+  @Test
   void removeClientsTest() {
     this.clientTestDao.get().clear();
     List<String> ids = new ArrayList<>();
 
-    for (int i = 0; i < RND.plusInt(200); i++) {
+    for (int i = 0; i < RND.plusInt(1000); i++) {
       ClientDot cd = this.rndClientDot();
       this.clientTestDao.get().insertClientDot(cd);
       ids.add(cd.id);
@@ -52,7 +95,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
 //    for (String id : ids) {
 //      assertThat(list.stream().anyMatch(o -> o.id.equals(id))).isFalse();
 //    }
-
   }
 
   @Test
