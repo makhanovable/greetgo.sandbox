@@ -43,6 +43,17 @@ public interface ClientTestDao {
                     @Param("birth_date") Date date,
                     @Param("charm") int charm);
 
+  @Insert("INSERT INTO client (id, surname, name, patronymic, gender, birth_date, charm, migration_id) " +
+    "VALUES (#{id}, #{surname}, #{name}, #{patronymic}, #{gender}, #{birth_date}, #{charm}, #{migrationId})")
+  void updateClientWithMigrationId(@Param("id") long id,
+                    @Param("surname") String surname,
+                    @Param("name") String name,
+                    @Param("patronymic") String patronymic,
+                    @Param("gender") String gender,
+                    @Param("birth_date") Date date,
+                    @Param("charm") int charm,
+                    @Param("migrationId") long migrationId);
+
   @Update("UPDATE client " +
     "SET surname=#{surname}, name=#{name}, patronymic=#{patronymic}, " +
     "gender=#{gender}, birth_date=#{birth_date}, charm=#{charm}" +
@@ -70,7 +81,7 @@ public interface ClientTestDao {
   void insertCharm(@Param("id") int id,
                    @Param("name") String name,
                    @Param("description") String description,
-                   @Param("energy") float energy);
+                   @Param("energy") Float energy);
 
   @Select("SELECT nextval('client_account_id_seq')")
   long selectSeqIdNextValueTableClientAccount();

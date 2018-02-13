@@ -9,11 +9,12 @@
         id bigint NOT NULL,
         surname varchar(255) NOT NULL,
         name varchar(255) NOT NULL,
-        patronymic varchar(255) NOT NULL,
+        patronymic varchar(255),
         gender varchar(255) NOT NULL,
         birth_date date NOT NULL,
         charm integer NOT NULL,
-        actual smallint NOT NULL DEFAULT 1
+        actual smallint NOT NULL DEFAULT 1,
+        migration_id bigint UNIQUE
       )
     ]]></sql>
   </changeSet>
@@ -23,8 +24,8 @@
       CREATE TABLE charm (
         id integer NOT NULL,
         name varchar(255) NOT NULL,
-        description varchar(255) NOT NULL,
-        energy real NOT NULL,
+        description varchar(255),
+        energy real,
         actual smallint NOT NULL DEFAULT 1
       )
     ]]></sql>
@@ -35,9 +36,9 @@
       CREATE TABLE client_addr (
         client bigint NOT NULL,
         type varchar(255) NOT NULL,
-        street varchar(255) NOT NULL,
-        house varchar(255) NOT NULL,
-        flat varchar(255) NOT NULL
+        street varchar(255),
+        house varchar(255),
+        flat varchar(255)
       )
     ]]></sql>
   </changeSet>
