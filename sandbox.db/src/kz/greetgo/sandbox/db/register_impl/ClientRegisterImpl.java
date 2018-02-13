@@ -4,10 +4,7 @@ package kz.greetgo.sandbox.db.register_impl;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.enums.AddressType;
-import kz.greetgo.sandbox.controller.model.ClientDetail;
-import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.controller.model.ClientToSave;
+import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -35,6 +32,7 @@ public class ClientRegisterImpl implements ClientRegister {
 
   @Override
   public float remove(List<String> id) {
+
     throw new NotImplementedException();
   }
 
@@ -51,7 +49,7 @@ public class ClientRegisterImpl implements ClientRegister {
     clientToSave.id = this.idGenerator.get().newId();
     this.clientDao.get().insertClient(clientToSave);
 
-    for (ClientPhoneNumber cpn : clientToSave.toSave) {
+    for (ClientPhoneNumber cpn : clientToSave.numersToSave) {
       cpn.client = clientToSave.id;
       this.clientDao.get().insertPhone(cpn);
     }
@@ -71,16 +69,27 @@ public class ClientRegisterImpl implements ClientRegister {
   public boolean update(ClientToSave clientToSave) {
     try {
       this.clientDao.get().updateClient(clientToSave);
-      if (clientToSave.toDeleteNumbers != null) {
-        for (ClientPhoneNumber cpn : clientToSave.toDeleteNumbers) {
-          this.clientDao.get().changeNumberActuality(cpn.client, cpn.number, false);
+      if (clientToSave.numbersToDelete != null) {
+        for (ClientPhoneNumber cpn : clientToSave.numbersToDelete) {
+          this.clientDao.get().deletePhone(cpn);
         }
       }
-      if (clientToSave.toSave != null) {
-        for (ClientPhoneNumber cpn : clientToSave.toSave) {
+
+      if (clientToSave.numersToSave != null) {
+        for (ClientPhoneNumberToSave cpn : clientToSave.numersToSave) {
           cpn.client = clientToSave.id;
-          this.clientDao.get().insertPhone(cpn);
+          if (cpn.oldNumber == null)
+            this.clientDao.get().insertPhone(cpn);
+          else
+            this.clientDao.get().updatePhone(cpn);
         }
+      }
+
+      if (clientToSave.actualAddress != null) {
+        this.clientDao.get().updateAddress(clientToSave.actualAddress);
+      }
+      if (clientToSave.registerAddress != null) {
+        this.clientDao.get().updateAddress(clientToSave.registerAddress);
       }
 
       return true;

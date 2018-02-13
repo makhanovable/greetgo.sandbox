@@ -1,10 +1,7 @@
 package kz.greetgo.sandbox.db.dao;
 
 import kz.greetgo.sandbox.controller.enums.AddressType;
-import kz.greetgo.sandbox.controller.model.ClientAddress;
-import kz.greetgo.sandbox.controller.model.ClientDetail;
-import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
-import kz.greetgo.sandbox.controller.model.ClientToSave;
+import kz.greetgo.sandbox.controller.model.*;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -26,7 +23,7 @@ public interface ClientDao {
   })
   ClientDetail detail(@Param("id") String id);
 
-  @Select("select client, number, type from ClientPhone where client=#{client} and actual=true")
+  @Select("select client, number, type from ClientPhone where client=#{client}")
   List<ClientPhoneNumber> getNumbersById(String client);
 
   @Select("select client, type, street, house, flat from ClientAddr where client=#{client} and type=#{type}")
@@ -48,7 +45,14 @@ public interface ClientDao {
     "(#{name}, #{surname}, #{patronymic}, #{birthDate}, #{gender}, #{charm}) where id=#{id}")
   void updateClient(ClientToSave client);
 
-  @Update("update ClientPhone set actual=#{actual} where client=#{client}")
-  void changeNumberActuality(@Param("client") String client, @Param("number") String number, @Param("actual") Boolean actual);
+  @Update("update ClientAddr set (street, house, flat)=(#{street}, #{house}, #{flat}) where client=#{client} and type=#{type}")
+  void updateAddress(ClientAddress address);
+
+  @Delete("delete from ClientPhone where client=#{client} and number=#{number}")
+  void deletePhone(ClientPhoneNumber number);
+
+  @Update("update ClientPhone set number=#{number} where client=#{client} and number=#{oldNumber}")
+  void updatePhone(ClientPhoneNumberToSave number);
+
 
 }
