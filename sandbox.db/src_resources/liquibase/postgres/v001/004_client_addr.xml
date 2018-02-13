@@ -11,7 +11,6 @@
         street character varying(100) NOT NULL,
         house character varying(100) NOT NULL,
         flat character varying(100),
-        actual boolean,
         PRIMARY KEY (client, type)
       )
     ]]></sql>

@@ -11,7 +11,7 @@
         money real NOT NULL,
         number character varying(100) NOT NULL,
         registeredAt timestamp with time zone NOT NULL,
-
+        actual boolean default true,
         PRIMARY KEY (id)
       )
     ]]></sql>
