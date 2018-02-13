@@ -7,6 +7,7 @@ import kz.greetgo.sandbox.controller.enums.PhoneNumberType;
 import kz.greetgo.sandbox.controller.model.ClientAddress;
 import kz.greetgo.sandbox.controller.model.ClientDetail;
 import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
@@ -22,7 +23,7 @@ import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
-@SuppressWarnings({"deprecation", "WeakerAccess"})
+@SuppressWarnings({"deprecation", "WeakerAccess", "ConstantConditions"})
 public class ClientRegisterImplTest extends ParentTestNg {
 
   public BeanGetter<ClientRegister> clientRegister;
@@ -30,16 +31,43 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public BeanGetter<IdGenerator> idGenerator;
 
   @Test
-  public void addClientTest() throws Exception {
+  public void addClientTest() {
+    this.clientTestDao.get().clear();
+    String id = idGenerator.get().newId();
+    ClientToSave client = rndClientToSave(id);
+
+
+    //
+    //
+    this.clientRegister.get().add(client);
+    //
+    //
+
+    ClientDetail clientDetail = this.clientTestDao.get().detail(client.id);
+    this.assertClientDetail(clientDetail, new ClientDot(client));
+    ClientAddress regAddress = this.clientTestDao.get().getAddres(id, AddressType.REG);
+    ClientAddress actAddress = this.clientTestDao.get().getAddres(id, AddressType.FACT);
+    this.assertClientAddres(actAddress, new ClientAddressDot(id, client.actualAddress));
+    this.assertClientAddres(regAddress, new ClientAddressDot(id, client.registerAddress));
+
+    List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(id);
+    this.assertPhoneNumber(numberList.get(0), new ClientPhoneNumberDot(id, client.toSave.get(0)));
+
+  }
+
+  @Test
+  public void getDetailTest() throws Exception {
 
     this.clientTestDao.get().clear();
-    ClientDot c = this.insertClientDot();
-    List<ClientPhoneNumberDot> numbers = new ArrayList<>();
+    ClientDot c = this.rndClientDot();
+    this.clientTestDao.get().insertClientDot(c);
+    ClientPhoneNumberDot number1 = rndPhoneNumber(c.id, PhoneNumberType.WORK);
+    this.clientTestDao.get().insertPhone(number1);
+    ClientAddressDot actualAddress = rndAddress(c.id, AddressType.FACT);
+    ClientAddressDot registerAddress = rndAddress(c.id, AddressType.REG);
+    this.clientTestDao.get().insertAddress(actualAddress);
+    this.clientTestDao.get().insertAddress(registerAddress);
 
-    ClientPhoneNumberDot number1 = insertPhoneNumber(c.id, PhoneNumberType.WORK);
-
-    ClientAddressDot actualAddress = insertAddress(c.id, AddressType.FACT);
-    ClientAddressDot registerAddress = insertAddress(c.id, AddressType.REG);
 
     //
     //
@@ -58,14 +86,40 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   }
 
+  private ClientToSave rndClientToSave(String id) {
+    ClientToSave client = new ClientToSave();
+    client.id = id;
+    client.name = RND.str(10);
+    client.surname = RND.str(10);
+    client.patronymic = RND.str(10);
+    client.gender = GenderType.MALE;
+    client.birthDate = RND.dateYears(1996, 2018);
+    client.charm = RND.str(10);
 
-  private void assertPhoneNumber(ClientPhoneNumber clientPhoneNumberDot, ClientPhoneNumberDot assertion) {
-    assertThat(clientPhoneNumberDot.client).isEqualTo(assertion.client);
-    assertThat(clientPhoneNumberDot.number).isEqualTo(assertion.number);
-    assertThat(clientPhoneNumberDot.type).isEqualTo(assertion.type);
+    client.actualAddress = rndAddress(id, AddressType.REG).toClientAddress();
+    client.registerAddress = rndAddress(id, AddressType.REG).toClientAddress();
+
+    client.toSave = new ArrayList<>();
+    client.toSave.add(rndPhoneNumber(id, PhoneNumberType.WORK).toClientPhoneNumber());
+    client.toSave.add(rndPhoneNumber(id, PhoneNumberType.MOBILE).toClientPhoneNumber());
+    client.toSave.add(rndPhoneNumber(id, PhoneNumberType.HOME).toClientPhoneNumber());
+
+    return client;
+  }
+
+  private void assertPhoneNumber(ClientPhoneNumber target, ClientPhoneNumberDot assertion) {
+    if (target == null && assertion == null)
+      return;
+    assertThat(target).isNotNull();
+    assertThat(target.client).isEqualTo(assertion.client);
+    assertThat(target.number).isEqualTo(assertion.number);
+    assertThat(target.type).isEqualTo(assertion.type);
   }
 
   private void assertClientAddres(ClientAddress target, ClientAddressDot assertion) {
+    if (target == null && assertion == null)
+      return;
+    assertThat(target).isNotNull();
     assertThat(target.client).isEqualTo(assertion.client);
     assertThat(target.street).isEqualTo(assertion.street);
     assertThat(target.house).isEqualTo(assertion.house);
@@ -73,26 +127,29 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(target.type).isEqualTo(assertion.type);
   }
 
-  private ClientAddressDot insertAddress(String id, AddressType type) {
+  private ClientAddressDot rndAddress(String id, AddressType type) {
     ClientAddressDot address = new ClientAddressDot();
     address.street = RND.str(10);
     address.client = id;
     address.house = RND.str(10);
     address.type = type;
-    this.clientTestDao.get().insertAddress(address);
+
     return address;
   }
 
-  private ClientPhoneNumberDot insertPhoneNumber(String clientId, PhoneNumberType type) {
+  private ClientPhoneNumberDot rndPhoneNumber(String clientId, PhoneNumberType type) {
     ClientPhoneNumberDot number = new ClientPhoneNumberDot();
     number.client = clientId;
     number.type = type;
     number.number = RND.str(10);
-    this.clientTestDao.get().insertPhone(number);
+
     return number;
   }
 
   private void assertClientDetail(ClientDetail target, ClientDot assertion) {
+    if (target == null && assertion == null)
+      return;
+    assertThat(target).isNotNull();
     assertThat(target).isNotNull();
     assertThat(target.name).isEqualTo(assertion.name);
     assertThat(target.surname).isEqualTo(assertion.surname);
@@ -107,7 +164,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(target.id).isEqualTo(assertion.id);
   }
 
-  private ClientDot insertClientDot() {
+  private ClientDot rndClientDot() {
     ClientDot c = new ClientDot();
     c.id = idGenerator.get().newId();
     c.name = RND.str(10);
@@ -116,7 +173,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     c.charm = RND.str(10);
     c.gender = GenderType.MALE;
     c.birthDate = new Date();
-    this.clientTestDao.get().insertClientDot(c);
+
     return c;
   }
 
