@@ -139,10 +139,10 @@ public class ClientRegisterStand implements ClientRegister {
     List<ClientRecord> list = new ArrayList<>();
     List<ClientDot> clientDots = new ArrayList<>(db.get().clientStorage.values());
     if (filter != null) {
-      String[] filsers = filter.trim().split(" ");
+      String[] filters = filter.trim().split(" ");
 
       for (ClientDot clientDot : clientDots) {
-        for (String f : filsers)
+        for (String f : filters)
           if (clientDot.getFIO().toLowerCase().contains(f.toLowerCase())) {
             list.add(clientDot.toClientInfo());
             break;
