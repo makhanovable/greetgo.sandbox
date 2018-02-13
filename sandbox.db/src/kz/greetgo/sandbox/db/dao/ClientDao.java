@@ -9,6 +9,11 @@ import java.util.List;
 @SuppressWarnings("SameParameterValue")
 public interface ClientDao {
 
+  @Select("select * from Client c where lower(concat(c.name, c.surname, c.patronymic)) like #{filter}" +
+    " order by ${orderBy} ${order} limit ${limit} offset ${offset}")
+  List<ClientRecord> getClients(@Param("limit") int limit, @Param("offset") int offset, @Param("filter") String filter,
+                                @Param("orderBy") String orderBy, @Param("order") String order);
+
   @Select("select count(1) from Client c where lower(concat(c.name, c.surname, c.patronymic)) like #{filter}")
   int countByFilter(@Param("filter") String filter);
 

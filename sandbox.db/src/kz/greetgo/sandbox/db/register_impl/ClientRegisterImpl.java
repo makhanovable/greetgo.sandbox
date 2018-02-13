@@ -7,7 +7,6 @@ import kz.greetgo.sandbox.controller.enums.AddressType;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.dao.ClientDao;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.List;
 
@@ -22,16 +21,24 @@ public class ClientRegisterImpl implements ClientRegister {
   @Override
   public List<ClientRecord> getClientInfoList(int limit, int page, String filter, String orderBy, int desc) {
 
-    throw new NotImplementedException();
+    int offset = limit * page;
+    filter = filter == null ? "" : getFormattedFilter(filter);
+    String order = desc == 1 ? "desc" : "asc";
+    return this.clientDao.get().getClients(limit, offset, filter, orderBy, order);
+  }
+
+  private String getFormattedFilter(String filter) {
+    String[] filters = filter.trim().split(" ");
+    filter = String.join("|", filters);
+    filter = "%" + filter.toLowerCase() + "%";
+    return filter;
   }
 
   @Override
   public long getClientsSize(String filter) {
     if (filter == null)
       return this.clientDao.get().countAll();
-    String[] filters = filter.trim().split(" ");
-    filter = String.join("|", filters);
-    filter = "%" + filter.toLowerCase() + "%";
+    filter = this.getFormattedFilter(filter);
     return this.clientDao.get().countByFilter(filter);
   }
 
