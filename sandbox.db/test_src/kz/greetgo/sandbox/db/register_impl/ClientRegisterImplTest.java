@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -28,13 +29,56 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public BeanGetter<ClientTestDao> clientTestDao;
   public BeanGetter<IdGenerator> idGenerator;
 
+  @Test
+  void getClientInfoListTest() {
+
+    this.clientTestDao.get().clear();
+
+    List<ClientDot> clients = new ArrayList<>();
+    for (int i = 0; i < 1000; i++) {
+      ClientDot cd = this.rndClientDot();
+      this.clientTestDao.get().insertClientDot(cd);
+      clients.add(cd);
+    }
+
+    int limit = 10;
+    int page = 10;
+    String filter = "";
+    String orderBy = "name";
+    int desc = 0;
+
+    long size = this.clientRegister.get().getClientsSize(null);
+    //
+    //
+    List<ClientRecord> result = this.clientRegister.get().getClientInfoList(limit, page, filter, orderBy, desc);
+    //
+    //
+
+    List<ClientDot> filtered = clients.stream().filter(o -> o.getFIO().toLowerCase().contains(filter)).collect(Collectors.toList());
+    filtered.sort((o1, o2) -> {
+      if (desc == 1) {
+        ClientDot tmp = o1;
+        o1 = o2;
+        o2 = tmp;
+      }
+      String fio1 = o1.name;
+      String fio2 = o2.name;
+      return fio1.compareTo(fio2);
+    });
+
+    for (int i = 0; i < result.size(); i++) {
+      assertThat(filtered.get(i + page * limit).id.equals(result.get(i).id)).isTrue();
+    }
+
+
+  }
 
   @Test
   void getClientsSizeTest() {
     this.clientTestDao.get().clear();
 
     List<ClientDot> clients = new ArrayList<>();
-    for (int i = 0; i < RND.plusInt(10000); i++) {
+    for (int i = 0; i < 1000; i++) {
       ClientDot cd = this.rndClientDot();
       this.clientTestDao.get().insertClientDot(cd);
       clients.add(cd);
@@ -78,7 +122,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     this.clientTestDao.get().clear();
     List<String> ids = new ArrayList<>();
 
-    for (int i = 0; i < RND.plusInt(1000); i++) {
+    for (int i = 0; i < 1000; i++) {
       ClientDot cd = this.rndClientDot();
       this.clientTestDao.get().insertClientDot(cd);
       ids.add(cd.id);
@@ -305,9 +349,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
   private ClientDot rndClientDot() {
     ClientDot c = new ClientDot();
     c.id = idGenerator.get().newId();
-    c.name = RND.str(10);
-    c.surname = RND.str(10);
-    c.patronymic = RND.str(10);
+    c.name = idGenerator.get().newId();
+    c.surname = idGenerator.get().newId();
+    c.patronymic = idGenerator.get().newId();
     c.charm = RND.str(10);
     c.gender = GenderType.MALE;
     c.birthDate = new Date();
