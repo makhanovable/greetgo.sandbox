@@ -261,7 +261,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
   }
 
   @Test
-  public void migrateData_status3_fillCharmTable() throws Exception {
+  public void migrateData_finalOfCharmTable() throws Exception {
     this.resetAllTables();
 
     MigrateOneCiaFile oneCiaFile = new MigrateOneCiaFile();
@@ -273,9 +273,8 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
 
     String charmName = RND.str(16);
     expectedCharmNameList.add(charmName);
+    this.insertCharm(charmName);
     this.insertTmpClientWithCharmName(oneCiaFile.tmpClientTableName, clientRecordNum++, charmName, 2);
-    for (int i = 0; i < 3; i++)
-      this.insertTmpClientWithCharmName(oneCiaFile.tmpClientTableName, clientRecordNum++, charmName, 2);
 
     charmName = RND.str(16);
     expectedCharmNameList.add(charmName);
@@ -286,8 +285,14 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     charmName = RND.str(16);
     expectedCharmNameList.add(charmName);
     this.insertTmpClientWithCharmName(oneCiaFile.tmpClientTableName, clientRecordNum++, charmName, 2);
+    for (int i = 0; i < 3; i++)
+      this.insertTmpClientWithCharmName(oneCiaFile.tmpClientTableName, clientRecordNum++, charmName, 2);
 
-    oneCiaFile.migrateData_status3_fillCharmTable();
+    charmName = RND.str(16);
+    expectedCharmNameList.add(charmName);
+    this.insertTmpClientWithCharmName(oneCiaFile.tmpClientTableName, clientRecordNum, charmName, 2);
+
+    oneCiaFile.migrateData_finalOfCharmTable();
 
     List<Map<String, Object>> charmRecordList = toListMap("SELECT * FROM charm ORDER BY id ASC");
 
@@ -305,39 +310,39 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     oneCiaFile.prepareTmpTables();
 
     long clientRecordNum = 0;
-
     String charmName = RND.str(16);
-    this.insertTmpClientWithCharmName(oneCiaFile.tmpClientTableName, clientRecordNum++, charmName, 2);
+    this.insertCharm(charmName);
     this.insertTmpClientWithCharmName(oneCiaFile.tmpClientTableName, clientRecordNum++, charmName, 2);
 
     charmName = RND.str(16);
+    this.insertCharm(charmName);
     this.insertTmpClientWithCharmName(oneCiaFile.tmpClientTableName, clientRecordNum, charmName, 2);
 
     oneCiaFile.migrateData_status3();
 
-    List<Map<String, Object>> clientCharmIdList =
+    List<Map<String, Object>> clientRecordList =
       toListMap("SELECT * FROM " + oneCiaFile.tmpClientTableName + " WHERE status = 3 ORDER BY record_no ASC");
-    List<Map<String, Object>> charmIdList = toListMap("SELECT * FROM charm ORDER BY id ASC");
+    List<Map<String, Object>> charmRecordList = toListMap("SELECT * FROM charm ORDER BY id ASC");
 
-    assertThat(clientCharmIdList).hasSize(3);
-    assertThat(charmIdList).hasSize(2);
-    assertThat(clientCharmIdList.get(0).get("charm_id")).isEqualTo(charmIdList.get(0).get("id"));
-    assertThat(clientCharmIdList.get(1).get("charm_id")).isEqualTo(charmIdList.get(0).get("id"));
-    assertThat(clientCharmIdList.get(2).get("charm_id")).isEqualTo(charmIdList.get(1).get("id"));
-    assertThat(clientCharmIdList.get(0).get("charm_name")).isEqualTo(charmIdList.get(0).get("name"));
-    assertThat(clientCharmIdList.get(1).get("charm_name")).isEqualTo(charmIdList.get(0).get("name"));
-    assertThat(clientCharmIdList.get(2).get("charm_name")).isEqualTo(charmIdList.get(1).get("name"));
+    assertThat(charmRecordList.size()).isEqualTo(charmRecordList.size());
+    for (int i = 0; i < charmRecordList.size(); i++) {
+      assertThat(charmRecordList.get(i).get("id")).isEqualTo(clientRecordList.get(i).get("charm_id"));
+      assertThat(charmRecordList.get(i).get("name")).isEqualTo(clientRecordList.get(i).get("charm_name"));
+    }
   }
 
   @Test
-  public void migrateData_status4_finalOfClientTable() throws Exception {
+  public void migrateData_finalOfClientTable() throws Exception {
     this.resetAllTables();
 
     MigrateOneCiaFile oneCiaFile = new MigrateOneCiaFile();
     oneCiaFile.connection = connection;
     oneCiaFile.prepareTmpTables();
 
+    this.createClient(null);
+
     long clientRecordNum = 0;
+    this.createClientWithTmp(oneCiaFile.tmpClientTableName, clientRecordNum++, 3);
 
     String charmName = RND.str(16);
     int charmId = this.insertCharm(charmName);
@@ -353,15 +358,16 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     this.insertTmpClientWithCharmId_CharmName_Birthdate(
       oneCiaFile.tmpClientTableName, clientRecordNum, charmName, charmId, "2010-11-04", 3);
 
-    oneCiaFile.migrateData_status4_finalOfClientTable();
+    oneCiaFile.migrateData_finalOfClientTable();
 
     List<Map<String, Object>> tempRecordList =
-      toListMap("SELECT * FROM " + oneCiaFile.tmpClientTableName + " WHERE status = 4 ORDER BY record_no ASC");
-    List<Map<String, Object>> recordList = toListMap("SELECT * FROM client ORDER BY id ASC");
+      toListMap("SELECT * FROM " + oneCiaFile.tmpClientTableName + " WHERE status = 3 ORDER BY record_no ASC");
+    List<Map<String, Object>> recordList =
+      toListMap("SELECT * FROM client WHERE migration_cia_id IS NOT NULL ORDER BY id ASC");
 
-    assertThat(tempRecordList.size()).isEqualTo(recordList.size());
+    assertThat(recordList.size()).isEqualTo(tempRecordList.size());
     for (int i = 0; i < recordList.size(); i++) {
-      assertThat(recordList.get(i).get("migration_id")).isEqualTo(tempRecordList.get(i).get("record_no"));
+      assertThat(recordList.get(i).get("migration_cia_id")).isEqualTo(tempRecordList.get(i).get("cia_id"));
       assertThat(recordList.get(i).get("id")).isEqualTo(tempRecordList.get(i).get("client_id"));
       assertThat(recordList.get(i).get("surname")).isEqualTo(tempRecordList.get(i).get("surname"));
       assertThat(recordList.get(i).get("name")).isEqualTo(tempRecordList.get(i).get("name"));
@@ -374,41 +380,35 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
   }
 
   @Test
-  public void migrateData_status5_finalOfClientAddressTable() throws Exception {
+  public void migrateData_finalOfClientAddressTable() throws Exception {
     this.resetAllTables();
 
     MigrateOneCiaFile oneCiaFile = new MigrateOneCiaFile();
     oneCiaFile.connection = connection;
     oneCiaFile.prepareTmpTables();
 
-    long clientRecordNum = 0;
-    long clientAddressRecordNum = 0;
+    long clientRecordNum = 0, clientAddressRecordNum = 0;
     int expectedAddressListSize = 0;
-    long clientId = this.createClient(clientRecordNum);
+    long clientId = this.createClient(RND.str(16));
     this.insertTmpClientAddress(oneCiaFile.tmpClientAddressTableName, clientAddressRecordNum++, clientRecordNum,
       AddressType.FACTUAL.name(), RND.str(16), RND.str(16), RND.str(16));
     expectedAddressListSize++;
     this.insertTmpClientAddress(oneCiaFile.tmpClientAddressTableName, clientAddressRecordNum++, clientRecordNum,
       AddressType.REGISTRATION.name(), RND.str(16), RND.str(16), RND.str(16));
     expectedAddressListSize++;
-    this.insertTmpClientWithClientId(oneCiaFile.tmpClientTableName, clientRecordNum++, clientId, 4);
-
-    clientId = this.createClient(clientRecordNum);
-    this.insertTmpClientAddress(oneCiaFile.tmpClientAddressTableName, clientAddressRecordNum++, clientRecordNum,
-      AddressType.FACTUAL.name(), RND.str(16), RND.str(16), RND.str(16));
-    expectedAddressListSize++;
-    this.insertTmpClientWithClientId(oneCiaFile.tmpClientTableName, clientRecordNum++, clientId, 4);
-
+    this.insertTmpClientWithClientId(oneCiaFile.tmpClientTableName, clientRecordNum++, clientId, 3);
+    clientId = this.createClient(RND.str(16));
     this.insertTmpClientAddress(oneCiaFile.tmpClientAddressTableName, clientAddressRecordNum, clientRecordNum,
-      AddressType.REGISTRATION.name(), RND.str(16), RND.str(16), RND.str(16));
-    this.insertTmpClientWithClientId(oneCiaFile.tmpClientTableName, clientRecordNum, -1, 3);
+      AddressType.FACTUAL.name(), RND.str(16), RND.str(16), RND.str(16));
+    expectedAddressListSize++;
+    this.insertTmpClientWithClientId(oneCiaFile.tmpClientTableName, clientRecordNum, clientId, 3);
 
-    oneCiaFile.migrateData_status5_finalOfClientAddressTable();
+    oneCiaFile.migrateData_finalOfClientAddressTable();
 
     List<Map<String, Object>> tempAddressRecordList =
       toListMap("SELECT cl.client_id, adr.type, adr.street, adr.house, adr.flat " +
         "FROM " + oneCiaFile.tmpClientAddressTableName + " AS adr, " + oneCiaFile.tmpClientTableName + " AS cl " +
-        "WHERE adr.client_record_no = cl.record_no AND cl.status = 5 " +
+        "WHERE adr.client_record_no = cl.record_no AND cl.status = 3 " +
         "ORDER BY adr.record_no ASC");
     List<Map<String, Object>> addressRecordList = toListMap("SELECT * FROM client_addr ORDER BY client ASC");
 
@@ -424,43 +424,39 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
   }
 
   @Test
-  public void migrateData_status6_finalOfClientPhoneTable() throws Exception {
+  public void migrateData_finalOfClientPhoneTable() throws Exception {
     this.resetAllTables();
 
     MigrateOneCiaFile oneCiaFile = new MigrateOneCiaFile();
     oneCiaFile.connection = connection;
     oneCiaFile.prepareTmpTables();
 
-    long clientRecordNum = 0;
-    long clientPhoneRecordNum = 0;
+    long clientRecordNum = 0, clientPhoneRecordNum = 0;
     int expectedPhoneListSize = 0;
-    long clientId = this.createClient(clientRecordNum);
-    this.insertTmpClientPhoneWithNumber_Type(
+    long clientId = this.createClient(RND.str(16));
+    this.insertTmpClientPhone(
       oneCiaFile.tmpClientPhoneTableName, clientPhoneRecordNum++, clientRecordNum, RND.str(11), RND.str(10), 0);
     expectedPhoneListSize++;
-    this.insertTmpClientPhoneWithNumber_Type(
+    this.insertTmpClientPhone(
       oneCiaFile.tmpClientPhoneTableName, clientPhoneRecordNum++, clientRecordNum, RND.str(11), RND.str(10), 0);
     expectedPhoneListSize++;
-    this.insertTmpClientWithClientId(oneCiaFile.tmpClientTableName, clientRecordNum++, clientId, 5);
+    this.insertTmpClientWithClientId(oneCiaFile.tmpClientTableName, clientRecordNum++, clientId, 3);
 
-    clientId = this.createClient(clientRecordNum);
+    clientId = this.createClient(RND.str(16));
     String number = RND.str(11);
-    String type = RND.str(10);
-    this.insertTmpClientPhoneWithNumber_Type(
-      oneCiaFile.tmpClientPhoneTableName, clientPhoneRecordNum++, clientRecordNum, number, type, 0);
+    this.insertTmpClientPhone(
+      oneCiaFile.tmpClientPhoneTableName, clientPhoneRecordNum++, clientRecordNum, number, RND.str(11), 0);
     expectedPhoneListSize++;
-    this.insertTmpClientWithClientId(oneCiaFile.tmpClientTableName, clientRecordNum++, clientId, 5);
+    this.insertTmpClientPhone(
+      oneCiaFile.tmpClientPhoneTableName, clientPhoneRecordNum, clientRecordNum, number, RND.str(11), 0);
+    this.insertTmpClientWithClientId(oneCiaFile.tmpClientTableName, clientRecordNum, clientId, 3);
 
-    this.insertTmpClientPhoneWithNumber_Type(
-      oneCiaFile.tmpClientPhoneTableName, clientPhoneRecordNum, clientRecordNum, number, type, 0);
-    this.insertTmpClientWithClientId(oneCiaFile.tmpClientTableName, clientRecordNum, -1, 4);
-
-    oneCiaFile.migrateData_status6_finalOfClientPhoneTable();
+    oneCiaFile.migrateData_finalOfClientPhoneTable();
 
     List<Map<String, Object>> tempPhoneRecordList =
       toListMap("SELECT cl.client_id, ph.number, ph.type " +
         "FROM " + oneCiaFile.tmpClientPhoneTableName + " AS ph, " + oneCiaFile.tmpClientTableName + " AS cl " +
-        "WHERE ph.client_record_no = cl.record_no AND cl.status = 6 AND ph.status = 1 " +
+        "WHERE ph.client_record_no = cl.record_no AND cl.status = 3 AND ph.status = 1 " +
         "ORDER BY cl.client_id ASC");
     List<Map<String, Object>> phoneRecordList = toListMap("SELECT * FROM client_phone ORDER BY client ASC");
 
@@ -473,6 +469,56 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     }
   }
 
+  @Test
+  public void migrate_withoutDataUpload_CiaFile() throws Exception {
+    this.resetAllTables();
+
+    MigrateOneCiaFile oneCiaFile = new MigrateOneCiaFile();
+    oneCiaFile.connection = connection;
+    oneCiaFile.prepareTmpTables();
+
+    long clientRecordNum = 0, clientAddressRecordNum = 0, clientPhoneRecordNum = 0;
+    int expectedClientCount = 0, expectedClientAddressCount = 0, expectedClientPhoneCount = 0;
+    this.insertTmpClientAddress(oneCiaFile.tmpClientAddressTableName, clientAddressRecordNum++, clientRecordNum,
+      AddressType.FACTUAL.name(), RND.str(10), RND.str(10), RND.str(10));
+    expectedClientAddressCount++;
+    this.insertTmpClientAddress(oneCiaFile.tmpClientAddressTableName, clientAddressRecordNum++, clientRecordNum,
+      AddressType.REGISTRATION.name(), RND.str(10), RND.str(10), RND.str(10));
+    expectedClientAddressCount++;
+    this.insertTmpClientPhone(oneCiaFile.tmpClientPhoneTableName, clientPhoneRecordNum++, clientRecordNum, RND.str(11),
+      PhoneType.HOME.name(), 0);
+    expectedClientPhoneCount++;
+    this.insertTmpClientPhone(oneCiaFile.tmpClientPhoneTableName, clientPhoneRecordNum++, clientRecordNum, RND.str(11),
+      PhoneType.WORK.name(), 0);
+    expectedClientPhoneCount++;
+    this.insertTmpClient(oneCiaFile.tmpClientTableName, clientRecordNum++, 0);
+    expectedClientCount++;
+
+    this.insertTmpClientAddress(oneCiaFile.tmpClientAddressTableName, clientAddressRecordNum, clientRecordNum,
+      AddressType.REGISTRATION.name(), RND.str(10), RND.str(10), RND.str(10));
+    expectedClientAddressCount++;
+    this.insertTmpClientPhone(oneCiaFile.tmpClientPhoneTableName, clientPhoneRecordNum++, clientRecordNum, RND.str(11),
+      PhoneType.MOBILE.name(), 0);
+    expectedClientPhoneCount++;
+    this.insertTmpClientPhone(oneCiaFile.tmpClientPhoneTableName, clientPhoneRecordNum, clientRecordNum, RND.str(11),
+      PhoneType.MOBILE.name(), 0);
+    expectedClientPhoneCount++;
+    this.insertTmpClient(oneCiaFile.tmpClientTableName, clientRecordNum, 0);
+    expectedClientCount++;
+
+    oneCiaFile.processErrors();
+    oneCiaFile.migrateData();
+    // TODO: downloadErrors();
+
+    List<Map<String, Object>> recordList = toListMap("SELECT * FROM client");
+    List<Map<String, Object>> addressRecordList = toListMap("SELECT * FROM client_addr");
+    List<Map<String, Object>> phoneRecordList = toListMap("SELECT * FROM client_phone");
+
+    assertThat(recordList.size()).isEqualTo(expectedClientCount);
+    assertThat(addressRecordList.size()).isEqualTo(expectedClientAddressCount);
+    assertThat(phoneRecordList.size()).isEqualTo(expectedClientPhoneCount);
+  }
+
   private File prepareReadyFileCommon() throws Exception {
     File inFile = new File("build/MigrateOneCiaFileTest/cia_" + Util.generateRandomString(16) + ".xml");
     inFile.getParentFile().mkdirs();
@@ -482,54 +528,78 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     return inFile;
   }
 
-  private long createClient(long recordNo) {
+  private long createClient(String ciaId) {
     int charmId = clientTestDao.get().selectSeqIdNextValueTableCharm();
     clientTestDao.get().insertCharm(charmId, RND.str(16), null, null);
 
     long id = clientTestDao.get().selectSeqIdNextValueTableClient();
-    clientTestDao.get().updateClientWithMigrationId(id, RND.str(10), RND.str(10), RND.str(10),
-      Gender.values()[RND.plusInt(Gender.values().length)].name(), Date.valueOf("2000-01-01"), charmId, recordNo);
+    clientTestDao.get().updateClientWithCiaId(id, RND.str(10), RND.str(10), RND.str(10),
+      Gender.values()[RND.plusInt(Gender.values().length)].name(), Date.valueOf("2000-01-01"), charmId, ciaId);
 
     return id;
   }
 
-  private String insertTmpClient(String tblName, long instanceId, int status) {
+  private long createClientWithTmp(String tblName, long clientRecordNum, int status) {
+    int charmId = clientTestDao.get().selectSeqIdNextValueTableCharm();
+    String charmName = RND.str(16);
+    clientTestDao.get().insertCharm(charmId, charmName, null, null);
+
+    long id = clientTestDao.get().selectSeqIdNextValueTableClient();
+    String ciaId = RND.str(16);
+    clientTestDao.get().updateClientWithCiaId(id, RND.str(10), RND.str(10), RND.str(10),
+      Gender.values()[RND.plusInt(Gender.values().length)].name(), Date.valueOf("2000-01-01"), charmId, ciaId);
+
+    this.insertTmpClientWithCharmId_CharmName_Birthdate(
+      tblName, clientRecordNum, ciaId, charmName, charmId, "1989-05-05", status);
+
+    return id;
+  }
+
+  private String insertTmpClient(String tblName, long clientRecordNum, int status) {
     String ciaId = RND.str(8);
-    migrationTestDao.get().insertClient(tblName, instanceId, null, ciaId, RND.str(10), RND.str(10), RND.str(10),
+    migrationTestDao.get().insertClient(tblName, clientRecordNum, null, ciaId, RND.str(10), RND.str(10), RND.str(10),
       Gender.values()[RND.plusInt(Gender.values().length)].name(), RND.str(10), null, "1989-10-10", null, status,
       null);
     return ciaId;
   }
 
-  private void insertTmpClient(String tblName, long instanceId, String ciaId, int status) {
-    migrationTestDao.get().insertClient(tblName, instanceId, null, ciaId, RND.str(10), RND.str(10), RND.str(10),
+  private void insertTmpClient(String tblName, long clientRecordNum, String ciaId, int status) {
+    migrationTestDao.get().insertClient(tblName, clientRecordNum, null, ciaId, RND.str(10), RND.str(10), RND.str(10),
       Gender.values()[RND.plusInt(Gender.values().length)].name(), RND.str(10), null, "1989-10-10", null, status,
       null);
   }
 
-  private String insertTmpClientWithError(String tblName, long instanceId) {
+  private String insertTmpClientWithError(String tblName, long clientRecordNum) {
     String ciaId = RND.str(8);
-    migrationTestDao.get().insertClient(tblName, instanceId, null, ciaId, RND.str(10), RND.str(10), RND.str(10),
+    migrationTestDao.get().insertClient(tblName, clientRecordNum, null, ciaId, RND.str(10), RND.str(10), RND.str(10),
       Gender.values()[RND.plusInt(Gender.values().length)].name(), RND.str(10), null, "1989-10-10", null, 0,
       RND.str(10));
     return ciaId;
   }
 
-  private String insertTmpClientWithCharmName(String tblName, long instanceId, String charmName, int status) {
+  private String insertTmpClientWithCharmName(String tblName, long clientRecordNum, String charmName, int status) {
     String ciaId = RND.str(8);
-    migrationTestDao.get().insertClient(tblName, instanceId, null, ciaId, RND.str(10), RND.str(10), RND.str(10),
+    migrationTestDao.get().insertClient(tblName, clientRecordNum, null, ciaId, RND.str(10), RND.str(10), RND.str(10),
       Gender.values()[RND.plusInt(Gender.values().length)].name(), charmName, null, "1989-10-10", null, status,
       RND.str(10));
     return ciaId;
   }
 
-  private String insertTmpClientWithCharmId_CharmName_Birthdate(String tblName, long instanceId, String charmName,
+  private String insertTmpClientWithCharmId_CharmName_Birthdate(String tblName, long clientRecordNum, String charmName,
                                                                 int charmId, String birth, int status) {
     String ciaId = RND.str(8);
-    migrationTestDao.get().insertClient(tblName, instanceId, null, ciaId, RND.str(10), RND.str(10), RND.str(10),
+    migrationTestDao.get().insertClient(tblName, clientRecordNum, null, ciaId, RND.str(10), RND.str(10), RND.str(10),
       Gender.values()[RND.plusInt(Gender.values().length)].name(), charmName, charmId, birth, Date.valueOf(birth),
       status, RND.str(10));
     return ciaId;
+  }
+
+  private void insertTmpClientWithCharmId_CharmName_Birthdate(String tblName, long clientRecordNum, String ciaId,
+                                                              String charmName, int charmId, String birth,
+                                                              int status) {
+    migrationTestDao.get().insertClient(tblName, clientRecordNum, null, ciaId, RND.str(10), RND.str(10), RND.str(10),
+      Gender.values()[RND.plusInt(Gender.values().length)].name(), charmName, charmId, birth, Date.valueOf(birth),
+      status, RND.str(10));
   }
 
   private String insertTmpClientWithClientId(String tblName, long recordNo, long clientId, int status) {
@@ -540,23 +610,23 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     return ciaId;
   }
 
-  private String insertTmpClientWithNameError(String tblName, long instanceId, String surname, String name,
+  private String insertTmpClientWithNameError(String tblName, long clientRecordNum, String surname, String name,
                                               String patronymic) {
     String ciaId = RND.str(8);
-    migrationTestDao.get().insertClient(tblName, instanceId, null, ciaId, surname, name, patronymic,
+    migrationTestDao.get().insertClient(tblName, clientRecordNum, null, ciaId, surname, name, patronymic,
       Gender.values()[RND.plusInt(Gender.values().length)].name(), RND.str(10), null, "1989-10-10", null, 0, null);
     return ciaId;
   }
 
-  private String insertTmpClientWithBirthError(String tblName, long instanceId, String birthDate) {
+  private String insertTmpClientWithBirthError(String tblName, long clientRecordNum, String birthDate) {
     String ciaId = RND.str(8);
-    migrationTestDao.get().insertClient(tblName, instanceId, null, ciaId, RND.str(10), RND.str(10), RND.str(10),
+    migrationTestDao.get().insertClient(tblName, clientRecordNum, null, ciaId, RND.str(10), RND.str(10), RND.str(10),
       Gender.values()[RND.plusInt(Gender.values().length)].name(), RND.str(10), null, birthDate, null, 0, null);
     return ciaId;
   }
 
-  private void insertTmpClientPhoneWithNumber_Type(String tblName, long recordNo, long clientRecordNo, String number,
-                                                   String type, int status) {
+  private void insertTmpClientPhone(String tblName, long recordNo, long clientRecordNo, String number,
+                                    String type, int status) {
     migrationTestDao.get().insertClientPhone(tblName, recordNo, clientRecordNo, number, type, status);
   }
 

@@ -14,7 +14,7 @@
         birth_date date NOT NULL,
         charm integer NOT NULL,
         actual smallint NOT NULL DEFAULT 1,
-        migration_id bigint UNIQUE
+        migration_cia_id varchar(64) UNIQUE
       )
     ]]></sql>
   </changeSet>
