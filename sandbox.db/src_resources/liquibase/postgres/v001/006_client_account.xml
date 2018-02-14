@@ -6,11 +6,11 @@
   <changeSet author="damze" id="create-table-ClientAccount">
     <sql endDelimiter=";;"><![CDATA[
       create table ClientAccount (
-        id character varying(32) NOT NULL,
-        client character varying(32) NOT NULL,
+        id varchar(32) NOT NULL,
+        client varchar(32) NOT NULL,
         money real NOT NULL,
-        number character varying(100) NOT NULL,
-        registeredAt timestamp with time zone NOT NULL,
+        number varchar(100) NOT NULL,
+        registeredAt timestamp with time zone default moment(),
         actual boolean default true,
         PRIMARY KEY (id)
       )
