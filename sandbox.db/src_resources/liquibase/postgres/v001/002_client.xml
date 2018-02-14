@@ -6,13 +6,14 @@
   <changeSet author="damze" id="create-table-Client">
     <sql endDelimiter=";;"><![CDATA[
       create table Client (
-        id integer NOT NULL,
+        id character varying(32) NOT NULL,
         name character varying(255) NOT NULL,
         surname character varying(255) NOT NULL,
         patronymic character varying(255) NOT NULL,
         gender character varying(10) NOT NULL,
         birthDate date NOT NULL,
-        charm integer NOT NULL,
+        charm character varying(32) NOT NULL,
+        actual boolean default true,
         PRIMARY KEY (id)
       )
     ]]></sql>

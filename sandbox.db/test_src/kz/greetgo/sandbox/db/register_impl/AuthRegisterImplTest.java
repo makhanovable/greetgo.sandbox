@@ -30,7 +30,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 public class AuthRegisterImplTest extends ParentTestNg {
 
   public BeanGetter<AuthRegister> authRegister;
-
   public BeanGetter<AuthTestDao> authTestDao;
 
   @DataProvider

@@ -22,7 +22,8 @@ export class LoginComponent {
 
   @Output() finish = new EventEmitter<void>();
 
-  constructor(private httpService: HttpService) {}
+  constructor(private httpService: HttpService) {
+  }
 
   forgotPassword() {
     window.alert("При запуске скрипта инициации БД выводятся пользователи и их пароли: посмотрите там!");

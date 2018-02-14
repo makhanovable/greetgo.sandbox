@@ -1,8 +1,9 @@
-import {Http} from "@angular/http";
-import {PhoneNumberType} from "../../../enums/PhoneNumberType";
-import {ClientAddress} from "../../../model/ClientAddress";
-import {HttpService} from "../../HttpService";
 import {ClientPhone} from "../../../model/ClientPhone";
+import {ClientAddress} from "../../../model/ClientAddress";
+import {ClientToSave} from "../../../model/ClientToSave";
+import {ClientDetail} from "../../../model/ClientDetail";
+import {PhoneNumberType} from "../../../enums/PhoneNumberType";
+import {HttpService} from "../../HttpService";
 import {ClientInfo} from "../../../model/ClientInfo";
 import {Component, Inject, OnInit} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material";
@@ -15,9 +16,10 @@ import {AddressType} from "../../../enums/AddressType";
 })
 export class ClientFormComponent implements OnInit {
 
-  formData: ClientInfo;
+  formData: ClientDetail;
+
   charms: any[];
-  phoneMask: any[] = ['+', '7', ' ', '(', /[1-9]/, /\d/, /\d/, ')', ' ', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/];
+  phoneMask: any[] = ['+', '7', ' ', '(', /[0-9]/, /\d/, /\d/, ')', ' ', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/];
   newForm: boolean = false;
 
   requiredPhoneNumbers = {
@@ -26,19 +28,9 @@ export class ClientFormComponent implements OnInit {
     "MOBILE": 3,
   };
 
-  requiredFields = new ClientInfo;
-
-  // requiredFields = {
-  //   name: true,
-  //   surname: true,
-  //   patronymic: true,
-  //   charmId: true,
-  //   birthDate: true
-  // }
-
   constructor(public dialogRef: MatDialogRef<ClientFormComponent>,
               @Inject(MAT_DIALOG_DATA) public data: any,
-              private httpService: HttpService, private http: Http) {
+              private httpService: HttpService) {
   }
 
   ngOnInit() {
@@ -46,7 +38,7 @@ export class ClientFormComponent implements OnInit {
       this.loadEditableData(this.data.item.id);
       this.newForm = true;
     } else {
-      this.formData = new ClientInfo;
+      this.formData = new ClientDetail;
       this.formData.phoneNumbers = [];
       this.formData.registerAddress = new ClientAddress;
       this.formData.registerAddress.type = AddressType.REG;
@@ -54,38 +46,38 @@ export class ClientFormComponent implements OnInit {
       this.formData.actualAddress.type = AddressType.FACT;
       this.fillMissingPhones();
     }
-    this.charms = this.data.charms
+    this.charms = this.data.charms;
 
   }
 
   loadEditableData(id: number): ClientInfo {
 
-    this.httpService.get("/client/info", {
+    this.httpService.get("/client/detail", {
       id: id,
     }).toPromise().then(res => {
-      let result = JSON.parse(res.text()) as ClientInfo;
-      result.charmId = result.charmId + "";
-      result.birthDate = new Date(result.birthDate);
+      this.formData = JSON.parse(res.text()) as ClientDetail;
+      this.formData.birthDate = new Date(this.formData.birthDate);
 
-      if (!result.actualAddress)
-        result.actualAddress = new ClientAddress;
-      if (!result.registerAddress)
-        result.registerAddress = new ClientAddress;
+      if (!this.formData.actualAddress) {
+        this.formData.actualAddress = new ClientAddress;
+        this.formData.actualAddress.type = AddressType.FACT;
+      }
+      if (!this.formData.registerAddress) {
+        this.formData.registerAddress = new ClientAddress;
+        this.formData.registerAddress.type = AddressType.REG;
+      }
 
-      result.actualAddress.type = AddressType.FACT;
-      result.registerAddress.type = AddressType.REG;
-
-      if (result.phoneNumbers) {
-        result.phoneNumbers.forEach(element => {
+      if (this.formData.phoneNumbers) {
+        this.formData.phoneNumbers.forEach(element => {
+          element['oldNumber'] = element.number;
           this.requiredPhoneNumbers[element.type] = this.requiredPhoneNumbers[element.type] - 1;
           element.type = this.getPhoneType(element.type);
         });
       }
       else {
-        result.phoneNumbers = []
+        this.formData.phoneNumbers = [];
       }
 
-      this.formData = result;
       this.fillMissingPhones();
     });
 
@@ -101,8 +93,19 @@ export class ClientFormComponent implements OnInit {
     for (let i = 0; i < this.requiredPhoneNumbers["MOBILE"]; i++)
       this.formData.phoneNumbers.push({number: "", type: PhoneNumberType.MOBILE} as ClientPhone);
 
-  }
+    this.formData.phoneNumbers.sort((a, b) => {
+      let nameA = a.type;
+      let nameB = b.type;
+      if (nameA < nameB) {
+        return -1;
+      }
+      if (nameA > nameB) {
+        return 1;
+      }
+      return 0;
+    });
 
+  }
 
   //noinspection JSMethodCanBeStatic
   getPhoneLabel(type: PhoneNumberType) {
@@ -131,32 +134,43 @@ export class ClientFormComponent implements OnInit {
   }
 
   saveButton() {
-    if (this.canSave())
-      this.save(this.formData);
+    this.save();
   }
 
   canSave() {
-    return this.formData.name && this.formData.surname && this.formData.birthDate && this.formData.gender && this.formData.charmId && this.formData.patronymic;
+    return this.formData.name && this.formData.surname && this.formData.birthDate && this.formData.gender && this.formData.charm && this.formData.patronymic;
   }
 
-  save(toSave: ClientInfo) {
+  save() {
+    let toSave = new ClientToSave(this.formData);
 
-    let url = this.newForm ? "/client/update" : "/client/add";
-    let finalObject = Object.assign({}, toSave);
+    if (this.formData.actualAddress.street || this.formData.actualAddress.house || this.formData.actualAddress.flat)
+      toSave.actualAddress = this.formData.actualAddress;
+    if (this.formData.registerAddress.street || this.formData.registerAddress.house || this.formData.registerAddress.flat)
+      toSave.registerAddress = this.formData.registerAddress;
 
-    if (!(toSave.actualAddress.street || toSave.actualAddress.house || toSave.actualAddress.flat))
-      delete finalObject.actualAddress;
-    if (!(toSave.registerAddress.street || toSave.registerAddress.house || toSave.registerAddress.flat))
-      delete finalObject.registerAddress;
+    toSave.numbersToDelete = [];
+    toSave.numersToSave = [];
 
-    finalObject.phoneNumbers = [];
-    toSave.phoneNumbers.forEach(element => {
-      if (element.number != null && element.number != "")
-        finalObject.phoneNumbers.push(element)
+    this.formData.phoneNumbers.forEach(element => {
+
+      if (element['oldNumber'] && element.number == "") {
+        element.number = element['old'];
+        delete element['oldNumber'];
+        toSave.numbersToDelete.push(element);
+      }
+      else if (element['oldNumber'] && element.number != element['oldNumber']) {
+        toSave.numersToSave.push(element);
+      } else if (!element['oldNumber'] && element.number != "") {
+        element['oldNumber'] = null;
+        toSave.numersToSave.push(element);
+      }
+
     });
 
+    let url = "/client/addOrUpdate";
     this.httpService.post(url, {
-      client: JSON.stringify(finalObject)
+      client: JSON.stringify(toSave)
     }).toPromise().then(res => {
       if (res.text() === "bad")
         alert('something went wrong');
@@ -166,7 +180,7 @@ export class ClientFormComponent implements OnInit {
   }
 
   exit() {
-    this.dialogRef.close();
+    this.dialogRef.close("cancel");
   }
 
 }

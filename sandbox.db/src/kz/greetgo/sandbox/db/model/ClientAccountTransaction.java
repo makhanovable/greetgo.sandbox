@@ -1,9 +1,9 @@
-package kz.greetgo.sandbox.controller.model;
+package kz.greetgo.sandbox.db.model;
 
 import java.sql.Timestamp;
 
 public class ClientAccountTransaction {
-  public int id;
+  public String id;
   public int accauntId;
   public float money;
   public Timestamp finishedAt;

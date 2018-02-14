@@ -2,8 +2,9 @@ package kz.greetgo.sandbox.db.stand.model;
 
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.enums.GenderType;
-import kz.greetgo.sandbox.controller.model.ClientForm;
-import kz.greetgo.sandbox.controller.model.ClientInfo;
+import kz.greetgo.sandbox.controller.model.ClientDetail;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.tools.AgeCalculator;
 
@@ -19,8 +20,9 @@ public class ClientDot {
   public String patronymic;
   public Date birthDate;
   public GenderType gender;
-  public String charmId;
+  public String charm;
 
+  @SuppressWarnings("StringBufferReplaceableByString")
   public String getFIO() {
     return new StringBuilder(this.name).append(this.surname).append(this.patronymic).toString();
   }
@@ -29,38 +31,39 @@ public class ClientDot {
 
   }
 
-  public ClientDot(ClientForm clientForm) {
-    this.id = clientForm.id;
-    this.name = clientForm.name;
-    this.surname = clientForm.surname;
-    this.gender = clientForm.gender;
-    this.patronymic = clientForm.patronymic;
-    this.birthDate = clientForm.birthDate;
-    this.charmId = clientForm.charmId;
+  public ClientDot(ClientToSave clientToSave) {
+    this.id = clientToSave.id;
+    this.name = clientToSave.name;
+    this.surname = clientToSave.surname;
+    this.gender = clientToSave.gender;
+    this.patronymic = clientToSave.patronymic;
+    this.birthDate = clientToSave.birthDate;
+    this.charm = clientToSave.charm;
   }
 
-  public ClientInfo toClientInfo() {
-    ClientInfo clientInfo = new ClientInfo();
-    clientInfo.id = this.id;
-    clientInfo.name = this.name;
-    clientInfo.surname = this.surname;
-    clientInfo.patronymic = this.patronymic;
-    clientInfo.charmId = this.charmId;
-    clientInfo.age = AgeCalculator.calculateAge(this.birthDate, new Date());
 
-    return clientInfo;
+  public ClientRecord toClientInfo() {
+    ClientRecord clientRecord = new ClientRecord();
+    clientRecord.id = this.id;
+    clientRecord.name = this.name;
+    clientRecord.surname = this.surname;
+    clientRecord.patronymic = this.patronymic;
+    clientRecord.charmId = this.charm;
+    clientRecord.age = AgeCalculator.calculateAge(this.birthDate, new Date());
+
+    return clientRecord;
   }
 
-  public ClientForm toClientForm() {
-    ClientForm clientForm = new ClientForm();
-    clientForm.id = this.id;
-    clientForm.name = this.name;
-    clientForm.surname = this.surname;
-    clientForm.patronymic = this.patronymic;
-    clientForm.charmId = this.charmId;
-    clientForm.birthDate = this.birthDate;
-    clientForm.gender = gender;
-    return clientForm;
+  public ClientDetail toClientForm() {
+    ClientDetail clientDetail = new ClientDetail();
+    clientDetail.id = this.id;
+    clientDetail.name = this.name;
+    clientDetail.surname = this.surname;
+    clientDetail.patronymic = this.patronymic;
+    clientDetail.charm = this.charm;
+    clientDetail.birthDate = this.birthDate;
+    clientDetail.gender = gender;
+    return clientDetail;
   }
 
 

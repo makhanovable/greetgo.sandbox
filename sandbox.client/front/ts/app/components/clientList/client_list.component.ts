@@ -12,8 +12,7 @@ import {ClientFormComponent} from "../clientForm/client_form.component";
   selector: 'client-list-component',
   styles: [require('./client_list.component.css')],
 })
-// FIXME: 2/9/18 проверь почему при смене страницы таблицы (и других действиях) на сервер идет два запроса
-// FIXME: 2/9/18 при нажатии на "cancel" в окне редактирования/добавления не нужно обновлять таблицу
+
 export class ClientListComponent implements OnInit {
 
   displayedColumns = ['select', 'fio', 'charm', 'age', 'totalAccountBalance', 'maximumBalance', 'minimumBalance'];
@@ -58,7 +57,7 @@ export class ClientListComponent implements OnInit {
         this.charmsMap[element.id] = element.name;
 
       });
-      
+
     });
   }
 
@@ -120,7 +119,7 @@ export class ClientListComponent implements OnInit {
       this.selection.selected.forEach(element => {
         ids.push(element.id)
       });
-      
+
       //noinspection JSUnusedLocalSymbols
       this.httpService.get("/client/remove", {
         ids: JSON.stringify(ids)
@@ -154,17 +153,16 @@ export class ClientListComponent implements OnInit {
       // minWidth: '250px',
       maxWidth: "1000px",
       // position: {top:"100px"} ,
-
       data: {
         charms: this.charmsArray,
         item: selected,
-
       }
     });
 
     //noinspection JSUnusedLocalSymbols
     dialogRef.afterClosed().subscribe(result => {
-      this.applyFilter(true);
+      if (result != "cancel")
+        this.applyFilter(true);
     });
   }
 

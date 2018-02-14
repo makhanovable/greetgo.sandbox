@@ -7,13 +7,15 @@ import kz.greetgo.mvc.annotations.Mapping;
 import kz.greetgo.mvc.annotations.Par;
 import kz.greetgo.mvc.annotations.ToJson;
 import kz.greetgo.mvc.interfaces.RequestTunnel;
-import kz.greetgo.sandbox.controller.model.ClientForm;
-import kz.greetgo.sandbox.controller.model.ClientInfo;
+import kz.greetgo.sandbox.controller.model.ClientDetail;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.util.Controller;
 
 import java.util.List;
 
+@SuppressWarnings("WeakerAccess")
 @Bean
 @Mapping("/client")
 public class ClientController implements Controller {
@@ -29,15 +31,15 @@ public class ClientController implements Controller {
 
   @ToJson
   @Mapping("/list")
-  public List<ClientInfo> list(@Par("limit") int limit, @Par("page") int page, @Par("filter") String filter,
-                               @Par("orderBy") String orderBy, @Par("desc") int desc) {
+  public List<ClientRecord> list(@Par("limit") int limit, @Par("page") int page, @Par("filter") String filter,
+                                 @Par("orderBy") String orderBy, @Par("desc") int desc) {
 
     return clientRegister.get().getClientInfoList(limit, page, filter, orderBy, desc);
   }
 
   @ToJson
   @Mapping("/amount")
-  public int getAmount(@Par("filter") String filter) {
+  public long getAmount(@Par("filter") String filter) {
     return this.clientRegister.get().getClientsSize(filter);
   }
 
@@ -48,22 +50,20 @@ public class ClientController implements Controller {
   }
 
   @ToJson
-  @Mapping("/info")
-  public ClientForm info(@Par("id") String id) {
-    return this.clientRegister.get().info(id);
+  @Mapping("/detail")
+  public ClientDetail detail(@Par("id") String id) {
+    return this.clientRegister.get().detail(id);
   }
 
   @ToJson
-  @Mapping("/add")
-  public String add(@Par("client") @Json ClientForm clientForm) {
-    this.clientRegister.get().add(clientForm);
+  @Mapping("/addOrUpdate")
+  public String addOrUpdate(@Par("client") @Json ClientToSave clientToSave) {
+    if (clientToSave.id != null)
+      return this.clientRegister.get().update(clientToSave) ? "ok" : "bad";
+    else
+      this.clientRegister.get().add(clientToSave);
     return "ok";
   }
 
-  @ToJson
-  @Mapping("/update")
-  public String update(@Par("client") @Json ClientForm clientForm) {
-    return this.clientRegister.get().update(clientForm) ? "ok" : "bad";
-  }
 
 }
