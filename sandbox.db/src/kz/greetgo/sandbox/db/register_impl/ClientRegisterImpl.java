@@ -11,9 +11,11 @@ import kz.greetgo.sandbox.db.dao.ClientDao;
 import java.util.Arrays;
 import java.util.List;
 
-@SuppressWarnings("WeakerAccess")
+//@SuppressWarnings("WeakerAccess") // FIXME: 2/14/18 не отключай для всего класса
 @Bean
 public class ClientRegisterImpl implements ClientRegister {
+
+  // FIXME: 2/14/18 NOT NULL в таблицах
 
   public BeanGetter<ClientDao> clientDao;
   public BeanGetter<IdGenerator> idGenerator;
@@ -48,10 +50,14 @@ public class ClientRegisterImpl implements ClientRegister {
   @Override
   public ClientDetail detail(String id) {
     ClientDetail clientDetail = this.clientDao.get().detail(id);
+
+    // FIXME: 2/14/18 Вытаскивай одним запросом
     clientDetail.actualAddress = this.clientDao.get().getAddres(id, AddressType.FACT);
     clientDetail.registerAddress = this.clientDao.get().getAddres(id, AddressType.REG);
     return clientDetail;
   }
+
+  // FIXME: 2/14/18 Инсерт и апдейт в одном запросе
 
   @Override
   public void add(ClientToSave clientToSave) {
@@ -103,6 +109,9 @@ public class ClientRegisterImpl implements ClientRegister {
 
       return true;
     } catch (Exception e) {
+
+      // FIXME: 2/14/18 Надо использовать логгер
+
       e.printStackTrace();
     }
     return false;
