@@ -14,16 +14,15 @@ import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
-// FIXME: 2/14/18 в данном случае нельзя отключать уведомления для всего класса
-// @SuppressWarnings({"deprecation", "WeakerAccess", "ConstantConditions"})
+
 public class ClientRegisterImplTest extends ParentTestNg {
 
   public BeanGetter<ClientRegister> clientRegister;
@@ -70,7 +69,10 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(result).isNotEmpty();
     for (int i = 0; i < result.size(); i++) {
       // FIXME: 2/14/18 сравнивай все поля, не только айди
-      assertThat(filtered.get(i + page * limit).id.equals(result.get(i).id)).isTrue();
+      ClientDot expected = filtered.get(i + page * limit);
+      ClientRecord target = result.get(i);
+      assertThat(expected.id).isEqualTo(target.id);
+
     }
 
 
@@ -180,12 +182,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
       List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(test1.id);
 
-      // FIXME: 2/14/18 есть такие методы assertThat(numberList).isNotEmpty();
-      assertThat(numberList.isEmpty()).isFalse();
-
-      // FIXME: 2/14/18 assertThat(numberList).hasSize(test1.numersToSave.size());
-      assertThat(numberList.size()).isEqualTo(test1.numersToSave.size());
-
+      assertThat(numberList).isNotEmpty();
+      assertThat(numberList).hasSize(test1.numersToSave.size());
       assertThat(numberList.stream().anyMatch(o -> o.number.equals(number1.number))).isFalse();
     }
 
@@ -210,9 +208,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
       numberList = this.clientTestDao.get().getNumbersById(test2.id);
       assertThat(numberList.stream().anyMatch(o -> o.number.equals(toEited.number))).isTrue();
-
     }
-
 
   }
 
@@ -280,9 +276,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     client.name = RND.str(10);
     client.surname = RND.str(10);
     client.patronymic = RND.str(10);
-    // FIXME: 2/14/18 RND.someEnum(GenderType.values());
-    client.gender = GenderType.MALE;
-    client.birthDate = RND.dateYears(1996, 2018);
+    client.gender = RND.someEnum(GenderType.values());
+    client.birthDate = RND.dateYears(-100, 0);
     client.charm = RND.str(10);
 
     client.actualAddress = rndAddress(id, AddressType.FACT).toClientAddress();
@@ -342,18 +337,13 @@ public class ClientRegisterImplTest extends ParentTestNg {
       return;
 
     assertThat(target).isNotNull();
-    // FIXME: 2/14/18 двойная проверка
-    assertThat(target).isNotNull();
     assertThat(target.name).isEqualTo(assertion.name);
     assertThat(target.surname).isEqualTo(assertion.surname);
     assertThat(target.patronymic).isEqualTo(assertion.patronymic);
     assertThat(target.gender).isEqualTo(assertion.gender);
 
-    // FIXME: 2/14/18 Не используй deprecated
-    assertThat(target.birthDate.getDay()).isEqualTo(assertion.birthDate.getDay());
-    assertThat(target.birthDate.getMonth()).isEqualTo(assertion.birthDate.getMonth());
-    assertThat(target.birthDate.getYear()).isEqualTo(assertion.birthDate.getYear());
-
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+    assertThat(sdf.format(target.birthDate)).isEqualTo(sdf.format(sdf));
     assertThat(target.charm).isEqualTo(assertion.charm);
     assertThat(target.id).isEqualTo(assertion.id);
   }
@@ -365,10 +355,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
     c.surname = idGenerator.get().newId();
     c.patronymic = idGenerator.get().newId();
     c.charm = RND.str(10);
-    // FIXME: 2/14/18 RND.someEnum(GenderType.values());
-    c.gender = GenderType.MALE;
-    c.birthDate = new Date();
-
+    c.gender = RND.someEnum(GenderType.values());
+    c.birthDate = RND.dateYears(-100, 0);
+    c.birthDate.setYear(RND.plusInt(100) + 1900);
     return c;
   }
 
