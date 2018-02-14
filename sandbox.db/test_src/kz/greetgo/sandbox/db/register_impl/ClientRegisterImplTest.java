@@ -22,7 +22,8 @@ import java.util.stream.Collectors;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
-@SuppressWarnings({"deprecation", "WeakerAccess", "ConstantConditions"})
+// FIXME: 2/14/18 в данном случае нельзя отключать уведомления для всего класса
+// @SuppressWarnings({"deprecation", "WeakerAccess", "ConstantConditions"})
 public class ClientRegisterImplTest extends ParentTestNg {
 
   public BeanGetter<ClientRegister> clientRegister;
@@ -68,6 +69,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     assertThat(result).isNotEmpty();
     for (int i = 0; i < result.size(); i++) {
+      // FIXME: 2/14/18 сравнивай все поля, не только айди
       assertThat(filtered.get(i + page * limit).id.equals(result.get(i).id)).isTrue();
     }
 
@@ -91,7 +93,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
       long result = this.clientRegister.get().getClientsSize(filter);
       assertThat(result).isEqualTo(clients.size());
     }
-    //test2
+    //test2 FIXME: 2/14/18 вынеси в отдельный тест
     {
       String[] filters = {
         clients.get(RND.plusInt(clients.size())).name,
@@ -138,7 +140,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(deleted).isEqualTo(ids.size());
     List<ClientDot> list = new ArrayList<>();
     assertThat(list).isEmpty();
-
+    // FIXME: 2/14/18 напиши тест и на случай с удалением одного клиента
 //    for (String id : ids) {
 //      assertThat(list.stream().anyMatch(o -> o.id.equals(id))).isFalse();
 //    }
@@ -154,6 +156,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     this.clientTestDao.get().insertAddress(actualAddress);
     this.clientTestDao.get().insertAddress(registerAddress);
 
+    // FIXME: 2/14/18 нужно давать переменной понятное название
     ClientToSave test1 = rndClientToSave(cd.id); // +ClientDetail +2addresses +3numbers
     //test1
     {
@@ -176,12 +179,17 @@ public class ClientRegisterImplTest extends ParentTestNg {
       this.assertClientAddres(regAddress, new ClientAddressDot(test1.id, test1.registerAddress));
 
       List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(test1.id);
+
+      // FIXME: 2/14/18 есть такие методы assertThat(numberList).isNotEmpty();
       assertThat(numberList.isEmpty()).isFalse();
+
+      // FIXME: 2/14/18 assertThat(numberList).hasSize(test1.numersToSave.size());
       assertThat(numberList.size()).isEqualTo(test1.numersToSave.size());
+
       assertThat(numberList.stream().anyMatch(o -> o.number.equals(number1.number))).isFalse();
     }
 
-    //test2
+    //test2 FIXME: 2/14/18 надо вынести в отдельный тест
     {
 
       ClientToSave test2 = rndClientToSave(cd.id);
@@ -266,13 +274,13 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   }
 
-  @SuppressWarnings("SameParameterValue")
   private ClientToSave rndClientToSave(String id) {
     ClientToSave client = new ClientToSave();
     client.id = id;
     client.name = RND.str(10);
     client.surname = RND.str(10);
     client.patronymic = RND.str(10);
+    // FIXME: 2/14/18 RND.someEnum(GenderType.values());
     client.gender = GenderType.MALE;
     client.birthDate = RND.dateYears(1996, 2018);
     client.charm = RND.str(10);
@@ -332,13 +340,16 @@ public class ClientRegisterImplTest extends ParentTestNg {
   private void assertClientDetail(ClientDetail target, ClientDot assertion) {
     if (target == null && assertion == null)
       return;
+
     assertThat(target).isNotNull();
+    // FIXME: 2/14/18 двойная проверка
     assertThat(target).isNotNull();
     assertThat(target.name).isEqualTo(assertion.name);
     assertThat(target.surname).isEqualTo(assertion.surname);
     assertThat(target.patronymic).isEqualTo(assertion.patronymic);
     assertThat(target.gender).isEqualTo(assertion.gender);
 
+    // FIXME: 2/14/18 Не используй deprecated
     assertThat(target.birthDate.getDay()).isEqualTo(assertion.birthDate.getDay());
     assertThat(target.birthDate.getMonth()).isEqualTo(assertion.birthDate.getMonth());
     assertThat(target.birthDate.getYear()).isEqualTo(assertion.birthDate.getYear());
@@ -354,6 +365,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     c.surname = idGenerator.get().newId();
     c.patronymic = idGenerator.get().newId();
     c.charm = RND.str(10);
+    // FIXME: 2/14/18 RND.someEnum(GenderType.values());
     c.gender = GenderType.MALE;
     c.birthDate = new Date();
 

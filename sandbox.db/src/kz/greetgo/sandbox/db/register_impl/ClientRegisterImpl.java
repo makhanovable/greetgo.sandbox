@@ -10,7 +10,7 @@ import kz.greetgo.sandbox.db.dao.ClientDao;
 
 import java.util.List;
 
-@SuppressWarnings("WeakerAccess")
+//@SuppressWarnings("WeakerAccess") // FIXME: 2/14/18 не отключай для всего класса
 @Bean
 public class ClientRegisterImpl implements ClientRegister {
 
