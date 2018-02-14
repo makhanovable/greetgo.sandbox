@@ -8,6 +8,7 @@ import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 
+import java.util.Arrays;
 import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
@@ -17,21 +18,18 @@ public class ClientRegisterImpl implements ClientRegister {
   public BeanGetter<ClientDao> clientDao;
   public BeanGetter<IdGenerator> idGenerator;
 
-
   @Override
-  public List<ClientRecord> getClientInfoList(int limit, int page, String filter, String orderBy, int desc) {
+  public List<ClientRecord> getClientInfoList(int limit, int page, String filter, final String orderBy, int desc) {
 
+
+    String[] orders = {"age", "totalAccountBalance", "maximumBalance", "minimumBalance"};
+    Boolean match = Arrays.stream(orders).anyMatch(o -> o.equals(orderBy));
+
+    String ob = match ? orderBy : "name, surname, patronymic";
     int offset = limit * page;
     filter = filter == null ? "" : getFormattedFilter(filter);
     String order = desc == 1 ? "desc" : "asc";
-    return this.clientDao.get().getClients(limit, offset, filter, orderBy, order);
-  }
-
-  private String getFormattedFilter(String filter) {
-    String[] filters = filter.trim().split(" ");
-    filter = String.join("|", filters);
-    filter = "%" + filter.toLowerCase() + "%";
-    return filter;
+    return this.clientDao.get().getClients(limit, offset, filter, ob, order);
   }
 
   @Override
@@ -109,5 +107,12 @@ public class ClientRegisterImpl implements ClientRegister {
     }
     return false;
 
+  }
+
+  private String getFormattedFilter(String filter) {
+    String[] filters = filter.trim().split(" ");
+    filter = String.join("|", filters);
+    filter = "%" + filter.toLowerCase() + "%";
+    return filter;
   }
 }
