@@ -75,7 +75,7 @@ public class MigrateOneCiaFile {
       "  number varchar(64) NOT NULL, " +
       "  type varchar(128), " +
       "  status int DEFAULT 0, " +
-      "  PRIMARY KEY(record_no, number)" +
+      "  PRIMARY KEY(record_no)" +
       ")");
   }
 
@@ -126,28 +126,37 @@ public class MigrateOneCiaFile {
       "SET error = " +
       "  'Значение birth выходит за рамки у ciaId = '||cia_id||'. Возраст должен быть между 3 и 1000 годами' " +
       "WHERE error IS NULL AND " +
-      "  (extract(YEAR FROM age(to_date(birth_date, \'" + "YYYY-MM-DD" + "\'))) <= 3 OR " +
-      "  extract(YEAR FROM age(to_date(birth_date, \'" + "YYYY-MM-DD" + "\'))) >= 1000) "
+      "  (extract(YEAR FROM age(to_date(birth_date, 'YYYY-MM-DD'))) <= 3 OR " +
+      "  extract(YEAR FROM age(to_date(birth_date, 'YYYY-MM-DD'))) >= 1000) "
     );
   }
 
   void migrateData() throws SQLException {
     migrateData_status1();
     migrateData_status2();
+    migrateData_finalOfCharmTable();
     migrateData_status3();
-    migrateData_status4_finalOfClientTable();
-
-
+    migrateData_finalOfClientTable();
+    migrateData_finalOfClientAddressTable();
+    migrateData_finalOfClientPhoneTable();
   }
 
-  // Статус = 1, если не имеется ошибки
+  /**
+   * Статус = 1, если не имеется ошибки
+   *
+   * @throws SQLException проброс для удобства
+   */
   void migrateData_status1() throws SQLException {
     exec("UPDATE client_to_replace " +
       "SET status = 1, birth_date_typed = to_date(birth_date, 'YYYY-MM-DD') " +
       "WHERE error IS NULL AND status = 0");
   }
 
-  // Статус = 2, отсеивание дубликатов с приоритетом на последнюю запись в списке
+  /**
+   * Статус = 2, отсеивание дубликатов с приоритетом на последнюю запись в списке
+   *
+   * @throws SQLException проброс для удобства
+   */
   void migrateData_status2() throws SQLException {
     exec("UPDATE client_to_replace " +
       "SET status = 2 " +
@@ -160,10 +169,12 @@ public class MigrateOneCiaFile {
     );
   }
 
-  // Статус = 3, если заполнена колонка charmId, предварительно заполнив таблицу charm
+  /**
+   * Статус = 3, если заполнена колонка charmId, предварительно заполнив таблицу charm
+   *
+   * @throws SQLException проброс для удобства
+   */
   void migrateData_status3() throws SQLException {
-    migrateData_status3_fillCharmTable();
-
     exec("UPDATE client_to_replace AS t " +
       "SET charm_id = ch.id, status = 3 " +
       "FROM charm AS ch " +
@@ -176,7 +187,7 @@ public class MigrateOneCiaFile {
    *
    * @throws SQLException проброс для удобства
    */
-  void migrateData_status3_fillCharmTable() throws SQLException {
+  void migrateData_finalOfCharmTable() throws SQLException {
     exec("INSERT INTO charm(id, name) " +
       "SELECT nextval('charm_id_seq') AS charm_id, charm_dictionary.name " +
       "FROM ( " +
@@ -184,67 +195,78 @@ public class MigrateOneCiaFile {
       "  FROM client_to_replace " +
       "  WHERE status = 2 " +
       "  EXCEPT SELECT name FROM charm " +
-      ") AS charm_dictionary");
+      ") AS charm_dictionary "
+    );
   }
 
-  // Статус = 4, после перекидывания записей с временной таблицы tmp_client в основную client
-  void migrateData_status4_finalOfClientTable() throws SQLException {
-    exec("INSERT INTO client(id, surname, name, patronymic, gender, birth_date, charm, migration_id) " +
-      "SELECT " +
-      "  nextval('client_id_seq') AS client_id, " +
-      "  t.surname, t.name, t.patronymic, t.gender, birth_date_typed, t.charm_id, t.record_no " +
-      "FROM client_to_replace AS t " +
-      "WHERE status = 3"
-    );
-
-    // TODO: возможное место ускорения
+  /**
+   * Заполнение основной client таблицы
+   *
+   * @throws SQLException проброс для удобства
+   */
+  void migrateData_finalOfClientTable() throws SQLException {
     exec("UPDATE client_to_replace " +
-      "SET status = 4 " +
-      "WHERE status = 3");
+      "SET client_id = nextval('client_id_seq') " +
+      "WHERE status = 3 ");
+/*
+    exec("UPDATE client " +
+      "SET id = t.client_id, surname = t.surname, patronymic = t.patronymic, gender = t.gender, " +
+      " birth_date = t.birth_date_typed, charm = t.charm_id " +
+      "FROM client_to_replace AS t " +
+      "WHERE migration_cia_id = t.cia_id");
 
-    exec("UPDATE client_to_replace AS x " +
-      "SET client_id = cl.id " +
-      "FROM client AS cl " +
-      "WHERE x.status = 4 and cl.migration_id = x.record_no"
-    );
+    exec("INSERT INTO client(id, surname, name, patronymic, gender, birth_date, charm, migration_cia_id) " +
+      "SELECT client_id, t.surname, t.name, t.patronymic, t.gender, birth_date_typed, t.charm_id, t.cia_id " +
+      "FROM client_to_replace AS t " +
+      "WHERE status = 3 AND migration_cia_id = null"
+    );*/
+
+    exec("INSERT INTO client(id, surname, name, patronymic, gender, birth_date, charm, migration_cia_id) " +
+      "SELECT client_id, t.surname, t.name, t.patronymic, t.gender, birth_date_typed, t.charm_id, t.cia_id " +
+      "FROM client_to_replace AS t " +
+      "WHERE status = 3 " +
+      "ON CONFLICT(migration_cia_id) DO UPDATE " +
+      "SET id = excluded.id, surname = excluded.surname, name = excluded.name, " +
+      "  patronymic = excluded.patronymic, gender = excluded.gender, birth_date = excluded.birth_date, " +
+      "  charm = excluded.charm");
   }
 
-  // Статус = 5, после заполнения основной таблицы адресов
-  void migrateData_status5_finalOfClientAddressTable() throws SQLException {
+  /**
+   * Заполнение основной client_address таблицы
+   *
+   * @throws SQLException проброс для удобства
+   */
+  void migrateData_finalOfClientAddressTable() throws SQLException {
     exec("INSERT INTO client_addr(client, type, street, house, flat) " +
       "SELECT cl.client_id, adr.type, adr.street, adr.house, adr.flat " +
       "FROM client_to_replace AS cl, client_address_to_replace AS adr " +
-      "WHERE cl.status = 4 AND cl.record_no = adr.client_record_no"
+      "WHERE cl.status = 3 AND cl.record_no = adr.client_record_no"
     );
-
-    exec("UPDATE client_to_replace " +
-      "SET status = 5 " +
-      "WHERE status = 4");
   }
 
-  // Статус = 6, после заполнения основной таблицы телефонов
-  // Также имеется отдельный статус для телефонов, где 1 означает, что это уникальный номер
-  void migrateData_status6_finalOfClientPhoneTable() throws SQLException {
+  /**
+   * Заполнение основной client_phone таблицы
+   * Также имеется отдельный статус для телефонов, где 1 означает, что это уникальный номер
+   *
+   * @throws SQLException проброс для удобства
+   */
+  void migrateData_finalOfClientPhoneTable() throws SQLException {
     exec("UPDATE client_phone_to_replace " +
       "SET status = 1 " +
       "FROM ( " +
       "  SELECT " +
-      "    client_record_no as cl_rno," +
-      "    row_number() OVER (PARTITION BY client_record_no, number ORDER BY client_record_no DESC) AS rnum " +
+      "    record_no as rno," +
+      "    row_number() OVER (PARTITION BY client_record_no, number ORDER BY record_no DESC) AS rnum " +
       "  FROM client_phone_to_replace " +
       "  WHERE status = 0 " +
       ") AS x " +
-      "WHERE x.rnum = 1 AND x.cl_rno = record_no");
+      "WHERE x.rnum = 1 AND x.rno = record_no");
 
     exec("INSERT INTO client_phone(client, number, type) " +
       "SELECT cl.client_id, ph.number, ph.type " +
       "FROM client_to_replace AS cl, client_phone_to_replace AS ph " +
-      "WHERE cl.status = 5 AND cl.record_no = ph.client_record_no AND ph.status = 1"
+      "WHERE cl.status = 3 AND cl.record_no = ph.client_record_no AND ph.status = 1"
     );
-
-    exec("UPDATE client_to_replace " +
-      "SET status = 6 " +
-      "WHERE status = 5");
   }
 
   void downloadErrors() {

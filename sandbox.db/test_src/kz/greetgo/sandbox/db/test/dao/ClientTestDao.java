@@ -43,16 +43,16 @@ public interface ClientTestDao {
                     @Param("birth_date") Date date,
                     @Param("charm") int charm);
 
-  @Insert("INSERT INTO client (id, surname, name, patronymic, gender, birth_date, charm, migration_id) " +
-    "VALUES (#{id}, #{surname}, #{name}, #{patronymic}, #{gender}, #{birth_date}, #{charm}, #{migrationId})")
-  void updateClientWithMigrationId(@Param("id") long id,
-                    @Param("surname") String surname,
-                    @Param("name") String name,
-                    @Param("patronymic") String patronymic,
-                    @Param("gender") String gender,
-                    @Param("birth_date") Date date,
-                    @Param("charm") int charm,
-                    @Param("migrationId") long migrationId);
+  @Insert("INSERT INTO client (id, surname, name, patronymic, gender, birth_date, charm, migration_cia_id) " +
+    "VALUES (#{id}, #{surname}, #{name}, #{patronymic}, #{gender}, #{birth_date}, #{charm}, #{ciaId})")
+  void updateClientWithCiaId(@Param("id") long id,
+                             @Param("surname") String surname,
+                             @Param("name") String name,
+                             @Param("patronymic") String patronymic,
+                             @Param("gender") String gender,
+                             @Param("birth_date") Date date,
+                             @Param("charm") int charm,
+                             @Param("ciaId") String ciaId);
 
   @Update("UPDATE client " +
     "SET surname=#{surname}, name=#{name}, patronymic=#{patronymic}, " +
