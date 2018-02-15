@@ -74,8 +74,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
       assertThat(expected.id).isEqualTo(target.id);
 
     }
-
-
   }
 
   @Test
@@ -89,63 +87,82 @@ public class ClientRegisterImplTest extends ParentTestNg {
       clients.add(cd);
     }
 
-    //test1
-    {
-      String filter = null;
+    String[] filters = {
+      null,
+      clients.get(RND.plusInt(clients.size())).name,
+      clients.get(RND.plusInt(clients.size())).surname,
+      clients.get(RND.plusInt(clients.size())).patronymic,
+      clients.get(RND.plusInt(clients.size())).getFIO()};
+
+    for (String filter : filters) {
+
+      //
+      //
       long result = this.clientRegister.get().getClientsSize(filter);
-      assertThat(result).isEqualTo(clients.size());
-    }
-    //test2 FIXME: 2/14/18 вынеси в отдельный тест
-    {
-      String[] filters = {
-        clients.get(RND.plusInt(clients.size())).name,
-        clients.get(RND.plusInt(clients.size())).surname,
-        clients.get(RND.plusInt(clients.size())).patronymic,
-        clients.get(RND.plusInt(clients.size())).getFIO()};
+      //
+      //
 
-      for (String filter : filters) {
-
-        //
-        //
-        long result = this.clientRegister.get().getClientsSize(filter);
-        //
-        //
-
-        List<String> list = Arrays.asList(filter.trim().split(" "));
-        long expected = clients.stream().filter(o -> list.stream().anyMatch(x -> o.getFIO().toLowerCase().contains(x.toLowerCase()))).count();
-        assertThat(result).isEqualTo(expected);
+      if (filter == null) {
+        assertThat(result).isEqualTo(clients.size());
+        continue;
       }
-
-
+      List<String> list = Arrays.asList(filter.trim().split(" "));
+      long expected = clients.stream().filter(o -> list.stream().anyMatch(x -> o.getFIO().toLowerCase().contains(x.toLowerCase()))).count();
+      assertThat(result).isEqualTo(expected);
     }
-
 
   }
 
   @Test
   void removeClientsTest() {
     this.clientTestDao.get().clear();
+    List<String> toDeleteList = new ArrayList<>();
+
+    for (int i = 0; i < RND.plusInt(100); i++) {
+      ClientDot cd = this.rndClientDot();
+      this.clientTestDao.get().insertClientDot(cd);
+      toDeleteList.add(cd.id);
+    }
+
+    //
+    //
+    int deleted = this.clientRegister.get().remove(toDeleteList);
+    //
+    //
+
+    assertThat(deleted).isEqualTo(toDeleteList.size());
+    for (String id : toDeleteList) {
+      ClientDetail clientDetail = this.clientTestDao.get().detail(id, true);
+      assertThat(clientDetail).isNull();
+    }
+  }
+
+  @Test
+  void removeOneClientTest() {
+    this.clientTestDao.get().clear();
     List<String> ids = new ArrayList<>();
 
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < RND.plusInt(100); i++) {
       ClientDot cd = this.rndClientDot();
       this.clientTestDao.get().insertClientDot(cd);
       ids.add(cd.id);
     }
+    List<String> toDeleteList = new ArrayList<>();
+    String id = ids.get(0);
+    toDeleteList.add(id);
 
     //
     //
-    int deleted = this.clientRegister.get().remove(ids);
+    int deleted = this.clientRegister.get().remove(toDeleteList);
     //
     //
 
-    assertThat(deleted).isEqualTo(ids.size());
-    List<ClientDot> list = new ArrayList<>();
-    assertThat(list).isEmpty();
-    // FIXME: 2/14/18 напиши тест и на случай с удалением одного клиента
-    for (String id : ids) {
-      assertThat(list.stream().anyMatch(o -> o.id.equals(id))).isFalse();
-    }
+    assertThat(deleted).isEqualTo(toDeleteList.size());
+
+    ClientDetail clientDetail = this.clientTestDao.get().detail(id, true);
+    assertThat(clientDetail).isNull();
+
+
   }
 
 
@@ -171,7 +188,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
       //
       //
 
-      ClientDetail clientDetail = this.clientTestDao.get().detail(clientToSave.id);
+      ClientDetail clientDetail = this.clientTestDao.get().detail(clientToSave.id, true);
       this.assertClientDetail(clientDetail, new ClientDot(clientToSave));
 
       ClientAddress regAddress = this.clientTestDao.get().getAddres(clientToSave.id, AddressType.REG);
@@ -230,7 +247,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
 
-    ClientDetail clientDetail = this.clientTestDao.get().detail(client.id);
+    ClientDetail clientDetail = this.clientTestDao.get().detail(client.id, true);
     this.assertClientDetail(clientDetail, new ClientDot(client));
     ClientAddress regAddress = this.clientTestDao.get().getAddres(client.id, AddressType.REG);
     ClientAddress actAddress = this.clientTestDao.get().getAddres(client.id, AddressType.FACT);

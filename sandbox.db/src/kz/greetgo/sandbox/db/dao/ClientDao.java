@@ -12,18 +12,18 @@ public interface ClientDao {
   @Select("select c.id, c.name, c.surname, c.patronymic, date_part('year',age(c.birthDate)) age, c.charm, " +
     "ca.totalAccountBalance, ca.maximumBalance, ca.minimumBalance from Client c " +
     "left join (select client, max(money) maximumBalance, min(money) minimumBalance, sum(money) totalAccountBalance from ClientAccount group by client) ca on ca.client=c.id " +
-    "where lower(concat(c.name, c.surname, c.patronymic)) like #{filter} " +
+    "where lower(concat(c.name, c.surname, c.patronymic)) like #{filter} and c.actual=true " +
     "order by ${orderBy} ${order} limit ${limit} offset ${offset} ")
   List<ClientRecord> getClients(@Param("limit") int limit, @Param("offset") int offset, @Param("filter") String filter,
                                 @Param("orderBy") String orderBy, @Param("order") String order);
 
-  @Select("select count(1) from Client c where lower(concat(c.name, c.surname, c.patronymic)) like #{filter}")
-  int countByFilter(@Param("filter") String filter);
+  @Select("select count(1) from Client c where lower(concat(c.name, c.surname, c.patronymic)) like #{filter} and actual=true")
+  long countByFilter(@Param("filter") String filter);
 
-  @Select("select count(1) from Client")
+  @Select("select count(1) from Client where actual=true")
   int countAll();
 
-  @Select("select id, name, surname, patronymic, birthDate, gender, charm from client where id=#{id}")
+  @Select("select id, name, surname, patronymic, birthDate, gender, charm from client where id=#{id} and actual=true")
   @Results({
     @Result(property = "id", column = "id"),
     @Result(property = "phoneNumbers", column = "id", javaType = List.class,

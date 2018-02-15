@@ -28,13 +28,13 @@ public interface ClientTestDao {
     "values (#{client}, #{type}, #{street}, #{house}, #{flat})")
   void insertAddress(ClientAddressDot address);
 
-  @Select("select id, name, surname, patronymic, birthDate, gender, charm from client where id=#{id}")
+  @Select("select id, name, surname, patronymic, birthDate, gender, charm from client where id=#{id} and actual=#{actual}")
   @Results({
     @Result(property = "id", column = "id"),
     @Result(property = "phoneNumbers", column = "id", javaType = List.class,
       many = @Many(select = "getNumbersById"))
   })
-  ClientDetail detail(@Param("id") String id);
+  ClientDetail detail(@Param("id") String id, @Param("actual") Boolean actual);
 
   @Select("select client, number, type from ClientPhone where client=#{client}")
   List<ClientPhoneNumber> getNumbersById(String client);

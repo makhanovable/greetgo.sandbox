@@ -3,7 +3,6 @@ package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.enums.AddressType;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.dao.ClientDao;
@@ -26,7 +25,7 @@ public class ClientRegisterImpl implements ClientRegister {
 
     String ob = match ? orderBy : "name, surname, patronymic";
     int offset = limit * page;
-    filter = filter == null ? "" : getFormattedFilter(filter);
+    filter = getFormattedFilter(filter);
     String order = desc == 1 ? "desc" : "asc";
     return this.clientDao.get().getClients(limit, offset, filter, ob, order);
   }
@@ -102,6 +101,8 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   private String getFormattedFilter(String filter) {
+    if (filter == null)
+      return "%";
     String[] filters = filter.trim().split(" ");
     filter = String.join("|", filters);
     filter = "%" + filter.toLowerCase() + "%";
