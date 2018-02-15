@@ -16,7 +16,6 @@ public interface ClientRegister {
 
   ClientDetail detail(String id);
 
-  void add(ClientToSave clientDetail);
+  void addOrUpdate(ClientToSave clientDetail);
 
-  boolean update(ClientToSave clientDetail);
 }

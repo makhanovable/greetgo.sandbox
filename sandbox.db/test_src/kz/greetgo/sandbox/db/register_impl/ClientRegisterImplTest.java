@@ -148,69 +148,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
 //    }
   }
 
-  @Test
-  public void updateClientTest() {
-    this.clientTestDao.get().clear();
-    ClientDot cd = this.rndClientDot();
-    this.clientTestDao.get().insertClientDot(cd);
-    ClientAddressDot actualAddress = rndAddress(cd.id, AddressType.FACT);
-    ClientAddressDot registerAddress = rndAddress(cd.id, AddressType.REG);
-    this.clientTestDao.get().insertAddress(actualAddress);
-    this.clientTestDao.get().insertAddress(registerAddress);
-
-    // FIXME: 2/14/18 нужно давать переменной понятное название
-    ClientToSave test1 = rndClientToSave(cd.id); // +ClientDetail +2addresses +3numbers
-    //test1
-    {
-      ClientPhoneNumberDot number1 = rndPhoneNumber(cd.id, PhoneNumberType.WORK);
-      this.clientTestDao.get().insertPhone(number1); // number directly insterted to db
-      test1.numbersToDelete.add(number1.toClientPhoneNumber());  // -1 number
-
-      //
-      //
-      this.clientRegister.get().update(test1);
-      //
-      //
-
-      ClientDetail clientDetail = this.clientTestDao.get().detail(test1.id);
-      this.assertClientDetail(clientDetail, new ClientDot(test1));
-
-      ClientAddress regAddress = this.clientTestDao.get().getAddres(test1.id, AddressType.REG);
-      ClientAddress actAddress = this.clientTestDao.get().getAddres(test1.id, AddressType.FACT);
-      this.assertClientAddres(actAddress, new ClientAddressDot(test1.id, test1.actualAddress));
-      this.assertClientAddres(regAddress, new ClientAddressDot(test1.id, test1.registerAddress));
-
-      List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(test1.id);
-
-      assertThat(numberList).isNotEmpty();
-      assertThat(numberList).hasSize(test1.numersToSave.size());
-      assertThat(numberList.stream().anyMatch(o -> o.number.equals(number1.number))).isFalse();
-    }
-
-    //test2 FIXME: 2/14/18 надо вынести в отдельный тест
-    {
-
-      ClientToSave test2 = rndClientToSave(cd.id);
-
-      List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(test2.id);
-      assertThat(numberList.isEmpty()).isFalse();
-
-      ClientPhoneNumberToSave toEited = new ClientPhoneNumberDot(test2.id, numberList.get(0)).toClientPhoneNumberToSave();
-      toEited.oldNumber = toEited.number;
-      toEited.number = RND.str(10);
-      test2.numersToSave.add(toEited);
-
-      //
-      //
-      this.clientRegister.get().update(test2);
-      //
-      //
-
-      numberList = this.clientTestDao.get().getNumbersById(test2.id);
-      assertThat(numberList.stream().anyMatch(o -> o.number.equals(toEited.number))).isTrue();
-    }
-
-  }
 
   @Test
   public void addClientTest() {
@@ -219,7 +156,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     //
     //
-    this.clientRegister.get().add(client);
+    this.clientRegister.get().addOrUpdate(client);
     //
     //
 
@@ -357,7 +294,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     c.charm = RND.str(10);
     c.gender = RND.someEnum(GenderType.values());
     c.birthDate = RND.dateYears(-100, 0);
-    c.birthDate.setYear(RND.plusInt(100) + 1900);
     return c;
   }
 

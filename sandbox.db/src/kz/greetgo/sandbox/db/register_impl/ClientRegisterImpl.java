@@ -11,11 +11,8 @@ import kz.greetgo.sandbox.db.dao.ClientDao;
 import java.util.Arrays;
 import java.util.List;
 
-//@SuppressWarnings("WeakerAccess") // FIXME: 2/14/18 не отключай для всего класса
 @Bean
 public class ClientRegisterImpl implements ClientRegister {
-
-  // FIXME: 2/14/18 NOT NULL в таблицах
 
   public BeanGetter<ClientDao> clientDao;
   public BeanGetter<IdGenerator> idGenerator;
@@ -57,65 +54,51 @@ public class ClientRegisterImpl implements ClientRegister {
     return clientDetail;
   }
 
-  // FIXME: 2/14/18 Инсерт и апдейт в одном запросе
-
   @Override
-  public void add(ClientToSave clientToSave) {
-    clientToSave.id = this.idGenerator.get().newId();
-    this.clientDao.get().insertClient(clientToSave);
-
-    for (ClientPhoneNumber cpn : clientToSave.numersToSave) {
-      cpn.client = clientToSave.id;
-      this.clientDao.get().insertPhone(cpn);
-    }
-
-    if (clientToSave.actualAddress != null) {
-      clientToSave.actualAddress.client = clientToSave.id;
-      this.clientDao.get().insertAddress(clientToSave.actualAddress);
-    }
-    if (clientToSave.registerAddress != null) {
-      clientToSave.registerAddress.client = clientToSave.id;
-      this.clientDao.get().insertAddress(clientToSave.registerAddress);
-    }
-
-  }
-
-  @Override
-  public boolean update(ClientToSave clientToSave) {
-    try {
+  public void addOrUpdate(ClientToSave clientToSave) {
+    if (clientToSave.id == null) {
+      clientToSave.id = this.idGenerator.get().newId();
+      this.clientDao.get().insertClient(clientToSave);
+    } else {
       this.clientDao.get().updateClient(clientToSave);
-      if (clientToSave.numbersToDelete != null) {
-        for (ClientPhoneNumber cpn : clientToSave.numbersToDelete) {
-          this.clientDao.get().deletePhone(cpn);
-        }
-      }
+    }
 
-      if (clientToSave.numersToSave != null) {
-        for (ClientPhoneNumberToSave cpn : clientToSave.numersToSave) {
+    if (clientToSave.numbersToDelete != null) {
+      for (ClientPhoneNumber cpn : clientToSave.numbersToDelete) {
+        this.clientDao.get().deletePhone(cpn);
+      }
+    }
+
+    if (clientToSave.numersToSave != null) {
+      for (ClientPhoneNumberToSave cpn : clientToSave.numersToSave) {
+        if (cpn.client == null) {
           cpn.client = clientToSave.id;
+          this.clientDao.get().insertPhone(cpn);
+        } else {
           if (cpn.oldNumber == null)
             this.clientDao.get().insertPhone(cpn);
           else
             this.clientDao.get().updatePhone(cpn);
         }
       }
+    }
 
-      if (clientToSave.actualAddress != null) {
+    if (clientToSave.actualAddress != null) {
+      if (clientToSave.actualAddress.client == null) {
+        clientToSave.actualAddress.client = clientToSave.id;
+        this.clientDao.get().insertAddress(clientToSave.actualAddress);
+      } else {
         this.clientDao.get().updateAddress(clientToSave.actualAddress);
       }
-      if (clientToSave.registerAddress != null) {
+    }
+    if (clientToSave.registerAddress != null) {
+      if (clientToSave.registerAddress.client == null) {
+        clientToSave.registerAddress.client = clientToSave.id;
+        this.clientDao.get().insertAddress(clientToSave.registerAddress);
+      } else {
         this.clientDao.get().updateAddress(clientToSave.registerAddress);
       }
-
-      return true;
-    } catch (Exception e) {
-
-      // FIXME: 2/14/18 Надо использовать логгер
-
-      e.printStackTrace();
     }
-    return false;
-
   }
 
   private String getFormattedFilter(String filter) {

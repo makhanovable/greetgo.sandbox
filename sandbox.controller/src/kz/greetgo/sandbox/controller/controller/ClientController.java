@@ -57,13 +57,8 @@ public class ClientController implements Controller {
 
   @ToJson
   @Mapping("/addOrUpdate")
-  public String addOrUpdate(@Par("client") @Json ClientToSave clientToSave) {
-    if (clientToSave.id != null)
-      return this.clientRegister.get().update(clientToSave) ? "ok" : "bad";
-    else
-      this.clientRegister.get().add(clientToSave);
-    return "ok";
+  public void addOrUpdate(@Par("client") @Json ClientToSave clientToSave) {
+    this.clientRegister.get().addOrUpdate(clientToSave);
   }
-
-
+  
 }

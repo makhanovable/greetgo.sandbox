@@ -23,18 +23,11 @@ public class ClientRegisterStand implements ClientRegister {
   private IdGenerator gen = new IdGenerator();
 
   @Override
-  public boolean update(ClientToSave clientToSave) {
-    if (db.get().clientStorage.get(clientToSave.id) == null)
-      return false;
+  public void addOrUpdate(ClientToSave clientToSave) {
     ClientDot clientDot = new ClientDot(clientToSave);
-    setClientData(clientDot, clientToSave);
-    return true;
-  }
+    if (clientDot.id == null)
+      clientDot.id = this.gen.newId();
 
-  @Override
-  public void add(ClientToSave clientToSave) {
-    ClientDot clientDot = new ClientDot(clientToSave);
-    clientDot.id = this.gen.newId();
     setClientData(clientDot, clientToSave);
   }
 
@@ -155,22 +148,17 @@ public class ClientRegisterStand implements ClientRegister {
 
   private void setClientData(ClientDot clientDot, ClientToSave clientToSave) {
     db.get().clientStorage.put(clientDot.id, clientDot);
-
-    List<ClientAddressDot> addresses = db.get().clientAddressStorage.get(clientDot.id);
-    if (addresses == null)
-      addresses = new ArrayList<>();
-
+    List<ClientAddressDot> addresses = new ArrayList<>();
     if (clientToSave.actualAddress != null) {
       addresses.add(new ClientAddressDot(clientDot.id, clientToSave.actualAddress));
     }
     if (clientToSave.registerAddress != null) {
       addresses.add(new ClientAddressDot(clientDot.id, clientToSave.registerAddress));
     }
-
     db.get().clientAddressStorage.put(clientDot.id, addresses);
 
-
     List<ClientPhoneNumberDot> numbers = db.get().clientPhoneNumberStorage.get(clientDot.id);
+
 
     for (ClientPhoneNumber number : clientToSave.numbersToDelete) {
       ClientPhoneNumberDot found = numbers.stream().filter(o -> o.number.equals(number.number)).findFirst().get();
@@ -178,16 +166,15 @@ public class ClientRegisterStand implements ClientRegister {
     }
 
     for (ClientPhoneNumberToSave number : clientToSave.numersToSave) {
-      if (number.oldNumber == null)
-        numbers.add(new ClientPhoneNumberDot(clientDot.id, number));
-      else {
+      if (number.oldNumber != null) {
         Boolean found = numbers.stream().anyMatch(o -> o.number.equals(number.oldNumber));
         if (found) {
           ClientPhoneNumberDot clientPhoneNumberDot = numbers.stream().filter(o -> o.number.equals(number.oldNumber)).findFirst().get();
           numbers.remove(clientPhoneNumberDot);
         }
-        numbers.add(new ClientPhoneNumberDot(clientDot.id, number));
+
       }
+      numbers.add(new ClientPhoneNumberDot(clientDot.id, number));
 
     }
     db.get().clientPhoneNumberStorage.put(clientDot.id, numbers);
