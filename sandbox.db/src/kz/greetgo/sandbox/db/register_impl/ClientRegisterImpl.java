@@ -3,6 +3,7 @@ package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.sandbox.controller.enums.AddressType;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.dao.ClientDao;
@@ -18,9 +19,9 @@ public class ClientRegisterImpl implements ClientRegister {
 
   @Override
   public List<ClientRecord> getClientInfoList(int limit, int page, String filter, final String orderBy, int desc) {
-
-
+    
     String[] orders = {"age", "totalAccountBalance", "maximumBalance", "minimumBalance"};
+
     Boolean match = Arrays.stream(orders).anyMatch(o -> o.equals(orderBy));
 
     String ob = match ? orderBy : "name, surname, patronymic";
@@ -47,9 +48,16 @@ public class ClientRegisterImpl implements ClientRegister {
   public ClientDetail detail(String id) {
     ClientDetail clientDetail = this.clientDao.get().detail(id);
 
-    // FIXME: 2/14/18 Вытаскивай одним запросом
-    clientDetail.actualAddress = this.clientDao.get().getAddres(id, AddressType.FACT);
-    clientDetail.registerAddress = this.clientDao.get().getAddres(id, AddressType.REG);
+    if (clientDetail != null) {
+      List<ClientAddress> addresses = this.clientDao.get().getAddresses(id);
+      for (ClientAddress addr : addresses) {
+        if (addr.type.equals(AddressType.FACT))
+          clientDetail.actualAddress = addr;
+        else if (addr.type.equals(AddressType.REG))
+          clientDetail.registerAddress = addr;
+      }
+    }
+
     return clientDetail;
   }
 

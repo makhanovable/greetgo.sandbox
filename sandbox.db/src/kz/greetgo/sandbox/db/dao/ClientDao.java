@@ -1,6 +1,5 @@
 package kz.greetgo.sandbox.db.dao;
 
-import kz.greetgo.sandbox.controller.enums.AddressType;
 import kz.greetgo.sandbox.controller.model.*;
 import org.apache.ibatis.annotations.*;
 
@@ -34,8 +33,8 @@ public interface ClientDao {
   @Select("select client, number, type from ClientPhone where client=#{client}")
   List<ClientPhoneNumber> getNumbersById(String client);
 
-  @Select("select client, type, street, house, flat from ClientAddr where client=#{client} and type=#{type}")
-  ClientAddress getAddres(@Param("client") String client, @Param("type") AddressType type);
+  @Select("select client, type, street, house, flat from ClientAddr where client=#{client}")
+  List<ClientAddress> getAddresses(@Param("client") String client);
 
   @Insert("insert into ClientPhone (client, number, type) " +
     "values (#{client}, #{number}, #{type})")

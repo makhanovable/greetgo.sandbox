@@ -31,7 +31,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   void getClientInfoListTest() {
-
     this.clientTestDao.get().clear();
 
     List<ClientDot> clients = new ArrayList<>();
@@ -41,40 +40,90 @@ public class ClientRegisterImplTest extends ParentTestNg {
       clients.add(cd);
     }
 
-    int limit = 10;
-    int page = 10;
-    String filter = "";
-    String orderBy = "name";
-    int desc = 0;
 
-    long size = this.clientRegister.get().getClientsSize(null);
-    //
-    //
-    List<ClientRecord> result = this.clientRegister.get().getClientInfoList(limit, page, filter, orderBy, desc);
-    //
-    //
+    ClientDot rndClient = clients.get(RND.plusInt(clients.size()));
+    int[] limits = {0, 10, 20, 50};
+    int[] pages = {0, 1, 2, 10, 20};
+    String[] orderBys = {null, "", "age"};
+    int[] orders = {0, 1};
+    String[] filters = {null, rndClient.name, rndClient.surname, rndClient.patronymic, rndClient.getFIO(), "a", "ab", RND.str(3)};
 
-    List<ClientDot> filtered = clients.stream().filter(o -> o.getFIO().toLowerCase().contains(filter)).collect(Collectors.toList());
-    filtered.sort((o1, o2) -> {
-      if (desc == 1) {
-        ClientDot tmp = o1;
-        o1 = o2;
-        o2 = tmp;
+//    long size = this.clientRegister.get().getClientsSize(null);
+
+    for (int limit : limits) {
+      for (int page : pages) {
+        for (String orderBy : orderBys) {
+          for (int order : orders) {
+            for (String filter : filters) {
+              System.out.println(limit + " " + page + " " + orderBy + " " + order + " " + filter);
+              //
+              //
+              List<ClientRecord> result = this.clientRegister.get().getClientInfoList(limit, page, filter, orderBy, order);
+              //
+              //
+
+              List<ClientDot> expectedList = filter == null ? clients :
+                clients.stream().filter(o -> o.getFIO().toLowerCase().contains(filter)).collect(Collectors.toList());
+
+              expectedList.sort((o1, o2) -> {
+                if (orderBy != null)
+                  switch (orderBy) {
+                    case "age":
+                      return o1.birthDate.compareTo(o2.birthDate);
+//                  case "totalAccountBalance":
+//                    return Float.compare(o1.totalAccountBalance, o2.totalAccountBalance);
+//                  case "maximumBalance":
+//                    return Float.compare(o1.maximumBalance, o2.maximumBalance);
+//                  case "minimumBalance":
+//                    return Float.compare(o1.minimumBalance, o2.minimumBalance);
+                    default:
+                      String fio1 = o1.getFIO().toLowerCase();
+                      String fio2 = o2.getFIO().toLowerCase();
+                      return fio1.compareTo(fio2);
+                  }
+                else {
+                  String fio1 = o1.getFIO().toLowerCase();
+                  String fio2 = o2.getFIO().toLowerCase();
+                  return fio1.compareTo(fio2);
+                }
+
+              });
+
+//              if (order == 1)
+//                Collections.reverse(expectedList);
+
+              int fromIndex = limit * page;
+              int endindex = (int) (fromIndex + limit <= expectedList.size() ? fromIndex + limit : expectedList.size());
+
+              if (endindex <= fromIndex)
+                expectedList = new ArrayList<>();
+              else
+                expectedList = expectedList.subList(fromIndex, endindex);
+
+              assertThat(result).hasSize(expectedList.size());
+
+              if (limit == 10 && order == 1) {
+
+//                System.out.println("hello");
+              }
+              for (int i = 0; i < result.size(); i++) {
+
+                ClientDot expected = expectedList.get(i + page * limit);
+                ClientRecord target = result.get(i);
+                assertThat(expected.id).isEqualTo(target.id);
+
+              }
+
+
+            }
+          }
+        }
       }
-      String fio1 = o1.name;
-      String fio2 = o2.name;
-      return fio1.compareTo(fio2);
-    });
-
-    assertThat(result).isNotEmpty();
-    for (int i = 0; i < result.size(); i++) {
-      // FIXME: 2/14/18 сравнивай все поля, не только айди
-      ClientDot expected = filtered.get(i + page * limit);
-      ClientRecord target = result.get(i);
-      assertThat(expected.id).isEqualTo(target.id);
-
     }
+
+
   }
+
 
   @Test
   void getClientsSizeTest() {
@@ -106,8 +155,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(result).isEqualTo(clients.size());
         continue;
       }
-      List<String> list = Arrays.asList(filter.trim().split(" "));
-      long expected = clients.stream().filter(o -> list.stream().anyMatch(x -> o.getFIO().toLowerCase().contains(x.toLowerCase()))).count();
+      List<String> filterTokens = Arrays.asList(filter.trim().split(" "));
+
+      long expected = clients.stream().filter(o -> filterTokens.stream().anyMatch(x -> o.getFIO().toLowerCase().contains(x.toLowerCase()))).count();
       assertThat(result).isEqualTo(expected);
     }
 
