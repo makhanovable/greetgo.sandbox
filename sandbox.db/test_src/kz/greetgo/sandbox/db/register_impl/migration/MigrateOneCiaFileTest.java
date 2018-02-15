@@ -220,7 +220,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     assertThat(errorList.get(3)).startsWith("Неправильный формат birth");
     assertThat(errorList.get(4)).startsWith("Значение birth выходит за рамки");
     assertThat(errorList.get(5)).startsWith("Значение birth выходит за рамки");
-    assertThat(errorList.get(5)).startsWith("Значение birth выходит за рамки");
+    assertThat(errorList.get(6)).startsWith("Значение birth выходит за рамки");
   }
 
   @Test

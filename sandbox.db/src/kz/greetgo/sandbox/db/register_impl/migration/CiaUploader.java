@@ -103,7 +103,8 @@ public class CiaUploader extends CommonSaxHandler {
   int curClientAddressBatchCount = 0;
   int curClientPhoneBatchCount = 0;
 
-  //TODO: catch exception and form error message
+  //TODO: ловить несуществующие теги и печатать соответствующую ошибку
+  // TODO: пропускать всего клиента при ошибке?
   @Override
   protected void startTag(Attributes attributes) throws SQLException {
     String path = path();
@@ -251,7 +252,7 @@ public class CiaUploader extends CommonSaxHandler {
     int age = Util.getAge(birthdate);
     if (age > 1000 || age < 3)
       throw new ParsingValueException("Значение birth выходит за рамки у ciaId = " + clientData.ciaId +
-        ".Возраст должен быть между 3 и 1000годами");
+        ".Возраст должен быть между 3 и 1000 годами");
 
     setClientPrepareStatement(birthdate);
     clientPrepareStatement.addBatch();

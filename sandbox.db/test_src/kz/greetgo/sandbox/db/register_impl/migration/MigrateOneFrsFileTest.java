@@ -1,6 +1,7 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.sandbox.controller.util.Util;
+import kz.greetgo.sandbox.db.register_impl.migration.error.CommonErrorFileWriter;
 import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
@@ -24,13 +25,16 @@ public class MigrateOneFrsFileTest extends MigrateCommonTests {
 
   @Test
   public void uploadData() throws Exception {
-    File inFile = new File("build/MigrateOneFrsFileTest/cia_" + Util.generateRandomString(16) + ".xml");
+    String generatedId = Util.generateRandomString(16);
+    File inFile = new File("build/MigrateOneFrsFileTest/frs_" + generatedId + ".json_row");
     inFile.getParentFile().mkdirs();
     createFrsFile(inFile);
+    File outputErrorFile = new File("build/MigrateOneFrsFileTest/frs_error_" + generatedId + ".txt");
 
     MigrateOneFrsFile oneFrsFile = new MigrateOneFrsFile();
     oneFrsFile.connection = connection;
     oneFrsFile.inputFile = inFile;
+    oneFrsFile.outputErrorFile = new CommonErrorFileWriter(outputErrorFile);
     oneFrsFile.prepareTmpTables();
     oneFrsFile.uploadData();
 
@@ -39,15 +43,17 @@ public class MigrateOneFrsFileTest extends MigrateCommonTests {
     assertThat(clientAccountRecordList).hasSize(1);
     assertThat(clientAccountRecordList.get(0).get("client_id")).isEqualTo("4-DU8-32-H7");
     assertThat(clientAccountRecordList.get(0).get("account_number")).isEqualTo("32134KZ343-43546-535436-77656");
-    assertThat(clientAccountRecordList.get(0).get("registered_at")).isEqualTo("2011-01-23T23:22:11.456");
+    assertThat(clientAccountRecordList.get(0).get("registered_at").toString()).isEqualTo("2011-01-23 23:22:11.456");
 
     List<Map<String, Object>> clientAccountTransactionRecordList =
       toListMap("SELECT * FROM " + oneFrsFile.tmpClientAccountTransactionTableName + " ORDER BY record_no");
     assertThat(clientAccountTransactionRecordList).hasSize(2);
-    assertThat(clientAccountTransactionRecordList.get(0).get("money")).isEqualTo("+123_000_000_098.13");
-    assertThat(clientAccountTransactionRecordList.get(1).get("money")).isEqualTo("-23_000_000_034.17");
-    assertThat(clientAccountTransactionRecordList.get(0).get("finished_at")).isEqualTo("2010-01-23T11:56:11.987");
-    assertThat(clientAccountTransactionRecordList.get(1).get("finished_at")).isEqualTo("2010-01-23T11:56:11.987");
+    assertThat(clientAccountTransactionRecordList.get(0).get("money").toString()).isEqualTo("123000000098.13");
+    assertThat(clientAccountTransactionRecordList.get(1).get("money").toString()).isEqualTo("-23000000034.17");
+    assertThat(clientAccountTransactionRecordList.get(0).get("finished_at").toString())
+      .isEqualTo("2010-01-23 11:56:11.987");
+    assertThat(clientAccountTransactionRecordList.get(1).get("finished_at").toString())
+      .isEqualTo("2010-01-23 11:56:11.987");
     assertThat(clientAccountTransactionRecordList.get(0).get("transaction_type"))
       .isEqualTo("Перечисление с госбюджета");
     assertThat(clientAccountTransactionRecordList.get(1).get("transaction_type"))
@@ -58,51 +64,33 @@ public class MigrateOneFrsFileTest extends MigrateCommonTests {
       .isEqualTo("32134KZ343-43546-535436-77656");
   }
 
-//TODO: тесты для проверки файловых ошибок
-
   @Test
   public void processValidationErrors() throws Exception {
+    String generatedId = Util.generateRandomString(16);
+    File inFile = new File("build/MigrateOneFrsFileTest/frs_" + generatedId + ".json_row");
+    inFile.getParentFile().mkdirs();
+    createFrsFileWithErrors(inFile);
+
     MigrateOneFrsFile oneFrsFile = new MigrateOneFrsFile();
     oneFrsFile.connection = connection;
+    oneFrsFile.inputFile = inFile;
+    oneFrsFile.outputErrorFile = new ErrorFileWriterTest();
     oneFrsFile.prepareTmpTables();
+    oneFrsFile.uploadData();
 
-    long clientAccountRecordNum = 0, clientAccountTransactionRecordNum = 0;
-    this.insertClientAccount(oneFrsFile.tmpClientAccountTableName, clientAccountRecordNum++);
-/*
-    this.insertClientAccountWithRegistrationDate(oneFrsFile.tmpClientAccountTableName, clientAccountRecordNum++,
-      new Timestamp(System.currentTimeMillis() - 1100 * 1471228928).toInstant().toString());
+    List<String> errorList = ((ErrorFileWriterTest) oneFrsFile.outputErrorFile).errorList;
 
-    this.insertClientAccountWithRegistrationDate(oneFrsFile.tmpClientAccountTableName, clientAccountRecordNum++,
-      new Timestamp(System.currentTimeMillis() + 1 * 1471228928).toInstant().toString());
-
-    String accountNum = this.insertClientAccountWithRegistrationDate(oneFrsFile.tmpClientAccountTableName,
-      clientAccountRecordNum++, new Timestamp(System.currentTimeMillis()).toInstant().toString());
-    this.insertClientAccountTransaction(
-      oneFrsFile.tmpClientAccountTransactionTableName, clientAccountTransactionRecordNum++, accountNum);
-    this.insertClientAccountTransactionWithMoney(
-      oneFrsFile.tmpClientAccountTransactionTableName, clientAccountTransactionRecordNum++, "1_000_000.00", accountNum);
-*/
-    List<Map<String, Object>> clientAccountRecordList =
-      toListMap("SELECT * FROM " + oneFrsFile.tmpClientAccountTableName + " " +
-        "WHERE error IS NOT NULL ORDER BY record_no");
-    assertThat(clientAccountRecordList).hasSize(3);//TODO: finish like this
-    assertThat(clientAccountRecordList.get(0).get("error")).isEqualTo("Неправильный формат даты registered_at у " +
-      "account_number = " + clientAccountRecordList.get(0).get("account_number"));
-    assertThat(clientAccountRecordList.get(1).get("error")).isEqualTo("Значение registered_at выходит за рамки у " +
-      "account_number = " + clientAccountRecordList.get(1).get("account_number") +
-      ". Дате регистрации должно быть не больше 1000 лет");
-    assertThat(clientAccountRecordList.get(2).get("error")).isEqualTo("Значение registered_at выходит за рамки у " +
-      "account_number = " + clientAccountRecordList.get(2).get("account_number") +
-      ". Дата регистрации больше сегодняшней. ГОСДЕП не предоставлял ЦРУ таких секретных технологий");
-
-    List<Map<String, Object>> clientAccountTransactionRecordList =
-      toListMap("SELECT * FROM " + oneFrsFile.tmpClientAccountTransactionTableName + " " +
-        "WHERE error IS NOT NULL ORDER BY record_no");
-    assertThat(clientAccountTransactionRecordList).hasSize(3);
-    assertThat(clientAccountTransactionRecordList.get(0).get("error")).isEqualTo("Неправильный формат даты registered_at у " +
-      "account_number = " + clientAccountTransactionRecordList.get(0).get("account_number"));
-
-
+    assertThat(errorList).hasSize(10);
+    assertThat(errorList.get(0)).startsWith("Неизвестная команда");
+    assertThat(errorList.get(1)).startsWith("Неправильный формат денег money");
+    assertThat(errorList.get(2)).startsWith("Неправильный формат денег money");
+    assertThat(errorList.get(3)).startsWith("Значение finished_at выходит за рамки");
+    assertThat(errorList.get(4)).startsWith("Значение finished_at выходит за рамки");
+    assertThat(errorList.get(5)).startsWith("Неправильный формат временного штампа finished_at");
+    assertThat(errorList.get(6)).startsWith("Неизвестная команда");
+    assertThat(errorList.get(7)).startsWith("Значение registered_at выходит за рамки");
+    assertThat(errorList.get(8)).startsWith("Значение registered_at выходит за рамки");
+    assertThat(errorList.get(9)).startsWith("Неправильный формат временного штампа registered_at");
   }
 
   private void insertClientAccountTransaction(String tblName, long recordNum, String accountNum) {

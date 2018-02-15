@@ -1,9 +1,8 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.sandbox.controller.util.Util;
-import org.apache.commons.io.output.FileWriterWithEncoding;
+import kz.greetgo.sandbox.db.register_impl.migration.error.ErrorFile;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.sql.Connection;
@@ -14,7 +13,7 @@ import java.util.Date;
 
 public class MigrateOneFrsFile {
   public File inputFile;
-  public File outputErrorFile;
+  public ErrorFile outputErrorFile;
   public int maxBatchSize = 100;
   public Connection connection;
 
@@ -65,11 +64,13 @@ public class MigrateOneFrsFile {
     FrsUploader frsUploader = new FrsUploader();
     frsUploader.connection = connection;
     frsUploader.maxBatchSize = maxBatchSize;
+    frsUploader.inputFileName = inputFile.getName();
+    frsUploader.errorFileWriter = outputErrorFile;
     frsUploader.clientAccountTable = tmpClientAccountTableName;
     frsUploader.clientAccountTransactionTable = tmpClientAccountTransactionTableName;
 
     try (FileInputStream fileInputStream = new FileInputStream(inputFile)) {
-      frsUploader.parse(fileInputStream, new BufferedWriter(new FileWriterWithEncoding(outputErrorFile, "UTF-8")));
+      frsUploader.parse(fileInputStream);
     }
 
     connection.setAutoCommit(true);

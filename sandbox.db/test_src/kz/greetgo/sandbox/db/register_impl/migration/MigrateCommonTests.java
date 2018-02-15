@@ -215,6 +215,38 @@ public class MigrateCommonTests extends ParentTestNg {
     }
   }
 
+  protected void createFrsFileWithErrors(File inFile) throws Exception {
+    try (PrintStream pr = new PrintStream(inFile, "UTF-8")) {
+      pr.print("{\"type\": \"trannsaction\",\"money\": \"+123_000_000_09u,13\"," +
+        "\"finished_at\": \"2010-01-23T11:56:11.987\",\"transaction_type\": \"Перечисление с госбюджета\"," +
+        "\"account_number\": \"32134KZ343-43546-535436-77656\"}\n");
+      pr.print("{\"type\": \"transaction\",\"money\": \"+123_000_000_098,13\"," +
+        "\"finished_at\": \"2010-01-23T11:56:11.987\",\"transaction_type\": \"Перечисление с госбюджета\"," +
+        "\"account_number\": \"32134KZ343-43546-535436-77656\"}\n");
+      pr.print("{\"type\": \"transaction\",\"money\": \"abc\"," +
+        "\"finished_at\": \"2010-01-23T11:56:11.987\",\"transaction_type\": \"Вывод средств в офшоры\"," +
+        "\"account_number\": \"32134KZ343-43546-535436-77656\"}\n");
+      pr.print("{\"type\": \"transaction\",\"money\": \"-123_000_000_098.13\"," +
+        "\"finished_at\": \"1010-01-23T11:56:11.987\",\"transaction_type\": \"Вывод средств в офшоры\"," +
+        "\"account_number\": \"32134KZ343-43546-535436-77656\"}\n");
+      pr.print("{\"type\": \"transaction\",\"money\": \"-123_000_000_098.13\"," +
+        "\"finished_at\": \"3010-01-23T11:56:11.987\",\"transaction_type\": \"Вывод средств в офшоры\"," +
+        "\"account_number\": \"32134KZ343-43546-535436-77656\"}\n");
+      pr.print("{\"type\": \"transaction\",\"money\": \"-123_000_000_098.13\"," +
+        "\"finished_at\": \"abc\",\"transaction_type\": \"Вывод средств в офшоры\"," +
+        "\"account_number\": \"32134KZ343-43546-535436-77656\"}\n");
+
+      pr.print("{\"type\": \"new_acccount\",\"client_id\": \"4-DU8-32-H7\"," +
+        "\"account_number\": \"32134KZ343-43546-535436-77656\",\"registered_at\": \"2011-01-23T23:22:11.456\"}\n");
+      pr.print("{\"type\": \"new_account\",\"client_id\": \"4-DU8-32-H7\"," +
+        "\"account_number\": \"32134KZ343-43546-535436-77656\",\"registered_at\": \"1011-01-23T23:22:11.456\"}\n");
+      pr.print("{\"type\": \"new_account\",\"client_id\": \"4-DU8-32-H7\"," +
+        "\"account_number\": \"32134KZ343-43546-535436-77656\",\"registered_at\": \"3011-01-23T23:22:11.456\"}\n");
+      pr.print("{\"type\": \"new_account\",\"client_id\": \"4-DU8-32-H7\"," +
+        "\"account_number\": \"32134KZ343-43546-535436-77656\",\"registered_at\": \"\"}\n");
+    }
+  }
+
   protected List<Map<String, Object>> toListMap(String sql) throws SQLException {
     try (PreparedStatement ps = connection.prepareStatement(sql)) {
       try (ResultSet rs = ps.executeQuery()) {
