@@ -4,12 +4,14 @@ import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.sql.Date;
+import java.sql.Timestamp;
 
 public interface MigrationTestDao {
   @Insert("INSERT INTO ${tmpClientTableName} " +
     "VALUES (#{recordNo}, #{clientId}, #{ciaId}, #{surname}, #{name}, #{patronymic}, #{gender}, #{charmName}," +
-    "#{charmId}, #{birthDate}, #{birthDateTyped}, #{status}, #{error})")
+    "#{charmId}, #{birthDate}, #{status}, #{error})")
   void insertClient(@Param("tmpClientTableName") String tmpClientTableName,
                     @Param("recordNo") long recordNo,
                     @Param("clientId") Long clientId,
@@ -20,8 +22,7 @@ public interface MigrationTestDao {
                     @Param("gender") String gender,
                     @Param("charmName") String charm_name,
                     @Param("charmId") Integer charm_id,
-                    @Param("birthDate") String birth_date,
-                    @Param("birthDateTyped") Date birth_date_typed,
+                    @Param("birthDate") Date birth_date,
                     @Param("status") int status,
                     @Param("error") String error);
 
@@ -43,6 +44,25 @@ public interface MigrationTestDao {
                          @Param("number") String number,
                          @Param("type") String type,
                          @Param("status") int status);
+
+  @Insert("INSERT INTO ${tmpClientAccountTableName} " +
+    "VALUES (#{recordNo}, #{clientId}, #{accountNumber}, #{registeredAt}, #{status})")
+  void insertClientAccount(@Param("tmpClientAccountTableName") String tmpClientAccountTableName,
+                           @Param("recordNo") long recordNo,
+                           @Param("clientId") String clientId,
+                           @Param("accountNumber") String accountNumber,
+                           @Param("registeredAt") Timestamp registeredAt,
+                           @Param("status") int status);
+
+  @Insert("INSERT INTO ${tmpTableName} " +
+    "VALUES (#{recordNo}, #{money}, #{finishedAt}, #{transactionType}, #{accountNumber}, #{status})")
+  void insertClientAccountTransaction(@Param("tmpTableName") String tmpTableName,
+                                      @Param("recordNo") long recordNo,
+                                      @Param("money") BigDecimal money,
+                                      @Param("finishedAt") Timestamp finishedAt,
+                                      @Param("transactionType") String transactionType,
+                                      @Param("accountNumber") String accountNumber,
+                                      @Param("status") int status);
 
   @Delete("DELETE FROM charm")
   void deleteAllTableCharm();

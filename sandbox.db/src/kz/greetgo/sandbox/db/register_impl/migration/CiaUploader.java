@@ -2,12 +2,16 @@ package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.sandbox.controller.model.AddressType;
 import kz.greetgo.sandbox.controller.model.PhoneType;
+import kz.greetgo.sandbox.controller.util.Util;
+import kz.greetgo.sandbox.db.register_impl.migration.error.ErrorFile;
+import kz.greetgo.sandbox.db.register_impl.migration.error.ParsingValueException;
 import kz.greetgo.sandbox.db.register_impl.migration.model.ClientAddressData;
 import kz.greetgo.sandbox.db.register_impl.migration.model.ClientData;
 import kz.greetgo.sandbox.db.register_impl.migration.model.ClientPhoneData;
 import org.xml.sax.Attributes;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -17,6 +21,8 @@ public class CiaUploader extends CommonSaxHandler {
   public String clientTable;
   public String clientAddressTable;
   public String clientPhoneTable;
+
+  public ErrorFile errorFileWriter;
 
   private PreparedStatement clientPrepareStatement;
   private PreparedStatement clientAddressPrepareStatement;
@@ -47,7 +53,7 @@ public class CiaUploader extends CommonSaxHandler {
   private ClientAddressData clientAddressData;
   private ClientPhoneData clientPhoneData;
 
-  private void setClientPrepareStatement() throws SQLException {
+  private void setClientPrepareStatement(Date birthdate) throws SQLException {
     int idx = 1;
     clientPrepareStatement.setInt(idx++, curClientRecordNum);
     clientPrepareStatement.setString(idx++, clientData.ciaId);
@@ -55,7 +61,7 @@ public class CiaUploader extends CommonSaxHandler {
     clientPrepareStatement.setString(idx++, clientData.name);
     clientPrepareStatement.setString(idx++, clientData.patronymic);
     clientPrepareStatement.setString(idx++, clientData.gender);
-    clientPrepareStatement.setString(idx++, clientData.birthdate);
+    clientPrepareStatement.setDate(idx++, birthdate);
     clientPrepareStatement.setString(idx, clientData.charmName);
   }
 
@@ -93,11 +99,13 @@ public class CiaUploader extends CommonSaxHandler {
   private static final String TAG_CLIENT_MOBILE_PHONE = TAG_CLIENT + "/mobilePhone";
   private static final String TAG_CLIENT_WORK_PHONE = TAG_CLIENT + "/workPhone";
 
+  int totalClientBatchCount = 0, curClientBatchCount = 0;
   int curClientAddressBatchCount = 0;
   int curClientPhoneBatchCount = 0;
 
+  //TODO: catch exception and form error message
   @Override
-  protected void startTag(Attributes attributes) throws Exception {
+  protected void startTag(Attributes attributes) throws SQLException {
     String path = path();
     if (path.equals(TAG_CIA)) {
       prepare();
@@ -145,7 +153,6 @@ public class CiaUploader extends CommonSaxHandler {
       return;
     }
     if (path.equals(TAG_CLIENT_ADDRESS_REGISTRATION)) {
-      clientAddressData.clientRecordNo = curClientRecordNum;
       clientAddressData.type = AddressType.REGISTRATION.name();
       clientAddressData.street = attributes.getValue("street");
       clientAddressData.house = attributes.getValue("house");
@@ -157,10 +164,8 @@ public class CiaUploader extends CommonSaxHandler {
     }
   }
 
-  int totalClientBatchCount = 0, curClientBatchCount = 0;
-
   @Override
-  protected void endTag() throws Exception {
+  protected void endTag() throws SQLException {
     String path = path();
 
     if (path.endsWith(TAG_CLIENT_PHONE)) {
@@ -190,7 +195,13 @@ public class CiaUploader extends CommonSaxHandler {
       return;
     }
     if (path.equals(TAG_CLIENT)) {
-      this.addClientToBatch();
+      try {
+        this.addClientToBatch();
+      } catch (ParsingValueException e) {
+        errorFileWriter.appendErrorLine(e.getMessage());
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
       return;
     }
     if (path.equals(TAG_CIA)) {
@@ -221,8 +232,28 @@ public class CiaUploader extends CommonSaxHandler {
     }
   }
 
-  private void addClientToBatch() throws SQLException {
-    setClientPrepareStatement();
+  private void addClientToBatch() throws Exception {
+    if (clientData.surname == null || clientData.surname.length() == 0)
+      throw new ParsingValueException("Пустое значение surname у ciaId = " + clientData.ciaId);
+    if (clientData.name == null || clientData.name.length() == 0)
+      throw new ParsingValueException("Пустое значение name у ciaId = " + clientData.ciaId);
+    if (clientData.birthdate == null || clientData.birthdate.length() == 0)
+      throw new ParsingValueException("Пустое значение birth у ciaId = " + clientData.ciaId);
+
+    Date birthdate;
+    try {
+      birthdate = Date.valueOf(clientData.birthdate);
+    } catch (IllegalArgumentException e) {
+      throw new ParsingValueException("Неправильный формат birth даты у ciaId = " + clientData.ciaId +
+        ". Принятый формат ГОСДЕПа YYYY-MM-DD");
+    }
+
+    int age = Util.getAge(birthdate);
+    if (age > 1000 || age < 3)
+      throw new ParsingValueException("Значение birth выходит за рамки у ciaId = " + clientData.ciaId +
+        ".Возраст должен быть между 3 и 1000годами");
+
+    setClientPrepareStatement(birthdate);
     clientPrepareStatement.addBatch();
 
     totalClientBatchCount++;

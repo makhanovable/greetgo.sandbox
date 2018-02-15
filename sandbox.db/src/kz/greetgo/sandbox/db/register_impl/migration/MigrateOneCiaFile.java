@@ -1,6 +1,8 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.sandbox.controller.util.Util;
+import kz.greetgo.sandbox.db.register_impl.migration.error.CommonErrorFileWriter;
+import kz.greetgo.sandbox.db.register_impl.migration.error.ErrorFile;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
@@ -15,19 +17,18 @@ import java.util.Date;
 
 public class MigrateOneCiaFile {
   public File inputFile;
-  public File outputErrorFile;
+  public ErrorFile outputErrorFile;
   public int maxBatchSize = 100;
   public Connection connection;
 
   String tmpClientTableName;
   String tmpClientAddressTableName;
   String tmpClientPhoneTableName;
-  String tmpCharmTableName;
 
   public void migrate() throws Exception {
     prepareTmpTables();
     uploadData();
-    processErrors();
+    //processValidationErrors();
     migrateData();
     downloadErrors();
   }
@@ -38,9 +39,8 @@ public class MigrateOneCiaFile {
     String additionalId = sdf.format(now) + "_" + Util.generateRandomString(8);
 
     tmpClientTableName = "tmp_migration_client_" + additionalId;
-    tmpClientAddressTableName = "tmp_migration_address_" + additionalId;
-    tmpClientPhoneTableName = "tmp_migration_phone_" + additionalId;
-    tmpCharmTableName = "tmp_migration_charm_" + additionalId;
+    tmpClientAddressTableName = "tmp_migration_client_address_" + additionalId;
+    tmpClientPhoneTableName = "tmp_migration_client_phone_" + additionalId;
 
     exec("CREATE TABLE client_to_replace (" +
       "  record_no bigint NOT NULL, " +
@@ -52,8 +52,7 @@ public class MigrateOneCiaFile {
       "  gender varchar(16), " +
       "  charm_name varchar(128), " +
       "  charm_id int, " +
-      "  birth_date varchar(16), " +
-      "  birth_date_typed Date, " +
+      "  birth_date date, " +
       "  status int NOT NULL DEFAULT 0, " +
       "  error varchar(256), " +
       "  PRIMARY KEY(record_no)" +
@@ -87,6 +86,7 @@ public class MigrateOneCiaFile {
     CiaUploader ciaUploader = new CiaUploader();
     ciaUploader.connection = connection;
     ciaUploader.maxBatchSize = maxBatchSize;
+    ciaUploader.errorFileWriter = outputErrorFile;
     ciaUploader.clientTable = tmpClientTableName;
     ciaUploader.clientAddressTable = tmpClientAddressTableName;
     ciaUploader.clientPhoneTable = tmpClientPhoneTableName;
@@ -99,7 +99,7 @@ public class MigrateOneCiaFile {
     connection.setAutoCommit(true);
   }
 
-  void processErrors() throws SQLException {
+  /*void processValidationErrors() throws SQLException {
     exec("UPDATE client_to_replace " +
       "SET error = 'Пустое значение surname у ciaId = '||cia_id " +
       "WHERE surname IS NULL OR length(trim(surname)) = 0 "
@@ -129,7 +129,7 @@ public class MigrateOneCiaFile {
       "  (extract(YEAR FROM age(to_date(birth_date, 'YYYY-MM-DD'))) <= 3 OR " +
       "  extract(YEAR FROM age(to_date(birth_date, 'YYYY-MM-DD'))) >= 1000) "
     );
-  }
+  }*/
 
   void migrateData() throws SQLException {
     migrateData_status1();
@@ -148,7 +148,7 @@ public class MigrateOneCiaFile {
    */
   void migrateData_status1() throws SQLException {
     exec("UPDATE client_to_replace " +
-      "SET status = 1, birth_date_typed = to_date(birth_date, 'YYYY-MM-DD') " +
+      "SET status = 1 " +
       "WHERE error IS NULL AND status = 0");
   }
 
@@ -222,7 +222,7 @@ public class MigrateOneCiaFile {
     );*/
 
     exec("INSERT INTO client(id, surname, name, patronymic, gender, birth_date, charm, migration_cia_id) " +
-      "SELECT client_id, t.surname, t.name, t.patronymic, t.gender, birth_date_typed, t.charm_id, t.cia_id " +
+      "SELECT client_id, t.surname, t.name, t.patronymic, t.gender, birth_date, t.charm_id, t.cia_id " +
       "FROM client_to_replace AS t " +
       "WHERE status = 3 " +
       "ON CONFLICT(migration_cia_id) DO UPDATE " +

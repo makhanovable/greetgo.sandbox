@@ -14,6 +14,7 @@ import kz.greetgo.util.RND;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.concurrent.TimeUnit;
 
@@ -121,6 +122,11 @@ public class ClientListReportViewXlsx implements ClientListReportView {
   }
 
   public static void main(String[] args) throws Exception {
+    BigDecimal money = new BigDecimal("-123_000000098.13");
+
+    System.out.println(money.toString());
+
+    /*
     File file = new File("build/report/ClientListReportViewXlsx.xlsx");
     file.getParentFile().mkdirs();
 
@@ -152,6 +158,6 @@ public class ClientListReportViewXlsx implements ClientListReportView {
 
     long endTime = System.currentTimeMillis();
 
-    System.out.println("OK " + TimeUnit.MILLISECONDS.toSeconds(endTime - startTime));
+    System.out.println("OK " + TimeUnit.MILLISECONDS.toSeconds(endTime - startTime));*/
   }
 }

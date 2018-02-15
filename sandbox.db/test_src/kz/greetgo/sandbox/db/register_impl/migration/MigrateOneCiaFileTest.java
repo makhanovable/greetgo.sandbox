@@ -5,6 +5,7 @@ import kz.greetgo.sandbox.controller.model.AddressType;
 import kz.greetgo.sandbox.controller.model.Gender;
 import kz.greetgo.sandbox.controller.model.PhoneType;
 import kz.greetgo.sandbox.controller.util.Util;
+import kz.greetgo.sandbox.db.register_impl.migration.error.CommonErrorFileWriter;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
@@ -30,11 +31,16 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
 
   @Test
   public void uploadData() throws Exception {
-    File inFile = this.prepareReadyFileCommon();
+    String generatedId = Util.generateRandomString(16);
+    File inFile = new File("build/MigrateOneCiaFileTest/cia_" + generatedId + ".xml");
+    inFile.getParentFile().mkdirs();
+    createCiaFile(inFile);
+    File outputErrorFile = new File("build/MigrateOneCiaFileTest/cia_error_" + generatedId + ".txt");
 
     MigrateOneCiaFile oneCiaFile = new MigrateOneCiaFile();
     oneCiaFile.connection = connection;
     oneCiaFile.inputFile = inFile;
+    oneCiaFile.outputErrorFile = new CommonErrorFileWriter(outputErrorFile);
     oneCiaFile.prepareTmpTables();
     oneCiaFile.uploadData();
 
@@ -51,8 +57,8 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     assertThat(recordList.get(1).get("patronymic")).isEqualTo("Петрович");
     assertThat(recordList.get(0).get("gender")).isEqualTo("MALE");
     assertThat(recordList.get(1).get("gender")).isEqualTo("MALE");
-    assertThat(recordList.get(0).get("birth_date")).isEqualTo("1980-11-12");
-    assertThat(recordList.get(1).get("birth_date")).isEqualTo("1980-11-13");
+    assertThat(recordList.get(0).get("birth_date").toString()).isEqualTo("1980-11-12");
+    assertThat(recordList.get(1).get("birth_date").toString()).isEqualTo("1980-11-13");
     assertThat(recordList.get(0).get("charm_name")).isEqualTo("Уситчивый");
     assertThat(recordList.get(1).get("charm_name")).isEqualTo("Агрессивный");
     assertThat(recordList.get(0).get("charm_name")).isEqualTo("Уситчивый");
@@ -60,6 +66,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
 
     List<Map<String, Object>> addressRecordList =
       toListMap("SELECT * FROM " + oneCiaFile.tmpClientAddressTableName + " ORDER BY record_no");
+    assertThat(addressRecordList).hasSize(4);
     int rowNum = 0;
     assertThat(addressRecordList.get(rowNum++).get("type")).isEqualTo(AddressType.FACTUAL.name());
     assertThat(addressRecordList.get(rowNum++).get("type")).isEqualTo(AddressType.REGISTRATION.name());
@@ -84,6 +91,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
 
     List<Map<String, Object>> phoneRecordList =
       toListMap("SELECT * FROM " + oneCiaFile.tmpClientPhoneTableName + " ORDER BY record_no");
+    assertThat(phoneRecordList).hasSize(12);
     rowNum = 0;
     assertThat(phoneRecordList.get(rowNum).get("type")).isEqualTo(PhoneType.HOME.name());
     assertThat(phoneRecordList.get(rowNum++).get("number")).isEqualTo("+7-123-111-22-33");
@@ -101,10 +109,9 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     assertThat(phoneRecordList.get(rowNum).get("type")).isEqualTo(PhoneType.HOME.name());
     assertThat(phoneRecordList.get(rowNum).get("number")).isEqualTo("+7-123-333-22-33");
   }
-
-
+/*
   @Test
-  public void processErrors() throws Exception {
+  public void processValidationErrors() throws Exception {
     MigrateOneCiaFile oneCiaFile = new MigrateOneCiaFile();
     oneCiaFile.connection = connection;
     oneCiaFile.prepareTmpTables();
@@ -146,7 +153,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     this.insertTmpClient(oneCiaFile.tmpClientTableName, clientRecordNum++, 0);
     this.insertTmpClient(oneCiaFile.tmpClientTableName, clientRecordNum, 0);
 
-    oneCiaFile.processErrors();
+    oneCiaFile.processValidationErrors();
 
     List<Map<String, Object>> recordList =
       toListMap("SELECT * FROM " + oneCiaFile.tmpClientTableName + " WHERE error IS NOT NULL " +
@@ -188,6 +195,32 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
           ". Возраст должен быть между 3 и 1000 годами");
       rowNum++;
     }
+  }
+*/
+
+  @Test
+  public void processValidationErrors() throws Exception {
+    String generatedId = Util.generateRandomString(16);
+    File inFile = new File("build/MigrateOneCiaFileTest/cia_" + generatedId + ".xml");
+    inFile.getParentFile().mkdirs();
+    createCiaFileWithErrors(inFile);
+
+    MigrateOneCiaFile oneCiaFile = new MigrateOneCiaFile();
+    oneCiaFile.connection = connection;
+    oneCiaFile.inputFile = inFile;
+    oneCiaFile.outputErrorFile = new ErrorFileWriterTest();
+    oneCiaFile.prepareTmpTables();
+    oneCiaFile.uploadData();
+
+    List<String> errorList = ((ErrorFileWriterTest) oneCiaFile.outputErrorFile).errorList;
+    assertThat(errorList).hasSize(7);
+    assertThat(errorList.get(0)).startsWith("Пустое значение surname");
+    assertThat(errorList.get(1)).startsWith("Пустое значение name");
+    assertThat(errorList.get(2)).startsWith("Пустое значение birth");
+    assertThat(errorList.get(3)).startsWith("Неправильный формат birth");
+    assertThat(errorList.get(4)).startsWith("Значение birth выходит за рамки");
+    assertThat(errorList.get(5)).startsWith("Значение birth выходит за рамки");
+    assertThat(errorList.get(5)).startsWith("Значение birth выходит за рамки");
   }
 
   @Test
@@ -374,7 +407,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
       assertThat(recordList.get(i).get("patronymic")).isEqualTo(tempRecordList.get(i).get("patronymic"));
       assertThat(recordList.get(i).get("gender")).isEqualTo(tempRecordList.get(i).get("gender"));
       assertThat(recordList.get(i).get("birth_date").toString())
-        .isEqualTo(tempRecordList.get(i).get("birth_date_typed").toString());
+        .isEqualTo(tempRecordList.get(i).get("birth_date").toString());
       assertThat(recordList.get(i).get("charm")).isEqualTo(tempRecordList.get(i).get("charm_id"));
     }
   }
@@ -506,7 +539,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     this.insertTmpClient(oneCiaFile.tmpClientTableName, clientRecordNum, 0);
     expectedClientCount++;
 
-    oneCiaFile.processErrors();
+    //oneCiaFile.processValidationErrors();
     oneCiaFile.migrateData();
     // TODO: downloadErrors();
 
@@ -517,15 +550,6 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     assertThat(recordList.size()).isEqualTo(expectedClientCount);
     assertThat(addressRecordList.size()).isEqualTo(expectedClientAddressCount);
     assertThat(phoneRecordList.size()).isEqualTo(expectedClientPhoneCount);
-  }
-
-  private File prepareReadyFileCommon() throws Exception {
-    File inFile = new File("build/MigrateOneCiaFileTest/cia_" + Util.generateRandomString(16) + ".xml");
-    inFile.getParentFile().mkdirs();
-
-    createCiaFile(inFile);
-
-    return inFile;
   }
 
   private long createClient(String ciaId) {
@@ -558,30 +582,27 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
   private String insertTmpClient(String tblName, long clientRecordNum, int status) {
     String ciaId = RND.str(8);
     migrationTestDao.get().insertClient(tblName, clientRecordNum, null, ciaId, RND.str(10), RND.str(10), RND.str(10),
-      Gender.values()[RND.plusInt(Gender.values().length)].name(), RND.str(10), null, "1989-10-10", null, status,
-      null);
+      Gender.values()[RND.plusInt(Gender.values().length)].name(), RND.str(10), null, Date.valueOf("1989-10-10"),
+      status, null);
     return ciaId;
   }
 
   private void insertTmpClient(String tblName, long clientRecordNum, String ciaId, int status) {
     migrationTestDao.get().insertClient(tblName, clientRecordNum, null, ciaId, RND.str(10), RND.str(10), RND.str(10),
-      Gender.values()[RND.plusInt(Gender.values().length)].name(), RND.str(10), null, "1989-10-10", null, status,
-      null);
+      Gender.values()[RND.plusInt(Gender.values().length)].name(), RND.str(10), null, Date.valueOf("1989-10-10"), status, null);
   }
 
   private String insertTmpClientWithError(String tblName, long clientRecordNum) {
     String ciaId = RND.str(8);
     migrationTestDao.get().insertClient(tblName, clientRecordNum, null, ciaId, RND.str(10), RND.str(10), RND.str(10),
-      Gender.values()[RND.plusInt(Gender.values().length)].name(), RND.str(10), null, "1989-10-10", null, 0,
-      RND.str(10));
+      Gender.values()[RND.plusInt(Gender.values().length)].name(), RND.str(10), null, Date.valueOf("1989-10-10"), 0, RND.str(10));
     return ciaId;
   }
 
   private String insertTmpClientWithCharmName(String tblName, long clientRecordNum, String charmName, int status) {
     String ciaId = RND.str(8);
     migrationTestDao.get().insertClient(tblName, clientRecordNum, null, ciaId, RND.str(10), RND.str(10), RND.str(10),
-      Gender.values()[RND.plusInt(Gender.values().length)].name(), charmName, null, "1989-10-10", null, status,
-      RND.str(10));
+      Gender.values()[RND.plusInt(Gender.values().length)].name(), charmName, null, Date.valueOf("1989-10-10"), status, RND.str(10));
     return ciaId;
   }
 
@@ -589,7 +610,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
                                                                 int charmId, String birth, int status) {
     String ciaId = RND.str(8);
     migrationTestDao.get().insertClient(tblName, clientRecordNum, null, ciaId, RND.str(10), RND.str(10), RND.str(10),
-      Gender.values()[RND.plusInt(Gender.values().length)].name(), charmName, charmId, birth, Date.valueOf(birth),
+      Gender.values()[RND.plusInt(Gender.values().length)].name(), charmName, charmId, Date.valueOf(birth),
       status, RND.str(10));
     return ciaId;
   }
@@ -598,15 +619,14 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
                                                               String charmName, int charmId, String birth,
                                                               int status) {
     migrationTestDao.get().insertClient(tblName, clientRecordNum, null, ciaId, RND.str(10), RND.str(10), RND.str(10),
-      Gender.values()[RND.plusInt(Gender.values().length)].name(), charmName, charmId, birth, Date.valueOf(birth),
+      Gender.values()[RND.plusInt(Gender.values().length)].name(), charmName, charmId, Date.valueOf(birth),
       status, RND.str(10));
   }
 
   private String insertTmpClientWithClientId(String tblName, long recordNo, long clientId, int status) {
     String ciaId = RND.str(8);
     migrationTestDao.get().insertClient(tblName, recordNo, clientId, ciaId, RND.str(10), RND.str(10), RND.str(10),
-      Gender.values()[RND.plusInt(Gender.values().length)].name(), null, null, null, null,
-      status, RND.str(10));
+      Gender.values()[RND.plusInt(Gender.values().length)].name(), null, null, null, status, RND.str(10));
     return ciaId;
   }
 
@@ -614,14 +634,15 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
                                               String patronymic) {
     String ciaId = RND.str(8);
     migrationTestDao.get().insertClient(tblName, clientRecordNum, null, ciaId, surname, name, patronymic,
-      Gender.values()[RND.plusInt(Gender.values().length)].name(), RND.str(10), null, "1989-10-10", null, 0, null);
+      Gender.values()[RND.plusInt(Gender.values().length)].name(), RND.str(10), null, Date.valueOf("1989-10-10"), 0,
+      null);
     return ciaId;
   }
 
   private String insertTmpClientWithBirthError(String tblName, long clientRecordNum, String birthDate) {
     String ciaId = RND.str(8);
     migrationTestDao.get().insertClient(tblName, clientRecordNum, null, ciaId, RND.str(10), RND.str(10), RND.str(10),
-      Gender.values()[RND.plusInt(Gender.values().length)].name(), RND.str(10), null, birthDate, null, 0, null);
+      Gender.values()[RND.plusInt(Gender.values().length)].name(), RND.str(10), null, Date.valueOf(birthDate), 0, null);
     return ciaId;
   }
 
