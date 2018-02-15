@@ -143,11 +143,81 @@ public class ClientRegisterImplTest extends ParentTestNg {
     List<ClientDot> list = new ArrayList<>();
     assertThat(list).isEmpty();
     // FIXME: 2/14/18 напиши тест и на случай с удалением одного клиента
-//    for (String id : ids) {
-//      assertThat(list.stream().anyMatch(o -> o.id.equals(id))).isFalse();
-//    }
+    for (String id : ids) {
+      assertThat(list.stream().anyMatch(o -> o.id.equals(id))).isFalse();
+    }
   }
 
+
+  @Test
+  public void updateClientTest() {
+    this.clientTestDao.get().clear();
+    ClientDot cd = this.rndClientDot();
+    this.clientTestDao.get().insertClientDot(cd);
+    ClientAddressDot actualAddress = rndAddress(cd.id, AddressType.FACT);
+    ClientAddressDot registerAddress = rndAddress(cd.id, AddressType.REG);
+    this.clientTestDao.get().insertAddress(actualAddress);
+    this.clientTestDao.get().insertAddress(registerAddress);
+
+    ClientToSave clientToSave = rndClientToSave(cd.id); // +ClientDetail +2addresses +3numbers
+    {
+      ClientPhoneNumberDot number1 = rndPhoneNumber(cd.id, PhoneNumberType.WORK);
+      this.clientTestDao.get().insertPhone(number1); // number directly insterted to db
+      clientToSave.numbersToDelete.add(number1.toClientPhoneNumber());  // -1 number
+
+      //
+      //
+      this.clientRegister.get().addOrUpdate(clientToSave);
+      //
+      //
+
+      ClientDetail clientDetail = this.clientTestDao.get().detail(clientToSave.id);
+      this.assertClientDetail(clientDetail, new ClientDot(clientToSave));
+
+      ClientAddress regAddress = this.clientTestDao.get().getAddres(clientToSave.id, AddressType.REG);
+      ClientAddress actAddress = this.clientTestDao.get().getAddres(clientToSave.id, AddressType.FACT);
+      this.assertClientAddres(actAddress, new ClientAddressDot(clientToSave.id, clientToSave.actualAddress));
+      this.assertClientAddres(regAddress, new ClientAddressDot(clientToSave.id, clientToSave.registerAddress));
+
+      List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(clientToSave.id);
+
+      assertThat(numberList).isNotEmpty();
+      assertThat(numberList).hasSize(clientToSave.numersToSave.size());
+      assertThat(numberList.stream().anyMatch(o -> o.number.equals(number1.number))).isFalse();
+    }
+
+  }
+
+  @Test
+  public void updateClientEditedPhoneNumber() {
+    this.clientTestDao.get().clear();
+    ClientDot cd = this.rndClientDot();
+    this.clientTestDao.get().insertClientDot(cd);
+    ClientAddressDot actualAddress = rndAddress(cd.id, AddressType.FACT);
+    ClientAddressDot registerAddress = rndAddress(cd.id, AddressType.REG);
+    this.clientTestDao.get().insertAddress(actualAddress);
+    this.clientTestDao.get().insertAddress(registerAddress);
+
+    ClientPhoneNumberDot numberToInsert = rndPhoneNumber(cd.id, PhoneNumberType.WORK);
+    this.clientTestDao.get().insertPhone(numberToInsert);
+
+    ClientToSave test2 = rndClientToSave(cd.id);
+
+    ClientPhoneNumberToSave toEdited = numberToInsert.toClientPhoneNumberToSave();
+
+    toEdited.oldNumber = toEdited.number;
+    toEdited.number = RND.str(10);
+    test2.numersToSave.add(toEdited);
+
+    //
+    //
+    this.clientRegister.get().addOrUpdate(test2);
+    //
+    //
+
+    List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(test2.id);
+    assertThat(numberList.stream().anyMatch(o -> o.number.equals(toEdited.number))).isTrue();
+  }
 
   @Test
   public void addClientTest() {
@@ -175,6 +245,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
       assertThat(numberList.stream().anyMatch(o -> o.number.equals(cpn.number) && o.type.equals(cpn.type) && o.client.equals(cpn.client))).isTrue();
     }
   }
+
 
   @Test
   public void getDetailTest() throws Exception {
@@ -280,7 +351,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(target.gender).isEqualTo(assertion.gender);
 
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-    assertThat(sdf.format(target.birthDate)).isEqualTo(sdf.format(sdf));
+    assertThat(sdf.format(target.birthDate)).isEqualTo(sdf.format(assertion.birthDate));
     assertThat(target.charm).isEqualTo(assertion.charm);
     assertThat(target.id).isEqualTo(assertion.id);
   }
