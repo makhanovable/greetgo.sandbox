@@ -7,7 +7,7 @@ public class ClientRecord {
   public String name;
   public String patronymic;
   public int age;
-  public String charmId;
+  public String charm;
   public float totalAccountBalance;
   public float maximumBalance;
   public float minimumBalance;
