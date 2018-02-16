@@ -107,8 +107,6 @@ public class ClientRegisterImpl implements ClientRegister {
       } else {
         this.clientDao.get().updateAddress(clientToSave.actualAddress);
       }
-    } else {
-
     }
     if (clientToSave.registerAddress != null) {
       if (clientToSave.registerAddress.client == null) {
