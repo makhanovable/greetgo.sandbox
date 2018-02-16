@@ -8,6 +8,7 @@ import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,16 +20,25 @@ public class ClientRegisterImpl implements ClientRegister {
 
   @Override
   public List<ClientRecord> getClientInfoList(int limit, int page, String filter, final String orderBy, int desc) {
-    
+
+    if (limit == 0) return new ArrayList<>();
+
     String[] orders = {"age", "totalAccountBalance", "maximumBalance", "minimumBalance"};
+    Boolean match = orderBy != null && Arrays.stream(orders).anyMatch(o -> o.equals(orderBy));
 
-    Boolean match = Arrays.stream(orders).anyMatch(o -> o.equals(orderBy));
-
-    String ob = match ? orderBy : "name, surname, patronymic";
+    String ob = match ? orderBy : "concat(name, surname, patronymic)";
+//    limit = limit > 100 ? 100 : limit;
     int offset = limit * page;
-    filter = getFormattedFilter(filter);
     String order = desc == 1 ? "desc" : "asc";
-    return this.clientDao.get().getClients(limit, offset, filter, ob, order);
+
+    if (filter == null || filter.isEmpty()) {
+      return this.clientDao.get().getClients(limit, offset, ob, order);
+
+    } else {
+      filter = getFormattedFilter(filter);
+      return this.clientDao.get().getClientsByFilter(limit, offset, ob, order, filter);
+    }
+
   }
 
   @Override
@@ -97,6 +107,8 @@ public class ClientRegisterImpl implements ClientRegister {
       } else {
         this.clientDao.get().updateAddress(clientToSave.actualAddress);
       }
+    } else {
+
     }
     if (clientToSave.registerAddress != null) {
       if (clientToSave.registerAddress.client == null) {
@@ -109,11 +121,10 @@ public class ClientRegisterImpl implements ClientRegister {
   }
 
   private String getFormattedFilter(String filter) {
-    if (filter == null)
-      return "%";
+
     String[] filters = filter.trim().split(" ");
     filter = String.join("|", filters);
-    filter = "%" + filter.toLowerCase() + "%";
+    filter = "%(" + filter.toLowerCase() + "%)";
     return filter;
   }
 }
