@@ -64,6 +64,7 @@ public class MigrateOneFrsFile {
       "  record_no bigint NOT NULL, " +
       "  code varchar(128), " +
       "  name varchar(256), " +
+      "  status int DEFAULT 0, " +
       "  PRIMARY KEY(record_no)" +
       ")");
   }
@@ -96,6 +97,8 @@ public class MigrateOneFrsFile {
   void migrateData() throws SQLException {
     migrateData_checkForDuplicatesOfClientAccount();
     migrateData_checkForDuplicatesOfClientAccountTransaction();
+    migrateData_checkForDuplicatesOfTransactionType();
+
 
     migrateData_fillMoneyOfClientAccount();
     migrateData_status2_clientAccountTransaction();
@@ -130,6 +133,23 @@ public class MigrateOneFrsFile {
       "  SELECT record_no AS rno, row_number() OVER ( PARTITION BY money, finished_at, account_number " +
       "    ORDER BY record_no DESC ) AS rnum " +
       "  FROM client_account_transaction_to_replace " +
+      "  WHERE status = 0 " +
+      ") AS x " +
+      "WHERE x.rnum = 1 AND x.rno = record_no"
+    );
+  }
+
+  /**
+   * Статус = 1, для отсеивания дубликатов типов транзакций с приоритетом на последнюю запись
+   *
+   * @throws SQLException проброс для удобства
+   */
+  void migrateData_checkForDuplicatesOfTransactionType() throws SQLException {
+    exec("UPDATE transaction_type_to_replace " +
+      "SET status = 1 " +
+      "FROM ( " +
+      "  SELECT record_no AS rno, row_number() OVER ( PARTITION BY name ORDER BY record_no DESC ) AS rnum " +
+      "  FROM transaction_type_to_replace " +
       "  WHERE status = 0 " +
       ") AS x " +
       "WHERE x.rnum = 1 AND x.rno = record_no"

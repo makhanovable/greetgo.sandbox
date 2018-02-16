@@ -63,6 +63,12 @@ public class MigrateOneFrsFileTest extends MigrateCommonTests {
       .isEqualTo("32134KZ343-43546-535436-77656");
     assertThat(clientAccountTransactionRecordList.get(1).get("account_number"))
       .isEqualTo("32134KZ343-43546-535436-77656");
+
+    List<Map<String, Object>> transactionTypeRecordList =
+      toListMap("SELECT * FROM " + oneFrsFile.tmpTransactionTypeTableName + " ORDER BY record_no");
+    assertThat(transactionTypeRecordList).hasSize(2);
+    assertThat(transactionTypeRecordList.get(0).get("name")).isEqualTo("Перечисление с госбюджета");
+    assertThat(transactionTypeRecordList.get(1).get("name")).isEqualTo("Вывод средств в офшоры");
   }
 
   @Test
@@ -95,7 +101,7 @@ public class MigrateOneFrsFileTest extends MigrateCommonTests {
   }
 
   @Test
-  public void migrateData_status1() throws Exception {
+  public void migrateData_checkForDuplicatesOfClientAccount() throws Exception {
     MigrateOneFrsFile oneFrsFile = new MigrateOneFrsFile();
     oneFrsFile.connection = connection;
     oneFrsFile.prepareTmpTables();
@@ -111,6 +117,27 @@ public class MigrateOneFrsFileTest extends MigrateCommonTests {
     expectedAccountRecordNumList.add(clientAccountRecordNum);
     expectedAccountNumList.add(
       this.insertClientAccount(oneFrsFile.tmpClientAccountTableName, clientAccountRecordNum, 0));
+
+    oneFrsFile.migrateData_checkForDuplicatesOfClientAccount();
+
+    List<Map<String, Object>> clientAccountRecordList =
+      toListMap("SELECT * FROM " + oneFrsFile.tmpClientAccountTableName + " WHERE status = 1 ORDER BY record_no");
+    assertThat(clientAccountRecordList).hasSize(expectedAccountNumList.size());
+    for (int i = 0; i < clientAccountRecordList.size(); i++) {
+      assertThat(clientAccountRecordList.get(i).get("record_no")).
+        isEqualTo(expectedAccountRecordNumList.get(i));
+      assertThat(clientAccountRecordList.get(i).get("account_number"))
+        .isEqualTo(expectedAccountNumList.get(i));
+    }
+  }
+
+  //TODO: доделать еще
+
+  @Test
+  public void migrateData_checkForDuplicatesOfClientAccountTransaction() throws Exception {
+    MigrateOneFrsFile oneFrsFile = new MigrateOneFrsFile();
+    oneFrsFile.connection = connection;
+    oneFrsFile.prepareTmpTables();
 
     long accountTransRecordNum = 0;
     List<AccountTransactionHelper> expectedAccountTransList = new ArrayList<>();
@@ -128,23 +155,13 @@ public class MigrateOneFrsFileTest extends MigrateCommonTests {
     expectedAccountTransList.add(
       this.insertClientAccountTransaction(oneFrsFile.tmpClientAccountTransactionTableName, accountTransRecordNum, 0));
 
-    oneFrsFile.migrateData_checkForDuplicatesOfClientAccount();
-
-    List<Map<String, Object>> clientAccountRecordList =
-      toListMap("SELECT * FROM " + oneFrsFile.tmpClientAccountTableName + " WHERE status = 1 ORDER BY record_no");
-    assertThat(clientAccountRecordList).hasSize(expectedAccountNumList.size());
-    for (int i = 0; i < clientAccountRecordList.size(); i++) {
-      assertThat(clientAccountRecordList.get(i).get("record_no")).
-        isEqualTo(expectedAccountRecordNumList.get(i));
-      assertThat(clientAccountRecordList.get(i).get("account_number"))
-        .isEqualTo(expectedAccountNumList.get(i));
-    }
+    oneFrsFile.migrateData_checkForDuplicatesOfClientAccountTransaction();
 
     List<Map<String, Object>> accountTransRecordList =
       toListMap("SELECT * FROM " + oneFrsFile.tmpClientAccountTransactionTableName +
         " WHERE status = 1 ORDER BY record_no");
-    assertThat(clientAccountRecordList).hasSize(expectedAccountTransList.size());
-    for (int i = 0; i < clientAccountRecordList.size(); i++) {
+    assertThat(accountTransRecordList).hasSize(expectedAccountTransList.size());
+    for (int i = 0; i < accountTransRecordList.size(); i++) {
       assertThat(accountTransRecordList.get(i).get("record_no")).
         isEqualTo(expectedAccountTransRecordNumList.get(i));
       assertThat(accountTransRecordList.get(i).get("money").toString())

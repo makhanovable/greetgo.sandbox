@@ -77,8 +77,8 @@ public class FrsUploader {
 
   private void setTransactionTypePrepareStatement(String name) throws SQLException {
     int idx = 1;
-    clientAccountTransactionPreparedStatement.setInt(idx++, curClientAccountTransactionRecordNum);
-    clientAccountTransactionPreparedStatement.setString(idx, name);
+    transactionTypePreparedStatement.setInt(idx++, curClientAccountTransactionRecordNum);
+    transactionTypePreparedStatement.setString(idx, name);
   }
 
   void parse(FileInputStream fileInputStream) throws Exception {
@@ -138,6 +138,7 @@ public class FrsUploader {
 
       if (curClientAccountTransactionBatchCount > 0) {
         clientAccountTransactionPreparedStatement.executeBatch();
+        transactionTypePreparedStatement.executeBatch();
         needCommit = true;
         curClientAccountTransactionBatchCount = 0;
       }
