@@ -6,18 +6,19 @@ import kz.greetgo.sandbox.controller.enums.GenderType;
 import kz.greetgo.sandbox.controller.enums.PhoneNumberType;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
 import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.stand.model.ClientPhoneNumberDot;
+import kz.greetgo.sandbox.db.stand.tools.AgeCalculator;
+import kz.greetgo.sandbox.db.test.dao.AccountTetsDao;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -28,27 +29,51 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public BeanGetter<ClientRegister> clientRegister;
   public BeanGetter<ClientTestDao> clientTestDao;
   public BeanGetter<IdGenerator> idGenerator;
+  public BeanGetter<AccountTetsDao> accountTetsDao;
+
+  private ClientAccountDot rndClientAccountDot(String client) {
+    ClientAccountDot cad = new ClientAccountDot();
+    cad.money = (float) RND.plusDouble(100f, 5);
+    cad.id = idGenerator.get().newId();
+    cad.number = idGenerator.get().newId();
+    cad.client = client;
+    return cad;
+  }
 
   @Test
   void getClientInfoListTest() {
     this.clientTestDao.get().clear();
 
+    //init data
     List<ClientDot> clients = new ArrayList<>();
+    Map<String, List<ClientAccountDot>> accountDotMap = new HashMap<>();
+    Map<String, ClientDot> clientDotMap = new HashMap<>();
+
+
     for (int i = 0; i < 1000; i++) {
       ClientDot cd = this.rndClientDot();
       this.clientTestDao.get().insertClientDot(cd);
+      List<ClientAccountDot> accList = new ArrayList<>();
+
+      for (int j = 0; j < 2 + RND.plusInt(5); j++) {
+        ClientAccountDot cad = this.rndClientAccountDot(cd.id);
+        this.accountTetsDao.get().insertAccaount(cad);
+        accList.add(cad);
+      }
+
       clients.add(cd);
+      clientDotMap.put(cd.id, cd);
+      accountDotMap.put(cd.id, accList);
     }
 
 
+    //init inputs
     ClientDot rndClient = clients.get(RND.plusInt(clients.size()));
-    int[] limits = {0, 10, 20, 50};
-    int[] pages = {0, 1, 2, 10, 20};
+    int[] limits = {0, 10, 20};
+    int[] pages = {0, 1, 2, 10};
     String[] orderBys = {null, "", "age"};
     int[] orders = {0, 1};
-    String[] filters = {null, rndClient.name, rndClient.surname, rndClient.patronymic, rndClient.getFIO(), "a", "ab", RND.str(3)};
-
-//    long size = this.clientRegister.get().getClientsSize(null);
+    String[] filters = {null, rndClient.name + " " + rndClient.surname, rndClient.patronymic, rndClient.getFIO(), "a", "ab", RND.str(3)};
 
     for (int limit : limits) {
       for (int page : pages) {
@@ -56,41 +81,46 @@ public class ClientRegisterImplTest extends ParentTestNg {
           for (int order : orders) {
             for (String filter : filters) {
               System.out.println(limit + " " + page + " " + orderBy + " " + order + " " + filter);
+
               //
               //
               List<ClientRecord> result = this.clientRegister.get().getClientInfoList(limit, page, filter, orderBy, order);
               //
               //
 
-              List<ClientDot> expectedList = filter == null ? clients :
-                clients.stream().filter(o -> o.getFIO().toLowerCase().contains(filter)).collect(Collectors.toList());
+              if (limit == 0) {
+                assertThat(result).isEmpty();
+                continue;
+              }
 
+              List<ClientDot> expectedList = null;
+              if (filter == null || filter.isEmpty()) {
+                expectedList = clients;
+              } else {
+                String[] filterTokens = filter.trim().split(" ");
+                expectedList = clients.stream().filter(o -> Arrays.stream(filterTokens).anyMatch(y -> o.getFIO().toLowerCase().contains(y.toLowerCase()))).collect(Collectors.toList());
+              }
+
+              String ob = orderBy == null ? "default" : orderBy;
               expectedList.sort((o1, o2) -> {
-                if (orderBy != null)
-                  switch (orderBy) {
-                    case "age":
-                      return o1.birthDate.compareTo(o2.birthDate);
-//                  case "totalAccountBalance":
-//                    return Float.compare(o1.totalAccountBalance, o2.totalAccountBalance);
-//                  case "maximumBalance":
-//                    return Float.compare(o1.maximumBalance, o2.maximumBalance);
-//                  case "minimumBalance":
-//                    return Float.compare(o1.minimumBalance, o2.minimumBalance);
-                    default:
-                      String fio1 = o1.getFIO().toLowerCase();
-                      String fio2 = o2.getFIO().toLowerCase();
-                      return fio1.compareTo(fio2);
-                  }
-                else {
-                  String fio1 = o1.getFIO().toLowerCase();
-                  String fio2 = o2.getFIO().toLowerCase();
-                  return fio1.compareTo(fio2);
+                if (order == 1) {
+                  ClientDot tmp = o1;
+                  o1 = o2;
+                  o2 = tmp;
                 }
+                switch (ob) {
+                  case "age":
+                    return Integer.compare(AgeCalculator.calculateAge(o1.birthDate), AgeCalculator.calculateAge(o2.birthDate));
+
+                  default:
+                    String fio1 = o1.getFIO().toLowerCase();
+                    String fio2 = o2.getFIO().toLowerCase();
+                    return fio1.compareTo(fio2);
+                }
+
 
               });
 
-//              if (order == 1)
-//                Collections.reverse(expectedList);
 
               int fromIndex = limit * page;
               int endindex = (int) (fromIndex + limit <= expectedList.size() ? fromIndex + limit : expectedList.size());
@@ -102,16 +132,61 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
               assertThat(result).hasSize(expectedList.size());
 
-              if (limit == 10 && order == 1) {
+              List<ClientDot> finalExpectedList = expectedList;
 
-//                System.out.println("hello");
-              }
+
               for (int i = 0; i < result.size(); i++) {
-
-                ClientDot expected = expectedList.get(i + page * limit);
                 ClientRecord target = result.get(i);
-                assertThat(expected.id).isEqualTo(target.id);
 
+                if (orderBy != null)
+                  switch (orderBy) {
+                    case "age":
+                      assertThat(target.age).isEqualTo(AgeCalculator.calculateAge(expectedList.get(i).birthDate));
+                      break;
+                    case "totalAccountBalance":
+                      break;
+                    case "maximumBalance":
+                      break;
+                    case "minimumBalance":
+                      break;
+                    default:
+                      assertThat(target.name).isEqualTo(expectedList.get(i).name);
+                      assertThat(target.surname).isEqualTo(expectedList.get(i).surname);
+                      assertThat(target.patronymic).isEqualTo(expectedList.get(i).patronymic);
+                  }
+
+                assertThat(clientDotMap).containsKey(target.id);
+                ClientDot assertion = clientDotMap.get(target.id);
+                assertThat(target.id).isEqualTo(assertion.id);
+                assertThat(target.age).isEqualTo(AgeCalculator.calculateAge(assertion.birthDate));
+                assertThat(target.charm).isEqualTo(assertion.charm);
+                assertThat(target.surname).isEqualTo(assertion.surname);
+                assertThat(target.patronymic).isEqualTo(assertion.patronymic);
+                assertThat(target.name).isEqualTo(assertion.name);
+
+
+                List<ClientAccountDot> accList = accountDotMap.get(target.id);
+
+                float max = accList.get(0).money;
+                float min = accList.get(0).money;
+                float total = 0;
+                for (ClientAccountDot cad : accList) {
+                  total += cad.money;
+                  if (max < cad.money)
+                    max = cad.money;
+                  if (min > cad.money)
+                    min = cad.money;
+                }
+                assertThat(target.maximumBalance).isEqualTo(max);
+                assertThat(target.minimumBalance).isEqualTo(min);
+                assertThat(target.totalAccountBalance).isEqualTo(total);
+
+              }
+
+
+              if (!result.isEmpty()) {
+                Boolean match = result.stream().anyMatch(x -> clients.stream().anyMatch(y -> y.id.equals(x.id)));
+                assertThat(match).isTrue();
               }
 
 
@@ -432,6 +507,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
     c.charm = RND.str(10);
     c.gender = RND.someEnum(GenderType.values());
     c.birthDate = RND.dateYears(-100, 0);
+
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(c.birthDate);
+    cal.set(Calendar.HOUR_OF_DAY, 0);
+    cal.set(Calendar.MINUTE, 0);
+    cal.set(Calendar.SECOND, 0);
+    cal.set(Calendar.MILLISECOND, 0);
+    c.birthDate = cal.getTime();
     return c;
   }
 
