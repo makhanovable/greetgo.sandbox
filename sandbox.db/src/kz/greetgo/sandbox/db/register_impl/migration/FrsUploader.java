@@ -26,6 +26,7 @@ public class FrsUploader {
   public int maxBatchSize;
   public String clientAccountTable;
   public String clientAccountTransactionTable;
+  public String transactionTypeTable;
 
   private long curFileNo = 0;
   public ErrorFile errorFileWriter;
@@ -33,6 +34,7 @@ public class FrsUploader {
 
   private PreparedStatement clientAccountPreparedStatement;
   private PreparedStatement clientAccountTransactionPreparedStatement;
+  private PreparedStatement transactionTypePreparedStatement;
 
   private void prepare() throws SQLException {
     clientAccountPreparedStatement = connection.prepareStatement(
@@ -40,8 +42,13 @@ public class FrsUploader {
         "VALUES(?, ?, ?, ?)");
 
     clientAccountTransactionPreparedStatement = connection.prepareStatement(
-      "INSERT INTO " + clientAccountTransactionTable + " (record_no, money, finished_at, transaction_type, account_number) " +
+      "INSERT INTO " + clientAccountTransactionTable +
+        " (record_no, money, finished_at, transaction_type, account_number) " +
         "VALUES(?, ?, ?, ?, ?)");
+
+    transactionTypePreparedStatement = connection.prepareStatement(
+      "INSERT INTO " + transactionTypeTable + " (record_no, name) " +
+        "VALUES(?, ?)");
   }
 
   private int curClientAccountRecordNum = 0;
@@ -66,6 +73,12 @@ public class FrsUploader {
     clientAccountTransactionPreparedStatement.setTimestamp(idx++, finishedAt);
     clientAccountTransactionPreparedStatement.setString(idx++, clientAccountTransactionData.transaction_type);
     clientAccountTransactionPreparedStatement.setString(idx, clientAccountTransactionData.account_number);
+  }
+
+  private void setTransactionTypePrepareStatement(String name) throws SQLException {
+    int idx = 1;
+    clientAccountTransactionPreparedStatement.setInt(idx++, curClientAccountTransactionRecordNum);
+    clientAccountTransactionPreparedStatement.setString(idx, name);
   }
 
   void parse(FileInputStream fileInputStream) throws Exception {
@@ -93,7 +106,7 @@ public class FrsUploader {
                 curClientAccountTransactionRecordNum++;
 
                 try {
-                  this.addClientAccountTransactionToBatch();
+                  this.addClientAccountTransactionAndTypeToBatch();
                 } catch (ParsingValueException e) {
                   errorFileWriter.appendErrorLine(e.getMessage());
                 }
@@ -176,7 +189,7 @@ public class FrsUploader {
     }
   }
 
-  private void addClientAccountTransactionToBatch() throws Exception {
+  private void addClientAccountTransactionAndTypeToBatch() throws Exception {
     BigDecimal money;
     Timestamp finishedAt;
 
@@ -208,10 +221,15 @@ public class FrsUploader {
     setClientAccountTransactionPrepareStatement(money, finishedAt);
     clientAccountTransactionPreparedStatement.addBatch();
 
+    setTransactionTypePrepareStatement(clientAccountTransactionData.transaction_type);
+    transactionTypePreparedStatement.addBatch();
+
     curClientAccountTransactionBatchCount++;
     if (curClientAccountTransactionBatchCount > maxBatchSize) {
       clientAccountTransactionPreparedStatement.executeBatch();
+      transactionTypePreparedStatement.executeBatch();
       connection.commit();
+
       curClientAccountTransactionBatchCount = 0;
     }
   }

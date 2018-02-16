@@ -119,4 +119,13 @@ public interface ClientTestDao {
   void insertClientPhone(@Param("client") long client,
                          @Param("number") String number,
                          @Param("type") String type);
+
+  @Select("SELECT nextval('transaction_type_id_seq')")
+  int selectSeqIdNextValueTableTransactionType();
+
+  @Insert("INSERT INTO transaction_type (id, code, name) " +
+    "VALUES (#{id}, #{code}, #{name})")
+  void insertTransactionType(@Param("id") int id,
+                   @Param("code") String code,
+                   @Param("name") String name);
 }

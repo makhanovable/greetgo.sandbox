@@ -1,17 +1,17 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.sandbox.controller.model.Gender;
+import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.dao.MigrationTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
+import kz.greetgo.util.RND;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +21,7 @@ public class MigrateCommonTests extends ParentTestNg {
 
   public BeanGetter<MigrationController> migrationController;
   public BeanGetter<MigrationTestDao> migrationTestDao;
+  public BeanGetter<ClientTestDao> clientTestDao;
 
   protected Connection connection;
 
@@ -273,5 +274,49 @@ public class MigrateCommonTests extends ParentTestNg {
       ret.put(field, rs.getObject(field));
     }
     return ret;
+  }
+
+  long createClient(String ciaId) {
+    int charmId = clientTestDao.get().selectSeqIdNextValueTableCharm();
+    clientTestDao.get().insertCharm(charmId, RND.str(16), null, null);
+
+    long id = clientTestDao.get().selectSeqIdNextValueTableClient();
+    clientTestDao.get().updateClientWithCiaId(id, RND.str(10), RND.str(10), RND.str(10),
+      Gender.values()[RND.plusInt(Gender.values().length)].name(), Date.valueOf("2000-01-01"), charmId, ciaId);
+
+    return id;
+  }
+
+  void resetAllTables() {
+    this.resetClientAddrTable();
+    this.resetClientPhoneTable();
+    this.resetClientAccountTable();
+    this.resetClientTable();
+    this.resetCharmTable();
+    this.resetTransactionTypeTable();
+  }
+
+  void resetClientPhoneTable() {
+    migrationTestDao.get().deleteAllTableClientPhone();
+  }
+
+  void resetClientAddrTable() {
+    migrationTestDao.get().deleteAllTableClientAddr();
+  }
+
+  void resetClientAccountTable() {
+    migrationTestDao.get().deleteAllTableClientAccount();
+  }
+
+  void resetCharmTable() {
+    migrationTestDao.get().deleteAllTableCharm();
+  }
+
+  void resetClientTable() {
+    migrationTestDao.get().deleteAllTableClient();
+  }
+
+  void resetTransactionTypeTable() {
+    migrationTestDao.get().deleteAllTableTransactionType();
   }
 }

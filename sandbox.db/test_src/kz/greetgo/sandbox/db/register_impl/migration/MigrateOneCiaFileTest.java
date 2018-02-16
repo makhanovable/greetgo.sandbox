@@ -1,12 +1,10 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
-import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.AddressType;
 import kz.greetgo.sandbox.controller.model.Gender;
 import kz.greetgo.sandbox.controller.model.PhoneType;
 import kz.greetgo.sandbox.controller.util.Util;
 import kz.greetgo.sandbox.db.register_impl.migration.error.CommonErrorFileWriter;
-import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
@@ -19,8 +17,6 @@ import java.util.Map;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class MigrateOneCiaFileTest extends MigrateCommonTests {
-
-  public BeanGetter<ClientTestDao> clientTestDao;
 
   @Test
   public void prepareTmpTables() throws Exception {
@@ -295,7 +291,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
 
   @Test
   public void migrateData_finalOfCharmTable() throws Exception {
-    this.resetAllTables();
+    resetAllTables();
 
     MigrateOneCiaFile oneCiaFile = new MigrateOneCiaFile();
     oneCiaFile.connection = connection;
@@ -336,7 +332,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
 
   @Test
   public void migrateData_status3() throws Exception {
-    this.resetAllTables();
+    resetAllTables();
 
     MigrateOneCiaFile oneCiaFile = new MigrateOneCiaFile();
     oneCiaFile.connection = connection;
@@ -366,16 +362,16 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
 
   @Test
   public void migrateData_finalOfClientTable() throws Exception {
-    this.resetAllTables();
+    resetAllTables();
 
     MigrateOneCiaFile oneCiaFile = new MigrateOneCiaFile();
     oneCiaFile.connection = connection;
     oneCiaFile.prepareTmpTables();
 
-    this.createClient(null);
+    createClient(null);
 
     long clientRecordNum = 0;
-    this.createClientWithTmp(oneCiaFile.tmpClientTableName, clientRecordNum++, 3);
+    createClientWithTmp(oneCiaFile.tmpClientTableName, clientRecordNum++, 3);
 
     String charmName = RND.str(16);
     int charmId = this.insertCharm(charmName);
@@ -414,7 +410,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
 
   @Test
   public void migrateData_finalOfClientAddressTable() throws Exception {
-    this.resetAllTables();
+    resetAllTables();
 
     MigrateOneCiaFile oneCiaFile = new MigrateOneCiaFile();
     oneCiaFile.connection = connection;
@@ -422,7 +418,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
 
     long clientRecordNum = 0, clientAddressRecordNum = 0;
     int expectedAddressListSize = 0;
-    long clientId = this.createClient(RND.str(16));
+    long clientId = createClient(RND.str(16));
     this.insertTmpClientAddress(oneCiaFile.tmpClientAddressTableName, clientAddressRecordNum++, clientRecordNum,
       AddressType.FACTUAL.name(), RND.str(16), RND.str(16), RND.str(16));
     expectedAddressListSize++;
@@ -430,7 +426,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
       AddressType.REGISTRATION.name(), RND.str(16), RND.str(16), RND.str(16));
     expectedAddressListSize++;
     this.insertTmpClientWithClientId(oneCiaFile.tmpClientTableName, clientRecordNum++, clientId, 3);
-    clientId = this.createClient(RND.str(16));
+    clientId = createClient(RND.str(16));
     this.insertTmpClientAddress(oneCiaFile.tmpClientAddressTableName, clientAddressRecordNum, clientRecordNum,
       AddressType.FACTUAL.name(), RND.str(16), RND.str(16), RND.str(16));
     expectedAddressListSize++;
@@ -458,7 +454,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
 
   @Test
   public void migrateData_finalOfClientPhoneTable() throws Exception {
-    this.resetAllTables();
+    resetAllTables();
 
     MigrateOneCiaFile oneCiaFile = new MigrateOneCiaFile();
     oneCiaFile.connection = connection;
@@ -466,7 +462,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
 
     long clientRecordNum = 0, clientPhoneRecordNum = 0;
     int expectedPhoneListSize = 0;
-    long clientId = this.createClient(RND.str(16));
+    long clientId = createClient(RND.str(16));
     this.insertTmpClientPhone(
       oneCiaFile.tmpClientPhoneTableName, clientPhoneRecordNum++, clientRecordNum, RND.str(11), RND.str(10), 0);
     expectedPhoneListSize++;
@@ -475,7 +471,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     expectedPhoneListSize++;
     this.insertTmpClientWithClientId(oneCiaFile.tmpClientTableName, clientRecordNum++, clientId, 3);
 
-    clientId = this.createClient(RND.str(16));
+    clientId = createClient(RND.str(16));
     String number = RND.str(11);
     this.insertTmpClientPhone(
       oneCiaFile.tmpClientPhoneTableName, clientPhoneRecordNum++, clientRecordNum, number, RND.str(11), 0);
@@ -504,7 +500,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
 
   @Test
   public void migrate_withoutDataUpload_CiaFile() throws Exception {
-    this.resetAllTables();
+    resetAllTables();
 
     MigrateOneCiaFile oneCiaFile = new MigrateOneCiaFile();
     oneCiaFile.connection = connection;
@@ -550,17 +546,6 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     assertThat(recordList.size()).isEqualTo(expectedClientCount);
     assertThat(addressRecordList.size()).isEqualTo(expectedClientAddressCount);
     assertThat(phoneRecordList.size()).isEqualTo(expectedClientPhoneCount);
-  }
-
-  private long createClient(String ciaId) {
-    int charmId = clientTestDao.get().selectSeqIdNextValueTableCharm();
-    clientTestDao.get().insertCharm(charmId, RND.str(16), null, null);
-
-    long id = clientTestDao.get().selectSeqIdNextValueTableClient();
-    clientTestDao.get().updateClientWithCiaId(id, RND.str(10), RND.str(10), RND.str(10),
-      Gender.values()[RND.plusInt(Gender.values().length)].name(), Date.valueOf("2000-01-01"), charmId, ciaId);
-
-    return id;
   }
 
   private long createClientWithTmp(String tblName, long clientRecordNum, int status) {
@@ -660,33 +645,5 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
   private void insertTmpClientAddress(String tblName, long recordNo, long clientRecordNo, String type, String street,
                                       String house, String flat) {
     migrationTestDao.get().insertClientAddress(tblName, recordNo, clientRecordNo, type, street, house, flat);
-  }
-
-  private void resetAllTables() {
-    this.resetClientAddrTable();
-    this.resetClientPhoneTable();
-    this.resetClientAccountTable();
-    this.resetClientTable();
-    this.resetCharmTable();
-  }
-
-  private void resetClientPhoneTable() {
-    migrationTestDao.get().deleteAllTableClientPhone();
-  }
-
-  private void resetClientAddrTable() {
-    migrationTestDao.get().deleteAllTableClientAddr();
-  }
-
-  private void resetClientAccountTable() {
-    migrationTestDao.get().deleteAllTableClientAccount();
-  }
-
-  private void resetCharmTable() {
-    migrationTestDao.get().deleteAllTableCharm();
-  }
-
-  private void resetClientTable() {
-    migrationTestDao.get().deleteAllTableClient();
   }
 }

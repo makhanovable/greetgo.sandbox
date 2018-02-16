@@ -46,23 +46,26 @@ public interface MigrationTestDao {
                          @Param("status") int status);
 
   @Insert("INSERT INTO ${tmpClientAccountTableName} " +
-    "VALUES (#{recordNo}, #{clientId}, #{accountNumber}, #{registeredAt}, #{status})")
+    "VALUES (#{recordNo}, #{clientId}, #{money}, #{accountNumber}, #{registeredAt}, #{status}, #{error})")
   void insertClientAccount(@Param("tmpClientAccountTableName") String tmpClientAccountTableName,
                            @Param("recordNo") long recordNo,
                            @Param("clientId") String clientId,
+                           @Param("money") BigDecimal money,
                            @Param("accountNumber") String accountNumber,
                            @Param("registeredAt") Timestamp registeredAt,
-                           @Param("status") int status);
+                           @Param("status") int status,
+                           @Param("error") String error);
 
   @Insert("INSERT INTO ${tmpTableName} " +
-    "VALUES (#{recordNo}, #{money}, #{finishedAt}, #{transactionType}, #{accountNumber}, #{status})")
+    "VALUES (#{recordNo}, #{money}, #{finishedAt}, #{transactionType}, #{accountNumber}, #{status}, #{error})")
   void insertClientAccountTransaction(@Param("tmpTableName") String tmpTableName,
                                       @Param("recordNo") long recordNo,
                                       @Param("money") BigDecimal money,
                                       @Param("finishedAt") Timestamp finishedAt,
                                       @Param("transactionType") String transactionType,
                                       @Param("accountNumber") String accountNumber,
-                                      @Param("status") int status);
+                                      @Param("status") int status,
+                                      @Param("error") String error);
 
   @Delete("DELETE FROM charm")
   void deleteAllTableCharm();
@@ -78,4 +81,7 @@ public interface MigrationTestDao {
 
   @Delete("DELETE FROM client_account")
   void deleteAllTableClientAccount();
+
+  @Delete("DELETE FROM transaction_type")
+  void deleteAllTableTransactionType();
 }

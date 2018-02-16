@@ -82,8 +82,8 @@
     <sql endDelimiter=";;"><![CDATA[
       CREATE TABLE transaction_type (
         id integer NOT NULL,
-        code varchar(255) NOT NULL,
-        name varchar(255) NOT NULL
+        code varchar(255),
+        name varchar(255)
       )
     ]]></sql>
   </changeSet>
