@@ -48,8 +48,8 @@ public class ClientDot {
     clientRecord.name = this.name;
     clientRecord.surname = this.surname;
     clientRecord.patronymic = this.patronymic;
-    clientRecord.charmId = this.charm;
-    clientRecord.age = AgeCalculator.calculateAge(this.birthDate, new Date());
+    clientRecord.charm = this.charm;
+    clientRecord.age = AgeCalculator.calculateAge(this.birthDate);
 
     return clientRecord;
   }

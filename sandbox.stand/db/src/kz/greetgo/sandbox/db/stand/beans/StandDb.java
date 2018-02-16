@@ -125,7 +125,7 @@ public class StandDb implements HasAfterInject {
         cad.id = this.rndId();
         cad.number = this.rndId();
         cad.money = rnd.nextFloat() * 10000;
-        cad.clientId = clientDot.id;
+        cad.client = clientDot.id;
         clientAccountDots.add(cad);
       }
       this.clientAccountStorage.put(clientDot.id, clientAccountDots);

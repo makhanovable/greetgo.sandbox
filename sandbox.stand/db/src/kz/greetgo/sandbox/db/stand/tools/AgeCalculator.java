@@ -7,7 +7,8 @@ import java.time.ZoneId;
 import java.util.Date;
 
 public class AgeCalculator {
-  public static int calculateAge(Date birth, Date current) {
+  public static int calculateAge(Date birth) {
+    Date current = new Date();
     LocalDate birthDate = asLocalDate(birth);
     LocalDate currentDate = asLocalDate(current);
     if ((birthDate != null) && (currentDate != null)) {
