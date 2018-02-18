@@ -26,7 +26,6 @@ public class FrsUploader {
   public int maxBatchSize;
   public String clientAccountTable;
   public String clientAccountTransactionTable;
-  public String transactionTypeTable;
 
   private long curFileNo = 0;
   public ErrorFile errorFileWriter;
@@ -34,22 +33,17 @@ public class FrsUploader {
 
   private PreparedStatement clientAccountPreparedStatement;
   private PreparedStatement clientAccountTransactionPreparedStatement;
-  private PreparedStatement transactionTypePreparedStatement;
 
   private void prepare() throws SQLException {
     clientAccountPreparedStatement = connection.prepareStatement(
-      "INSERT INTO " + clientAccountTable + " (record_no, client_id, account_number, registered_at) " +
-        "VALUES(?, ?, ?, ?)");
+      "INSERT INTO " + clientAccountTable + " (record_no, cia_id, id, account_number, registered_at) " +
+        "VALUES(?, ?, nextval('client_account_id_seq'), ?, ?)");
 
     clientAccountTransactionPreparedStatement = connection.prepareStatement(
       "INSERT INTO " + clientAccountTransactionTable +
-        " (record_no, money, finished_at, transaction_type, account_number) " +
-        "VALUES(?, ?, ?, ?, ?)");
-
-    transactionTypePreparedStatement = connection.prepareStatement(
-      "INSERT INTO " + transactionTypeTable + " (record_no, name) " +
-        "VALUES(?, ?)");
-  }
+        " (record_no, id, money, finished_at, transaction_type, account_number) " +
+        "VALUES(?, nextval('client_account_transaction_id_seq'), ?, ?, ?, ?)");
+}
 
   private int curClientAccountRecordNum = 0;
   private int curClientAccountTransactionRecordNum = 0;
@@ -73,12 +67,6 @@ public class FrsUploader {
     clientAccountTransactionPreparedStatement.setTimestamp(idx++, finishedAt);
     clientAccountTransactionPreparedStatement.setString(idx++, clientAccountTransactionData.transaction_type);
     clientAccountTransactionPreparedStatement.setString(idx, clientAccountTransactionData.account_number);
-  }
-
-  private void setTransactionTypePrepareStatement(String name) throws SQLException {
-    int idx = 1;
-    transactionTypePreparedStatement.setInt(idx++, curClientAccountTransactionRecordNum);
-    transactionTypePreparedStatement.setString(idx, name);
   }
 
   void parse(FileInputStream fileInputStream) throws Exception {
@@ -138,7 +126,6 @@ public class FrsUploader {
 
       if (curClientAccountTransactionBatchCount > 0) {
         clientAccountTransactionPreparedStatement.executeBatch();
-        transactionTypePreparedStatement.executeBatch();
         needCommit = true;
         curClientAccountTransactionBatchCount = 0;
       }
@@ -222,13 +209,9 @@ public class FrsUploader {
     setClientAccountTransactionPrepareStatement(money, finishedAt);
     clientAccountTransactionPreparedStatement.addBatch();
 
-    setTransactionTypePrepareStatement(clientAccountTransactionData.transaction_type);
-    transactionTypePreparedStatement.addBatch();
-
     curClientAccountTransactionBatchCount++;
     if (curClientAccountTransactionBatchCount > maxBatchSize) {
       clientAccountTransactionPreparedStatement.executeBatch();
-      transactionTypePreparedStatement.executeBatch();
       connection.commit();
 
       curClientAccountTransactionBatchCount = 0;

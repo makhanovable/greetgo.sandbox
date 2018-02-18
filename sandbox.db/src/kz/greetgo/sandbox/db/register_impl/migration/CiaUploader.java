@@ -34,8 +34,8 @@ public class CiaUploader extends CommonSaxHandler {
 
   private void prepare() throws SQLException {
     clientPrepareStatement = connection.prepareStatement(
-      "INSERT INTO " + clientTable + " (record_no, cia_id, surname, name, patronymic, gender, birth_date, charm_name) " +
-        "VALUES(?, ?, ?, ?, ?, ?, ?, ?)"
+      "INSERT INTO " + clientTable + " (record_no, cia_id, id, surname, name, patronymic, gender, birth_date, charm_name) " +
+        "VALUES(?, ?, nextval('client_id_seq'), ?, ?, ?, ?, ?, ?)"
     );
 
     clientAddressPrepareStatement = connection.prepareStatement(
