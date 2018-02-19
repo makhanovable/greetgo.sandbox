@@ -4,6 +4,7 @@ import kz.greetgo.sandbox.controller.model.ClientDetail;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientToSave;
 
+import java.io.OutputStream;
 import java.util.List;
 
 public interface ClientRegister {
@@ -17,5 +18,7 @@ public interface ClientRegister {
   ClientDetail detail(String id);
 
   void addOrUpdate(ClientToSave clientDetail);
+
+  void generateReport(OutputStream out, String type, String orderBy, int order, String filter) throws Exception;
 
 }

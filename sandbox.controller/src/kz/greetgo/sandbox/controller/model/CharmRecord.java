@@ -1,6 +1,6 @@
 package kz.greetgo.sandbox.controller.model;
 
-public class CharmInfo {
+public class CharmRecord {
   public String id;
   public String name;
 }

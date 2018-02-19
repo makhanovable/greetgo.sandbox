@@ -60,5 +60,17 @@ public class ClientController implements Controller {
   public void addOrUpdate(@Par("client") @Json ClientToSave clientToSave) {
     this.clientRegister.get().addOrUpdate(clientToSave);
   }
-  
+
+
+  @Mapping("/report")
+  public void generateReport(@Par("type") String type, @Par("orderBy") String orderBy, @Par("order") int order,
+                             @Par("filter") String filter, RequestTunnel requestTunnel) throws Exception {
+
+    requestTunnel.setResponseHeader("Content-disposition", "attachment; filename=yourcustomfilename.xlsx");
+
+    this.clientRegister.get().generateReport(requestTunnel.getResponseOutputStream(), type, orderBy, order, filter);
+
+  }
+
+
 }

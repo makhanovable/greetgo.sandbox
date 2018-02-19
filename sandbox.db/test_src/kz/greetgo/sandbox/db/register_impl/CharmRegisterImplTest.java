@@ -1,7 +1,7 @@
 package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.CharmInfo;
+import kz.greetgo.sandbox.controller.model.CharmRecord;
 import kz.greetgo.sandbox.controller.register.CharmRegister;
 import kz.greetgo.sandbox.db.stand.model.CharmDot;
 import kz.greetgo.sandbox.db.test.dao.CharmTestDao;
@@ -34,7 +34,7 @@ public class CharmRegisterImplTest extends ParentTestNg {
 
     //
     //
-    List<CharmInfo> charmlist = this.charmRegister.get().getAll();
+    List<CharmRecord> charmlist = this.charmRegister.get().getAll();
     //
     //
 

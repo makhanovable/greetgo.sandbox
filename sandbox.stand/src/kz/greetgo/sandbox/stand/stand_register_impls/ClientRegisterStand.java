@@ -5,14 +5,18 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.enums.AddressType;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.controller.report.ClientReport;
+import kz.greetgo.sandbox.controller.report.ClientReportXLSX;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
-import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
-import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
-import kz.greetgo.sandbox.db.stand.model.ClientDot;
-import kz.greetgo.sandbox.db.stand.model.ClientPhoneNumberDot;
+import kz.greetgo.sandbox.db.stand.model.*;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.io.File;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("ConstantConditions")
 @Bean
@@ -29,6 +33,43 @@ public class ClientRegisterStand implements ClientRegister {
       clientDot.id = this.gen.newId();
 
     setClientData(clientDot, clientToSave);
+  }
+
+  @SuppressWarnings("Duplicates")
+  @Override
+  public void generateReport(OutputStream out, String type, String orderBy, int order, String filter) throws Exception {
+    ClientReport clientReport = null;
+    String filename = "report" + gen.newId() + "." + type;
+    File file = new File(filename);
+
+    Map<String, String> charms = new HashMap<>();
+    for (CharmDot charmDot : db.get().charmStorage.values())
+      charms.put(charmDot.id, charmDot.name);
+
+    switch (type) {
+      case "pdf":
+        throw new NotImplementedException();
+
+//        break;
+      case "xlsx":
+        clientReport = new ClientReportXLSX(charms);
+        break;
+    }
+
+    if (clientReport != null) {
+      long records = this.getClientsSize(filter);
+      int chunk = 100;
+
+      for (int page = 0; page < Math.ceil(records / (double) chunk); page++) {
+        clientReport.appendData(this.getClientInfoList(chunk, page, filter, orderBy, order));
+      }
+
+      clientReport.write(out);
+    } else {
+      throw new NotImplementedException();
+    }
+    
+
   }
 
   @Override

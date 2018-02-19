@@ -1,6 +1,6 @@
 package kz.greetgo.sandbox.db.stand.model;
 
-import kz.greetgo.sandbox.controller.model.CharmInfo;
+import kz.greetgo.sandbox.controller.model.CharmRecord;
 
 public class CharmDot {
   public String id;
@@ -9,10 +9,10 @@ public class CharmDot {
   public float energy;
 
 
-  public CharmInfo toCharmInfo() {
-    CharmInfo charmInfo = new CharmInfo();
-    charmInfo.id = this.id;
-    charmInfo.name = this.name;
-    return charmInfo;
+  public CharmRecord toCharmInfo() {
+    CharmRecord charmRecord = new CharmRecord();
+    charmRecord.id = this.id;
+    charmRecord.name = this.name;
+    return charmRecord;
   }
 }
