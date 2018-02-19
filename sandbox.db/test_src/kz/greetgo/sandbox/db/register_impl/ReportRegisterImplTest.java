@@ -102,8 +102,8 @@ public class ReportRegisterImplTest extends ClientCommonTest {
     ClientListReportViewFake fakeView = this.testViewCommon(clientRecordListHelper);
 
     for (int i = 0; i < fakeView.list.size(); i++)
-      assertThat(fakeView.list.get(i).totalAccountBalance)
-        .isEqualTo(Util.stringToFloat(clientRecordListHelper.clientRecordList.get(i).totalAccountBalance));
+      assertThat((int) fakeView.list.get(i).totalAccountBalance)
+        .isEqualTo((int) Float.parseFloat(clientRecordListHelper.clientRecordList.get(i).totalAccountBalance));
   }
 
   @Test
@@ -115,8 +115,8 @@ public class ReportRegisterImplTest extends ClientCommonTest {
     ClientListReportViewFake fakeView = this.testViewCommon(clientRecordListHelper);
 
     for (int i = 0; i < fakeView.list.size(); i++)
-      assertThat(fakeView.list.get(i).totalAccountBalance)
-        .isEqualTo(Util.stringToFloat(clientRecordListHelper.clientRecordList.get(i).totalAccountBalance));
+      assertThat((int) fakeView.list.get(i).totalAccountBalance)
+        .isEqualTo((int) Float.parseFloat(clientRecordListHelper.clientRecordList.get(i).totalAccountBalance));
   }
 
   @Test
@@ -128,8 +128,8 @@ public class ReportRegisterImplTest extends ClientCommonTest {
     ClientListReportViewFake fakeView = this.testViewCommon(clientRecordListHelper);
 
     for (int i = 0; i < fakeView.list.size(); i++)
-      assertThat(fakeView.list.get(i).maxAccountBalance)
-        .isEqualTo(Util.stringToFloat(clientRecordListHelper.clientRecordList.get(i).maxAccountBalance));
+      assertThat(String.valueOf(fakeView.list.get(i).maxAccountBalance))
+        .isEqualTo(clientRecordListHelper.clientRecordList.get(i).maxAccountBalance);
   }
 
   @Test
@@ -141,8 +141,8 @@ public class ReportRegisterImplTest extends ClientCommonTest {
     ClientListReportViewFake fakeView = this.testViewCommon(clientRecordListHelper);
 
     for (int i = 0; i < fakeView.list.size(); i++)
-      assertThat(fakeView.list.get(i).maxAccountBalance)
-        .isEqualTo(Util.stringToFloat(clientRecordListHelper.clientRecordList.get(i).maxAccountBalance));
+      assertThat(String.valueOf(fakeView.list.get(i).maxAccountBalance))
+        .isEqualTo(clientRecordListHelper.clientRecordList.get(i).maxAccountBalance);
   }
 
   @Test
@@ -154,8 +154,8 @@ public class ReportRegisterImplTest extends ClientCommonTest {
     ClientListReportViewFake fakeView = this.testViewCommon(clientRecordListHelper);
 
     for (int i = 0; i < fakeView.list.size(); i++)
-      assertThat(fakeView.list.get(i).minAccountBalance)
-        .isEqualTo(Util.stringToFloat(clientRecordListHelper.clientRecordList.get(i).minAccountBalance));
+      assertThat(String.valueOf(fakeView.list.get(i).minAccountBalance))
+        .isEqualTo(clientRecordListHelper.clientRecordList.get(i).minAccountBalance);
   }
 
   @Test
@@ -167,8 +167,8 @@ public class ReportRegisterImplTest extends ClientCommonTest {
     ClientListReportViewFake fakeView = this.testViewCommon(clientRecordListHelper);
 
     for (int i = 0; i < fakeView.list.size(); i++)
-      assertThat(fakeView.list.get(i).minAccountBalance)
-        .isEqualTo(Util.stringToFloat(clientRecordListHelper.clientRecordList.get(i).minAccountBalance));
+      assertThat(String.valueOf(fakeView.list.get(i).minAccountBalance))
+        .isEqualTo(clientRecordListHelper.clientRecordList.get(i).minAccountBalance);
   }
 
   @Test

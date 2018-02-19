@@ -7,12 +7,12 @@
     <sql endDelimiter=";;"><![CDATA[
       CREATE TABLE client (
         id bigint NOT NULL,
-        surname varchar(255) NOT NULL,
-        name varchar(255) NOT NULL,
-        patronymic varchar(255),
-        gender varchar(255) NOT NULL,
-        birth_date date NOT NULL,
-        charm integer NOT NULL,
+        surname varchar(256),
+        name varchar(256),
+        patronymic varchar(256),
+        gender varchar(32),
+        birth_date date,
+        charm integer,
         actual smallint NOT NULL DEFAULT 1,
         migration_cia_id varchar(64) UNIQUE
       )
@@ -23,9 +23,9 @@
     <sql endDelimiter=";;"><![CDATA[
       CREATE TABLE charm (
         id integer NOT NULL,
-        name varchar(255) NOT NULL,
-        description varchar(255),
-        energy real,
+        name varchar(256) NOT NULL,
+        description varchar(256),
+        energy float,
         actual smallint NOT NULL DEFAULT 1
       )
     ]]></sql>
@@ -35,10 +35,10 @@
     <sql endDelimiter=";;"><![CDATA[
       CREATE TABLE client_addr (
         client bigint NOT NULL,
-        type varchar(255) NOT NULL,
-        street varchar(255),
-        house varchar(255),
-        flat varchar(255)
+        type varchar(256) NOT NULL,
+        street varchar(256),
+        house varchar(256),
+        flat varchar(256)
       )
     ]]></sql>
   </changeSet>
@@ -47,8 +47,8 @@
     <sql endDelimiter=";;"><![CDATA[
       CREATE TABLE client_phone (
         client bigint NOT NULL,
-        number varchar(255) NOT NULL,
-        type varchar(255) NOT NULL,
+        number varchar(256) NOT NULL,
+        type varchar(256) NOT NULL,
         actual smallint NOT NULL DEFAULT 1
       )
     ]]></sql>
@@ -58,9 +58,9 @@
     <sql endDelimiter=";;"><![CDATA[
       CREATE TABLE client_account (
         id bigint NOT NULL,
-        client bigint NOT NULL,
-        money real NOT NULL,
-        number varchar(255) NOT NULL,
+        client bigint,
+        money float NOT NULL,
+        number varchar(256) NOT NULL UNIQUE,
         registered_at timestamp NOT NULL
       )
     ]]></sql>
@@ -70,8 +70,8 @@
     <sql endDelimiter=";;"><![CDATA[
       CREATE TABLE client_account_transaction (
         id bigint NOT NULL,
-        account bigint NOT NULL ,
-        money real NOT NULL,
+        account bigint,
+        money float NOT NULL,
         finished_at timestamp NOT NULL,
         type integer NOT NULL
       )
@@ -82,8 +82,8 @@
     <sql endDelimiter=";;"><![CDATA[
       CREATE TABLE transaction_type (
         id integer NOT NULL,
-        code varchar(255) NOT NULL,
-        name varchar(255) NOT NULL
+        code varchar(256),
+        name varchar(256)
       )
     ]]></sql>
   </changeSet>
@@ -216,6 +216,14 @@
       ADD CONSTRAINT fk_clientAccountTransaction_transactionType
       FOREIGN KEY(type)
       REFERENCES transaction_type(id)
+    ]]></sql>
+  </changeSet>
+
+  <changeSet author="nsmagulov" id="alter-table-clientAccountTransaction-add-unique">
+    <sql endDelimiter=";;"><![CDATA[
+      ALTER TABLE client_account_transaction
+      ADD CONSTRAINT uk_clientAccountTransaction
+      UNIQUE(account, money, finished_at)
     ]]></sql>
   </changeSet>
 </databaseChangeLog>

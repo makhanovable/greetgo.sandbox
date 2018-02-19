@@ -5,7 +5,9 @@ import kz.greetgo.util.RND;
 import java.security.SecureRandom;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 import java.util.Random;
 
@@ -16,14 +18,6 @@ public class Util {
 
   public static String floatToString(float f) {
     return String.format(Locale.US, "%f", f);
-  }
-
-  public static String floatToString(float f, String format) {
-    return String.format(Locale.US, format, f);
-  }
-
-  public static float stringToFloat(String s) {
-    return Float.parseFloat(s);
   }
 
   public static final String datePattern = "yyyy-MM-dd";
@@ -50,6 +44,15 @@ public class Util {
 
     if (birthDate != null)
       return Period.between(birthDate, currentDate).getYears();
+    else
+      return 0;
+  }
+
+  public static long getAge(LocalDateTime birthDate) {
+    LocalDateTime currentDate = LocalDateTime.now();
+
+    if (birthDate != null)
+      return ChronoUnit.YEARS.between(birthDate, currentDate);
     else
       return 0;
   }

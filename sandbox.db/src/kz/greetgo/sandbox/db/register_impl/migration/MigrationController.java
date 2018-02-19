@@ -20,15 +20,21 @@ public class MigrationController {
   public void migrate() throws Exception {
     //... .... ...
 
-    MigrateOneCiaFile m = new MigrateOneCiaFile();
-    m.inputFile = null;///
-    m.outputErrorFile = null;///
-    m.maxBatchSize = 100_000;
-    m.connection = null;///
+    MigrateOneCiaFile ciaFile = new MigrateOneCiaFile();
+    ciaFile.inputFile = null;///
+    ciaFile.outputErrorFile = null;///
+    ciaFile.maxBatchSize = 100_000;
+    ciaFile.connection = null;///
 
-    m.migrate();
+    ciaFile.migrate();
 
     // ... .... ...
+
+    MigrateOneFrsFile frsFile = new MigrateOneFrsFile();
+    frsFile.inputFile = null;
+    frsFile.outputErrorFile = null;
+    frsFile.maxBatchSize = 1000;
+    frsFile.connection = null;
   }
 
 }

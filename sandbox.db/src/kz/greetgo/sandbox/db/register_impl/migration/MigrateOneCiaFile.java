@@ -1,6 +1,7 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.sandbox.controller.util.Util;
+import kz.greetgo.sandbox.db.register_impl.migration.error.ErrorFile;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
@@ -15,19 +16,17 @@ import java.util.Date;
 
 public class MigrateOneCiaFile {
   public File inputFile;
-  public File outputErrorFile;
+  public ErrorFile outputErrorFile;
   public int maxBatchSize = 100;
   public Connection connection;
 
   String tmpClientTableName;
   String tmpClientAddressTableName;
   String tmpClientPhoneTableName;
-  String tmpCharmTableName;
 
   public void migrate() throws Exception {
     prepareTmpTables();
     uploadData();
-    processErrors();
     migrateData();
     downloadErrors();
   }
@@ -38,22 +37,19 @@ public class MigrateOneCiaFile {
     String additionalId = sdf.format(now) + "_" + Util.generateRandomString(8);
 
     tmpClientTableName = "tmp_migration_client_" + additionalId;
-    tmpClientAddressTableName = "tmp_migration_address_" + additionalId;
-    tmpClientPhoneTableName = "tmp_migration_phone_" + additionalId;
-    tmpCharmTableName = "tmp_migration_charm_" + additionalId;
+    tmpClientAddressTableName = "tmp_migration_client_address_" + additionalId;
+    tmpClientPhoneTableName = "tmp_migration_client_phone_" + additionalId;
 
     exec("CREATE TABLE client_to_replace (" +
       "  record_no bigint NOT NULL, " +
-      "  client_id bigint UNIQUE, " +
       "  cia_id varchar(64), " +
+      "  id bigint, " +
       "  surname varchar(256), " +
       "  name varchar(256), " +
       "  patronymic varchar(128), " +
       "  gender varchar(16), " +
       "  charm_name varchar(128), " +
-      "  charm_id int, " +
-      "  birth_date varchar(16), " +
-      "  birth_date_typed Date, " +
+      "  birth_date date, " +
       "  status int NOT NULL DEFAULT 0, " +
       "  error varchar(256), " +
       "  PRIMARY KEY(record_no)" +
@@ -62,7 +58,7 @@ public class MigrateOneCiaFile {
     exec("CREATE TABLE client_address_to_replace (" +
       "  record_no bigint NOT NULL, " +
       "  client_record_no bigint NOT NULL, " +
-      "  type varchar(64) NOT NULL, " +
+      "  type varchar(64), " +
       "  street varchar(128), " +
       "  house varchar(128), " +
       "  flat varchar(128), " +
@@ -87,6 +83,7 @@ public class MigrateOneCiaFile {
     CiaUploader ciaUploader = new CiaUploader();
     ciaUploader.connection = connection;
     ciaUploader.maxBatchSize = maxBatchSize;
+    ciaUploader.errorFileWriter = outputErrorFile;
     ciaUploader.clientTable = tmpClientTableName;
     ciaUploader.clientAddressTable = tmpClientAddressTableName;
     ciaUploader.clientPhoneTable = tmpClientPhoneTableName;
@@ -99,7 +96,7 @@ public class MigrateOneCiaFile {
     connection.setAutoCommit(true);
   }
 
-  void processErrors() throws SQLException {
+  /*void processValidationErrors() throws SQLException {
     exec("UPDATE client_to_replace " +
       "SET error = 'Пустое значение surname у ciaId = '||cia_id " +
       "WHERE surname IS NULL OR length(trim(surname)) = 0 "
@@ -129,61 +126,54 @@ public class MigrateOneCiaFile {
       "  (extract(YEAR FROM age(to_date(birth_date, 'YYYY-MM-DD'))) <= 3 OR " +
       "  extract(YEAR FROM age(to_date(birth_date, 'YYYY-MM-DD'))) >= 1000) "
     );
-  }
+  }*/
 
   void migrateData() throws SQLException {
-    migrateData_status1();
-    migrateData_status2();
+    migrateData_checkForDuplicatesOfClient();
+    migrateData_checkForDuplicatesOfClientPhoneTable();
     migrateData_finalOfCharmTable();
-    migrateData_status3();
     migrateData_finalOfClientTable();
     migrateData_finalOfClientAddressTable();
     migrateData_finalOfClientPhoneTable();
   }
 
   /**
-   * Статус = 1, если не имеется ошибки
+   * Статус = 1, отсеивание дубликатов с приоритетом на последнюю запись в списке
    *
    * @throws SQLException проброс для удобства
    */
-  void migrateData_status1() throws SQLException {
+  void migrateData_checkForDuplicatesOfClient() throws SQLException {
     exec("UPDATE client_to_replace " +
-      "SET status = 1, birth_date_typed = to_date(birth_date, 'YYYY-MM-DD') " +
-      "WHERE error IS NULL AND status = 0");
-  }
-
-  /**
-   * Статус = 2, отсеивание дубликатов с приоритетом на последнюю запись в списке
-   *
-   * @throws SQLException проброс для удобства
-   */
-  void migrateData_status2() throws SQLException {
-    exec("UPDATE client_to_replace " +
-      "SET status = 2 " +
+      "SET status = 1 " +
       "FROM ( " +
       "  SELECT record_no AS rno, row_number() OVER ( PARTITION BY cia_id ORDER BY record_no DESC ) AS rnum " +
       "  FROM client_to_replace " +
-      "  WHERE status = 1 " +
+      "  WHERE status = 0 AND error IS NULL " +
       ") AS x " +
       "WHERE x.rnum = 1 AND x.rno = record_no"
     );
   }
 
   /**
-   * Статус = 3, если заполнена колонка charmId, предварительно заполнив таблицу charm
+   * Отдельный статус для телефонов, где 1 означает, что это уникальный номер
    *
-   * @throws SQLException проброс для удобства
+   * @throws SQLException
    */
-  void migrateData_status3() throws SQLException {
-    exec("UPDATE client_to_replace AS t " +
-      "SET charm_id = ch.id, status = 3 " +
-      "FROM charm AS ch " +
-      "WHERE ch.name = t.charm_name AND t.status = 2"
-    );
+  void migrateData_checkForDuplicatesOfClientPhoneTable() throws SQLException {
+    exec("UPDATE client_phone_to_replace " +
+      "SET status = 1 " +
+      "FROM ( " +
+      "  SELECT " +
+      "    record_no as rno, " +
+      "    row_number() OVER (PARTITION BY client_record_no, number ORDER BY record_no DESC) AS rnum " +
+      "  FROM client_phone_to_replace " +
+      "  WHERE status = 0 " +
+      ") AS x " +
+      "WHERE x.rnum = 1 AND x.rno = record_no");
   }
 
   /**
-   * Заполнение таблицы charm до того, как присваивать статус 3
+   * Заполнение таблицы charm
    *
    * @throws SQLException проброс для удобства
    */
@@ -193,7 +183,7 @@ public class MigrateOneCiaFile {
       "FROM ( " +
       "  SELECT DISTINCT charm_name AS name " +
       "  FROM client_to_replace " +
-      "  WHERE status = 2 " +
+      "  WHERE status = 1 AND error IS NULL " +
       "  EXCEPT SELECT name FROM charm " +
       ") AS charm_dictionary "
     );
@@ -205,9 +195,6 @@ public class MigrateOneCiaFile {
    * @throws SQLException проброс для удобства
    */
   void migrateData_finalOfClientTable() throws SQLException {
-    exec("UPDATE client_to_replace " +
-      "SET client_id = nextval('client_id_seq') " +
-      "WHERE status = 3 ");
 /*
     exec("UPDATE client " +
       "SET id = t.client_id, surname = t.surname, patronymic = t.patronymic, gender = t.gender, " +
@@ -222,13 +209,19 @@ public class MigrateOneCiaFile {
     );*/
 
     exec("INSERT INTO client(id, surname, name, patronymic, gender, birth_date, charm, migration_cia_id) " +
-      "SELECT client_id, t.surname, t.name, t.patronymic, t.gender, birth_date_typed, t.charm_id, t.cia_id " +
-      "FROM client_to_replace AS t " +
-      "WHERE status = 3 " +
+      "SELECT c_r.id, c_r.surname, c_r.name, c_r.patronymic, c_r.gender, c_r.birth_date, ch.id, c_r.cia_id " +
+      "FROM client_to_replace AS c_r " +
+      "JOIN charm AS ch ON c_r.charm_name = ch.name " +
+      "WHERE c_r.status = 1 " +
       "ON CONFLICT(migration_cia_id) DO UPDATE " +
-      "SET id = excluded.id, surname = excluded.surname, name = excluded.name, " +
-      "  patronymic = excluded.patronymic, gender = excluded.gender, birth_date = excluded.birth_date, " +
-      "  charm = excluded.charm");
+      "SET id = excluded.id, surname = excluded.surname, name = excluded.name, patronymic = excluded.patronymic, " +
+      "  gender = excluded.gender, birth_date = excluded.birth_date, charm = excluded.charm, actual = 1 "
+    );
+
+    exec("UPDATE client_to_replace " +
+      "SET status = 2 " +
+      "WHERE status = 1"
+    );
   }
 
   /**
@@ -238,34 +231,28 @@ public class MigrateOneCiaFile {
    */
   void migrateData_finalOfClientAddressTable() throws SQLException {
     exec("INSERT INTO client_addr(client, type, street, house, flat) " +
-      "SELECT cl.client_id, adr.type, adr.street, adr.house, adr.flat " +
-      "FROM client_to_replace AS cl, client_address_to_replace AS adr " +
-      "WHERE cl.status = 3 AND cl.record_no = adr.client_record_no"
+      "SELECT c_r.id, cad_r.type, cad_r.street, cad_r.house, cad_r.flat " +
+      "FROM client_to_replace AS c_r " +
+      "JOIN client_address_to_replace AS cad_r ON c_r.record_no = cad_r.client_record_no " +
+      "WHERE c_r.status = 2 " +
+      "ON CONFLICT(client, type) DO UPDATE " +
+      "SET street = excluded.street, house = excluded.flat, flat = excluded.flat"
     );
   }
 
   /**
    * Заполнение основной client_phone таблицы
-   * Также имеется отдельный статус для телефонов, где 1 означает, что это уникальный номер
    *
    * @throws SQLException проброс для удобства
    */
   void migrateData_finalOfClientPhoneTable() throws SQLException {
-    exec("UPDATE client_phone_to_replace " +
-      "SET status = 1 " +
-      "FROM ( " +
-      "  SELECT " +
-      "    record_no as rno," +
-      "    row_number() OVER (PARTITION BY client_record_no, number ORDER BY record_no DESC) AS rnum " +
-      "  FROM client_phone_to_replace " +
-      "  WHERE status = 0 " +
-      ") AS x " +
-      "WHERE x.rnum = 1 AND x.rno = record_no");
-
     exec("INSERT INTO client_phone(client, number, type) " +
-      "SELECT cl.client_id, ph.number, ph.type " +
-      "FROM client_to_replace AS cl, client_phone_to_replace AS ph " +
-      "WHERE cl.status = 3 AND cl.record_no = ph.client_record_no AND ph.status = 1"
+      "SELECT c_r.id, ph_r.number, ph_r.type " +
+      "FROM client_to_replace AS c_r " +
+      "JOIN client_phone_to_replace AS ph_r ON c_r.record_no = ph_r.client_record_no " +
+      "WHERE c_r.status = 2 AND ph_r.status = 1 " +
+      "ON CONFLICT(client, number) DO UPDATE " +
+      "SET actual = 1"
     );
   }
 

@@ -4,24 +4,24 @@ import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.sql.Date;
+import java.sql.Timestamp;
 
 public interface MigrationTestDao {
   @Insert("INSERT INTO ${tmpClientTableName} " +
-    "VALUES (#{recordNo}, #{clientId}, #{ciaId}, #{surname}, #{name}, #{patronymic}, #{gender}, #{charmName}," +
-    "#{charmId}, #{birthDate}, #{birthDateTyped}, #{status}, #{error})")
+    "VALUES (#{recordNo}, #{ciaId}, #{id}, #{surname}, #{name}, #{patronymic}, #{gender}, #{charmName}," +
+    "#{birthDate}, #{status}, #{error})")
   void insertClient(@Param("tmpClientTableName") String tmpClientTableName,
                     @Param("recordNo") long recordNo,
-                    @Param("clientId") Long clientId,
                     @Param("ciaId") String ciaId,
+                    @Param("id") long id,
                     @Param("surname") String surname,
                     @Param("name") String name,
                     @Param("patronymic") String patronymic,
                     @Param("gender") String gender,
                     @Param("charmName") String charm_name,
-                    @Param("charmId") Integer charm_id,
-                    @Param("birthDate") String birth_date,
-                    @Param("birthDateTyped") Date birth_date_typed,
+                    @Param("birthDate") Date birth_date,
                     @Param("status") int status,
                     @Param("error") String error);
 
@@ -44,6 +44,28 @@ public interface MigrationTestDao {
                          @Param("type") String type,
                          @Param("status") int status);
 
+  @Insert("INSERT INTO ${tmpClientAccountTableName} " +
+    "VALUES (#{recordNo}, #{ciaId}, nextval('client_account_id_seq'), #{money}, #{accountNumber}, #{registeredAt}, #{status}, #{error})")
+  void insertClientAccount(@Param("tmpClientAccountTableName") String tmpClientAccountTableName,
+                           @Param("recordNo") long recordNo,
+                           @Param("ciaId") String ciaId,
+                           @Param("money") BigDecimal money,
+                           @Param("accountNumber") String accountNumber,
+                           @Param("registeredAt") Timestamp registeredAt,
+                           @Param("status") int status,
+                           @Param("error") String error);
+
+  @Insert("INSERT INTO ${tmpTableName} " +
+    "VALUES (#{recordNo}, nextval('client_account_transaction_id_seq'), #{money}, #{finishedAt}, #{transactionType}, #{accountNumber}, #{status}, #{error})")
+  void insertClientAccountTransaction(@Param("tmpTableName") String tmpTableName,
+                                      @Param("recordNo") long recordNo,
+                                      @Param("money") BigDecimal money,
+                                      @Param("finishedAt") Timestamp finishedAt,
+                                      @Param("transactionType") String transactionType,
+                                      @Param("accountNumber") String accountNumber,
+                                      @Param("status") int status,
+                                      @Param("error") String error);
+
   @Delete("DELETE FROM charm")
   void deleteAllTableCharm();
 
@@ -58,4 +80,7 @@ public interface MigrationTestDao {
 
   @Delete("DELETE FROM client_account")
   void deleteAllTableClientAccount();
+
+  @Delete("DELETE FROM transaction_type")
+  void deleteAllTableTransactionType();
 }

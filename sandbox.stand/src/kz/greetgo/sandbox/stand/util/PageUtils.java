@@ -98,13 +98,13 @@ public class PageUtils {
     if (ascend) {
       clientDots.sort(new Comparator<ClientDot>() {
         public int compare(ClientDot o1, ClientDot o2) {
-          return Float.compare(Util.stringToFloat(o1.totalAccountBalance), Util.stringToFloat(o2.totalAccountBalance));
+          return Float.compare(Float.parseFloat(o1.totalAccountBalance), Float.parseFloat(o2.totalAccountBalance));
         }
       });
     } else {
       clientDots.sort(new Comparator<ClientDot>() {
         public int compare(ClientDot o1, ClientDot o2) {
-          return Float.compare(Util.stringToFloat(o2.totalAccountBalance), Util.stringToFloat(o1.totalAccountBalance));
+          return Float.compare(Float.parseFloat(o2.totalAccountBalance), Float.parseFloat(o1.totalAccountBalance));
         }
       });
     }
@@ -116,13 +116,13 @@ public class PageUtils {
     if (ascend) {
       clientDots.sort(new Comparator<ClientDot>() {
         public int compare(ClientDot o1, ClientDot o2) {
-          return Float.compare(Util.stringToFloat(o1.maxAccountBalance), Util.stringToFloat(o2.maxAccountBalance));
+          return Float.compare(Float.parseFloat(o1.maxAccountBalance), Float.parseFloat(o2.maxAccountBalance));
         }
       });
     } else {
       clientDots.sort(new Comparator<ClientDot>() {
         public int compare(ClientDot o1, ClientDot o2) {
-          return Float.compare(Util.stringToFloat(o2.maxAccountBalance), Util.stringToFloat(o1.maxAccountBalance));
+          return Float.compare(Float.parseFloat(o2.maxAccountBalance), Float.parseFloat(o1.maxAccountBalance));
         }
       });
     }
@@ -134,13 +134,13 @@ public class PageUtils {
     if (ascend) {
       clientDots.sort(new Comparator<ClientDot>() {
         public int compare(ClientDot o1, ClientDot o2) {
-          return Float.compare(Util.stringToFloat(o1.minAccountBalance), Util.stringToFloat(o2.minAccountBalance));
+          return Float.compare(Float.parseFloat(o1.minAccountBalance), Float.parseFloat(o2.minAccountBalance));
         }
       });
     } else {
       clientDots.sort(new Comparator<ClientDot>() {
         public int compare(ClientDot o1, ClientDot o2) {
-          return Float.compare(Util.stringToFloat(o2.minAccountBalance), Util.stringToFloat(o1.minAccountBalance));
+          return Float.compare(Float.parseFloat(o2.minAccountBalance), Float.parseFloat(o1.minAccountBalance));
         }
       });
     }
