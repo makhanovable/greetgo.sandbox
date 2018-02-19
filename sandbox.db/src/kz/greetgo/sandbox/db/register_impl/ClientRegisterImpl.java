@@ -8,9 +8,8 @@ import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+// FIXME: 2/19/18 не импортируй весь класс, а только нужные.
+import java.util.*;
 
 @Bean
 public class ClientRegisterImpl implements ClientRegister {
@@ -31,14 +30,9 @@ public class ClientRegisterImpl implements ClientRegister {
     int offset = limit * page;
     String order = desc == 1 ? "desc" : "asc";
 
-    if (filter == null || filter.isEmpty()) {
-      return this.clientDao.get().getClients(limit, offset, ob, order);
 
-    } else {
-      filter = getFormattedFilter(filter);
-      return this.clientDao.get().getClientsByFilter(limit, offset, ob, order, filter);
-    }
-
+    // FIXME: 2/19/18 не исользуй разные запросы!
+    throw new UnsupportedOperationException("Нужно реализовать через один селект!");
   }
 
   @Override
