@@ -183,7 +183,7 @@ public class MigrateOneCiaFile {
       "FROM ( " +
       "  SELECT DISTINCT charm_name AS name " +
       "  FROM client_to_replace " +
-      "  WHERE status = 1 " +
+      "  WHERE status = 1 AND error IS NULL " +
       "  EXCEPT SELECT name FROM charm " +
       ") AS charm_dictionary "
     );

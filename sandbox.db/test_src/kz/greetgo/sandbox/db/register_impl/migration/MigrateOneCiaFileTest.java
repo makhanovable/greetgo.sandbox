@@ -260,7 +260,6 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     createClientWithTmp(oneCiaFile.tmpClientTableName, clientRecordNum++, 1);
 
     String charmName = RND.str(16);
-    int charmId = this.insertCharm(charmName);
     this.insertCharm(charmName);
     this.insertTmpClientWithCharmId_CharmName_Birthdate(
       oneCiaFile.tmpClientTableName, clientRecordNum++, charmName, "2000-10-10", 1);
@@ -268,7 +267,6 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
       oneCiaFile.tmpClientTableName, clientRecordNum++, charmName, "1989-05-05", 1);
 
     charmName = RND.str(16);
-    charmId = this.insertCharm(charmName);
     this.insertCharm(charmName);
     this.insertTmpClientWithCharmId_CharmName_Birthdate(
       oneCiaFile.tmpClientTableName, clientRecordNum, charmName, "2010-11-04", 1);
@@ -290,7 +288,6 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
       assertThat(recordList.get(i).get("gender")).isEqualTo(tempRecordList.get(i).get("gender"));
       assertThat(recordList.get(i).get("birth_date").toString())
         .isEqualTo(tempRecordList.get(i).get("birth_date").toString());
-      assertThat(recordList.get(i).get("charm")).isEqualTo(tempRecordList.get(i).get("charm_id"));
     }
   }
 
@@ -478,7 +475,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     String ciaId = RND.str(8);
     migrationTestDao.get().insertClient(tblName, clientRecordNum, ciaId,
       clientTestDao.get().selectSeqIdNextValueTableClient(), RND.str(10), RND.str(10), RND.str(10),
-      Gender.values()[RND.plusInt(Gender.values().length)].name(), charmName, Date.valueOf("1989-10-10"), status, RND.str(10));
+      Gender.values()[RND.plusInt(Gender.values().length)].name(), charmName, Date.valueOf("1989-10-10"), status, null);
     return ciaId;
   }
 
@@ -488,7 +485,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     migrationTestDao.get().insertClient(tblName, clientRecordNum, ciaId,
       clientTestDao.get().selectSeqIdNextValueTableClient(), RND.str(10), RND.str(10), RND.str(10),
       Gender.values()[RND.plusInt(Gender.values().length)].name(), charmName, Date.valueOf(birth),
-      status, RND.str(10));
+      status, null);
     return ciaId;
   }
 
@@ -504,7 +501,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
   private String insertTmpClientWithClientId(String tblName, long recordNo, long id, int status) {
     String ciaId = RND.str(8);
     migrationTestDao.get().insertClient(tblName, recordNo, ciaId, id, RND.str(10), RND.str(10), RND.str(10),
-      Gender.values()[RND.plusInt(Gender.values().length)].name(), null, null, status, RND.str(10));
+      Gender.values()[RND.plusInt(Gender.values().length)].name(), null, null, status, null);
     return ciaId;
   }
 
