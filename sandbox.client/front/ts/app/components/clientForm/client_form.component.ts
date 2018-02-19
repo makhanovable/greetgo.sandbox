@@ -1,13 +1,13 @@
-import {ClientPhone} from "../../../model/ClientPhone";
-import {ClientAddress} from "../../../model/ClientAddress";
-import {ClientToSave} from "../../../model/ClientToSave";
-import {ClientDetail} from "../../../model/ClientDetail";
-import {PhoneNumberType} from "../../../enums/PhoneNumberType";
-import {HttpService} from "../../HttpService";
-import {ClientInfo} from "../../../model/ClientInfo";
-import {Component, Inject, OnInit} from "@angular/core";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material";
-import {AddressType} from "../../../enums/AddressType";
+import { ClientPhone } from "../../../model/ClientPhone";
+import { ClientAddress } from "../../../model/ClientAddress";
+import { ClientToSave } from "../../../model/ClientToSave";
+import { ClientDetail } from "../../../model/ClientDetail";
+import { PhoneNumberType } from "../../../enums/PhoneNumberType";
+import { HttpService } from "../../HttpService";
+import { ClientInfo } from "../../../model/ClientInfo";
+import { Component, Inject, OnInit } from "@angular/core";
+import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material";
+import { AddressType } from "../../../enums/AddressType";
 
 @Component({
   selector: 'client-form-component',
@@ -21,7 +21,7 @@ export class ClientFormComponent implements OnInit {
   charms: any[];
   phoneMask: any[] = ['+', '7', ' ', '(', /[0-9]/, /\d/, /\d/, ')', ' ', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/];
   newForm: boolean = false;
-
+  hiddenalert: boolean = false;
   requiredPhoneNumbers = {
     "HOME": 1,
     "WORK": 1,
@@ -29,8 +29,8 @@ export class ClientFormComponent implements OnInit {
   };
 
   constructor(public dialogRef: MatDialogRef<ClientFormComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: any,
-              private httpService: HttpService) {
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private httpService: HttpService) {
   }
 
   ngOnInit() {
@@ -87,11 +87,11 @@ export class ClientFormComponent implements OnInit {
   fillMissingPhones() {
 
     for (let i = 0; i < this.requiredPhoneNumbers["HOME"]; i++)
-      this.formData.phoneNumbers.push({number: "", type: PhoneNumberType.HOME} as ClientPhone);
+      this.formData.phoneNumbers.push({ number: "", type: PhoneNumberType.HOME } as ClientPhone);
     for (let i = 0; i < this.requiredPhoneNumbers["WORK"]; i++)
-      this.formData.phoneNumbers.push({number: "", type: PhoneNumberType.WORK} as ClientPhone);
+      this.formData.phoneNumbers.push({ number: "", type: PhoneNumberType.WORK } as ClientPhone);
     for (let i = 0; i < this.requiredPhoneNumbers["MOBILE"]; i++)
-      this.formData.phoneNumbers.push({number: "", type: PhoneNumberType.MOBILE} as ClientPhone);
+      this.formData.phoneNumbers.push({ number: "", type: PhoneNumberType.MOBILE } as ClientPhone);
 
     this.formData.phoneNumbers.sort((a, b) => {
       let nameA = a.type;
@@ -134,20 +134,25 @@ export class ClientFormComponent implements OnInit {
   }
 
   saveButton() {
-    this.save();
+    if (this.canSave())
+      this.save();
+    else {
+      this.hiddenalert = true;
+    }
   }
 
   canSave() {
-    return this.formData.name && this.formData.surname && this.formData.birthDate && this.formData.gender && this.formData.charm && this.formData.patronymic;
+    return this.formData.name && this.formData.surname && this.formData.birthDate && this.formData.gender && this.formData.charm
+      && this.formData.patronymic && this.formData.registerAddress && this.formData.registerAddress.street && this.formData.registerAddress.house;
   }
 
   save() {
     let toSave = new ClientToSave(this.formData);
 
-    if (this.formData.actualAddress.street || this.formData.actualAddress.house || this.formData.actualAddress.flat)
-      toSave.actualAddress = this.formData.actualAddress;
-    if (this.formData.registerAddress.street || this.formData.registerAddress.house || this.formData.registerAddress.flat)
-      toSave.registerAddress = this.formData.registerAddress;
+    // if (this.formData.actualAddress.street || this.formData.actualAddress.house || this.formData.actualAddress.flat)
+    toSave.actualAddress = this.formData.actualAddress;
+    // if (this.formData.registerAddress.street || this.formData.registerAddress.house || this.formData.registerAddress.flat)
+    toSave.registerAddress = this.formData.registerAddress;
 
     toSave.numbersToDelete = [];
     toSave.numersToSave = [];

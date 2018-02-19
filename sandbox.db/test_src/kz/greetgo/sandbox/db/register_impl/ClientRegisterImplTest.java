@@ -6,75 +6,199 @@ import kz.greetgo.sandbox.controller.enums.GenderType;
 import kz.greetgo.sandbox.controller.enums.PhoneNumberType;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
 import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.stand.model.ClientPhoneNumberDot;
+import kz.greetgo.sandbox.db.stand.tools.AgeCalculator;
+import kz.greetgo.sandbox.db.test.dao.AccountTetsDao;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
-// FIXME: 2/14/18 в данном случае нельзя отключать уведомления для всего класса
-// @SuppressWarnings({"deprecation", "WeakerAccess", "ConstantConditions"})
+
 public class ClientRegisterImplTest extends ParentTestNg {
 
   public BeanGetter<ClientRegister> clientRegister;
   public BeanGetter<ClientTestDao> clientTestDao;
   public BeanGetter<IdGenerator> idGenerator;
+  public BeanGetter<AccountTetsDao> accountTetsDao;
+
+  private ClientAccountDot rndClientAccountDot(String client) {
+    ClientAccountDot cad = new ClientAccountDot();
+    cad.money = (float) RND.plusDouble(100f, 5);
+    cad.id = idGenerator.get().newId();
+    cad.number = idGenerator.get().newId();
+    cad.client = client;
+    return cad;
+  }
 
   @Test
   void getClientInfoListTest() {
-
     this.clientTestDao.get().clear();
 
+    //init data
     List<ClientDot> clients = new ArrayList<>();
+    Map<String, List<ClientAccountDot>> accountDotMap = new HashMap<>();
+    Map<String, ClientDot> clientDotMap = new HashMap<>();
+
+
     for (int i = 0; i < 1000; i++) {
       ClientDot cd = this.rndClientDot();
       this.clientTestDao.get().insertClientDot(cd);
+      List<ClientAccountDot> accList = new ArrayList<>();
+
+      for (int j = 0; j < 2 + RND.plusInt(5); j++) {
+        ClientAccountDot cad = this.rndClientAccountDot(cd.id);
+        this.accountTetsDao.get().insertAccaount(cad);
+        accList.add(cad);
+      }
+
       clients.add(cd);
+      clientDotMap.put(cd.id, cd);
+      accountDotMap.put(cd.id, accList);
     }
 
-    int limit = 10;
-    int page = 10;
-    String filter = "";
-    String orderBy = "name";
-    int desc = 0;
 
-    long size = this.clientRegister.get().getClientsSize(null);
-    //
-    //
-    List<ClientRecord> result = this.clientRegister.get().getClientInfoList(limit, page, filter, orderBy, desc);
-    //
-    //
+    //init inputs
+    ClientDot rndClient = clients.get(RND.plusInt(clients.size()));
+    int[] limits = {0, 10, 20};
+    int[] pages = {0, 1, 2, 10};
+    String[] orderBys = {null, "", "age"};
+    int[] orders = {0, 1};
+    String[] filters = {null, rndClient.name + " " + rndClient.surname, rndClient.patronymic, rndClient.getFIO(), "a", "ab", RND.str(3)};
 
-    List<ClientDot> filtered = clients.stream().filter(o -> o.getFIO().toLowerCase().contains(filter)).collect(Collectors.toList());
-    filtered.sort((o1, o2) -> {
-      if (desc == 1) {
-        ClientDot tmp = o1;
-        o1 = o2;
-        o2 = tmp;
+    for (int limit : limits) {
+      for (int page : pages) {
+        for (String orderBy : orderBys) {
+          for (int order : orders) {
+            for (String filter : filters) {
+              System.out.println(limit + " " + page + " " + orderBy + " " + order + " " + filter);
+
+              //
+              //
+              List<ClientRecord> result = this.clientRegister.get().getClientInfoList(limit, page, filter, orderBy, order);
+              //
+              //
+
+              if (limit == 0) {
+                assertThat(result).isEmpty();
+                continue;
+              }
+
+              List<ClientDot> expectedList = null;
+              if (filter == null || filter.isEmpty()) {
+                expectedList = clients;
+              } else {
+                String[] filterTokens = filter.trim().split(" ");
+                expectedList = clients.stream().filter(o -> Arrays.stream(filterTokens).anyMatch(y -> o.getFIO().toLowerCase().contains(y.toLowerCase()))).collect(Collectors.toList());
+              }
+
+              String ob = orderBy == null ? "default" : orderBy;
+              expectedList.sort((o1, o2) -> {
+                if (order == 1) {
+                  ClientDot tmp = o1;
+                  o1 = o2;
+                  o2 = tmp;
+                }
+                switch (ob) {
+                  case "age":
+                    return Integer.compare(AgeCalculator.calculateAge(o1.birthDate), AgeCalculator.calculateAge(o2.birthDate));
+
+                  default:
+                    String fio1 = o1.getFIO().toLowerCase();
+                    String fio2 = o2.getFIO().toLowerCase();
+                    return fio1.compareTo(fio2);
+                }
+
+
+              });
+
+
+              int fromIndex = limit * page;
+              int endindex = (int) (fromIndex + limit <= expectedList.size() ? fromIndex + limit : expectedList.size());
+
+              if (endindex <= fromIndex)
+                expectedList = new ArrayList<>();
+              else
+                expectedList = expectedList.subList(fromIndex, endindex);
+
+              assertThat(result).hasSize(expectedList.size());
+
+              List<ClientDot> finalExpectedList = expectedList;
+
+
+              for (int i = 0; i < result.size(); i++) {
+                ClientRecord target = result.get(i);
+
+                if (orderBy != null)
+                  switch (orderBy) {
+                    case "age":
+                      assertThat(target.age).isEqualTo(AgeCalculator.calculateAge(expectedList.get(i).birthDate));
+                      break;
+                    case "totalAccountBalance":
+                      break;
+                    case "maximumBalance":
+                      break;
+                    case "minimumBalance":
+                      break;
+                    default:
+                      assertThat(target.name).isEqualTo(expectedList.get(i).name);
+                      assertThat(target.surname).isEqualTo(expectedList.get(i).surname);
+                      assertThat(target.patronymic).isEqualTo(expectedList.get(i).patronymic);
+                  }
+
+                assertThat(clientDotMap).containsKey(target.id);
+                ClientDot assertion = clientDotMap.get(target.id);
+                assertThat(target.id).isEqualTo(assertion.id);
+                assertThat(target.age).isEqualTo(AgeCalculator.calculateAge(assertion.birthDate));
+                assertThat(target.charm).isEqualTo(assertion.charm);
+                assertThat(target.surname).isEqualTo(assertion.surname);
+                assertThat(target.patronymic).isEqualTo(assertion.patronymic);
+                assertThat(target.name).isEqualTo(assertion.name);
+
+
+                List<ClientAccountDot> accList = accountDotMap.get(target.id);
+
+                float max = accList.get(0).money;
+                float min = accList.get(0).money;
+                float total = 0;
+                for (ClientAccountDot cad : accList) {
+                  total += cad.money;
+                  if (max < cad.money)
+                    max = cad.money;
+                  if (min > cad.money)
+                    min = cad.money;
+                }
+                assertThat(target.maximumBalance).isEqualTo(max);
+                assertThat(target.minimumBalance).isEqualTo(min);
+                assertThat(target.totalAccountBalance).isEqualTo(total);
+
+              }
+
+
+              if (!result.isEmpty()) {
+                Boolean match = result.stream().anyMatch(x -> clients.stream().anyMatch(y -> y.id.equals(x.id)));
+                assertThat(match).isTrue();
+              }
+
+
+            }
+          }
+        }
       }
-      String fio1 = o1.name;
-      String fio2 = o2.name;
-      return fio1.compareTo(fio2);
-    });
-
-    assertThat(result).isNotEmpty();
-    for (int i = 0; i < result.size(); i++) {
-      // FIXME: 2/14/18 сравнивай все поля, не только айди
-      assertThat(filtered.get(i + page * limit).id.equals(result.get(i).id)).isTrue();
     }
 
 
   }
+
 
   @Test
   void getClientsSizeTest() {
@@ -87,64 +211,85 @@ public class ClientRegisterImplTest extends ParentTestNg {
       clients.add(cd);
     }
 
-    //test1
-    {
-      String filter = null;
+    String[] filters = {
+      null,
+      clients.get(RND.plusInt(clients.size())).name,
+      clients.get(RND.plusInt(clients.size())).surname,
+      clients.get(RND.plusInt(clients.size())).patronymic,
+      clients.get(RND.plusInt(clients.size())).getFIO()};
+
+    for (String filter : filters) {
+
+      //
+      //
       long result = this.clientRegister.get().getClientsSize(filter);
-      assertThat(result).isEqualTo(clients.size());
-    }
-    //test2 FIXME: 2/14/18 вынеси в отдельный тест
-    {
-      String[] filters = {
-        clients.get(RND.plusInt(clients.size())).name,
-        clients.get(RND.plusInt(clients.size())).surname,
-        clients.get(RND.plusInt(clients.size())).patronymic,
-        clients.get(RND.plusInt(clients.size())).getFIO()};
+      //
+      //
 
-      for (String filter : filters) {
-
-        //
-        //
-        long result = this.clientRegister.get().getClientsSize(filter);
-        //
-        //
-
-        List<String> list = Arrays.asList(filter.trim().split(" "));
-        long expected = clients.stream().filter(o -> list.stream().anyMatch(x -> o.getFIO().toLowerCase().contains(x.toLowerCase()))).count();
-        assertThat(result).isEqualTo(expected);
+      if (filter == null) {
+        assertThat(result).isEqualTo(clients.size());
+        continue;
       }
+      List<String> filterTokens = Arrays.asList(filter.trim().split(" "));
 
-
+      long expected = clients.stream().filter(o -> filterTokens.stream().anyMatch(x -> o.getFIO().toLowerCase().contains(x.toLowerCase()))).count();
+      assertThat(result).isEqualTo(expected);
     }
-
 
   }
 
   @Test
   void removeClientsTest() {
     this.clientTestDao.get().clear();
-    List<String> ids = new ArrayList<>();
+    List<String> toDeleteList = new ArrayList<>();
 
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < RND.plusInt(100); i++) {
       ClientDot cd = this.rndClientDot();
       this.clientTestDao.get().insertClientDot(cd);
-      ids.add(cd.id);
+      toDeleteList.add(cd.id);
     }
 
     //
     //
-    int deleted = this.clientRegister.get().remove(ids);
+    int deleted = this.clientRegister.get().remove(toDeleteList);
     //
     //
 
-    assertThat(deleted).isEqualTo(ids.size());
-    List<ClientDot> list = new ArrayList<>();
-    assertThat(list).isEmpty();
-    // FIXME: 2/14/18 напиши тест и на случай с удалением одного клиента
-//    for (String id : ids) {
-//      assertThat(list.stream().anyMatch(o -> o.id.equals(id))).isFalse();
-//    }
+    assertThat(deleted).isEqualTo(toDeleteList.size());
+    for (String id : toDeleteList) {
+      ClientDetail clientDetail = this.clientTestDao.get().detail(id, true);
+      assertThat(clientDetail).isNull();
+    }
   }
+
+  @Test
+  void removeOneClientTest() {
+    this.clientTestDao.get().clear();
+    List<String> ids = new ArrayList<>();
+
+    for (int i = 0; i < RND.plusInt(100); i++) {
+      ClientDot cd = this.rndClientDot();
+      this.clientTestDao.get().insertClientDot(cd);
+      ids.add(cd.id);
+    }
+    List<String> toDeleteList = new ArrayList<>();
+    String id = ids.get(0);
+    toDeleteList.add(id);
+
+    //
+    //
+    int deleted = this.clientRegister.get().remove(toDeleteList);
+    //
+    //
+
+    assertThat(deleted).isEqualTo(toDeleteList.size());
+
+    ClientDetail clientDetail = this.clientTestDao.get().detail(id, true);
+    assertThat(clientDetail).isNull();
+
+
+  }
+
 
   @Test
   public void updateClientTest() {
@@ -156,64 +301,64 @@ public class ClientRegisterImplTest extends ParentTestNg {
     this.clientTestDao.get().insertAddress(actualAddress);
     this.clientTestDao.get().insertAddress(registerAddress);
 
-    // FIXME: 2/14/18 нужно давать переменной понятное название
-    ClientToSave test1 = rndClientToSave(cd.id); // +ClientDetail +2addresses +3numbers
-    //test1
+    ClientToSave clientToSave = rndClientToSave(cd.id); // +ClientDetail +2addresses +3numbers
     {
       ClientPhoneNumberDot number1 = rndPhoneNumber(cd.id, PhoneNumberType.WORK);
       this.clientTestDao.get().insertPhone(number1); // number directly insterted to db
-      test1.numbersToDelete.add(number1.toClientPhoneNumber());  // -1 number
+      clientToSave.numbersToDelete.add(number1.toClientPhoneNumber());  // -1 number
 
       //
       //
-      this.clientRegister.get().update(test1);
+      this.clientRegister.get().addOrUpdate(clientToSave);
       //
       //
 
-      ClientDetail clientDetail = this.clientTestDao.get().detail(test1.id);
-      this.assertClientDetail(clientDetail, new ClientDot(test1));
+      ClientDetail clientDetail = this.clientTestDao.get().detail(clientToSave.id, true);
+      this.assertClientDetail(clientDetail, new ClientDot(clientToSave));
 
-      ClientAddress regAddress = this.clientTestDao.get().getAddres(test1.id, AddressType.REG);
-      ClientAddress actAddress = this.clientTestDao.get().getAddres(test1.id, AddressType.FACT);
-      this.assertClientAddres(actAddress, new ClientAddressDot(test1.id, test1.actualAddress));
-      this.assertClientAddres(regAddress, new ClientAddressDot(test1.id, test1.registerAddress));
+      ClientAddress regAddress = this.clientTestDao.get().getAddres(clientToSave.id, AddressType.REG);
+      ClientAddress actAddress = this.clientTestDao.get().getAddres(clientToSave.id, AddressType.FACT);
+      this.assertClientAddres(actAddress, new ClientAddressDot(clientToSave.id, clientToSave.actualAddress));
+      this.assertClientAddres(regAddress, new ClientAddressDot(clientToSave.id, clientToSave.registerAddress));
 
-      List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(test1.id);
+      List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(clientToSave.id);
 
-      // FIXME: 2/14/18 есть такие методы assertThat(numberList).isNotEmpty();
-      assertThat(numberList.isEmpty()).isFalse();
-
-      // FIXME: 2/14/18 assertThat(numberList).hasSize(test1.numersToSave.size());
-      assertThat(numberList.size()).isEqualTo(test1.numersToSave.size());
-
+      assertThat(numberList).isNotEmpty();
+      assertThat(numberList).hasSize(clientToSave.numersToSave.size());
       assertThat(numberList.stream().anyMatch(o -> o.number.equals(number1.number))).isFalse();
     }
 
-    //test2 FIXME: 2/14/18 надо вынести в отдельный тест
-    {
+  }
 
-      ClientToSave test2 = rndClientToSave(cd.id);
+  @Test
+  public void updateClientEditedPhoneNumber() {
+    this.clientTestDao.get().clear();
+    ClientDot cd = this.rndClientDot();
+    this.clientTestDao.get().insertClientDot(cd);
+    ClientAddressDot actualAddress = rndAddress(cd.id, AddressType.FACT);
+    ClientAddressDot registerAddress = rndAddress(cd.id, AddressType.REG);
+    this.clientTestDao.get().insertAddress(actualAddress);
+    this.clientTestDao.get().insertAddress(registerAddress);
 
-      List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(test2.id);
-      assertThat(numberList.isEmpty()).isFalse();
+    ClientPhoneNumberDot numberToInsert = rndPhoneNumber(cd.id, PhoneNumberType.WORK);
+    this.clientTestDao.get().insertPhone(numberToInsert);
 
-      ClientPhoneNumberToSave toEited = new ClientPhoneNumberDot(test2.id, numberList.get(0)).toClientPhoneNumberToSave();
-      toEited.oldNumber = toEited.number;
-      toEited.number = RND.str(10);
-      test2.numersToSave.add(toEited);
+    ClientToSave test2 = rndClientToSave(cd.id);
 
-      //
-      //
-      this.clientRegister.get().update(test2);
-      //
-      //
+    ClientPhoneNumberToSave toEdited = numberToInsert.toClientPhoneNumberToSave();
 
-      numberList = this.clientTestDao.get().getNumbersById(test2.id);
-      assertThat(numberList.stream().anyMatch(o -> o.number.equals(toEited.number))).isTrue();
+    toEdited.oldNumber = toEdited.number;
+    toEdited.number = RND.str(10);
+    test2.numersToSave.add(toEdited);
 
-    }
+    //
+    //
+    this.clientRegister.get().addOrUpdate(test2);
+    //
+    //
 
-
+    List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(test2.id);
+    assertThat(numberList.stream().anyMatch(o -> o.number.equals(toEdited.number))).isTrue();
   }
 
   @Test
@@ -223,11 +368,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     //
     //
-    this.clientRegister.get().add(client);
+    this.clientRegister.get().addOrUpdate(client);
     //
     //
 
-    ClientDetail clientDetail = this.clientTestDao.get().detail(client.id);
+    ClientDetail clientDetail = this.clientTestDao.get().detail(client.id, true);
     this.assertClientDetail(clientDetail, new ClientDot(client));
     ClientAddress regAddress = this.clientTestDao.get().getAddres(client.id, AddressType.REG);
     ClientAddress actAddress = this.clientTestDao.get().getAddres(client.id, AddressType.FACT);
@@ -242,6 +387,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
       assertThat(numberList.stream().anyMatch(o -> o.number.equals(cpn.number) && o.type.equals(cpn.type) && o.client.equals(cpn.client))).isTrue();
     }
   }
+
 
   @Test
   public void getDetailTest() throws Exception {
@@ -280,9 +426,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     client.name = RND.str(10);
     client.surname = RND.str(10);
     client.patronymic = RND.str(10);
-    // FIXME: 2/14/18 RND.someEnum(GenderType.values());
-    client.gender = GenderType.MALE;
-    client.birthDate = RND.dateYears(1996, 2018);
+    client.gender = RND.someEnum(GenderType.values());
+    client.birthDate = RND.dateYears(-100, 0);
     client.charm = RND.str(10);
 
     client.actualAddress = rndAddress(id, AddressType.FACT).toClientAddress();
@@ -342,18 +487,13 @@ public class ClientRegisterImplTest extends ParentTestNg {
       return;
 
     assertThat(target).isNotNull();
-    // FIXME: 2/14/18 двойная проверка
-    assertThat(target).isNotNull();
     assertThat(target.name).isEqualTo(assertion.name);
     assertThat(target.surname).isEqualTo(assertion.surname);
     assertThat(target.patronymic).isEqualTo(assertion.patronymic);
     assertThat(target.gender).isEqualTo(assertion.gender);
 
-    // FIXME: 2/14/18 Не используй deprecated
-    assertThat(target.birthDate.getDay()).isEqualTo(assertion.birthDate.getDay());
-    assertThat(target.birthDate.getMonth()).isEqualTo(assertion.birthDate.getMonth());
-    assertThat(target.birthDate.getYear()).isEqualTo(assertion.birthDate.getYear());
-
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+    assertThat(sdf.format(target.birthDate)).isEqualTo(sdf.format(assertion.birthDate));
     assertThat(target.charm).isEqualTo(assertion.charm);
     assertThat(target.id).isEqualTo(assertion.id);
   }
@@ -365,10 +505,16 @@ public class ClientRegisterImplTest extends ParentTestNg {
     c.surname = idGenerator.get().newId();
     c.patronymic = idGenerator.get().newId();
     c.charm = RND.str(10);
-    // FIXME: 2/14/18 RND.someEnum(GenderType.values());
-    c.gender = GenderType.MALE;
-    c.birthDate = new Date();
+    c.gender = RND.someEnum(GenderType.values());
+    c.birthDate = RND.dateYears(-100, 0);
 
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(c.birthDate);
+    cal.set(Calendar.HOUR_OF_DAY, 0);
+    cal.set(Calendar.MINUTE, 0);
+    cal.set(Calendar.SECOND, 0);
+    cal.set(Calendar.MILLISECOND, 0);
+    c.birthDate = cal.getTime();
     return c;
   }
 

@@ -6,6 +6,7 @@ import kz.greetgo.sandbox.controller.enums.AddressType;
 import kz.greetgo.sandbox.controller.enums.GenderType;
 import kz.greetgo.sandbox.controller.enums.PhoneNumberType;
 import kz.greetgo.sandbox.db.stand.model.*;
+import kz.greetgo.util.RND;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -94,7 +95,7 @@ public class StandDb implements HasAfterInject {
       clientDot.surname = names[(i + items)];
       clientDot.patronymic = names[(i + items * 2)];
       clientDot.charm = charmsIds.get(rnd.nextInt(charms.length));
-      clientDot.birthDate = rndDate(rnd);
+      clientDot.birthDate = RND.dateYears(-100, 0);
       clientDot.gender = rnd.nextInt(2) == 0 ? GenderType.MALE : GenderType.FEMALE;
       this.clientStorage.put(clientDot.id, clientDot);
 
@@ -124,7 +125,7 @@ public class StandDb implements HasAfterInject {
         cad.id = this.rndId();
         cad.number = this.rndId();
         cad.money = rnd.nextFloat() * 10000;
-        cad.clientId = clientDot.id;
+        cad.client = clientDot.id;
         clientAccountDots.add(cad);
       }
       this.clientAccountStorage.put(clientDot.id, clientAccountDots);
@@ -135,10 +136,6 @@ public class StandDb implements HasAfterInject {
 
   private String rndId() {
     return UUID.randomUUID().toString().substring(0, 16);
-  }
-
-  private Date rndDate(Random rnd) {
-    return new Date(-946771200000L + (Math.abs(rnd.nextLong()) % (70L * 365 * 24 * 60 * 60 * 1000)));
   }
 
   @SuppressWarnings("unused")
