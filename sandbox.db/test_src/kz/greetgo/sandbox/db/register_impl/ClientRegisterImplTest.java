@@ -110,7 +110,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 switch (ob) {
                   case "age":
                     return Integer.compare(AgeCalculator.calculateAge(o1.birthDate), AgeCalculator.calculateAge(o2.birthDate));
-
+                  // FIXME: 2/19/18 А где остальные признаки сортировки?
                   default:
                     String fio1 = o1.getFIO().toLowerCase();
                     String fio2 = o2.getFIO().toLowerCase();
@@ -136,12 +136,13 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
               for (int i = 0; i < result.size(); i++) {
                 ClientRecord target = result.get(i);
-
+                // FIXME: 2/19/18 Проверка сортировки не работает корректно!
                 if (orderBy != null)
                   switch (orderBy) {
                     case "age":
                       assertThat(target.age).isEqualTo(AgeCalculator.calculateAge(expectedList.get(i).birthDate));
                       break;
+                    // FIXME: 2/19/18 Зачем тут пустые кейсы?
                     case "totalAccountBalance":
                       break;
                     case "maximumBalance":
@@ -182,7 +183,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
               }
 
-
+              // FIXME: 2/19/18 Зачем эта проверка?
               if (!result.isEmpty()) {
                 Boolean match = result.stream().anyMatch(x -> clients.stream().anyMatch(y -> y.id.equals(x.id)));
                 assertThat(match).isTrue();

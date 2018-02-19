@@ -5,7 +5,7 @@ import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
-@SuppressWarnings("SameParameterValue")
+@SuppressWarnings("SameParameterValue") // FIXME: 2/19/18 не отключай предупреждения для всего класса!!!
 public interface ClientDao {
 
   @Select("select c.id, c.name, c.surname, c.patronymic, date_part('year',age(c.birthDate)) as age, c.charm, " +
@@ -15,14 +15,12 @@ public interface ClientDao {
   List<ClientRecord> getClients(@Param("limit") int limit, @Param("offset") int offset,
                                 @Param("orderBy") String orderBy, @Param("order") String order);
 
-
   @Select("select c.id, c.name, c.surname, c.patronymic, date_part('year',age(c.birthDate)) as age, c.charm, " +
     "ca.totalAccountBalance, ca.maximumBalance, ca.minimumBalance from (select * from Client where lower(concat(name, surname, patronymic)) SIMILAR TO #{filter} and actual=true) c " +
     "left join (select client, max(money) maximumBalance, min(money) minimumBalance, sum(money) totalAccountBalance from ClientAccount group by client) ca on ca.client=c.id " +
     "order by ${orderBy} ${order} limit ${limit} offset ${offset} ")
   List<ClientRecord> getClientsByFilter(@Param("limit") int limit, @Param("offset") int offset, @Param("orderBy") String orderBy,
                                         @Param("order") String order, @Param("filter") String filter);
-
 
   @Select("select count(1) from Client c where lower(concat(c.name, c.surname, c.patronymic)) like #{filter} and actual=true")
   long countByFilter(@Param("filter") String filter);
