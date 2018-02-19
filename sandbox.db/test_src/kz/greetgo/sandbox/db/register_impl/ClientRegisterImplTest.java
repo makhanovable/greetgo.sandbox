@@ -80,7 +80,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
         for (String orderBy : orderBys) {
           for (int order : orders) {
             for (String filter : filters) {
-              System.out.println(limit + " " + page + " " + orderBy + " " + order + " " + filter);
 
               //
               //
