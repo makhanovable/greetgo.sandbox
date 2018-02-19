@@ -27,7 +27,7 @@ public class ClientRegisterImpl implements ClientRegister {
     Boolean match = orderBy != null && Arrays.stream(orders).anyMatch(o -> o.equals(orderBy));
 
     String ob = match ? orderBy : "concat(name, surname, patronymic)";
-//    limit = limit > 100 ? 100 : limit;
+    limit = limit > 100 ? 100 : limit;
     int offset = limit * page;
     String order = desc == 1 ? "desc" : "asc";
 
