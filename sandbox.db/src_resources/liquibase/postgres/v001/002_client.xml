@@ -59,7 +59,7 @@
       CREATE TABLE client_account (
         id bigint NOT NULL,
         client bigint,
-        money numeric(19, 2) NOT NULL,
+        money float NOT NULL,
         number varchar(256) NOT NULL UNIQUE,
         registered_at timestamp NOT NULL
       )
@@ -71,8 +71,7 @@
       CREATE TABLE client_account_transaction (
         id bigint NOT NULL,
         account bigint,
-        account_number varchar(256) NOT NULL,
-        money numeric(19, 2) NOT NULL,
+        money float NOT NULL,
         finished_at timestamp NOT NULL,
         type integer NOT NULL
       )
@@ -224,7 +223,7 @@
     <sql endDelimiter=";;"><![CDATA[
       ALTER TABLE client_account_transaction
       ADD CONSTRAINT uk_clientAccountTransaction
-      UNIQUE(account_number, money, finished_at)
+      UNIQUE(account, money, finished_at)
     ]]></sql>
   </changeSet>
 </databaseChangeLog>

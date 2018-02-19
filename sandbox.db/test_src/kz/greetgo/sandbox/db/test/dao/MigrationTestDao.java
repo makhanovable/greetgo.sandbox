@@ -10,18 +10,17 @@ import java.sql.Timestamp;
 
 public interface MigrationTestDao {
   @Insert("INSERT INTO ${tmpClientTableName} " +
-    "VALUES (#{recordNo}, #{clientId}, #{ciaId}, #{surname}, #{name}, #{patronymic}, #{gender}, #{charmName}," +
-    "#{charmId}, #{birthDate}, #{status}, #{error})")
+    "VALUES (#{recordNo}, #{ciaId}, #{id}, #{surname}, #{name}, #{patronymic}, #{gender}, #{charmName}," +
+    "#{birthDate}, #{status}, #{error})")
   void insertClient(@Param("tmpClientTableName") String tmpClientTableName,
                     @Param("recordNo") long recordNo,
-                    @Param("clientId") Long clientId,
                     @Param("ciaId") String ciaId,
+                    @Param("id") long id,
                     @Param("surname") String surname,
                     @Param("name") String name,
                     @Param("patronymic") String patronymic,
                     @Param("gender") String gender,
                     @Param("charmName") String charm_name,
-                    @Param("charmId") Integer charm_id,
                     @Param("birthDate") Date birth_date,
                     @Param("status") int status,
                     @Param("error") String error);
@@ -46,10 +45,10 @@ public interface MigrationTestDao {
                          @Param("status") int status);
 
   @Insert("INSERT INTO ${tmpClientAccountTableName} " +
-    "VALUES (#{recordNo}, #{clientId}, #{money}, #{accountNumber}, #{registeredAt}, #{status}, #{error})")
+    "VALUES (#{recordNo}, #{ciaId}, nextval('client_account_id_seq'), #{money}, #{accountNumber}, #{registeredAt}, #{status}, #{error})")
   void insertClientAccount(@Param("tmpClientAccountTableName") String tmpClientAccountTableName,
                            @Param("recordNo") long recordNo,
-                           @Param("clientId") String clientId,
+                           @Param("ciaId") String ciaId,
                            @Param("money") BigDecimal money,
                            @Param("accountNumber") String accountNumber,
                            @Param("registeredAt") Timestamp registeredAt,
@@ -57,7 +56,7 @@ public interface MigrationTestDao {
                            @Param("error") String error);
 
   @Insert("INSERT INTO ${tmpTableName} " +
-    "VALUES (#{recordNo}, #{money}, #{finishedAt}, #{transactionType}, #{accountNumber}, #{status}, #{error})")
+    "VALUES (#{recordNo}, nextval('client_account_transaction_id_seq'), #{money}, #{finishedAt}, #{transactionType}, #{accountNumber}, #{status}, #{error})")
   void insertClientAccountTransaction(@Param("tmpTableName") String tmpTableName,
                                       @Param("recordNo") long recordNo,
                                       @Param("money") BigDecimal money,

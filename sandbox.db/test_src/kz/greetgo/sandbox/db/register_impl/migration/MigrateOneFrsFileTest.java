@@ -42,7 +42,7 @@ public class MigrateOneFrsFileTest extends MigrateCommonTests {
     List<Map<String, Object>> clientAccountRecordList =
       toListMap("SELECT * FROM " + oneFrsFile.tmpClientAccountTableName + " ORDER BY record_no");
     assertThat(clientAccountRecordList).hasSize(1);
-    assertThat(clientAccountRecordList.get(0).get("client_id")).isEqualTo("4-DU8-32-H7");
+    assertThat(clientAccountRecordList.get(0).get("cia_id")).isEqualTo("4-DU8-32-H7");
     assertThat(clientAccountRecordList.get(0).get("account_number")).isEqualTo("32134KZ343-43546-535436-77656");
     assertThat(clientAccountRecordList.get(0).get("registered_at").toString()).isEqualTo("2011-01-23 23:22:11.456");
 
@@ -64,11 +64,6 @@ public class MigrateOneFrsFileTest extends MigrateCommonTests {
     assertThat(clientAccountTransactionRecordList.get(1).get("account_number"))
       .isEqualTo("32134KZ343-43546-535436-77656");
 
-    List<Map<String, Object>> transactionTypeRecordList =
-      toListMap("SELECT * FROM " + oneFrsFile.tmpTransactionTypeTableName + " ORDER BY record_no");
-    assertThat(transactionTypeRecordList).hasSize(2);
-    assertThat(transactionTypeRecordList.get(0).get("name")).isEqualTo("Перечисление с госбюджета");
-    assertThat(transactionTypeRecordList.get(1).get("name")).isEqualTo("Вывод средств в офшоры");
   }
 
   @Test
@@ -155,7 +150,7 @@ public class MigrateOneFrsFileTest extends MigrateCommonTests {
     expectedAccountTransList.add(
       this.insertClientAccountTransaction(oneFrsFile.tmpClientAccountTransactionTableName, accountTransRecordNum, 0));
 
-    oneFrsFile.migrateData_checkForDuplicatesOfClientAccountTransaction();
+    oneFrsFile.migrateData_checkForDuplicatesOfTmpClientAccountTransaction();
 
     List<Map<String, Object>> accountTransRecordList =
       toListMap("SELECT * FROM " + oneFrsFile.tmpClientAccountTransactionTableName +
@@ -197,7 +192,7 @@ public class MigrateOneFrsFileTest extends MigrateCommonTests {
       this.insertClientAccountTransaction(oneFrsFile.tmpClientAccountTransactionTableName, transRecordNum, 1);
     expectedTypeNameList.add(helper.transaction_type);
 
-    //oneFrsFile.migrateData_finalOfTransactionTypeTable();
+    oneFrsFile.migrateData_finalOfTransactionTypeTable();
 
     List<Map<String, Object>> transRecordList = toListMap("SELECT * FROM transaction_type ORDER BY id ASC");
 

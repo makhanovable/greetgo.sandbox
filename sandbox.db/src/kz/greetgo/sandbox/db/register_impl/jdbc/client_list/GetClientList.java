@@ -106,9 +106,9 @@ public class GetClientList extends GetClientCommon implements ConnectionCallback
     ret.fullName = Util.getFullname(rs.getString("surname"), rs.getString("name"), rs.getString("patronymic"));
     ret.charmName = rs.getString("charmName");
     ret.age = rs.getInt("age");
-    ret.totalAccountBalance = Util.floatToString(rs.getFloat("totalAccountBalance"));
-    ret.maxAccountBalance = Util.floatToString(rs.getFloat("maxAccountBalance"));
-    ret.minAccountBalance = Util.floatToString(rs.getFloat("minAccountBalance"));
+    ret.totalAccountBalance = String.valueOf(rs.getFloat("totalAccountBalance"));
+    ret.maxAccountBalance = String.valueOf(rs.getFloat("maxAccountBalance"));
+    ret.minAccountBalance = String.valueOf(rs.getFloat("minAccountBalance"));
 
     return ret;
   }

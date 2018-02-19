@@ -281,7 +281,7 @@ public class MigrateCommonTests extends ParentTestNg {
     clientTestDao.get().insertCharm(charmId, RND.str(16), null, null);
 
     long id = clientTestDao.get().selectSeqIdNextValueTableClient();
-    clientTestDao.get().updateClientWithCiaId(id, RND.str(10), RND.str(10), RND.str(10),
+    clientTestDao.get().insertClientWithCiaId(id, RND.str(10), RND.str(10), RND.str(10),
       Gender.values()[RND.plusInt(Gender.values().length)].name(), Date.valueOf("2000-01-01"), charmId, ciaId);
 
     return id;

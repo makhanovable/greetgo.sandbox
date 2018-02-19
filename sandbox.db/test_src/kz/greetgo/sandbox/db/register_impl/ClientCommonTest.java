@@ -8,6 +8,9 @@ import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -90,15 +93,15 @@ public abstract class ClientCommonTest extends ParentTestNg {
       clientRecordListHelper.clientRecordList.add(clientRecord);
       float totalMoney = 0;
       for (int j = 0; j < RND.plusInt(4) + 1; j++) {
-        float money = RND.plusInt(100000) - 50000 + RND.rnd.nextFloat();
+        float money = (float) RND.plusDouble(100000, 2);
         totalMoney += money;
-        this.insertClientAccount(clientRecord.id, money, "", new Timestamp(0));
+        this.insertClientAccount(clientRecord.id, money, RND.str(11), new Timestamp(0));
       }
       totalMoneyList.add(totalMoney);
     }
     totalMoneyList.sort((o1, o2) -> Float.compare(o1, o2));
     for (int i = 0; i < clientRecordListHelper.clientRecordList.size(); i++)
-      clientRecordListHelper.clientRecordList.get(i).totalAccountBalance = Util.floatToString(totalMoneyList.get(i));
+      clientRecordListHelper.clientRecordList.get(i).totalAccountBalance = totalMoneyList.get(i).toString();
 
     clientRecordListHelper.clientRecordRequest =
       this.clientRecordRequestBuilder(0, clientRecordListHelper.clientRecordList.size() + 10,
@@ -118,15 +121,15 @@ public abstract class ClientCommonTest extends ParentTestNg {
       clientRecordListHelper.clientRecordList.add(clientRecord);
       float totalMoney = 0;
       for (int j = 0; j < RND.plusInt(4) + 1; j++) {
-        float money = RND.plusInt(200000) - 100000 + RND.rnd.nextFloat();
+        float money = (float) RND.plusDouble(200000, 2);
         totalMoney += money;
-        this.insertClientAccount(clientRecord.id, money, "", new Timestamp(0));
+        this.insertClientAccount(clientRecord.id, money, RND.str(11), new Timestamp(0));
       }
       totalMoneyList.add(totalMoney);
     }
     totalMoneyList.sort((o1, o2) -> Float.compare(o2, o1));
     for (int i = 0; i < clientRecordListHelper.clientRecordList.size(); i++)
-      clientRecordListHelper.clientRecordList.get(i).totalAccountBalance = Util.floatToString(totalMoneyList.get(i));
+      clientRecordListHelper.clientRecordList.get(i).totalAccountBalance = totalMoneyList.get(i).toString();
 
     clientRecordListHelper.clientRecordRequest = this.clientRecordRequestBuilder(0,
       clientRecordListHelper.clientRecordList.size() + 10, ColumnSortType.TOTALACCOUNTBALANCE, false, "");
@@ -145,15 +148,15 @@ public abstract class ClientCommonTest extends ParentTestNg {
       clientRecordListHelper.clientRecordList.add(clientRecord);
       List<Float> moneyList = new ArrayList<>();
       for (int j = 0; j < RND.plusInt(5) + 1; j++) {
-        float money = RND.plusInt(100000) - 50000 + RND.rnd.nextFloat();
+        float money = (float) RND.plusDouble(100000, 2);
         moneyList.add(money);
-        this.insertClientAccount(clientRecord.id, money, "", new Timestamp(0));
+        this.insertClientAccount(clientRecord.id, money, RND.str(11), new Timestamp(0));
       }
       maxMoneyList.add((float) moneyList.stream().mapToDouble(m -> m).max().getAsDouble());
     }
     maxMoneyList.sort((o1, o2) -> Float.compare(o1, o2));
     for (int i = 0; i < clientRecordListHelper.clientRecordList.size(); i++)
-      clientRecordListHelper.clientRecordList.get(i).maxAccountBalance = Util.floatToString(maxMoneyList.get(i));
+      clientRecordListHelper.clientRecordList.get(i).maxAccountBalance = maxMoneyList.get(i).toString();
 
     clientRecordListHelper.clientRecordRequest = this.clientRecordRequestBuilder(0,
       maxMoneyList.size() + 10, ColumnSortType.MAXACCOUNTBALANCE, true, "");
@@ -172,15 +175,15 @@ public abstract class ClientCommonTest extends ParentTestNg {
       clientRecordListHelper.clientRecordList.add(clientRecord);
       List<Float> moneyList = new ArrayList<>();
       for (int j = 0; j < RND.plusInt(4) + 1; j++) {
-        float money = RND.plusInt(200000) - 100000 + RND.rnd.nextFloat();
+        float money = (float) RND.plusDouble(200000, 2);
         moneyList.add(money);
-        this.insertClientAccount(clientRecord.id, money, "", new Timestamp(0));
+        this.insertClientAccount(clientRecord.id, money, RND.str(11), new Timestamp(0));
       }
       maxMoneyList.add((float) moneyList.stream().mapToDouble(m -> m).max().getAsDouble());
     }
     maxMoneyList.sort((o1, o2) -> Float.compare(o2, o1));
     for (int i = 0; i < clientRecordListHelper.clientRecordList.size(); i++)
-      clientRecordListHelper.clientRecordList.get(i).maxAccountBalance = Util.floatToString(maxMoneyList.get(i));
+      clientRecordListHelper.clientRecordList.get(i).maxAccountBalance = maxMoneyList.get(i).toString();
 
     clientRecordListHelper.clientRecordRequest = this.clientRecordRequestBuilder(0,
       maxMoneyList.size() + 10, ColumnSortType.MAXACCOUNTBALANCE, false, "");
@@ -199,15 +202,15 @@ public abstract class ClientCommonTest extends ParentTestNg {
       clientRecordListHelper.clientRecordList.add(clientRecord);
       List<Float> moneyList = new ArrayList<>();
       for (int j = 0; j < RND.plusInt(6) + 1; j++) {
-        float money = RND.plusInt(100000) - 50000 + RND.rnd.nextFloat();
+        float money = (float) RND.plusDouble(100000, 2);
         moneyList.add(money);
-        this.insertClientAccount(clientRecord.id, money, "", new Timestamp(0));
+        this.insertClientAccount(clientRecord.id, money, RND.str(11), new Timestamp(0));
       }
       minMoneyList.add((float) moneyList.stream().mapToDouble(m -> m).min().getAsDouble());
     }
     minMoneyList.sort((o1, o2) -> Float.compare(o1, o2));
     for (int i = 0; i < clientRecordListHelper.clientRecordList.size(); i++)
-      clientRecordListHelper.clientRecordList.get(i).minAccountBalance = Util.floatToString(minMoneyList.get(i));
+      clientRecordListHelper.clientRecordList.get(i).minAccountBalance = minMoneyList.get(i).toString();
 
     clientRecordListHelper.clientRecordRequest = this.clientRecordRequestBuilder(0,
       minMoneyList.size() + 10, ColumnSortType.MINACCOUNTBALANCE, true, "");
@@ -226,15 +229,15 @@ public abstract class ClientCommonTest extends ParentTestNg {
       clientRecordListHelper.clientRecordList.add(clientRecord);
       List<Float> moneyList = new ArrayList<>();
       for (int j = 0; j < RND.plusInt(3) + 1; j++) {
-        float money = RND.plusInt(200000) - 100000 + RND.rnd.nextFloat();
+        float money = (float) RND.plusDouble(200000, 2);
         moneyList.add(money);
-        this.insertClientAccount(clientRecord.id, money, "", new Timestamp(0));
+        this.insertClientAccount(clientRecord.id, money, RND.str(11), new Timestamp(0));
       }
       minMoneyList.add((float) moneyList.stream().mapToDouble(m -> m).min().getAsDouble());
     }
     minMoneyList.sort((o1, o2) -> Float.compare(o2, o1));
     for (int i = 0; i < clientRecordListHelper.clientRecordList.size(); i++)
-      clientRecordListHelper.clientRecordList.get(i).minAccountBalance = Util.floatToString(minMoneyList.get(i));
+      clientRecordListHelper.clientRecordList.get(i).minAccountBalance = minMoneyList.get(i).toString();
 
     clientRecordListHelper.clientRecordRequest = this.clientRecordRequestBuilder(0,
       minMoneyList.size() + 10, ColumnSortType.MINACCOUNTBALANCE, false, "");

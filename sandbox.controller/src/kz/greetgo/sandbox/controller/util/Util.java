@@ -20,14 +20,6 @@ public class Util {
     return String.format(Locale.US, "%f", f);
   }
 
-  public static String floatToString(float f, String format) {
-    return String.format(Locale.US, format, f);
-  }
-
-  public static float stringToFloat(String s) {
-    return Float.parseFloat(s);
-  }
-
   public static final String datePattern = "yyyy-MM-dd";
   public static final String reportDatePattern = "dd-MM-yyyy-hh-mm";
 

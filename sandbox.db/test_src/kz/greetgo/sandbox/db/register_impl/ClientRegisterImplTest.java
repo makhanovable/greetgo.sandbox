@@ -279,7 +279,8 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
     assertThat(realRecordList.size()).isEqualTo(expectedTotalMoneyList.size());
     for (int i = 0; i < realRecordList.size(); i++)
-      assertThat(realRecordList.get(i).totalAccountBalance).isEqualTo(expectedTotalMoneyList.get(i));
+      assertThat((int) Float.parseFloat(realRecordList.get(i).totalAccountBalance))
+        .isEqualTo((int) Float.parseFloat(expectedTotalMoneyList.get(i)));
   }
 
   @Test
@@ -293,8 +294,10 @@ public class ClientRegisterImplTest extends ClientCommonTest {
     List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordListHelper.clientRecordRequest);
 
     assertThat(realRecordList.size()).isEqualTo(expectedTotalMoneyList.size());
-    for (int i = 0; i < realRecordList.size(); i++)
-      assertThat(realRecordList.get(i).totalAccountBalance).isEqualTo(expectedTotalMoneyList.get(i));
+    for (int i = 0; i < realRecordList.size(); i++) {
+      assertThat((int) Float.parseFloat(realRecordList.get(i).totalAccountBalance))
+        .isEqualTo((int) Float.parseFloat(expectedTotalMoneyList.get(i)));
+    }
   }
 
   @Test
@@ -309,7 +312,8 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
     assertThat(realRecordList.size()).isEqualTo(expectedMaxMoneyList.size());
     for (int i = 0; i < realRecordList.size(); i++)
-      assertThat(realRecordList.get(i).maxAccountBalance).isEqualTo(expectedMaxMoneyList.get(i));
+      assertThat(Float.parseFloat(realRecordList.get(i).maxAccountBalance))
+        .isEqualTo(Float.parseFloat(expectedMaxMoneyList.get(i)));
   }
 
   @Test
@@ -324,7 +328,8 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
     assertThat(realRecordList.size()).isEqualTo(expectedMaxMoneyList.size());
     for (int i = 0; i < realRecordList.size(); i++)
-      assertThat(realRecordList.get(i).maxAccountBalance).isEqualTo(expectedMaxMoneyList.get(i));
+      assertThat(Float.parseFloat(realRecordList.get(i).maxAccountBalance))
+        .isEqualTo(Float.parseFloat(expectedMaxMoneyList.get(i)));
   }
 
   @Test
@@ -339,7 +344,8 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
     assertThat(realRecordList.size()).isEqualTo(clientRecordListHelper.clientRecordList.size());
     for (int i = 0; i < realRecordList.size(); i++)
-      assertThat(realRecordList.get(i).minAccountBalance).isEqualTo(expectedMinMoneyList.get(i));
+      assertThat(Float.parseFloat(realRecordList.get(i).minAccountBalance))
+        .isEqualTo(Float.parseFloat(expectedMinMoneyList.get(i)));
   }
 
   @Test
@@ -354,7 +360,8 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
     assertThat(realRecordList.size()).isEqualTo(clientRecordListHelper.clientRecordList.size());
     for (int i = 0; i < realRecordList.size(); i++)
-      assertThat(realRecordList.get(i).minAccountBalance).isEqualTo(expectedMinMoneyList.get(i));
+      assertThat(Float.parseFloat(realRecordList.get(i).minAccountBalance))
+        .isEqualTo(Float.parseFloat(expectedMinMoneyList.get(i)));
   }
 
   @Test
@@ -814,9 +821,9 @@ public class ClientRegisterImplTest extends ClientCommonTest {
     assertThat(realClientRecord.fullName).isEqualTo("surname lastname patronymic");
     assertThat(realClientRecord.age).isEqualTo(Util.getAge(expectedDate));
     assertThat(realClientRecord.charmName).isEqualTo(charmHelperList.get(3).name);
-    assertThat(realClientRecord.totalAccountBalance).isEqualTo(Util.floatToString(0));
-    assertThat(realClientRecord.maxAccountBalance).isEqualTo(Util.floatToString(0));
-    assertThat(realClientRecord.minAccountBalance).isEqualTo(Util.floatToString(0));
+    assertThat(Float.parseFloat(realClientRecord.totalAccountBalance)).isEqualTo(0);
+    assertThat(Float.parseFloat(realClientRecord.maxAccountBalance)).isEqualTo(0);
+    assertThat(Float.parseFloat(realClientRecord.minAccountBalance)).isEqualTo(0);
   }
 
   @Test
@@ -913,9 +920,9 @@ public class ClientRegisterImplTest extends ClientCommonTest {
     assertThat(realClientRecord.fullName).isEqualTo("surname lastname patronymic");
     assertThat(realClientRecord.age).isEqualTo(Util.getAge(expectedDate));
     assertThat(realClientRecord.charmName).isEqualTo(charmHelperList.get(1).name);
-    assertThat(realClientRecord.totalAccountBalance).isEqualTo(Util.floatToString(0));
-    assertThat(realClientRecord.maxAccountBalance).isEqualTo(Util.floatToString(0));
-    assertThat(realClientRecord.minAccountBalance).isEqualTo(Util.floatToString(0));
+    assertThat(Float.parseFloat(realClientRecord.totalAccountBalance)).isEqualTo(0);
+    assertThat(Float.parseFloat(realClientRecord.maxAccountBalance)).isEqualTo(0);
+    assertThat(Float.parseFloat(realClientRecord.minAccountBalance)).isEqualTo(0);
   }
 
   @Test(expectedExceptions = InvalidParameter.class)

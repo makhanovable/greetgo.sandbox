@@ -27,7 +27,6 @@ public class MigrateOneCiaFile {
   public void migrate() throws Exception {
     prepareTmpTables();
     uploadData();
-    //processValidationErrors();
     migrateData();
     downloadErrors();
   }
@@ -58,7 +57,7 @@ public class MigrateOneCiaFile {
 
     exec("CREATE TABLE client_address_to_replace (" +
       "  record_no bigint NOT NULL, " +
-      "  client_record_no bigint, " +
+      "  client_record_no bigint NOT NULL, " +
       "  type varchar(64), " +
       "  street varchar(128), " +
       "  house varchar(128), " +
@@ -68,7 +67,7 @@ public class MigrateOneCiaFile {
 
     exec("CREATE TABLE client_phone_to_replace (" +
       "  record_no bigint NOT NULL, " +
-      "  client_record_no bigint, " +
+      "  client_record_no bigint NOT NULL, " +
       "  number varchar(64) NOT NULL, " +
       "  type varchar(128), " +
       "  status int DEFAULT 0, " +
@@ -156,20 +155,6 @@ public class MigrateOneCiaFile {
   }
 
   /**
-   * Статус = 3, если заполнена колонка charmId, предварительно заполнив таблицу charm
-   *
-   * @throws SQLException проброс для удобства
-   */
-  /*void migrateData_status3() throws SQLException {
-    exec("UPDATE client_to_replace AS t " +
-      "SET charm_id = ch.id, status = 3 " +
-      "FROM charm AS ch " +
-      "WHERE ch.name = t.charm_name AND t.status = 2"
-    );
-  }
-*/
-
-  /**
    * Отдельный статус для телефонов, где 1 означает, что это уникальный номер
    *
    * @throws SQLException
@@ -224,17 +209,16 @@ public class MigrateOneCiaFile {
     );*/
 
     exec("INSERT INTO client(id, surname, name, patronymic, gender, birth_date, charm, migration_cia_id) " +
-      "SELECT c_r.id, c_r.surname, c_r.name, c_r.patronymic, c_r.gender, c_r.birth_date, ch.charm_id, c_r.cia_id " +
+      "SELECT c_r.id, c_r.surname, c_r.name, c_r.patronymic, c_r.gender, c_r.birth_date, ch.id, c_r.cia_id " +
       "FROM client_to_replace AS c_r " +
       "JOIN charm AS ch ON c_r.charm_name = ch.name " +
       "WHERE c_r.status = 1 " +
       "ON CONFLICT(migration_cia_id) DO UPDATE " +
-      "SET id = excluded.id, surname = excluded.surname, name = excluded.name, " +
-      "  patronymic = excluded.patronymic, gender = excluded.gender, birth_date = excluded.birth_date, " +
-      "  charm = excluded.charm"
+      "SET id = excluded.id, surname = excluded.surname, name = excluded.name, patronymic = excluded.patronymic, " +
+      "  gender = excluded.gender, birth_date = excluded.birth_date, charm = excluded.charm, actual = 1 "
     );
 
-    exec("UPDATE client " +
+    exec("UPDATE client_to_replace " +
       "SET status = 2 " +
       "WHERE status = 1"
     );
@@ -247,10 +231,12 @@ public class MigrateOneCiaFile {
    */
   void migrateData_finalOfClientAddressTable() throws SQLException {
     exec("INSERT INTO client_addr(client, type, street, house, flat) " +
-      "SELECT c_r.client_id, cad_r.type, cad_r.street, cad_r.house, cad_r.flat " +
+      "SELECT c_r.id, cad_r.type, cad_r.street, cad_r.house, cad_r.flat " +
       "FROM client_to_replace AS c_r " +
       "JOIN client_address_to_replace AS cad_r ON c_r.record_no = cad_r.client_record_no " +
-      "WHERE c_r.status = 2"
+      "WHERE c_r.status = 2 " +
+      "ON CONFLICT(client, type) DO UPDATE " +
+      "SET street = excluded.street, house = excluded.flat, flat = excluded.flat"
     );
   }
 
@@ -261,10 +247,12 @@ public class MigrateOneCiaFile {
    */
   void migrateData_finalOfClientPhoneTable() throws SQLException {
     exec("INSERT INTO client_phone(client, number, type) " +
-      "SELECT c_r.client_id, ph_r.number, ph_r.type " +
+      "SELECT c_r.id, ph_r.number, ph_r.type " +
       "FROM client_to_replace AS c_r " +
       "JOIN client_phone_to_replace AS ph_r ON c_r.record_no = ph_r.client_record_no " +
-      "WHERE c_r.status = 2 AND ph_r.status = 1"
+      "WHERE c_r.status = 2 AND ph_r.status = 1 " +
+      "ON CONFLICT(client, number) DO UPDATE " +
+      "SET actual = 1"
     );
   }
 

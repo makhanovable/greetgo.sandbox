@@ -19,7 +19,6 @@ public class MigrateOneFrsFile {
 
   String tmpClientAccountTableName;
   String tmpClientAccountTransactionTableName;
-  String tmpTransactionTypeTableName;
 
   public void migrate() throws Exception {
     prepareTmpTables();
@@ -36,7 +35,6 @@ public class MigrateOneFrsFile {
 
     tmpClientAccountTableName = "tmp_migration_client_account_" + additionalId;
     tmpClientAccountTransactionTableName = "tmp_migration_client_account_transaction_" + additionalId;
-    tmpTransactionTypeTableName = "tmp_migration_transaction_type_" + additionalId;
 
     exec("CREATE TABLE client_account_to_replace (" +
       "  record_no bigint, " +
@@ -56,19 +54,9 @@ public class MigrateOneFrsFile {
       "  money numeric(19, 2) DEFAULT 0, " +
       "  finished_at timestamptz, " +
       "  transaction_type varchar(256), " +
-      "  type bigint, " +
       "  account_number varchar(64), " +
       "  status int DEFAULT 0, " +
       "  error varchar(256), " +
-      "  PRIMARY KEY(record_no)" +
-      ")");
-
-    exec("CREATE TABLE transaction_type_to_replace (" +
-      "  record_no bigint NOT NULL, " +
-      "  id bigint, " +
-      "  code varchar(128), " +
-      "  name varchar(256), " +
-      "  status int DEFAULT 0, " +
       "  PRIMARY KEY(record_no)" +
       ")");
   }
@@ -92,8 +80,7 @@ public class MigrateOneFrsFile {
   }
 
   void migrateData() throws SQLException {
-    //migrateData_checkForDuplicatesAndFillIdOfTmpTransactionType();
-    migrateData_checkForDuplicatesAndOfTmpClientAccountTransaction();
+    migrateData_checkForDuplicatesOfTmpClientAccountTransaction();
     migrateData_checkForDuplicatesOfTmpClientAccount();
 
     migrateData_finalOfTransactionTypeTable();
@@ -122,7 +109,7 @@ public class MigrateOneFrsFile {
    *
    * @throws SQLException проброс для удобства
    */
-  void migrateData_checkForDuplicatesAndOfTmpClientAccountTransaction() throws SQLException {
+  void migrateData_checkForDuplicatesOfTmpClientAccountTransaction() throws SQLException {
     exec("UPDATE client_account_transaction_to_replace " +
       "SET status = 1 " +
       "FROM ( " +
@@ -134,23 +121,6 @@ public class MigrateOneFrsFile {
       "WHERE x.rnum = 1 AND x.rno = record_no"
     );
   }
-
-  /**
-   * Статус = 1, для отсеивания дубликатов типов транзакций с приоритетом на последнюю запись
-   *
-   * @throws SQLException проброс для удобства
-   */
-  /*void migrateData_checkForDuplicatesAndFillIdOfTmpTransactionType() throws SQLException {
-    exec("UPDATE transaction_type_to_replace " +
-      "SET status = 1 " +
-      "FROM ( " +
-      "  SELECT record_no AS rno, row_number() OVER ( PARTITION BY name ORDER BY record_no DESC ) AS rnum " +
-      "  FROM transaction_type_to_replace " +
-      "  WHERE status = 0 " +
-      ") AS x " +
-      "WHERE x.rnum = 1 AND x.rno = record_no"
-    );
-  }*/
 
   void migrateData_finalOfTransactionTypeTable() throws SQLException {
     exec("INSERT INTO transaction_type(id, name) " +
@@ -176,23 +146,9 @@ public class MigrateOneFrsFile {
     );
   }
 
-  /**
-   * Статус = 2, присвоение идентификатора типа транзакции временной таблице client_account_transaction
-   *
-   * @throws SQLException проброс для удобства
-   */
-  /*void migrateData_fillTypeofClientAccountTransaction() throws SQLException {
-    exec("UPDATE client_account_transaction_to_replace AS ca " +
-      "SET type = tt.id, status = 2 " +
-      "FROM transaction_type_to_replace AS tt " +
-      "WHERE ca.status = 1 AND tt.status = 1 AND ca.transaction_type = tt.name"
-    );
-  }
-*/
   private void exec(String sql) throws SQLException {
     sql = sql.replaceAll("client_account_to_replace", tmpClientAccountTableName);
     sql = sql.replaceAll("client_account_transaction_to_replace", tmpClientAccountTransactionTableName);
-    sql = sql.replaceAll("transaction_type_to_replace", tmpTransactionTypeTableName);
 
     try (Statement statement = connection.createStatement()) {
       statement.execute(sql);

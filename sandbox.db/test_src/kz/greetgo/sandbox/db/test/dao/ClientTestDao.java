@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.List;
@@ -45,7 +46,7 @@ public interface ClientTestDao {
 
   @Insert("INSERT INTO client (id, surname, name, patronymic, gender, birth_date, charm, migration_cia_id) " +
     "VALUES (#{id}, #{surname}, #{name}, #{patronymic}, #{gender}, #{birth_date}, #{charm}, #{ciaId})")
-  void updateClientWithCiaId(@Param("id") long id,
+  void insertClientWithCiaId(@Param("id") long id,
                              @Param("surname") String surname,
                              @Param("name") String name,
                              @Param("patronymic") String patronymic,
@@ -126,6 +127,6 @@ public interface ClientTestDao {
   @Insert("INSERT INTO transaction_type (id, code, name) " +
     "VALUES (#{id}, #{code}, #{name})")
   void insertTransactionType(@Param("id") int id,
-                   @Param("code") String code,
-                   @Param("name") String name);
+                             @Param("code") String code,
+                             @Param("name") String name);
 }
