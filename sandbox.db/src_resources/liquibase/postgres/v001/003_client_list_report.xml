@@ -17,7 +17,7 @@
   <changeSet author="nsmagulov" id="alter-table-clientListReport-add-primary-key">
     <sql endDelimiter=";;"><![CDATA[
       ALTER TABLE client_list_report
-      ADD CONSTRAINT pk_tempSession
+      ADD CONSTRAINT pk_clientListReport
       PRIMARY KEY (report_instance_id)
     ]]></sql>
   </changeSet>
@@ -25,7 +25,7 @@
   <changeSet author="nsmagulov" id="alter-table-clientListReport-add-foreign-key">
     <sql endDelimiter=";;"><![CDATA[
       ALTER TABLE client_list_report
-      ADD CONSTRAINT fk_tempSession_person
+      ADD CONSTRAINT fk_clientListReport_person
       FOREIGN KEY (person_id)
       REFERENCES Person (id)
     ]]></sql>

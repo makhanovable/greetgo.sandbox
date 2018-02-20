@@ -36,14 +36,14 @@ public class FrsUploader {
 
   private void prepare() throws SQLException {
     clientAccountPreparedStatement = connection.prepareStatement(
-      "INSERT INTO " + clientAccountTable + " (record_no, cia_id, id, account_number, registered_at) " +
-        "VALUES(?, ?, nextval('client_account_id_seq'), ?, ?)");
+      "INSERT INTO " + clientAccountTable + " (record_no, cia_id, account_number, registered_at) " +
+        "VALUES(?, ?, ?, ?)");
 
     clientAccountTransactionPreparedStatement = connection.prepareStatement(
       "INSERT INTO " + clientAccountTransactionTable +
-        " (record_no, id, money, finished_at, transaction_type, account_number) " +
-        "VALUES(?, nextval('client_account_transaction_id_seq'), ?, ?, ?, ?)");
-}
+        " (record_no, money, finished_at, transaction_type, account_number) " +
+        "VALUES(?, ?, ?, ?, ?)");
+  }
 
   private int curClientAccountRecordNum = 0;
   private int curClientAccountTransactionRecordNum = 0;
@@ -94,7 +94,7 @@ public class FrsUploader {
                 curClientAccountTransactionRecordNum++;
 
                 try {
-                  this.addClientAccountTransactionAndTypeToBatch();
+                  this.addClientAccountTransactionToBatch();
                 } catch (ParsingValueException e) {
                   errorFileWriter.appendErrorLine(e.getMessage());
                 }
@@ -177,7 +177,7 @@ public class FrsUploader {
     }
   }
 
-  private void addClientAccountTransactionAndTypeToBatch() throws Exception {
+  private void addClientAccountTransactionToBatch() throws Exception {
     BigDecimal money;
     Timestamp finishedAt;
 

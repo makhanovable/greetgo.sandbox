@@ -34,8 +34,8 @@ public class CiaUploader extends CommonSaxHandler {
 
   private void prepare() throws SQLException {
     clientPrepareStatement = connection.prepareStatement(
-      "INSERT INTO " + clientTable + " (record_no, cia_id, id, surname, name, patronymic, gender, birth_date, charm_name) " +
-        "VALUES(?, ?, nextval('client_id_seq'), ?, ?, ?, ?, ?, ?)"
+      "INSERT INTO " + clientTable + " (record_no, cia_id, surname, name, patronymic, gender, birth_date, charm_name) " +
+        "VALUES(?, ?, ?, ?, ?, ?, ?, ?)"
     );
 
     clientAddressPrepareStatement = connection.prepareStatement(
@@ -150,6 +150,7 @@ public class CiaUploader extends CommonSaxHandler {
       clientAddressData.flat = attributes.getValue("flat");
       curClientAddressRecordNum++;
 
+      //TODO: добавлять после закрытия тега cia?
       this.addClientAddressToBatch();
       return;
     }

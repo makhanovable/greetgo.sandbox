@@ -7,4 +7,5 @@ import kz.greetgo.sandbox.server.beans.AppInitializer;
 @Include(BeanConfigApplication.class)
 public interface ApplicationBeanContainer extends BeanContainer {
   AppInitializer appInitializer();
+
 }

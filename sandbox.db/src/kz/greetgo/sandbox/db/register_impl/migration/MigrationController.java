@@ -33,8 +33,9 @@ public class MigrationController {
     MigrateOneFrsFile frsFile = new MigrateOneFrsFile();
     frsFile.inputFile = null;
     frsFile.outputErrorFile = null;
-    frsFile.maxBatchSize = 1000;
+    frsFile.maxBatchSize = 100_000;
     frsFile.connection = null;
-  }
 
+    frsFile.migrate();
+  }
 }

@@ -96,7 +96,7 @@ public class MigrateOneFrsFileTest extends MigrateCommonTests {
   }
 
   @Test
-  public void migrateData_checkForDuplicatesOfClientAccount() throws Exception {
+  public void migrateData_checkForDuplicatesOfTmpClientAccount() throws Exception {
     MigrateOneFrsFile oneFrsFile = new MigrateOneFrsFile();
     oneFrsFile.connection = connection;
     oneFrsFile.prepareTmpTables();
@@ -126,10 +126,8 @@ public class MigrateOneFrsFileTest extends MigrateCommonTests {
     }
   }
 
-  //TODO: доделать еще
-
   @Test
-  public void migrateData_checkForDuplicatesOfClientAccountTransaction() throws Exception {
+  public void migrateData_checkForDuplicatesOfTmpClientAccountTransaction() throws Exception {
     MigrateOneFrsFile oneFrsFile = new MigrateOneFrsFile();
     oneFrsFile.connection = connection;
     oneFrsFile.prepareTmpTables();
@@ -169,7 +167,7 @@ public class MigrateOneFrsFileTest extends MigrateCommonTests {
   }
 
   @Test
-  public void migrateData_finalOfTransactionTypeTable() throws Exception {
+  public void migrateData_finalOfTmpTransactionTypeTable() throws Exception {
     resetAllTables();
 
     MigrateOneFrsFile oneFrsFile = new MigrateOneFrsFile();
@@ -192,13 +190,49 @@ public class MigrateOneFrsFileTest extends MigrateCommonTests {
       this.insertClientAccountTransaction(oneFrsFile.tmpClientAccountTransactionTableName, transRecordNum, 1);
     expectedTypeNameList.add(helper.transaction_type);
 
-    oneFrsFile.migrateData_finalOfTransactionTypeTable();
+    oneFrsFile.migrateData_finalOfTmpTransactionTypeTable();
 
     List<Map<String, Object>> transRecordList = toListMap("SELECT * FROM transaction_type ORDER BY id ASC");
 
     assertThat(transRecordList.size()).isEqualTo(expectedTypeNameList.size());
     for (Map<String, Object> transRecord : transRecordList)
       assertThat(transRecord.get("name")).isIn(expectedTypeNameList);
+  }
+
+  @Test
+  public void migrateData_processBusinessLogicErrorsOfTmpClientAccountTransaction() throws Exception {
+    resetAllTables();
+
+    MigrateOneFrsFile oneFrsFile = new MigrateOneFrsFile();
+    oneFrsFile.connection = connection;
+    oneFrsFile.prepareTmpTables();
+
+    long transRecordNum = 0;
+    this.insertClientAccountTransaction(oneFrsFile.tmpClientAccountTransactionTableName, transRecordNum++, 0);
+    this.insertClientAccountTransaction(oneFrsFile.tmpClientAccountTransactionTableName, transRecordNum++, 1);
+    this.insertClientAccountTransaction(oneFrsFile.tmpClientAccountTransactionTableName, transRecordNum, 2);
+
+    oneFrsFile.migrateData_processBusinessLogicErrorsOfTmpClientAccountTransaction();
+
+    List<Map<String, Object>> transRecordList =
+      toListMap("SELECT * FROM " + oneFrsFile.tmpClientAccountTransactionTableName + " " +
+        "WHERE status = 1 AND error IS NOT NULL ORDER BY record_no ASC");
+
+    assertThat(transRecordList.size()).isEqualTo(1);
+    assertThat(transRecordList.get(0).get("error").toString()).startsWith("Аккаунт ");
+  }
+
+
+  @Test
+  public void migrateData_withoutDataUpload() throws Exception {
+    resetAllTables();
+
+    MigrateOneFrsFile oneFrsFile = new MigrateOneFrsFile();
+    oneFrsFile.connection = connection;
+    oneFrsFile.prepareTmpTables();
+
+    oneFrsFile.migrateData();
+    // TODO: downloadErrors();
   }
 
   private static class AccountTransactionHelper {
@@ -215,45 +249,45 @@ public class MigrateOneFrsFileTest extends MigrateCommonTests {
     helper.accountNum = RND.str(16);
     helper.transaction_type = RND.str(10);
 
-    migrationTestDao.get().insertClientAccountTransaction(tblName, recordNum,
-      helper.money, helper.finished_at, helper.transaction_type, helper.accountNum, status, null);
+    migrationTestDao.get().insertClientAccountTransaction(tblName, recordNum, null, helper.money, helper.finished_at,
+      helper.transaction_type, helper.accountNum, status, null);
 
     return helper;
   }
 
   private void insertClientAccountTransaction(String tblName, long recordNum, AccountTransactionHelper transHelper,
                                               int status) {
-    migrationTestDao.get().insertClientAccountTransaction(tblName, recordNum, transHelper.money,
+    migrationTestDao.get().insertClientAccountTransaction(tblName, recordNum, null, transHelper.money,
       transHelper.finished_at, transHelper.transaction_type, transHelper.accountNum, status, null);
   }
 
   private void insertClientAccountTransactionWithMoney(String tblName, long recordNum, String accountNum,
                                                        BigDecimal money, int status) {
-    migrationTestDao.get().insertClientAccountTransaction(tblName, recordNum, money, Timestamp.from(Instant.now()),
-      RND.str(10), accountNum, status, null);
+    migrationTestDao.get().insertClientAccountTransaction(tblName, recordNum, null, money,
+      Timestamp.from(Instant.now()), RND.str(10), accountNum, status, null);
   }
 
   private String insertClientAccount(String tblName, long recordNum, int status) {
     String accountNum = RND.str(16);
-    migrationTestDao.get().insertClientAccount(tblName, recordNum, RND.str(10), new BigDecimal("0.00"), accountNum,
-      Timestamp.from(Instant.now()), status, null);
+    migrationTestDao.get().insertClientAccount(tblName, recordNum, RND.str(10), null, new BigDecimal("0.00"),
+      accountNum, Timestamp.from(Instant.now()), status, null);
     return accountNum;
   }
 
   private void insertClientAccount(String tblName, long recordNum, String accountNum, int status) {
-    migrationTestDao.get().insertClientAccount(tblName, recordNum, RND.str(10), new BigDecimal("0.00"), accountNum,
-      Timestamp.from(Instant.now()), status, null);
+    migrationTestDao.get().insertClientAccount(tblName, recordNum, RND.str(10), null, new BigDecimal("0.00"),
+      accountNum, Timestamp.from(Instant.now()), status, null);
   }
 
   private void insertClientAccount(String tblName, long recordNum, String accountNum, String ciaId, int status) {
-    migrationTestDao.get().insertClientAccount(tblName, recordNum, RND.str(10), new BigDecimal("0.00"), accountNum,
-      Timestamp.from(Instant.now()), status, null);
+    migrationTestDao.get().insertClientAccount(tblName, recordNum, RND.str(10), null, new BigDecimal("0.00"),
+      accountNum, Timestamp.from(Instant.now()), status, null);
   }
 
   private String insertClientAccountWithRegistrationDate(String tblName, long recordNum, Timestamp date, int status) {
     String accountNum = RND.str(16);
-    migrationTestDao.get()
-      .insertClientAccount(tblName, recordNum, RND.str(10), new BigDecimal("0.00"), accountNum, date, status, null);
+    migrationTestDao.get().insertClientAccount(tblName, recordNum, RND.str(10), null, new BigDecimal("0.00"),
+      accountNum, date, status, null);
     return accountNum;
   }
 
