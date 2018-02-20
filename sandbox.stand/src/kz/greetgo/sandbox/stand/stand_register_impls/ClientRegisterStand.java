@@ -175,14 +175,14 @@ public class ClientRegisterStand implements ClientRegister {
       for (ClientDot clientDot : clientDots) {
         for (String f : filters)
           if (clientDot.getFIO().toLowerCase().contains(f.toLowerCase())) {
-            list.add(clientDot.toClientInfo());
+            list.add(clientDot.toClientRecord());
             break;
           }
       }
 
     } else {
       for (ClientDot clientDot : clientDots)
-        list.add(clientDot.toClientInfo());
+        list.add(clientDot.toClientRecord());
     }
     return list;
   }
