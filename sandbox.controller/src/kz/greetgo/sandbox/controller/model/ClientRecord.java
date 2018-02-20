@@ -12,4 +12,8 @@ public class ClientRecord {
   public float maximumBalance;
   public float minimumBalance;
 
+
+  public String getFIO() {
+    return this.name + this.surname + this.patronymic;
+  }
 }
