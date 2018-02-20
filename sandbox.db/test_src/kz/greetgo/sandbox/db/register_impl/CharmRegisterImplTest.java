@@ -30,15 +30,15 @@ public class CharmRegisterImplTest extends ParentTestNg {
     cd.description = RND.str(10);
     cd.name = RND.str(10);
 
-    this.charmTestDao.get().insertClientDot(cd);
+    this.charmTestDao.get().insertCharmDot(cd);
 
     //
     //
-    List<CharmRecord> charmlist = this.charmRegister.get().getAll();
+    List<CharmRecord> charmList = this.charmRegister.get().getAll();
     //
     //
 
-    assertThat(charmlist.size()).isEqualTo(1);
-    assertThat(charmlist.get(0).name.equals(cd.name) && charmlist.get(0).id.equals(cd.id)).isTrue();
+    assertThat(charmList.size()).isEqualTo(1);
+    assertThat(charmList.get(0).name.equals(cd.name) && charmList.get(0).id.equals(cd.id)).isTrue();
   }
 }
