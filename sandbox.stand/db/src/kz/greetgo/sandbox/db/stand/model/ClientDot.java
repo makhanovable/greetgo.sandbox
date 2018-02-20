@@ -42,7 +42,7 @@ public class ClientDot {
   }
 
 
-  public ClientRecord toClientInfo() {
+  public ClientRecord toClientRecord() {
     ClientRecord clientRecord = new ClientRecord();
     clientRecord.id = this.id;
     clientRecord.name = this.name;
