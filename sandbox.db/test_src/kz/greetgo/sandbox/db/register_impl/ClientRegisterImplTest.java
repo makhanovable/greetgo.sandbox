@@ -4,26 +4,42 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.enums.AddressType;
 import kz.greetgo.sandbox.controller.enums.GenderType;
 import kz.greetgo.sandbox.controller.enums.PhoneNumberType;
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.ClientAddress;
+import kz.greetgo.sandbox.controller.model.ClientDetail;
+import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
+import kz.greetgo.sandbox.controller.model.ClientPhoneNumberToSave;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.db.stand.model.CharmDot;
 import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
 import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.stand.model.ClientPhoneNumberDot;
 import kz.greetgo.sandbox.db.test.dao.AccountTetsDao;
+import kz.greetgo.sandbox.db.test.dao.CharmTestDao;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.testng.annotations.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.util.stream.Collectors;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Arrays;
-import java.util.Calendar;
+import java.util.stream.Collectors;
 
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -33,61 +49,75 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   public BeanGetter<ClientRegister> clientRegister;
   public BeanGetter<ClientTestDao> clientTestDao;
+  public BeanGetter<CharmTestDao> charmTestDao;
   public BeanGetter<IdGenerator> idGenerator;
   public BeanGetter<AccountTetsDao> accountTetsDao;
 
 
-  private List<ClientRecord> fromClientDotListToRecordList(List<ClientDot> clientDots, Map<String, List<ClientAccountDot>> accounts) {
-    List<ClientRecord> records = new ArrayList<>();
-    for (ClientDot clientDot : clientDots) {
-      ClientRecord cr = clientDot.toClientRecord();
-      List<ClientAccountDot> accList = accounts.get(clientDot.id);
-
-      float max = accList.get(0).money;
-      float min = accList.get(0).money;
-      float total = 0;
-      for (ClientAccountDot cad : accList) {
-        total += cad.money;
-        if (max < cad.money)
-          max = cad.money;
-        if (min > cad.money)
-          min = cad.money;
-      }
-      cr.totalAccountBalance = total;
-      cr.maximumBalance = max;
-      cr.minimumBalance = min;
-      records.add(cr);
-    }
-    return records;
-  }
-
   @Test
-  void getClientInfoListTest() {
+  void generateReportXLSXTest() throws Exception {
     this.clientTestDao.get().clear();
+    this.charmTestDao.get().clear();
 
-    //init data
+    //init data in db
+    insertRndCharms();
+    Map<String, String> charms = new HashMap<>();
+    for (CharmDot charmDot : this.charmTestDao.get().getAll())
+      charms.put(charmDot.id, charmDot.name);
     List<ClientDot> clients = new ArrayList<>();
     Map<String, List<ClientAccountDot>> accountDotMap = new HashMap<>();
-    Map<String, ClientDot> clientDotMap = new HashMap<>();
+    this.rndClientsWithAccounts(clients, accountDotMap);
 
-    for (int i = 0; i < 100; i++) {
-      ClientDot cd = this.rndClientDot();
-      cd.birthDate.setTime(-2177474400000L + i * 31536000000L); //1900, 1900 + 1, 1900 + 2 ...
+    ByteArrayOutputStream out = new ByteArrayOutputStream(); //without saving file to disk
 
-      this.clientTestDao.get().insertClientDot(cd);
-      List<ClientAccountDot> accList = new ArrayList<>();
+    // orderBy, order, filter params tested in getClientInfoListTest
 
-      for (int j = 0; j < 2 + RND.plusInt(5); j++) {
-        ClientAccountDot cad = this.rndClientAccountDot(cd.id);
-        this.accountTetsDao.get().insertAccaount(cad);
-        accList.add(cad);
-      }
+    //
+    //
+    this.clientRegister.get().generateReport(out, "xlsx", null, 0, null);
+    //
+    //
 
-      clients.add(cd);
-      clientDotMap.put(cd.id, cd);
-      accountDotMap.put(cd.id, accList);
+    //combine client data with corresponding account data: total, max, min balance
+    List<ClientRecord> expectedList = this.fromClientDotListToRecordList(clients, accountDotMap);
+
+    //sorting, by default fio
+    sortWithOrder(expectedList, null, 0);
+
+    //test
+    InputStream input = new ByteArrayInputStream(out.toByteArray());
+    Workbook workbook = new XSSFWorkbook(input);
+    assertThat(workbook.getNumberOfSheets()).isEqualTo(1);
+    Sheet datatypeSheet = workbook.getSheetAt(0);
+
+
+    assertThat(datatypeSheet.getPhysicalNumberOfRows()).isEqualTo(clients.size() + 1);
+    for (int i = 1; i < datatypeSheet.getPhysicalNumberOfRows(); i++) {
+      Row row = datatypeSheet.getRow(i);
+      assertThat(row).isNotNull();
+      ClientRecord clientRecord = expectedList.get(i - 1);
+      assertCell(row.getCell(0), clientRecord.id);
+      assertCell(row.getCell(1), clientRecord.name);
+      assertCell(row.getCell(2), clientRecord.surname);
+      assertCell(row.getCell(3), clientRecord.patronymic);
+      assertCell(row.getCell(4), String.valueOf(clientRecord.age));
+      assertCell(row.getCell(5), charms.get(clientRecord.charm));
+      assertCell(row.getCell(6), String.valueOf(clientRecord.totalAccountBalance));
+      assertCell(row.getCell(7), String.valueOf(clientRecord.maximumBalance));
+      assertCell(row.getCell(8), String.valueOf(clientRecord.minimumBalance));
     }
+  }
 
+
+  @Test
+  void getClientInfoListTest() throws Exception {
+    this.clientTestDao.get().clear();
+
+    //init data in db
+    List<ClientDot> clients = new ArrayList<>();
+    Map<String, List<ClientAccountDot>> accountDotMap = new HashMap<>();
+    this.rndClientsWithAccounts(clients, accountDotMap);
+    insertRndCharms();
 
     //init inputs
     ClientDot rndClient = clients.get(RND.plusInt(clients.size()));
@@ -95,13 +125,15 @@ public class ClientRegisterImplTest extends ParentTestNg {
     int[] pages = {10, 5, 2, 1, 0};
     String[] orderBys = {null, "", "age", "totalAccountBalance", "maximumBalance", "minimumBalance"};
     int[] orders = {0, 1};
-    String[] filters = {null, rndClient.name + " " + rndClient.surname, rndClient.patronymic, rndClient.getFIO(), "a", "ab", RND.str(3)};
+    String[] filters = {null, rndClient.name + " " + rndClient.surname, rndClient.patronymic, rndClient.getFIO(), "a", "ab", RND.str(2)};
 
+    //test for all possible inputs
     for (int limit : limits) {
       for (int page : pages) {
         for (String orderBy : orderBys) {
           for (int order : orders) {
             for (String filter : filters) {
+
 
               //
               //
@@ -114,48 +146,18 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 continue;
               }
 
-              List<ClientRecord> expectedList;
-              List<ClientDot> filteredClientDots;
+              //filtering by FIO
+              List<ClientDot> filteredClientDots = filterClientDotList(clients, filter);
 
-              //filtering
-              if (filter != null && !filter.isEmpty()) {
-                String[] filterTokens = filter.trim().split(" ");
-                filteredClientDots = clients.stream().filter(o -> Arrays.stream(filterTokens).anyMatch(y -> o.getFIO().toLowerCase().contains(y.toLowerCase()))).collect(Collectors.toList());
-              } else
-                filteredClientDots = clients;
-
-              expectedList = this.fromClientDotListToRecordList(filteredClientDots, accountDotMap);
+              //combine client data with corresponding account data: total, max, min balance
+              List<ClientRecord> expectedList = this.fromClientDotListToRecordList(filteredClientDots, accountDotMap);
 
               //sorting
-              String ob = orderBy == null ? "default" : orderBy;
+              sortWithOrder(expectedList, orderBy, order);
 
-              expectedList.sort((o1, o2) -> {
-                if (order == 1) {
-                  ClientRecord tmp = o1;
-                  o1 = o2;
-                  o2 = tmp;
-                }
-                switch (ob) {
-                  case "age":
-                    return Integer.compare(o1.age, o2.age);
-                  case "totalAccountBalance":
-                    return Double.compare(o1.totalAccountBalance, o2.totalAccountBalance);
-                  case "maximumBalance":
-                    return Double.compare(o1.maximumBalance, o2.maximumBalance);
-                  case "minimumBalance":
-                    return Double.compare(o1.minimumBalance, o2.minimumBalance);
-                  default:
-                    String fio1 = o1.getFIO().toLowerCase();
-                    String fio2 = o2.getFIO().toLowerCase();
-                    return fio1.compareTo(fio2);
-                }
-
-              });
-
-
+              //slicing
               int fromIndex = limit * page;
               int endIndex = fromIndex + limit <= expectedList.size() ? fromIndex + limit : expectedList.size();
-
               if (endIndex <= fromIndex)
                 expectedList = new ArrayList<>();
               else
@@ -168,8 +170,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
               for (int i = 0; i < result.size(); i++) {
                 ClientRecord target = result.get(i);
                 ClientRecord assertion = expectedList.get(i);
-
-                assertThat(clientDotMap).containsKey(target.id);
 
                 assertThat(target.id).isEqualTo(assertion.id);
                 assertThat(target.age).isEqualTo(assertion.age);
@@ -192,7 +192,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
 
   }
-
 
   @Test
   void getClientsSizeTest() {
@@ -280,10 +279,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     ClientDetail clientDetail = this.clientTestDao.get().detail(id, true);
     assertThat(clientDetail).isNull();
-
-
   }
-
 
   @Test
   public void updateClientTest() {
@@ -296,36 +292,36 @@ public class ClientRegisterImplTest extends ParentTestNg {
     this.clientTestDao.get().insertAddress(registerAddress);
 
     ClientToSave clientToSave = rndClientToSave(cd.id); // +ClientDetail +2addresses +3numbers
-    {
-      ClientPhoneNumberDot number1 = rndPhoneNumber(cd.id, PhoneNumberType.WORK);
-      this.clientTestDao.get().insertPhone(number1); // number directly insterted to db
-      clientToSave.numbersToDelete.add(number1.toClientPhoneNumber());  // -1 number
 
-      //
-      //
-      this.clientRegister.get().addOrUpdate(clientToSave);
-      //
-      //
 
-      ClientDetail clientDetail = this.clientTestDao.get().detail(clientToSave.id, true);
-      this.assertClientDetail(clientDetail, new ClientDot(clientToSave));
+    ClientPhoneNumberDot number1 = rndPhoneNumber(cd.id, PhoneNumberType.WORK);
+    this.clientTestDao.get().insertPhone(number1); // number directly insterted to db
+    clientToSave.numbersToDelete.add(number1.toClientPhoneNumber());  // -1 number
 
-      ClientAddress regAddress = this.clientTestDao.get().getAddres(clientToSave.id, AddressType.REG);
-      ClientAddress actAddress = this.clientTestDao.get().getAddres(clientToSave.id, AddressType.FACT);
-      this.assertClientAddres(actAddress, new ClientAddressDot(clientToSave.id, clientToSave.actualAddress));
-      this.assertClientAddres(regAddress, new ClientAddressDot(clientToSave.id, clientToSave.registerAddress));
+    //
+    //
+    this.clientRegister.get().addOrUpdate(clientToSave);
+    //
+    //
 
-      List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(clientToSave.id);
+    ClientDetail clientDetail = this.clientTestDao.get().detail(clientToSave.id, true);
+    this.assertClientDetail(clientDetail, new ClientDot(clientToSave));
 
-      assertThat(numberList).isNotEmpty();
-      assertThat(numberList).hasSize(clientToSave.numersToSave.size());
-      assertThat(numberList.stream().anyMatch(o -> o.number.equals(number1.number))).isFalse();
-    }
+    ClientAddress regAddress = this.clientTestDao.get().getAddres(clientToSave.id, AddressType.REG);
+    ClientAddress actAddress = this.clientTestDao.get().getAddres(clientToSave.id, AddressType.FACT);
+    this.assertClientAddress(actAddress, new ClientAddressDot(clientToSave.id, clientToSave.actualAddress));
+    this.assertClientAddress(regAddress, new ClientAddressDot(clientToSave.id, clientToSave.registerAddress));
 
+    List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(clientToSave.id);
+
+    assertThat(numberList).isNotEmpty();
+    assertThat(numberList).hasSize(clientToSave.numersToSave.size());
+    assertThat(numberList.stream().anyMatch(o -> o.number.equals(number1.number))).isFalse();
   }
 
   @Test
-  public void updateClientEditedPhoneNumber() {
+  public void updateClientPhoneNumber() {
+
     this.clientTestDao.get().clear();
     ClientDot cd = this.rndClientDot();
     this.clientTestDao.get().insertClientDot(cd);
@@ -370,8 +366,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     this.assertClientDetail(clientDetail, new ClientDot(client));
     ClientAddress regAddress = this.clientTestDao.get().getAddres(client.id, AddressType.REG);
     ClientAddress actAddress = this.clientTestDao.get().getAddres(client.id, AddressType.FACT);
-    this.assertClientAddres(actAddress, new ClientAddressDot(client.id, client.actualAddress));
-    this.assertClientAddres(regAddress, new ClientAddressDot(client.id, client.registerAddress));
+    this.assertClientAddress(actAddress, new ClientAddressDot(client.id, client.actualAddress));
+    this.assertClientAddress(regAddress, new ClientAddressDot(client.id, client.registerAddress));
 
     List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(client.id);
     assertThat(numberList.isEmpty()).isFalse();
@@ -405,13 +401,91 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     this.assertClientDetail(detail, c);
     assertThat(detail.phoneNumbers).isNotNull();
-    assertThat(detail.actualAddress).isNotNull();
-    assertThat(detail.registerAddress).isNotNull();
-    assertThat(detail.phoneNumbers.size()).isEqualTo(1);
-    this.assertClientAddres(detail.actualAddress, actualAddress);
-    this.assertClientAddres(detail.registerAddress, registerAddress);
+    assertThat(detail.phoneNumbers).hasSize(1);
     this.assertPhoneNumber(detail.phoneNumbers.get(0), number1);
 
+    assertThat(detail.actualAddress).isNotNull();
+    assertThat(detail.registerAddress).isNotNull();
+    this.assertClientAddress(detail.actualAddress, actualAddress);
+    this.assertClientAddress(detail.registerAddress, registerAddress);
+
+  }
+
+  private void assertPhoneNumber(ClientPhoneNumber target, ClientPhoneNumberDot assertion) {
+    assertThat(target).isNotNull();
+    assertThat(target.client).isEqualTo(assertion.client);
+    assertThat(target.number).isEqualTo(assertion.number);
+    assertThat(target.type).isEqualTo(assertion.type);
+  }
+
+  private void assertClientAddress(ClientAddress target, ClientAddressDot assertion) {
+    assertThat(target).isNotNull();
+    assertThat(target.client).isEqualTo(assertion.client);
+    assertThat(target.street).isEqualTo(assertion.street);
+    assertThat(target.house).isEqualTo(assertion.house);
+    assertThat(target.flat).isEqualTo(assertion.flat);
+    assertThat(target.type).isEqualTo(assertion.type);
+  }
+
+  private void assertClientDetail(ClientDetail target, ClientDot assertion) {
+
+    assertThat(target).isNotNull();
+    assertThat(target.name).isEqualTo(assertion.name);
+    assertThat(target.surname).isEqualTo(assertion.surname);
+    assertThat(target.patronymic).isEqualTo(assertion.patronymic);
+    assertThat(target.gender).isEqualTo(assertion.gender);
+
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+    assertThat(sdf.format(target.birthDate)).isEqualTo(sdf.format(assertion.birthDate));
+    assertThat(target.charm).isEqualTo(assertion.charm);
+    assertThat(target.id).isEqualTo(assertion.id);
+  }
+
+  private void assertCell(Cell cell, Object o) {
+    assertThat(cell).isNotNull();
+    if (cell.getCellTypeEnum() == CellType.STRING)
+      assertThat(cell.getStringCellValue()).isEqualTo((String) o);
+    if (cell.getCellTypeEnum() == CellType.NUMERIC)
+      assertThat(cell.getNumericCellValue()).isEqualTo((double) o);
+  }
+
+  private ClientAddressDot rndAddress(String id, AddressType type) {
+    ClientAddressDot address = new ClientAddressDot();
+    address.client = id;
+    address.type = type;
+
+    address.street = RND.str(10);
+    address.house = RND.str(10);
+    return address;
+  }
+
+  private ClientPhoneNumberDot rndPhoneNumber(String clientId, PhoneNumberType type) {
+    ClientPhoneNumberDot number = new ClientPhoneNumberDot();
+    number.client = clientId;
+    number.type = type;
+    number.number = idGenerator.get().newId();
+    return number;
+  }
+
+  private ClientDot rndClientDot() {
+
+    ClientDot c = new ClientDot();
+    c.id = idGenerator.get().newId();
+    c.name = idGenerator.get().newId();
+    c.surname = idGenerator.get().newId();
+    c.patronymic = idGenerator.get().newId();
+    c.charm = RND.str(10);
+    c.gender = RND.someEnum(GenderType.values());
+    c.birthDate = RND.dateYears(-100, 0);
+
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(c.birthDate);
+    cal.set(Calendar.HOUR_OF_DAY, 0);
+    cal.set(Calendar.MINUTE, 0);
+    cal.set(Calendar.SECOND, 0);
+    cal.set(Calendar.MILLISECOND, 0);
+    c.birthDate = cal.getTime();
+    return c;
   }
 
   private ClientToSave rndClientToSave(String id) {
@@ -437,87 +511,99 @@ public class ClientRegisterImplTest extends ParentTestNg {
     return client;
   }
 
-  private void assertPhoneNumber(ClientPhoneNumber target, ClientPhoneNumberDot assertion) {
-    if (target == null && assertion == null)
-      return;
-    assertThat(target).isNotNull();
-    assertThat(target.client).isEqualTo(assertion.client);
-    assertThat(target.number).isEqualTo(assertion.number);
-    assertThat(target.type).isEqualTo(assertion.type);
+  private void rndClientsWithAccounts(List<ClientDot> clients, Map<String, List<ClientAccountDot>> accountDotMap) throws Exception {
+    List<CharmDot> charms = this.charmTestDao.get().getAll();
+    if (charms == null || charms.isEmpty())
+      throw new Exception("charms not initialized");
+
+    for (int i = 0; i < 100; i++) {
+      ClientDot cd = this.rndClientDot();
+      cd.charm = charms.get(RND.plusInt(charms.size())).id;
+      cd.birthDate.setTime(-2177474400000L + i * 31536000000L); //1900, 1900 + 1, 1900 + 2 ...
+      this.clientTestDao.get().insertClientDot(cd);
+      List<ClientAccountDot> accList = new ArrayList<>();
+      for (int j = 0; j < 2 + RND.plusInt(5); j++) {
+        ClientAccountDot cad = new ClientAccountDot();
+        cad.money = (float) RND.plusDouble(1000000f, 10);
+        cad.id = idGenerator.get().newId();
+        cad.number = idGenerator.get().newId();
+        cad.client = cd.id;
+
+        this.accountTetsDao.get().insertAccaount(cad);
+        accList.add(cad);
+      }
+      clients.add(cd);
+      accountDotMap.put(cd.id, accList);
+    }
   }
 
-  private void assertClientAddres(ClientAddress target, ClientAddressDot assertion) {
-    if (target == null && assertion == null)
-      return;
-    assertThat(target).isNotNull();
-    assertThat(target.client).isEqualTo(assertion.client);
-    assertThat(target.street).isEqualTo(assertion.street);
-    assertThat(target.house).isEqualTo(assertion.house);
-    assertThat(target.flat).isEqualTo(assertion.flat);
-    assertThat(target.type).isEqualTo(assertion.type);
+  private void insertRndCharms() {
+    for (int i = 0; i < 10; i++) {
+      CharmDot charmDot = new CharmDot();
+      charmDot.id = idGenerator.get().newId();
+      charmDot.name = RND.str(10);
+      this.charmTestDao.get().insertCharmDot(charmDot);
+    }
   }
 
-  private ClientAddressDot rndAddress(String id, AddressType type) {
-    ClientAddressDot address = new ClientAddressDot();
-    address.client = id;
-    address.type = type;
+  private List<ClientRecord> fromClientDotListToRecordList(List<ClientDot> clientDots, Map<String, List<ClientAccountDot>> accounts) {
+    List<ClientRecord> records = new ArrayList<>();
+    for (ClientDot clientDot : clientDots) {
+      ClientRecord cr = clientDot.toClientRecord();
+      List<ClientAccountDot> accList = accounts.get(clientDot.id);
 
-    address.street = RND.str(10);
-    address.house = RND.str(10);
-    return address;
+      float max = accList.get(0).money;
+      float min = accList.get(0).money;
+      float total = 0;
+      for (ClientAccountDot cad : accList) {
+        total += cad.money;
+        if (max < cad.money)
+          max = cad.money;
+        if (min > cad.money)
+          min = cad.money;
+      }
+      cr.totalAccountBalance = total;
+      cr.maximumBalance = max;
+      cr.minimumBalance = min;
+      records.add(cr);
+    }
+    return records;
   }
 
-  private ClientPhoneNumberDot rndPhoneNumber(String clientId, PhoneNumberType type) {
-    ClientPhoneNumberDot number = new ClientPhoneNumberDot();
-    number.client = clientId;
-    number.type = type;
-    number.number = idGenerator.get().newId();
-    return number;
+  private List<ClientDot> filterClientDotList(List<ClientDot> list, String filter) {
+
+    if (filter != null && !filter.isEmpty()) {
+      String[] filterTokens = filter.trim().split(" ");
+      return list.stream().filter(o -> Arrays.stream(filterTokens).anyMatch(y -> o.getFIO().toLowerCase().contains(y.toLowerCase()))).collect(Collectors.toList());
+    } else
+      return list;
   }
 
-  private void assertClientDetail(ClientDetail target, ClientDot assertion) {
-    if (target == null && assertion == null)
-      return;
+  private void sortWithOrder(List<ClientRecord> list, String orderBy, int order) {
+    String ob = orderBy == null ? "default" : orderBy;
 
-    assertThat(target).isNotNull();
-    assertThat(target.name).isEqualTo(assertion.name);
-    assertThat(target.surname).isEqualTo(assertion.surname);
-    assertThat(target.patronymic).isEqualTo(assertion.patronymic);
-    assertThat(target.gender).isEqualTo(assertion.gender);
+    list.sort((o1, o2) -> {
+      if (order == 1) {
+        ClientRecord tmp = o1;
+        o1 = o2;
+        o2 = tmp;
+      }
+      switch (ob) {
+        case "age":
+          return Integer.compare(o1.age, o2.age);
+        case "totalAccountBalance":
+          return Double.compare(o1.totalAccountBalance, o2.totalAccountBalance);
+        case "maximumBalance":
+          return Double.compare(o1.maximumBalance, o2.maximumBalance);
+        case "minimumBalance":
+          return Double.compare(o1.minimumBalance, o2.minimumBalance);
+        default:
+          String fio1 = o1.getFIO().toLowerCase();
+          String fio2 = o2.getFIO().toLowerCase();
+          return fio1.compareTo(fio2);
+      }
 
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-    assertThat(sdf.format(target.birthDate)).isEqualTo(sdf.format(assertion.birthDate));
-    assertThat(target.charm).isEqualTo(assertion.charm);
-    assertThat(target.id).isEqualTo(assertion.id);
-  }
-
-  private ClientDot rndClientDot() {
-    ClientDot c = new ClientDot();
-    c.id = idGenerator.get().newId();
-    c.name = idGenerator.get().newId();
-    c.surname = idGenerator.get().newId();
-    c.patronymic = idGenerator.get().newId();
-    c.charm = RND.str(10);
-    c.gender = RND.someEnum(GenderType.values());
-    c.birthDate = RND.dateYears(-100, 0);
-
-    Calendar cal = Calendar.getInstance();
-    cal.setTime(c.birthDate);
-    cal.set(Calendar.HOUR_OF_DAY, 0);
-    cal.set(Calendar.MINUTE, 0);
-    cal.set(Calendar.SECOND, 0);
-    cal.set(Calendar.MILLISECOND, 0);
-    c.birthDate = cal.getTime();
-    return c;
-  }
-
-  private ClientAccountDot rndClientAccountDot(String client) {
-    ClientAccountDot cad = new ClientAccountDot();
-    cad.money = (float) RND.plusDouble(1000000f, 10);
-    cad.id = idGenerator.get().newId();
-    cad.number = idGenerator.get().newId();
-    cad.client = client;
-    return cad;
+    });
   }
 
 
