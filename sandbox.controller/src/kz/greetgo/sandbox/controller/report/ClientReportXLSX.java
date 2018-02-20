@@ -27,6 +27,7 @@ public class ClientReportXLSX implements ClientReport {
     charmMap = charms;
   }
 
+  // stores data on disk as temporary files, not memory
   @Override
   public void appendData(List<ClientRecord> records) throws IOException {
     for (ClientRecord r : records) {
@@ -36,7 +37,8 @@ public class ClientReportXLSX implements ClientReport {
 
     ((SXSSFSheet) sh).flushRows();
   }
-
+  
+  //writes all corresponding temporary files to outputStream, then deletes temporary files
   @Override
   public void write(OutputStream out) throws IOException {
     wb.write(out);
