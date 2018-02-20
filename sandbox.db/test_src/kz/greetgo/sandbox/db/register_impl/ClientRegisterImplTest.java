@@ -10,7 +10,6 @@ import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
 import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.stand.model.ClientPhoneNumberDot;
-import kz.greetgo.sandbox.db.stand.tools.AgeCalculator;
 import kz.greetgo.sandbox.db.test.dao.AccountTetsDao;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
@@ -18,8 +17,14 @@ import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Arrays;
+import java.util.Calendar;
+
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -31,13 +36,29 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public BeanGetter<IdGenerator> idGenerator;
   public BeanGetter<AccountTetsDao> accountTetsDao;
 
-  private ClientAccountDot rndClientAccountDot(String client) {
-    ClientAccountDot cad = new ClientAccountDot();
-    cad.money = (float) RND.plusDouble(100f, 5);
-    cad.id = idGenerator.get().newId();
-    cad.number = idGenerator.get().newId();
-    cad.client = client;
-    return cad;
+
+  private List<ClientRecord> fromClientDotListToRecordList(List<ClientDot> clientDots, Map<String, List<ClientAccountDot>> accounts) {
+    List<ClientRecord> records = new ArrayList<>();
+    for (ClientDot clientDot : clientDots) {
+      ClientRecord cr = clientDot.toClientRecord();
+      List<ClientAccountDot> accList = accounts.get(clientDot.id);
+
+      float max = accList.get(0).money;
+      float min = accList.get(0).money;
+      float total = 0;
+      for (ClientAccountDot cad : accList) {
+        total += cad.money;
+        if (max < cad.money)
+          max = cad.money;
+        if (min > cad.money)
+          min = cad.money;
+      }
+      cr.totalAccountBalance = total;
+      cr.maximumBalance = max;
+      cr.minimumBalance = min;
+      records.add(cr);
+    }
+    return records;
   }
 
   @Test
@@ -49,9 +70,10 @@ public class ClientRegisterImplTest extends ParentTestNg {
     Map<String, List<ClientAccountDot>> accountDotMap = new HashMap<>();
     Map<String, ClientDot> clientDotMap = new HashMap<>();
 
-
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 100; i++) {
       ClientDot cd = this.rndClientDot();
+      cd.birthDate.setTime(-2177474400000L + i * 31536000000L); //1900, 1900 + 1, 1900 + 2 ...
+
       this.clientTestDao.get().insertClientDot(cd);
       List<ClientAccountDot> accList = new ArrayList<>();
 
@@ -69,9 +91,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     //init inputs
     ClientDot rndClient = clients.get(RND.plusInt(clients.size()));
-    int[] limits = {0, 10, 20};
-    int[] pages = {0, 1, 2, 10};
-    String[] orderBys = {null, "", "age"};
+    int[] limits = {20, 10, 0};
+    int[] pages = {10, 5, 2, 1, 0};
+    String[] orderBys = {null, "", "age", "totalAccountBalance", "maximumBalance", "minimumBalance"};
     int[] orders = {0, 1};
     String[] filters = {null, rndClient.name + " " + rndClient.surname, rndClient.patronymic, rndClient.getFIO(), "a", "ab", RND.str(3)};
 
@@ -92,103 +114,75 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 continue;
               }
 
-              List<ClientDot> expectedList = null;
-              if (filter == null || filter.isEmpty()) {
-                expectedList = clients;
-              } else {
-                String[] filterTokens = filter.trim().split(" ");
-                expectedList = clients.stream().filter(o -> Arrays.stream(filterTokens).anyMatch(y -> o.getFIO().toLowerCase().contains(y.toLowerCase()))).collect(Collectors.toList());
-              }
+              List<ClientRecord> expectedList;
+              List<ClientDot> filteredClientDots;
 
+              //filtering
+              if (filter != null && !filter.isEmpty()) {
+                String[] filterTokens = filter.trim().split(" ");
+                filteredClientDots = clients.stream().filter(o -> Arrays.stream(filterTokens).anyMatch(y -> o.getFIO().toLowerCase().contains(y.toLowerCase()))).collect(Collectors.toList());
+              } else
+                filteredClientDots = clients;
+
+              expectedList = this.fromClientDotListToRecordList(filteredClientDots, accountDotMap);
+
+              //sorting
               String ob = orderBy == null ? "default" : orderBy;
+
               expectedList.sort((o1, o2) -> {
                 if (order == 1) {
-                  ClientDot tmp = o1;
+                  ClientRecord tmp = o1;
                   o1 = o2;
                   o2 = tmp;
                 }
                 switch (ob) {
                   case "age":
-                    return Integer.compare(AgeCalculator.calculateAge(o1.birthDate), AgeCalculator.calculateAge(o2.birthDate));
-                  // FIXME: 2/19/18 А где остальные признаки сортировки?
+                    return Integer.compare(o1.age, o2.age);
+                  case "totalAccountBalance":
+                    return Double.compare(o1.totalAccountBalance, o2.totalAccountBalance);
+                  case "maximumBalance":
+                    return Double.compare(o1.maximumBalance, o2.maximumBalance);
+                  case "minimumBalance":
+                    return Double.compare(o1.minimumBalance, o2.minimumBalance);
                   default:
                     String fio1 = o1.getFIO().toLowerCase();
                     String fio2 = o2.getFIO().toLowerCase();
                     return fio1.compareTo(fio2);
                 }
 
-
               });
 
 
               int fromIndex = limit * page;
-              int endindex = (int) (fromIndex + limit <= expectedList.size() ? fromIndex + limit : expectedList.size());
+              int endIndex = fromIndex + limit <= expectedList.size() ? fromIndex + limit : expectedList.size();
 
-              if (endindex <= fromIndex)
+              if (endIndex <= fromIndex)
                 expectedList = new ArrayList<>();
               else
-                expectedList = expectedList.subList(fromIndex, endindex);
+                expectedList = expectedList.subList(fromIndex, endIndex);
 
+
+              //test
               assertThat(result).hasSize(expectedList.size());
-
-              List<ClientDot> finalExpectedList = expectedList;
-
 
               for (int i = 0; i < result.size(); i++) {
                 ClientRecord target = result.get(i);
-                // FIXME: 2/19/18 Проверка сортировки не работает корректно!
-                if (orderBy != null)
-                  switch (orderBy) {
-                    case "age":
-                      assertThat(target.age).isEqualTo(AgeCalculator.calculateAge(expectedList.get(i).birthDate));
-                      break;
-                    // FIXME: 2/19/18 Зачем тут пустые кейсы?
-                    case "totalAccountBalance":
-                      break;
-                    case "maximumBalance":
-                      break;
-                    case "minimumBalance":
-                      break;
-                    default:
-                      assertThat(target.name).isEqualTo(expectedList.get(i).name);
-                      assertThat(target.surname).isEqualTo(expectedList.get(i).surname);
-                      assertThat(target.patronymic).isEqualTo(expectedList.get(i).patronymic);
-                  }
+                ClientRecord assertion = expectedList.get(i);
 
                 assertThat(clientDotMap).containsKey(target.id);
-                ClientDot assertion = clientDotMap.get(target.id);
+
                 assertThat(target.id).isEqualTo(assertion.id);
-                assertThat(target.age).isEqualTo(AgeCalculator.calculateAge(assertion.birthDate));
+                assertThat(target.age).isEqualTo(assertion.age);
                 assertThat(target.charm).isEqualTo(assertion.charm);
                 assertThat(target.surname).isEqualTo(assertion.surname);
                 assertThat(target.patronymic).isEqualTo(assertion.patronymic);
                 assertThat(target.name).isEqualTo(assertion.name);
 
-
-                List<ClientAccountDot> accList = accountDotMap.get(target.id);
-
-                float max = accList.get(0).money;
-                float min = accList.get(0).money;
-                float total = 0;
-                for (ClientAccountDot cad : accList) {
-                  total += cad.money;
-                  if (max < cad.money)
-                    max = cad.money;
-                  if (min > cad.money)
-                    min = cad.money;
-                }
-                assertThat(target.maximumBalance).isEqualTo(max);
-                assertThat(target.minimumBalance).isEqualTo(min);
-                assertThat(target.totalAccountBalance).isEqualTo(total);
+                assertThat(target.maximumBalance).isEqualTo(assertion.maximumBalance);
+                assertThat(target.minimumBalance).isEqualTo(assertion.minimumBalance);
+                assertThat(target.totalAccountBalance).isEqualTo(assertion.totalAccountBalance);
 
               }
-
-              // FIXME: 2/19/18 Зачем эта проверка?
-              if (!result.isEmpty()) {
-                Boolean match = result.stream().anyMatch(x -> clients.stream().anyMatch(y -> y.id.equals(x.id)));
-                assertThat(match).isTrue();
-              }
-
 
             }
           }
@@ -478,7 +472,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     number.client = clientId;
     number.type = type;
     number.number = idGenerator.get().newId();
-
     return number;
   }
 
@@ -516,6 +509,15 @@ public class ClientRegisterImplTest extends ParentTestNg {
     cal.set(Calendar.MILLISECOND, 0);
     c.birthDate = cal.getTime();
     return c;
+  }
+
+  private ClientAccountDot rndClientAccountDot(String client) {
+    ClientAccountDot cad = new ClientAccountDot();
+    cad.money = (float) RND.plusDouble(1000000f, 10);
+    cad.id = idGenerator.get().newId();
+    cad.number = idGenerator.get().newId();
+    cad.client = client;
+    return cad;
   }
 
 
