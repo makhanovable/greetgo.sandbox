@@ -19,4 +19,12 @@
   width: 40px;
   display: flex;
   flex-direction: column;
+  
+}
+
+
+
+.download img {
+  width: 24px;
+  /* height: 40px; */
 }

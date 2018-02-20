@@ -1,11 +1,11 @@
-import {ClientFilter} from "../../../model/ClientFilter";
-import {CharmInfo} from "../../../model/CharmInfo";
-import {HttpService} from "../../HttpService";
-import {ClientInfo} from "../../../model/ClientInfo";
-import {Component, OnInit, ViewChild} from "@angular/core";
-import {MatDialog, MatPaginator, MatSort, MatTableDataSource} from "@angular/material";
-import {SelectionModel} from "@angular/cdk/collections";
-import {ClientFormComponent} from "../clientForm/client_form.component";
+import { ClientFilter } from "../../../model/ClientFilter";
+import { CharmInfo } from "../../../model/CharmInfo";
+import { HttpService } from "../../HttpService";
+import { ClientInfo } from "../../../model/ClientInfo";
+import { Component, OnInit, ViewChild } from "@angular/core";
+import { MatDialog, MatPaginator, MatSort, MatTableDataSource } from "@angular/material";
+import { SelectionModel } from "@angular/cdk/collections";
+import { ClientFormComponent } from "../clientForm/client_form.component";
 
 @Component({
   template: require('./client_list.component.html'),
@@ -164,6 +164,18 @@ export class ClientListComponent implements OnInit {
       if (result != "cancel")
         this.applyFilter(true);
     });
+  }
+
+  //temporarily
+  download() {
+    let url = this.httpService.url("/client/report?type=xlsx");  
+      url = url + "&filter=" + this.filter;
+    if (this.selectedOrder)
+      url = url + "&orderBy=" + this.selectedOrder.toLowerCase();
+    if (this.desc)
+      url = url + "&&order=" + this.desc;
+    window.open(url);
+
   }
 
 
