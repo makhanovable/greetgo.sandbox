@@ -1,5 +1,6 @@
 import {ClientListComponent} from "./components/clientList/client_list.component";
 import {ClientFormComponent} from "./components/clientForm/client_form.component";
+
 import {NgModule} from "@angular/core";
 import {HttpModule, JsonpModule} from "@angular/http";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";

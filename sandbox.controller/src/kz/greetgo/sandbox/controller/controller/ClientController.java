@@ -13,6 +13,7 @@ import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.util.Controller;
 
+import java.util.Date;
 import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
@@ -60,5 +61,22 @@ public class ClientController implements Controller {
   public void addOrUpdate(@Par("client") @Json ClientToSave clientToSave) {
     this.clientRegister.get().addOrUpdate(clientToSave);
   }
-  
+
+
+  @Mapping("/report")
+  public void generateReport(@Par("type") String type, @Par("orderBy") String orderBy, @Par("order") int order,
+                             @Par("filter") String filter, RequestTunnel requestTunnel) throws Exception {
+
+    if (type == null || !(type.equals("pdf") || type.equals("xlsx"))) {
+      throw new Exception("Unsupported File Format");
+    }
+
+    String filename = "client_report_" + new Date() + "." + type;
+    requestTunnel.setResponseHeader("Content-disposition", "attachment; filename=" + filename);
+
+    this.clientRegister.get().generateReport(requestTunnel.getResponseOutputStream(), type, orderBy, order, filter);
+
+  }
+
+
 }

@@ -1,3 +1,4 @@
+import { HttpService } from './../HttpService';
 import {Component, EventEmitter, Output} from "@angular/core";
 
 @Component({
@@ -9,8 +10,7 @@ export class MainFormComponent {
 
   @Output() exit = new EventEmitter<void>();
 
-  constructor() {
+  constructor(private httpService:HttpService) {
   }
-
 }
 

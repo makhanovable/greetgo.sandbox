@@ -2,7 +2,7 @@ package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.CharmInfo;
+import kz.greetgo.sandbox.controller.model.CharmRecord;
 import kz.greetgo.sandbox.controller.register.CharmRegister;
 import kz.greetgo.sandbox.db.dao.CharmDao;
 
@@ -14,7 +14,7 @@ public class CharmRegisterImpl implements CharmRegister {
   public BeanGetter<CharmDao> charmDao;
 
   @Override
-  public List<CharmInfo> getAll() {
+  public List<CharmRecord> getAll() {
     return this.charmDao.get().getAll();
   }
 }
