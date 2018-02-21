@@ -13,13 +13,11 @@
 
         <ng-container matColumnDef="select">
           <mat-header-cell *matHeaderCellDef>
-            <mat-checkbox (change)="$event ? masterToggle() : null" [checked]="selection.hasValue() && isAllSelected()"
-                          [indeterminate]="selection.hasValue() && !isAllSelected()">
+            <mat-checkbox (change)="$event ? masterToggle() : null" [checked]="selection.hasValue() && isAllSelected()" [indeterminate]="selection.hasValue() && !isAllSelected()">
             </mat-checkbox>
           </mat-header-cell>
           <mat-cell *matCellDef="let row">
-            <mat-checkbox (click)="$event.stopPropagation()" (change)="$event ? selection.toggle(row) : null"
-                          [checked]="selection.isSelected(row)">
+            <mat-checkbox (click)="$event.stopPropagation()" (change)="$event ? selection.toggle(row) : null" [checked]="selection.isSelected(row)">
             </mat-checkbox>
           </mat-cell>
         </ng-container>
@@ -31,7 +29,7 @@
         </ng-container>
         <ng-container matColumnDef="charm">
           <mat-header-cell *matHeaderCellDef> Charm</mat-header-cell>
-          <mat-cell *matCellDef="let element"> {{charmsMap[element.charmId]}}</mat-cell>
+          <mat-cell *matCellDef="let element"> {{charmsMap[element.charm]}}</mat-cell>
         </ng-container>
         <ng-container matColumnDef="age">
           <mat-header-cell *matHeaderCellDef mat-sort-header> Age</mat-header-cell>
@@ -54,9 +52,20 @@
         <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
       </mat-table>
 
-      <mat-paginator #paginator [pageSize]="10" [pageSizeOptions]="[1, 5, 10, 20]">
-
-      </mat-paginator>
+      <div class="list-footer">
+        <mat-form-field class="report-format">
+          <mat-select placeholder="format" [(ngModel)]="format">
+            <mat-option value="xlsx">XLSX</mat-option>
+            <mat-option value="pdf">PDF</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <!-- <button mat-button (click)="download()">Report</button>   -->
+        <button mat-icon-button class="report-button" (click)="download()">
+          <mat-icon>file_download</mat-icon>
+        </button>
+        <mat-paginator #paginator [pageSize]="10" [pageSizeOptions]="[1, 5, 10, 20]">
+        </mat-paginator>
+      </div>
 
     </div>
   </div>
@@ -71,8 +80,7 @@
     <button mat-icon-button [disabled]="selection.isEmpty()" (click)="removeSelectedItems()" color="warn">
       <mat-icon>delete</mat-icon>
     </button>
-    <button mat-icon-button (click)="download()" >
-      <mat-icon>file_download</mat-icon>
-    </button>
+
   </div>
+
 </div>

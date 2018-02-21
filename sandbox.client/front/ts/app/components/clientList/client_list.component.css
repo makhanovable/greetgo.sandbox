@@ -3,6 +3,7 @@
   flex-direction: column;
   min-width: 300px;
   padding: 25px;
+  padding-bottom: 0px;
 }
 
 .mat-header-cell.mat-sort-header-sorted {
@@ -22,9 +23,17 @@
   
 }
 
+.list-footer{
+  padding-top: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
 
+.report-button{
+  margin-top:10px; 
+}
 
-.download img {
-  width: 24px;
-  /* height: 40px; */
+.report-format{
+  width: 70px;
 }

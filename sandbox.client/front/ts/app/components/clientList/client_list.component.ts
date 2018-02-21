@@ -1,3 +1,4 @@
+import { Http } from '@angular/http';
 import { ClientFilter } from "../../../model/ClientFilter";
 import { CharmInfo } from "../../../model/CharmInfo";
 import { HttpService } from "../../HttpService";
@@ -6,6 +7,7 @@ import { Component, OnInit, ViewChild } from "@angular/core";
 import { MatDialog, MatPaginator, MatSort, MatTableDataSource } from "@angular/material";
 import { SelectionModel } from "@angular/cdk/collections";
 import { ClientFormComponent } from "../clientForm/client_form.component";
+import { saveAs as importedSaveAs } from "file-saver";
 
 @Component({
   template: require('./client_list.component.html'),
@@ -28,10 +30,12 @@ export class ClientListComponent implements OnInit {
   selectedOrder = 'fio';
   desc: number = 0;
 
+  format: string = "xlsx";
+
   @ViewChild(MatSort) sort: MatSort;
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
-  constructor(public dialog: MatDialog, private httpService: HttpService) {
+  constructor(public dialog: MatDialog, private httpService: HttpService, private http:Http) {
   }
 
   ngOnInit() {
@@ -166,17 +170,15 @@ export class ClientListComponent implements OnInit {
     });
   }
 
-  //temporarily
   download() {
-    let url = this.httpService.url("/client/report?type=xlsx");  
-      url = url + "&filter=" + this.filter;
-    if (this.selectedOrder)
-      url = url + "&orderBy=" + this.selectedOrder.toLowerCase();
-    if (this.desc)
-      url = url + "&&order=" + this.desc;
-    window.open(url);
+    this.httpService.downloadFile("/client/report", {
+      type: this.format,
+      filter: this.filter,
+      orderBy: this.selectedOrder.toLowerCase(),
+      order: this.desc
+    }).subscribe(blob => {
+      importedSaveAs(blob, "report."+ this.format);
+    })
 
   }
-
-
 }
