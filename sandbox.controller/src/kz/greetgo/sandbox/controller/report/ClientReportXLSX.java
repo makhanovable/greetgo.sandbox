@@ -30,7 +30,6 @@ public class ClientReportXLSX implements ClientReport {
     this.headers = headers;
     if (headers != null)
       this.appendRow(headers);
-
     ((SXSSFSheet) sh).trackAllColumnsForAutoSizing();
   }
 
