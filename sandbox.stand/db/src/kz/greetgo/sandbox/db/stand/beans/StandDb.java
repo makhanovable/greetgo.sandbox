@@ -5,12 +5,24 @@ import kz.greetgo.depinject.core.HasAfterInject;
 import kz.greetgo.sandbox.controller.enums.AddressType;
 import kz.greetgo.sandbox.controller.enums.GenderType;
 import kz.greetgo.sandbox.controller.enums.PhoneNumberType;
-import kz.greetgo.sandbox.db.stand.model.*;
+import kz.greetgo.sandbox.db.stand.model.CharmDot;
+import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
+import kz.greetgo.sandbox.db.stand.model.ClientAccountTransactionDot;
+import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
+import kz.greetgo.sandbox.db.stand.model.ClientDot;
+import kz.greetgo.sandbox.db.stand.model.ClientPhoneNumberDot;
+import kz.greetgo.sandbox.db.stand.model.PersonDot;
+import kz.greetgo.sandbox.db.stand.model.TransactionTypeDot;
 import kz.greetgo.util.RND;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 
 @SuppressWarnings("unused")
 @Bean

@@ -1,7 +1,19 @@
 package kz.greetgo.sandbox.db.dao;
 
-import kz.greetgo.sandbox.controller.model.*;
-import org.apache.ibatis.annotations.*;
+import kz.greetgo.sandbox.controller.model.ClientAddress;
+import kz.greetgo.sandbox.controller.model.ClientDetail;
+import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
+import kz.greetgo.sandbox.controller.model.ClientPhoneNumberToSave;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
+import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Many;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Result;
+import org.apache.ibatis.annotations.Results;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
