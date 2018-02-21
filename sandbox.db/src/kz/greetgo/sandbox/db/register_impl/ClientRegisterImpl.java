@@ -3,13 +3,19 @@ package kz.greetgo.sandbox.db.register_impl;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.enums.AddressType;
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.CharmRecord;
+import kz.greetgo.sandbox.controller.model.ClientAddress;
+import kz.greetgo.sandbox.controller.model.ClientDetail;
+import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
+import kz.greetgo.sandbox.controller.model.ClientPhoneNumberToSave;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.report.ClientReport;
+import kz.greetgo.sandbox.controller.report.ClientReportPDF;
 import kz.greetgo.sandbox.controller.report.ClientReportXLSX;
 import kz.greetgo.sandbox.db.dao.CharmDao;
 import kz.greetgo.sandbox.db.dao.ClientDao;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.File;
 import java.io.OutputStream;
@@ -27,12 +33,13 @@ public class ClientRegisterImpl implements ClientRegister {
   public BeanGetter<CharmDao> charmDao;
   public BeanGetter<IdGenerator> idGenerator;
 
-  @SuppressWarnings("Duplicates")
+  @SuppressWarnings({"Duplicates"})
   @Override
   public void generateReport(OutputStream out, String type, String orderBy, int order, String filter) throws Exception {
     ClientReport clientReport = null;
     String filename = "report" + idGenerator.get().newId() + "." + type;
     File file = new File(filename);
+    String[] headers = {"id", "name", "surname", "patronymic", "age", "charm", "total Account Balance", "maximum Balance", "minimum Balance"};
 
     Map<String, String> charms = new HashMap<>();
     for (CharmRecord cr : charmDao.get().getAll())
@@ -40,20 +47,24 @@ public class ClientRegisterImpl implements ClientRegister {
 
     switch (type) {
       case "pdf":
-        throw new NotImplementedException();
+        clientReport = new ClientReportPDF(out, headers);
+        ((ClientReportPDF) clientReport).setCharms(charms);
+        break;
       case "xlsx":
-        clientReport = new ClientReportXLSX(charms);
+        clientReport = new ClientReportXLSX(out, headers);
+        ((ClientReportXLSX) clientReport).setCharms(charms);
         break;
     }
+
 
     if (clientReport != null) {
       long records = this.getClientsSize(filter);
       int chunk = 100;
       for (int page = 0; page < Math.ceil(records / (double) chunk); page++) {
-        clientReport.appendData(this.getClientInfoList(chunk, page, filter, orderBy, order));
+        clientReport.appendRows(this.getClientInfoList(chunk, page, filter, orderBy, order));
       }
 
-      clientReport.write(out);
+      clientReport.finish();
     }
 
   }

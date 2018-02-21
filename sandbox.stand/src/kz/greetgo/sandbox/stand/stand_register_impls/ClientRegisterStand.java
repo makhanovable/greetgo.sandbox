@@ -3,15 +3,23 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.enums.AddressType;
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.ClientDetail;
+import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
+import kz.greetgo.sandbox.controller.model.ClientPhoneNumberToSave;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.report.ClientReport;
+import kz.greetgo.sandbox.controller.report.ClientReportPDF;
 import kz.greetgo.sandbox.controller.report.ClientReportXLSX;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
-import kz.greetgo.sandbox.db.stand.model.*;
+import kz.greetgo.sandbox.db.stand.model.CharmDot;
+import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
+import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
+import kz.greetgo.sandbox.db.stand.model.ClientDot;
+import kz.greetgo.sandbox.db.stand.model.ClientPhoneNumberDot;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.io.File;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,8 +47,7 @@ public class ClientRegisterStand implements ClientRegister {
   @Override
   public void generateReport(OutputStream out, String type, String orderBy, int order, String filter) throws Exception {
     ClientReport clientReport = null;
-    String filename = "report" + gen.newId() + "." + type;
-    File file = new File(filename);
+    String[] headers = {"id", "name", "surname", "patronymic", "age", "charm", "total Account Balance", "maximum Balance", "minimum Balance"};
 
     Map<String, String> charms = new HashMap<>();
     for (CharmDot charmDot : db.get().charmStorage.values())
@@ -48,11 +55,12 @@ public class ClientRegisterStand implements ClientRegister {
 
     switch (type) {
       case "pdf":
-        throw new NotImplementedException();
-
-//        break;
+        clientReport = new ClientReportPDF(out, headers);
+        ((ClientReportPDF) clientReport).setCharms(charms);
+        break;
       case "xlsx":
-        clientReport = new ClientReportXLSX(charms);
+        clientReport = new ClientReportXLSX(out, headers);
+        ((ClientReportXLSX) clientReport).setCharms(charms);
         break;
     }
 
@@ -61,14 +69,14 @@ public class ClientRegisterStand implements ClientRegister {
       int chunk = 100;
 
       for (int page = 0; page < Math.ceil(records / (double) chunk); page++) {
-        clientReport.appendData(this.getClientInfoList(chunk, page, filter, orderBy, order));
+        clientReport.appendRows(this.getClientInfoList(chunk, page, filter, orderBy, order));
       }
 
-      clientReport.write(out);
+      clientReport.finish();
     } else {
       throw new NotImplementedException();
     }
-    
+
 
   }
 
