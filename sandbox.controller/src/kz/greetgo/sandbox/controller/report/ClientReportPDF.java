@@ -22,6 +22,7 @@ public class ClientReportPDF implements ClientReport {
 
   public ClientReportPDF(OutputStream out, String[] headers) throws Exception {
     document = new Document(PageSize.A4.rotate(), -50, -50, 50, 50);
+    PdfWriter.getInstance(document, out);
     document.open();
     table = new PdfPTable(headers.length);
     table.setHeaderRows(1);
