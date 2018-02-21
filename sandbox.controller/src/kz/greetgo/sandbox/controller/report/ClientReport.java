@@ -9,5 +9,5 @@ import java.util.List;
 public interface ClientReport {
   void appendRows(List<ClientRecord> records) throws Exception;
 
-  void finalize() throws Exception;
+  void finish() throws Exception;
 }
