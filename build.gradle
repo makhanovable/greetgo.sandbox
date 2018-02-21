@@ -53,6 +53,7 @@ subprojects {
     testCompile 'org.testng:testng:6.5.1'
     compile 'org.easytesting:fest-assert-core:2.0M10'
     compile "org.apache.poi:poi-ooxml:3.17"
+    compile group: 'com.itextpdf', name: 'itextpdf', version: '5.5.13'
     //compile 'com.google.code.findbugs:annotations:2.0.1'
   }
 
