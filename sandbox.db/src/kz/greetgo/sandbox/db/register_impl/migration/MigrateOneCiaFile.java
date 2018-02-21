@@ -129,12 +129,18 @@ public class MigrateOneCiaFile {
   }*/
 
   void migrateData() throws SQLException {
-    migrateData_checkForDuplicatesOfClient();
-    migrateData_checkForDuplicatesOfClientPhoneTable();
+    migrateData_checkForDuplicatesOfTmpClient();
+    migrateData_checkForDuplicatesOfTmpClientPhoneTable();
+
     migrateData_finalOfCharmTable();
+
+    migrateData_checkForExistingRecordsOfClientTable();
+
     migrateData_finalOfClientTable();
     migrateData_finalOfClientAddressTable();
     migrateData_finalOfClientPhoneTable();
+
+    migrateData_close();
   }
 
   /**
@@ -142,7 +148,7 @@ public class MigrateOneCiaFile {
    *
    * @throws SQLException проброс для удобства
    */
-  void migrateData_checkForDuplicatesOfClient() throws SQLException {
+  void migrateData_checkForDuplicatesOfTmpClient() throws SQLException {
     exec("UPDATE client_to_replace " +
       "SET status = 1 " +
       "FROM ( " +
@@ -159,7 +165,7 @@ public class MigrateOneCiaFile {
    *
    * @throws SQLException
    */
-  void migrateData_checkForDuplicatesOfClientPhoneTable() throws SQLException {
+  void migrateData_checkForDuplicatesOfTmpClientPhoneTable() throws SQLException {
     exec("UPDATE client_phone_to_replace " +
       "SET status = 1 " +
       "FROM ( " +
@@ -190,42 +196,54 @@ public class MigrateOneCiaFile {
   }
 
   /**
-   * Заполнение основной client таблицы
+   * Статус = 2, если cia_id присутствует в постоянной таблице client (update)
+   * Статус = 3, если отсутствует в постоянной таблице client (insert)
    *
    * @throws SQLException проброс для удобства
    */
-  void migrateData_finalOfClientTable() throws SQLException {
-/*
-    exec("UPDATE client " +
-      "SET id = t.client_id, surname = t.surname, patronymic = t.patronymic, gender = t.gender, " +
-      " birth_date = t.birth_date_typed, charm = t.charm_id " +
-      "FROM client_to_replace AS t " +
-      "WHERE migration_cia_id = t.cia_id");
-
-    exec("INSERT INTO client(id, surname, name, patronymic, gender, birth_date, charm, migration_cia_id) " +
-      "SELECT client_id, t.surname, t.name, t.patronymic, t.gender, birth_date_typed, t.charm_id, t.cia_id " +
-      "FROM client_to_replace AS t " +
-      "WHERE status = 3 AND migration_cia_id = null"
-    );*/
-
-    exec("INSERT INTO client(id, surname, name, patronymic, gender, birth_date, charm, migration_cia_id) " +
-      "SELECT c_r.id, c_r.surname, c_r.name, c_r.patronymic, c_r.gender, c_r.birth_date, ch.id, c_r.cia_id " +
-      "FROM client_to_replace AS c_r " +
-      "JOIN charm AS ch ON c_r.charm_name = ch.name " +
-      "WHERE c_r.status = 1 " +
-      "ON CONFLICT(migration_cia_id) DO UPDATE " +
-      "SET id = excluded.id, surname = excluded.surname, name = excluded.name, patronymic = excluded.patronymic, " +
-      "  gender = excluded.gender, birth_date = excluded.birth_date, charm = excluded.charm, actual = 1 "
+  void migrateData_checkForExistingRecordsOfClientTable() throws SQLException {
+    exec("UPDATE client_to_replace " +
+      "SET id = c.id, status = 2 " +
+      "FROM client AS c " +
+      "WHERE status = 1 AND c.migration_cia_id = cia_id"
     );
 
     exec("UPDATE client_to_replace " +
-      "SET status = 2 " +
+      "SET id = nextval('client_id_seq'), status = 3 " +
       "WHERE status = 1"
     );
   }
 
   /**
-   * Заполнение основной client_address таблицы
+   * Заполнение постоянной client таблицы
+   *
+   * @throws SQLException проброс для удобства
+   */
+  void migrateData_finalOfClientTable() throws SQLException {
+    exec("UPDATE client " +
+      "SET id = c_r.id," +
+      "  surname = c_r.surname, " +
+      "  name = c_r.name, " +
+      "  patronymic = c_r.patronymic, " +
+      "  gender = c_r.gender, " +
+      "  birth_date = c_r.birth_date, " +
+      "  charm = ch.id," +
+      "  actual = 1 " +
+      "FROM client_to_replace AS c_r " +
+      "JOIN charm AS ch ON ch.name = c_r.charm_name " +
+      "WHERE c_r.status = 2 AND migration_cia_id = c_r.cia_id"
+    );
+
+    exec("INSERT INTO client(id, surname, name, patronymic, gender, birth_date, charm, migration_cia_id) " +
+      "SELECT c_r.id, c_r.surname, c_r.name, c_r.patronymic, c_r.gender, c_r.birth_date, ch.id, c_r.cia_id " +
+      "FROM client_to_replace AS c_r " +
+      "JOIN charm AS ch ON ch.name = c_r.charm_name " +
+      "WHERE c_r.status = 3"
+    );
+  }
+
+  /**
+   * Заполнение постоянной client_address таблицы
    *
    * @throws SQLException проброс для удобства
    */
@@ -234,14 +252,14 @@ public class MigrateOneCiaFile {
       "SELECT c_r.id, cad_r.type, cad_r.street, cad_r.house, cad_r.flat " +
       "FROM client_to_replace AS c_r " +
       "JOIN client_address_to_replace AS cad_r ON c_r.record_no = cad_r.client_record_no " +
-      "WHERE c_r.status = 2 " +
+      "WHERE c_r.status = 3 " +
       "ON CONFLICT(client, type) DO UPDATE " +
       "SET street = excluded.street, house = excluded.flat, flat = excluded.flat"
     );
   }
 
   /**
-   * Заполнение основной client_phone таблицы
+   * Заполнение постоянной client_phone таблицы
    *
    * @throws SQLException проброс для удобства
    */
@@ -250,9 +268,21 @@ public class MigrateOneCiaFile {
       "SELECT c_r.id, ph_r.number, ph_r.type " +
       "FROM client_to_replace AS c_r " +
       "JOIN client_phone_to_replace AS ph_r ON c_r.record_no = ph_r.client_record_no " +
-      "WHERE c_r.status = 2 AND ph_r.status = 1 " +
+      "WHERE c_r.status = 3 AND ph_r.status = 1 " +
       "ON CONFLICT(client, number) DO UPDATE " +
       "SET actual = 1"
+    );
+  }
+
+  /**
+   * Статусы для пройденной миграции
+   *
+   * @throws SQLException проброс для удобства
+   */
+  void migrateData_close() throws SQLException {
+    exec("UPDATE client_to_replace " +
+      "SET status = 4 " +
+      "WHERE status IN (2, 3)"
     );
   }
 

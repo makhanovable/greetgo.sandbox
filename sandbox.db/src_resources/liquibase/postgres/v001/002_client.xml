@@ -100,6 +100,12 @@
     ]]></sql>
   </changeSet>
 
+  <changeSet author="nsmagulov" id="alter-sequence-charm-id-change-minvalue">
+    <sql endDelimiter=";;"><![CDATA[
+      ALTER SEQUENCE charm_id_seq MINVALUE 16 START 16 RESTART 16
+    ]]></sql>
+  </changeSet>
+
   <changeSet author="nsmagulov" id="create-sequence-clientAccount-id">
     <sql endDelimiter=";;"><![CDATA[
       CREATE SEQUENCE client_account_id_seq
@@ -224,6 +230,13 @@
       ALTER TABLE client_account_transaction
       ADD CONSTRAINT uk_clientAccountTransaction
       UNIQUE(account, money, finished_at)
+    ]]></sql>
+  </changeSet>
+
+  <changeSet author="nsmagulov" id="insert-default-charm">
+    <sql endDelimiter=";;"><![CDATA[
+      INSERT INTO charm(id, name)
+      VALUES(0, 'Не указан')
     ]]></sql>
   </changeSet>
 </databaseChangeLog>

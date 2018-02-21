@@ -15,7 +15,7 @@ public interface MigrationTestDao {
   void insertClient(@Param("tmpClientTableName") String tmpClientTableName,
                     @Param("recordNo") long recordNo,
                     @Param("ciaId") String ciaId,
-                    @Param("id") long id,
+                    @Param("id") Long id,
                     @Param("surname") String surname,
                     @Param("name") String name,
                     @Param("patronymic") String patronymic,
@@ -45,10 +45,11 @@ public interface MigrationTestDao {
                          @Param("status") int status);
 
   @Insert("INSERT INTO ${tmpClientAccountTableName} " +
-    "VALUES (#{recordNo}, #{ciaId}, nextval('client_account_id_seq'), #{money}, #{accountNumber}, #{registeredAt}, #{status}, #{error})")
+    "VALUES (#{recordNo}, #{ciaId}, nextval('client_account_id_seq'), #{clientId}, #{money}, #{accountNumber}, #{registeredAt}, #{status}, #{error})")
   void insertClientAccount(@Param("tmpClientAccountTableName") String tmpClientAccountTableName,
                            @Param("recordNo") long recordNo,
                            @Param("ciaId") String ciaId,
+                           @Param("clientId") Long clientId,
                            @Param("money") BigDecimal money,
                            @Param("accountNumber") String accountNumber,
                            @Param("registeredAt") Timestamp registeredAt,
@@ -56,9 +57,10 @@ public interface MigrationTestDao {
                            @Param("error") String error);
 
   @Insert("INSERT INTO ${tmpTableName} " +
-    "VALUES (#{recordNo}, nextval('client_account_transaction_id_seq'), #{money}, #{finishedAt}, #{transactionType}, #{accountNumber}, #{status}, #{error})")
+    "VALUES (#{recordNo}, nextval('client_account_transaction_id_seq'), #{accountId}, #{money}, #{finishedAt}, #{transactionType}, #{accountNumber}, #{status}, #{error})")
   void insertClientAccountTransaction(@Param("tmpTableName") String tmpTableName,
                                       @Param("recordNo") long recordNo,
+                                      @Param("accountId") Long accountId,
                                       @Param("money") BigDecimal money,
                                       @Param("finishedAt") Timestamp finishedAt,
                                       @Param("transactionType") String transactionType,
@@ -66,7 +68,7 @@ public interface MigrationTestDao {
                                       @Param("status") int status,
                                       @Param("error") String error);
 
-  @Delete("DELETE FROM charm")
+  @Delete("DELETE FROM charm WHERE id >= 16")
   void deleteAllTableCharm();
 
   @Delete("DELETE FROM client")

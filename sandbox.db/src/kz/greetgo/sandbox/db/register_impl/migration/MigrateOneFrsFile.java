@@ -23,7 +23,6 @@ public class MigrateOneFrsFile {
   public void migrate() throws Exception {
     prepareTmpTables();
     uploadData();
-    //processValidationErrors();
     migrateData();
     downloadErrors();
   }
@@ -40,9 +39,10 @@ public class MigrateOneFrsFile {
       "  record_no bigint, " +
       "  cia_id varchar(64), " +
       "  id bigint, " +
+      "  client_id bigint, " +
       "  money numeric(19, 2) NOT NULL DEFAULT 0, " +
       "  account_number varchar(64), " +
-      "  registered_at timestamptz, " +
+      "  registered_at timestamp, " +
       "  status int DEFAULT 0, " +
       "  error varchar(256), " +
       "  PRIMARY KEY(record_no)" +
@@ -51,8 +51,9 @@ public class MigrateOneFrsFile {
     exec("CREATE TABLE client_account_transaction_to_replace (" +
       "  record_no bigint NOT NULL, " +
       "  id bigint, " +
-      "  money numeric(19, 2) DEFAULT 0, " +
-      "  finished_at timestamptz, " +
+      "  account_id bigint, " +
+      "  money numeric(19, 2), " +
+      "  finished_at timestamp, " +
       "  transaction_type varchar(256), " +
       "  account_number varchar(64), " +
       "  status int DEFAULT 0, " +
@@ -83,8 +84,17 @@ public class MigrateOneFrsFile {
     migrateData_checkForDuplicatesOfTmpClientAccountTransaction();
     migrateData_checkForDuplicatesOfTmpClientAccount();
 
-    migrateData_finalOfTransactionTypeTable();
-    migrateData_finalOfClientAccountTransaction();
+    migrateData_finalOfTmpTransactionTypeTable();
+
+    migrateData_checkForExistingRecordsOfTmpClientAccountTable();
+    migrateData_finalOfTmpClientAccountTable();
+
+    migrateData_checkForExistingRecordsOfTmpClientAccountTransaction();
+    migrateData_processBusinessLogicErrorsOfTmpClientAccountTransaction();
+    migrateData_fillMoneyOfTmpClientAccount();
+    migrateData_finalOfTmpClientAccountTransaction();
+
+    migrateData_close();
   }
 
   /**
@@ -122,7 +132,26 @@ public class MigrateOneFrsFile {
     );
   }
 
-  void migrateData_finalOfTransactionTypeTable() throws SQLException {
+  /**
+   * Статус = 2, если account_number присутствует в постоянной таблице client_account (игнорировать)
+   * Статус = 3, если отсутствует (insert)
+   *
+   * @throws SQLException проброс для удобства
+   */
+  void migrateData_checkForExistingRecordsOfTmpClientAccountTable() throws SQLException {
+    exec("UPDATE client_account_to_replace " +
+      "SET client_id = ca.client, status = 2 " +
+      "FROM client_account as ca " +
+      "WHERE status = 1 AND ca.number = account_number"
+    );
+
+    exec("UPDATE client_account_to_replace " +
+      "SET id = nextval('client_account_id_seq'), client_id = nextval('client_id_seq'), status = 3 " +
+      "WHERE status = 1"
+    );
+  }
+
+  void migrateData_finalOfTmpTransactionTypeTable() throws SQLException {
     exec("INSERT INTO transaction_type(id, name) " +
       "SELECT nextval('transaction_type_id_seq'), trans_dictionary.type " +
       "FROM ( " +
@@ -134,15 +163,129 @@ public class MigrateOneFrsFile {
     );
   }
 
-  void migrateData_finalOfClientAccountTransaction() throws SQLException {
-    exec("INSERT INTO client_account_transaction(id, account, finished_at, type) " +
-      "SELECT nextval('client_account_transaction'), ca.id, cat_r.finished_at, tt.id " +
+  /**
+   * Заполнение постоянных client и client_account таблиц
+   *
+   * @throws SQLException проброс для удобства
+   */
+  void migrateData_finalOfTmpClientAccountTable() throws SQLException {
+    exec("INSERT INTO client(id, charm, migration_cia_id, actual) " +
+      "SELECT ca_r.client_id, 0, ca_r.cia_id, 0 " +
+      "FROM client_account_to_replace AS ca_r " +
+      "WHERE status = 3"
+    );
+
+    exec("INSERT INTO client_account(id, client, number, registered_at) " +
+      "SELECT ca_r.id, ca_r.client_id, ca_r.account_number, ca_r.registered_at " +
+      "FROM client_account_to_replace AS ca_r " +
+      "WHERE ca_r.status = 3"
+    );
+
+    /*exec("INSERT INTO client_account(id, client, money, number, registered_at) " +
+      "SELECT x.id, x.client_id, x.msum, x.account_number, x.registered_at " +
+      "FROM ( " +
+      "  SELECT ca_r.id, ca_r.client_id, SUM(cat_r.money) AS msum, cat_r.finished_at " +
+      "  FROM client_account_to_replace AS ca_r " +
+      "  JOIN client_account_transaction AS cat_r ON account_number = cat_r.account_number " +
+      "  WHERE ca_r.status = 3 AND cat_r.status IN (2, 3) " +
+      ") AS x"
+    );*/
+  }
+
+  /**
+   * Статус = 2, если такая запись уже существует в постоянной таблице client_account_transaction (игнорировать)
+   * Статус = 3, если такой номер аккаунта существует в постоянной таблице client_account (update)
+   *
+   * @throws SQLException проброс для удобства
+   */
+  void migrateData_checkForExistingRecordsOfTmpClientAccountTransaction() throws SQLException {
+    exec("UPDATE client_account_transaction_to_replace AS cat_r " +
+      "SET status = 2 " +
+      "FROM client_account_transaction AS cat " +
+      "JOIN client_account AS ca ON cat.account = ca.id " +
+      "WHERE cat_r.status = 1 AND cat_r.account_number = ca.number AND cat_r.money = cat.money AND " +
+      "cat_r.finished_at = cat.finished_at"
+    );
+
+    exec("UPDATE client_account_transaction_to_replace " +
+      "SET id = nextval('client_account_transaction_id_seq'), account_id = ca.id, status = 3 " +
+      "FROM client_account AS ca " +
+      "WHERE status = 1 AND account_number = ca.number"
+    );
+
+/*
+    exec("UPDATE client_account_transaction_to_replace AS cat_r " +
+      "SET id = nextval('client_account_transaction_id_seq'), account_id = ca.id, status = 3 " +
+      "FROM client_account AS ca " +
+      "WHERE cat_r.status = 1 AND cat_r.account_number = ca.account"
+    );
+
+    exec("UPDATE client_account_transaction_to_replace AS cat_r " +
+      "SET id = nextval('client_account_transaction_id_seq'), account_id =  status = 4 " +
+      "FROM client_account_to_replace AS ca_r " +
+      "WHERE cat_r.status = 1 AND cat_r.account_number = ca_r.account_number"
+    );*/
+  }
+
+  /**
+   * Заполнение ошибок несуществующего клиентского аккаунта у записей со статусом = 1
+   *
+   * @throws SQLException проброс для удобства
+   */
+  void migrateData_processBusinessLogicErrorsOfTmpClientAccountTransaction() throws SQLException {
+    exec("UPDATE client_account_transaction_to_replace " +
+      "SET error = 'Аккаунт '||account_number||' не существует " +
+      "во временной таблице client_account_transaction у записи = '||record_no " +
+      "WHERE status = 1"
+    );
+  }
+
+  /**
+   * Заполнение поля money у постоянной таблицы client_account таблицы после миграции
+   *
+   * @throws SQLException проброс для удобства
+   */
+  void migrateData_fillMoneyOfTmpClientAccount() throws SQLException {
+    exec("UPDATE client_account AS ca " +
+      "SET money = money + x.msum " +
+      "FROM ( " +
+      "  SELECT SUM(money) AS msum, account_id " +
+      "  FROM client_account_transaction_to_replace " +
+      "  WHERE status = 3 " +
+      "  GROUP BY account_id " +
+      ") AS x " +
+      "WHERE x.account_id = id "
+    );
+  }
+
+  /**
+   * Заполнение постоянной client_account_transaction таблицы
+   *
+   * @throws SQLException проброс для удобства
+   */
+  void migrateData_finalOfTmpClientAccountTransaction() throws SQLException {
+    exec("INSERT INTO client_account_transaction(id, account, money, finished_at, type) " +
+      "SELECT cat_r.id, cat_r.account_id, cat_r.money, cat_r.finished_at, tt.id " +
       "FROM client_account_transaction_to_replace AS cat_r " +
-      "JOIN transaction_type AS tt ON cat_r.transaction_type = tt.name " +
-      "JOIN client_account AS ca ON cat_r.account_number = ca.number " +
-      "WHERE cat_r.status = 1 " +
-      "ON CONFLICT(account_number, money, finished_at) DO UPDATE " +
-      "SET type = excluded.type"
+      "JOIN transaction_type AS tt ON tt.name = cat_r.transaction_type " +
+      "WHERE cat_r.status = 3"
+    );
+  }
+
+  /**
+   * Статусы для пройденной миграции
+   *
+   * @throws SQLException проброс для удобства
+   */
+  void migrateData_close() throws SQLException {
+    exec("UPDATE client_account_transaction_to_replace " +
+      "SET status = 4 " +
+      "WHERE status IN (2, 3)"
+    );
+
+    exec("UPDATE client_account_to_replace " +
+      "SET status = 4 " +
+      "WHERE status IN (2, 3)"
     );
   }
 
