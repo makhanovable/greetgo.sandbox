@@ -451,8 +451,6 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
   @Test
   public void migrate_fromFakeDir() throws Exception {
     resetAllTables();
-
-    new MigrationController().execute(null);
   }
 
   private long createClientWithTmp(String tblName, long clientRecordNum, int status) {

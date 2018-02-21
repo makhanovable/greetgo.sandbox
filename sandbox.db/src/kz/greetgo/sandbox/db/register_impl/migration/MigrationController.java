@@ -3,11 +3,9 @@ package kz.greetgo.sandbox.db.register_impl.migration;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.db.configs.DbConfig;
+import kz.greetgo.sandbox.db.configs.MigrationConfig;
 import kz.greetgo.sandbox.db.register_impl.migration.error.CommonErrorFileWriter;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
 
 import java.io.File;
 import java.sql.Connection;
@@ -15,7 +13,7 @@ import java.sql.DriverManager;
 import java.time.Instant;
 
 @Bean
-public class MigrationController implements Job {
+public class MigrationController {
 
   public BeanGetter<DbConfig> dbConfig;
   public BeanGetter<MigrationController> migrationController;
@@ -34,16 +32,16 @@ public class MigrationController implements Job {
     //migrationCiaFile.inputFile = new File(inFilePath);
     migrationCiaFile.inputFile = ciaFile;
 
-    String errorFilePath =
-      migrationCiaFile.inputFile.getAbsolutePath() + "error_" + migrationCiaFile.inputFile.getName().replaceAll("xml", "txt");
+    try (Connection connection = createConnection()) {
+      String errorFilePath =
+        migrationCiaFile.inputFile.getAbsolutePath() + "error_" + migrationCiaFile.inputFile.getName().replaceAll("xml", "txt");
 
-    migrationCiaFile.outputErrorFile = new CommonErrorFileWriter(new File(errorFilePath));
-    migrationCiaFile.maxBatchSize = 100_000;
-    migrationCiaFile.connection = createConnection();
+      migrationCiaFile.outputErrorFile = new CommonErrorFileWriter(new File(errorFilePath));
+      migrationCiaFile.maxBatchSize = 100_000;
+      migrationCiaFile.connection = connection;
 
-    migrationCiaFile.migrate();
-
-    migrationCiaFile.connection.close();
+      migrationCiaFile.migrate();
+    }
   }
 
   public void migrateFrsFile(File frsFile) throws Exception {
@@ -65,37 +63,10 @@ public class MigrationController implements Job {
     migrationFrsFile.connection.close();
   }
 
-  @Override
-  public void execute(JobExecutionContext context) {
-    try {
-      String dirPath = System.getProperty("user.home") + "/migration";
-      File dir = new File(dirPath);
-      if (!dir.exists())
-        dir.mkdir();
+  public BeanGetter<MigrationConfig> migrationConfig;
 
-      if (dir.canRead()) {
-        for (File file : dir.listFiles()) {
-          if (file.isFile()) {
-            String fileName = file.getName();
-
-            switch (FilenameUtils.getExtension(fileName)) {
-              case "xml": {
-                migrationController.get().migrateCiaFile(file);
-                break;
-              }
-              case "json_row": {
-                migrationController.get().migrateFrsFile(file);
-                break;
-              }
-              default: {
-                logger.warn("There are redundant files in the migration directory " + dirPath);
-              }
-            }
-          }
-        }
-      }
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+  public void migrate() {
+    System.out.println("Hello from Migration " + migrationConfig.get());
+    System.out.println(migrationConfig.get().ciaHost());
   }
 }
