@@ -21,17 +21,8 @@ import kz.greetgo.sandbox.db.test.dao.CharmTestDao;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.testng.annotations.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,61 +43,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public BeanGetter<CharmTestDao> charmTestDao;
   public BeanGetter<IdGenerator> idGenerator;
   public BeanGetter<AccountTetsDao> accountTetsDao;
-
-
-  @Test
-  void generateReportXLSXTest() throws Exception {
-    this.clientTestDao.get().clear();
-    this.charmTestDao.get().clear();
-
-    //init data in db
-    insertRndCharms();
-    Map<String, String> charms = new HashMap<>();
-    for (CharmDot charmDot : this.charmTestDao.get().getAll())
-      charms.put(charmDot.id, charmDot.name);
-    List<ClientDot> clients = new ArrayList<>();
-    Map<String, List<ClientAccountDot>> accountDotMap = new HashMap<>();
-    this.rndClientsWithAccounts(clients, accountDotMap);
-
-    ByteArrayOutputStream out = new ByteArrayOutputStream(); //without saving file to disk
-
-    // orderBy, order, filter params tested in getClientInfoListTest
-
-    //
-    //
-    this.clientRegister.get().generateReport(out, "xlsx", null, 0, null);
-    //
-    //
-
-    //combine client data with corresponding account data: total, max, min balance
-    List<ClientRecord> expectedList = this.fromClientDotListToRecordList(clients, accountDotMap);
-
-    //sorting, by default fio
-    sortWithOrder(expectedList, null, 0);
-
-    //test
-    InputStream input = new ByteArrayInputStream(out.toByteArray());
-    Workbook workbook = new XSSFWorkbook(input);
-    assertThat(workbook.getNumberOfSheets()).isEqualTo(1);
-    Sheet datatypeSheet = workbook.getSheetAt(0);
-
-
-    assertThat(datatypeSheet.getPhysicalNumberOfRows()).isEqualTo(clients.size() + 1);
-    for (int i = 1; i < datatypeSheet.getPhysicalNumberOfRows(); i++) {
-      Row row = datatypeSheet.getRow(i);
-      assertThat(row).isNotNull();
-      ClientRecord clientRecord = expectedList.get(i - 1);
-      assertCell(row.getCell(0), clientRecord.id);
-      assertCell(row.getCell(1), clientRecord.name);
-      assertCell(row.getCell(2), clientRecord.surname);
-      assertCell(row.getCell(3), clientRecord.patronymic);
-      assertCell(row.getCell(4), String.valueOf(clientRecord.age));
-      assertCell(row.getCell(5), charms.get(clientRecord.charm));
-      assertCell(row.getCell(6), String.valueOf(clientRecord.totalAccountBalance));
-      assertCell(row.getCell(7), String.valueOf(clientRecord.maximumBalance));
-      assertCell(row.getCell(8), String.valueOf(clientRecord.minimumBalance));
-    }
-  }
 
 
   @Test
@@ -439,14 +375,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(sdf.format(target.birthDate)).isEqualTo(sdf.format(assertion.birthDate));
     assertThat(target.charm).isEqualTo(assertion.charm);
     assertThat(target.id).isEqualTo(assertion.id);
-  }
-
-  private void assertCell(Cell cell, Object o) {
-    assertThat(cell).isNotNull();
-    if (cell.getCellTypeEnum() == CellType.STRING)
-      assertThat(cell.getStringCellValue()).isEqualTo((String) o);
-    if (cell.getCellTypeEnum() == CellType.NUMERIC)
-      assertThat(cell.getNumericCellValue()).isEqualTo((double) o);
   }
 
   private ClientAddressDot rndAddress(String id, AddressType type) {
