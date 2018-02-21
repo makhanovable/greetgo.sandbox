@@ -7,7 +7,7 @@ import java.io.OutputStream;
 import java.util.List;
 
 public interface ClientReport {
-  void appendData(List<ClientRecord> records) throws IOException;
+  void appendRows(List<ClientRecord> records) throws Exception;
 
-  void write(OutputStream out) throws IOException;
+  void finalize() throws Exception;
 }
