@@ -12,7 +12,9 @@ dependencies {
 
   compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 
+  // https://mvnrepository.com/artifact/org.quartz-scheduler/quartz
+  compile group: 'org.quartz-scheduler', name: 'quartz', version: '2.3.0'
+
   testCompile "kz.greetgo.depinject:greetgo.depinject.testng:$depinjectVersion"
   testCompile project(':sandbox.stand:db').sourceSets.main.output
-
 }

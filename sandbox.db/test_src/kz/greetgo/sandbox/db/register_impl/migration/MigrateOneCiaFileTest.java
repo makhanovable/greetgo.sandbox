@@ -447,6 +447,14 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
     assertThat(phoneRecordList.size()).isEqualTo(expectedClientPhoneCount);
   }
 
+
+  @Test
+  public void migrate_fromFakeDir() throws Exception {
+    resetAllTables();
+
+    new MigrationController().execute(null);
+  }
+
   private long createClientWithTmp(String tblName, long clientRecordNum, int status) {
     int charmId = clientTestDao.get().selectSeqIdNextValueTableCharm();
     String charmName = RND.str(16);
