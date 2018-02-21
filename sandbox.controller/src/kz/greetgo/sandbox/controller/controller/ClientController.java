@@ -13,6 +13,7 @@ import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.util.Controller;
 
+import java.util.Date;
 import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
@@ -66,7 +67,8 @@ public class ClientController implements Controller {
   public void generateReport(@Par("type") String type, @Par("orderBy") String orderBy, @Par("order") int order,
                              @Par("filter") String filter, RequestTunnel requestTunnel) throws Exception {
 
-    requestTunnel.setResponseHeader("Content-disposition", "attachment; filename=yourcustomfilename.xlsx");
+    String filename = "client_report_" + new Date() + "." + type;
+    requestTunnel.setResponseHeader("Content-disposition", "attachment; filename=" + filename);
 
     this.clientRegister.get().generateReport(requestTunnel.getResponseOutputStream(), type, orderBy, order, filter);
 
