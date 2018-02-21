@@ -67,6 +67,10 @@ public class ClientController implements Controller {
   public void generateReport(@Par("type") String type, @Par("orderBy") String orderBy, @Par("order") int order,
                              @Par("filter") String filter, RequestTunnel requestTunnel) throws Exception {
 
+    if (type == null || !(type.equals("pdf") || type.equals("xlsx"))) {
+      throw new Exception("Unsupported File Format");
+    }
+
     String filename = "client_report_" + new Date() + "." + type;
     requestTunnel.setResponseHeader("Content-disposition", "attachment; filename=" + filename);
 
