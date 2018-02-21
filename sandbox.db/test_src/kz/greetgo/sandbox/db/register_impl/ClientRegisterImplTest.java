@@ -480,6 +480,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
       ClientRecord cr = clientDot.toClientRecord();
       List<ClientAccountDot> accList = accounts.get(clientDot.id);
 
+      // FIXME: 2/21/18 Если у клиента нет аккаунтов?
       float max = accList.get(0).money;
       float min = accList.get(0).money;
       float total = 0;

@@ -62,7 +62,7 @@ public class ClientController implements Controller {
     this.clientRegister.get().addOrUpdate(clientToSave);
   }
 
-
+  // FIXME: 2/21/18 Для отчета нужно создать отдельный контролер. Название мапинга и метода должны быть интуитивно понятны
   @Mapping("/report")
   public void generateReport(@Par("type") String type, @Par("orderBy") String orderBy, @Par("order") int order,
                              @Par("filter") String filter, RequestTunnel requestTunnel) throws Exception {

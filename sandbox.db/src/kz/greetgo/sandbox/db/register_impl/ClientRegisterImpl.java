@@ -3,13 +3,7 @@ package kz.greetgo.sandbox.db.register_impl;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.enums.AddressType;
-import kz.greetgo.sandbox.controller.model.CharmRecord;
-import kz.greetgo.sandbox.controller.model.ClientAddress;
-import kz.greetgo.sandbox.controller.model.ClientDetail;
-import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
-import kz.greetgo.sandbox.controller.model.ClientPhoneNumberToSave;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.controller.model.ClientToSave;
+import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.report.ClientReport;
 import kz.greetgo.sandbox.controller.report.ClientReportPDF;
@@ -19,11 +13,7 @@ import kz.greetgo.sandbox.db.dao.ClientDao;
 
 import java.io.File;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Arrays;
+import java.util.*;
 
 
 @Bean
@@ -61,6 +51,7 @@ public class ClientRegisterImpl implements ClientRegister {
       long records = this.getClientsSize(filter);
       int chunk = 100;
       for (int page = 0; page < Math.ceil(records / (double) chunk); page++) {
+        // FIXME: 2/21/18 Если количество клиентов=100_000, то тысячу раз будешь один и тот же запрос выполнять с сорировкой и выборкой?
         clientReport.appendRows(this.getClientInfoList(chunk, page, filter, orderBy, order));
       }
 
@@ -83,6 +74,7 @@ public class ClientRegisterImpl implements ClientRegister {
     int offset = limit * page;
     String order = desc == 1 ? "desc" : "asc";
     filter = getFormattedFilter(filter);
+    // FIXME: 2/21/18 ЕСЛИ ФИЛЬТРА НЕТ, ТО ВЫБОРКИ ПО "LIKE" ВООБЩЕ НЕ ДОЛЖНО БЫТЬ В ЗАПРОСЕ!!!
     return this.clientDao.get().getClients(limit, offset, ob, order, filter);
   }
 
