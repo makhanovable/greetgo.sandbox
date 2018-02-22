@@ -9,6 +9,7 @@ import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +36,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
 
     MigrateOneCiaFile oneCiaFile = new MigrateOneCiaFile();
     oneCiaFile.connection = connection;
-    oneCiaFile.inputFile = inFile;
+    oneCiaFile.inputStream = new FileInputStream(inFile);
     oneCiaFile.outputErrorFile = new CommonErrorFileWriter(outputErrorFile);
     oneCiaFile.prepareTmpTables();
     oneCiaFile.uploadData();
@@ -115,7 +116,7 @@ public class MigrateOneCiaFileTest extends MigrateCommonTests {
 
     MigrateOneCiaFile oneCiaFile = new MigrateOneCiaFile();
     oneCiaFile.connection = connection;
-    oneCiaFile.inputFile = inFile;
+    oneCiaFile.inputStream = new FileInputStream(inFile);
     oneCiaFile.outputErrorFile = new ErrorFileWriterTest();
     oneCiaFile.prepareTmpTables();
     oneCiaFile.uploadData();

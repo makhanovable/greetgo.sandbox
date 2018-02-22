@@ -3,20 +3,19 @@ package kz.greetgo.sandbox.db.register_impl.migration;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.db.configs.DbConfig;
-import kz.greetgo.sandbox.db.configs.MigrationConfig;
 import kz.greetgo.sandbox.db.register_impl.migration.error.CommonErrorFileWriter;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.time.Instant;
+import java.util.concurrent.TimeUnit;
 
 @Bean
 public class MigrationController {
 
   public BeanGetter<DbConfig> dbConfig;
-  public BeanGetter<MigrationController> migrationController;
 
   private Logger logger = Logger.getLogger(MigrationController.class);
 
@@ -25,48 +24,53 @@ public class MigrationController {
     return DriverManager.getConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password());
   }
 
-  public void migrateCiaFile(File ciaFile) throws Exception {
-    logger.info("CIA file migration at " + Instant.now());
-
-    MigrateOneCiaFile migrationCiaFile = new MigrateOneCiaFile();
-    //migrationCiaFile.inputFile = new File(inFilePath);
-    migrationCiaFile.inputFile = ciaFile;
+  public boolean migrateOneCiaFile(InputStream is, String filename, File errorFile) {
+    logger.info("Начало миграции CIA файла " + filename + ". Файл ошибки " + errorFile.getAbsolutePath());
 
     try (Connection connection = createConnection()) {
-      String errorFilePath =
-        migrationCiaFile.inputFile.getAbsolutePath() + "error_" + migrationCiaFile.inputFile.getName().replaceAll("xml", "txt");
+      long init = System.currentTimeMillis();
+      MigrateOneCiaFile migrationCiaFile = new MigrateOneCiaFile();
+      migrationCiaFile.inputStream = is;
 
-      migrationCiaFile.outputErrorFile = new CommonErrorFileWriter(new File(errorFilePath));
+      migrationCiaFile.outputErrorFile = new CommonErrorFileWriter(errorFile);
       migrationCiaFile.maxBatchSize = 100_000;
       migrationCiaFile.connection = connection;
 
       migrationCiaFile.migrate();
+      long post = System.currentTimeMillis();
+
+      logger.info("Конец миграции CIA файла " + filename +
+        ". Затраченное время " + TimeUnit.MILLISECONDS.toSeconds(post - init) + " секунд");
+    } catch (Exception e) {
+      logger.error("Ошибка миграции CIA файла " + filename, e);
+      return false;
     }
+
+    return true;
   }
 
-  public void migrateFrsFile(File frsFile) throws Exception {
-    logger.info("FRS file migration at " + Instant.now());
+  public boolean migrateOneFrsFile(InputStream is, String filename, File errorFile) {
+    logger.info("Начало миграции FRS файла " + filename + ". Файл ошибки " + errorFile.getAbsolutePath());
 
-    MigrateOneFrsFile migrationFrsFile = new MigrateOneFrsFile();
-    //migrationFrsFile.inputFile = new File(inFilePath);
-    migrationFrsFile.inputFile = frsFile;
+    try (Connection connection = createConnection()) {
+      long init = System.currentTimeMillis();
+      MigrateOneFrsFile migrationFrsFile = new MigrateOneFrsFile();
+      migrationFrsFile.inputStream = is;
 
-    String errorFilePath =
-      migrationFrsFile.inputFile.getAbsolutePath() + "error_" + migrationFrsFile.inputFile.getName().replaceAll("json_row", "txt");
+      migrationFrsFile.outputErrorFile = new CommonErrorFileWriter(errorFile);
+      migrationFrsFile.maxBatchSize = 100_000;
+      migrationFrsFile.connection = connection;
 
-    migrationFrsFile.outputErrorFile = new CommonErrorFileWriter(new File(errorFilePath));
-    migrationFrsFile.maxBatchSize = 100_000;
-    migrationFrsFile.connection = createConnection();
+      migrationFrsFile.migrate();
+      long post = System.currentTimeMillis();
 
-    migrationFrsFile.migrate();
+      logger.info("Конец миграции FRS файла " + filename +
+        ". Затраченное время " + TimeUnit.MILLISECONDS.toSeconds(post - init) + " секунд");
+    } catch (Exception e) {
+      logger.error("Ошибка миграции FRS файла " + filename, e);
+      return false;
+    }
 
-    migrationFrsFile.connection.close();
-  }
-
-  public BeanGetter<MigrationConfig> migrationConfig;
-
-  public void migrate() {
-    System.out.println("Hello from Migration " + migrationConfig.get());
-    System.out.println(migrationConfig.get().ciaHost());
+    return true;
   }
 }

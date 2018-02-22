@@ -3,20 +3,18 @@ package kz.greetgo.sandbox.db.register_impl.migration;
 import kz.greetgo.sandbox.controller.util.Util;
 import kz.greetgo.sandbox.db.register_impl.migration.error.ErrorFile;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.io.InputStream;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class MigrateOneFrsFile {
-  public File inputFile;
+  public InputStream inputStream;
   public ErrorFile outputErrorFile;
   public int maxBatchSize = 100;
   public Connection connection;
 
+  String tmpClientTableName;
   String tmpClientAccountTableName;
   String tmpClientAccountTransactionTableName;
 
@@ -32,8 +30,15 @@ public class MigrateOneFrsFile {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
     String additionalId = sdf.format(now) + "_" + Util.generateRandomString(8);
 
+    tmpClientTableName = "tmp_migration_client_" + additionalId;
     tmpClientAccountTableName = "tmp_migration_client_account_" + additionalId;
     tmpClientAccountTransactionTableName = "tmp_migration_client_account_transaction_" + additionalId;
+
+    exec("CREATE TABLE client_to_replace (" +
+      "  id bigint, " +
+      "  cia_id varchar(64) UNIQUE, " +
+      "  PRIMARY KEY(id)" +
+      ")");
 
     exec("CREATE TABLE client_account_to_replace (" +
       "  record_no bigint, " +
@@ -68,15 +73,13 @@ public class MigrateOneFrsFile {
     FrsUploader frsUploader = new FrsUploader();
     frsUploader.connection = connection;
     frsUploader.maxBatchSize = maxBatchSize;
-    frsUploader.inputFileName = inputFile.getName();
     frsUploader.errorFileWriter = outputErrorFile;
     frsUploader.clientAccountTable = tmpClientAccountTableName;
     frsUploader.clientAccountTransactionTable = tmpClientAccountTransactionTableName;
 
-    try (FileInputStream fileInputStream = new FileInputStream(inputFile)) {
-      frsUploader.parse(fileInputStream);
-    }
+    frsUploader.parse(inputStream);
 
+    frsUploader.errorFileWriter.finish();
     connection.setAutoCommit(true);
   }
 
@@ -134,7 +137,8 @@ public class MigrateOneFrsFile {
 
   /**
    * Статус = 2, если account_number присутствует в постоянной таблице client_account (игнорировать)
-   * Статус = 3, если отсутствует (insert)
+   * Статус = 3, если cia_id присутствует в постоянной таблице client (игнорировать)
+   * Статус = 4, если отсутствует (insert client_account & client)
    *
    * @throws SQLException проброс для удобства
    */
@@ -146,8 +150,21 @@ public class MigrateOneFrsFile {
     );
 
     exec("UPDATE client_account_to_replace " +
-      "SET id = nextval('client_account_id_seq'), client_id = nextval('client_id_seq'), status = 3 " +
-      "WHERE status = 1"
+      "SET id = nextval('client_account_id_seq'), client_id = c.id, status = 3 " +
+      "FROM client as c " +
+      "WHERE status = 1 AND c.migration_cia_id = cia_id"
+    );
+
+    exec("INSERT INTO client_to_replace(id, cia_id) " +
+      "SELECT nextval('client_id_seq'), ca_r.cia_id " +
+      "FROM client_account_to_replace AS ca_r " +
+      "WHERE status = 1 " +
+      "ON CONFLICT(cia_id) DO NOTHING ");
+
+    exec("UPDATE client_account_to_replace AS ca_r " +
+      "SET id = nextval('client_account_id_seq'), client_id = c_r.id, status = 4 " +
+      "FROM client_to_replace AS c_r " +
+      "WHERE ca_r.status = 1 AND c_r.cia_id = ca_r.cia_id"
     );
   }
 
@@ -169,16 +186,24 @@ public class MigrateOneFrsFile {
    * @throws SQLException проброс для удобства
    */
   void migrateData_finalOfTmpClientAccountTable() throws SQLException {
-    exec("INSERT INTO client(id, charm, migration_cia_id, actual) " +
+    /*exec("INSERT INTO client(id, charm, migration_cia_id, actual) " +
       "SELECT ca_r.client_id, 0, ca_r.cia_id, 0 " +
-      "FROM client_account_to_replace AS ca_r " +
-      "WHERE status = 3"
+      "FROM client_to_replace AS ca_r " +
+      "WHERE status = 4 " +
+      "ON CONFLICT(migration_cia_id) DO NOTHING"
+    );*/
+
+    exec("INSERT INTO client(id, charm, migration_cia_id, actual) " +
+      "SELECT c_r.id, 0, c_r.cia_id, 0 " +
+      "FROM client_to_replace AS c_r "
     );
 
-    exec("INSERT INTO client_account(id, client, number, registered_at) " +
-      "SELECT ca_r.id, ca_r.client_id, ca_r.account_number, ca_r.registered_at " +
+//TODO: migration_cia_id UNIQUE?
+    // ускорить запросы sql
+    exec("INSERT INTO client_account(id, client, money, number, registered_at) " +
+      "SELECT ca_r.id, ca_r.client_id, 0, ca_r.account_number, ca_r.registered_at " +
       "FROM client_account_to_replace AS ca_r " +
-      "WHERE ca_r.status = 3"
+      "WHERE ca_r.status IN (3, 4)"
     );
 
     /*exec("INSERT INTO client_account(id, client, money, number, registered_at) " +
@@ -212,19 +237,6 @@ public class MigrateOneFrsFile {
       "FROM client_account AS ca " +
       "WHERE status = 1 AND account_number = ca.number"
     );
-
-/*
-    exec("UPDATE client_account_transaction_to_replace AS cat_r " +
-      "SET id = nextval('client_account_transaction_id_seq'), account_id = ca.id, status = 3 " +
-      "FROM client_account AS ca " +
-      "WHERE cat_r.status = 1 AND cat_r.account_number = ca.account"
-    );
-
-    exec("UPDATE client_account_transaction_to_replace AS cat_r " +
-      "SET id = nextval('client_account_transaction_id_seq'), account_id =  status = 4 " +
-      "FROM client_account_to_replace AS ca_r " +
-      "WHERE cat_r.status = 1 AND cat_r.account_number = ca_r.account_number"
-    );*/
   }
 
   /**
@@ -251,7 +263,7 @@ public class MigrateOneFrsFile {
       "FROM ( " +
       "  SELECT SUM(money) AS msum, account_id " +
       "  FROM client_account_transaction_to_replace " +
-      "  WHERE status = 3 " +
+      "  WHERE status IN (3, 4) " +
       "  GROUP BY account_id " +
       ") AS x " +
       "WHERE x.account_id = id "
@@ -284,12 +296,13 @@ public class MigrateOneFrsFile {
     );
 
     exec("UPDATE client_account_to_replace " +
-      "SET status = 4 " +
-      "WHERE status IN (2, 3)"
+      "SET status = 5 " +
+      "WHERE status IN (3, 4)"
     );
   }
 
   private void exec(String sql) throws SQLException {
+    sql = sql.replaceAll("client_to_replace", tmpClientTableName);
     sql = sql.replaceAll("client_account_to_replace", tmpClientAccountTableName);
     sql = sql.replaceAll("client_account_transaction_to_replace", tmpClientAccountTransactionTableName);
 
@@ -298,7 +311,14 @@ public class MigrateOneFrsFile {
     }
   }
 
-  void downloadErrors() {
+  void downloadErrors() throws SQLException {
+    String sqlQuery = "SELECT error FROM " + tmpClientAccountTableName + " WHERE status = 1 AND error IS NOT NULL";
 
+    try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
+      try (ResultSet resultSet = preparedStatement.executeQuery()) {
+        while (resultSet.next())
+          outputErrorFile.appendErrorLine(resultSet.getString("error"));
+      }
+    }
   }
 }

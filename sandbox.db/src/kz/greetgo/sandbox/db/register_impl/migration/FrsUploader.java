@@ -11,7 +11,7 @@ import kz.greetgo.sandbox.db.register_impl.migration.model.ClientAccountData;
 import kz.greetgo.sandbox.db.register_impl.migration.model.ClientAccountTransactionData;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -29,7 +29,6 @@ public class FrsUploader {
 
   private long curFileNo = 0;
   public ErrorFile errorFileWriter;
-  public String inputFileName;
 
   private PreparedStatement clientAccountPreparedStatement;
   private PreparedStatement clientAccountTransactionPreparedStatement;
@@ -69,10 +68,10 @@ public class FrsUploader {
     clientAccountTransactionPreparedStatement.setString(idx, clientAccountTransactionData.account_number);
   }
 
-  void parse(FileInputStream fileInputStream) throws Exception {
+  void parse(InputStream is) throws Exception {
     JsonFactory jsonFactory = new JsonFactory();
 
-    try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream))) {
+    try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is))) {
       String line, field, value;
       ObjectMapper objectMapper = new ObjectMapper();
       JsonToken token;
@@ -108,8 +107,7 @@ public class FrsUploader {
                   errorFileWriter.appendErrorLine(e.getMessage());
                 }
               } else {
-                errorFileWriter.appendErrorLine("Неизвестная команда " + value +
-                  " . Строка номер " + curFileNo + " в файле " + inputFileName);
+                errorFileWriter.appendErrorLine("Неизвестная команда " + value);
               }
             }
           }
@@ -155,7 +153,7 @@ public class FrsUploader {
         .parse(clientAccountData.registered_at.replace("T", " ")).getTime());
     } catch (NumberFormatException | ParseException e) {
       throw new ParsingValueException("Неправильный формат временного штампа registered_at у account_number = " +
-        clientAccountData.client_id + ". Строка номер " + curFileNo + " в файле " + inputFileName);
+        clientAccountData.client_id);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -163,8 +161,7 @@ public class FrsUploader {
     long age = Util.getAge(registeredAt.toLocalDateTime());
     if (age > 1000 || age < -1)
       throw new ParsingValueException("Значение registered_at выходит за рамки у account_number = " +
-        clientAccountTransactionData.account_number + ".Возраст должен быть между -1 и 1000 годами" +
-        ". Строка номер " + curFileNo + " в файле " + inputFileName);
+        clientAccountTransactionData.account_number + ".Возраст должен быть между -1 и 1000 годами");
 
     setClientAccountPrepareStatement(registeredAt);
     clientAccountPreparedStatement.addBatch();
@@ -185,7 +182,7 @@ public class FrsUploader {
       money = new BigDecimal(clientAccountTransactionData.money.replaceAll("_", ""));
     } catch (NumberFormatException e) {
       throw new ParsingValueException("Неправильный формат денег money у account_number = " +
-        clientAccountTransactionData.account_number + ". Строка номер " + curFileNo + " в файле " + inputFileName);
+        clientAccountTransactionData.account_number);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -195,7 +192,7 @@ public class FrsUploader {
         .parse(clientAccountTransactionData.finished_at.replace("T", " ")).getTime());
     } catch (IllegalArgumentException | ParseException e) {
       throw new ParsingValueException("Неправильный формат временного штампа finished_at у account_number = " +
-        clientAccountTransactionData.account_number + ". Строка номер " + curFileNo + " в файле " + inputFileName);
+        clientAccountTransactionData.account_number);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }//TODO: length 0 errors?
@@ -203,8 +200,7 @@ public class FrsUploader {
     long age = Util.getAge(finishedAt.toLocalDateTime());
     if (age > 1000 || age < -1)
       throw new ParsingValueException("Значение finished_at выходит за рамки у account_number = " +
-        clientAccountTransactionData.account_number + ".Возраст должен быть между -1 и 1000 годами" +
-        ". Строка номер " + curFileNo + " в файле " + inputFileName);
+        clientAccountTransactionData.account_number + ".Возраст должен быть между -1 и 1000 годами");
 
     setClientAccountTransactionPrepareStatement(money, finishedAt);
     clientAccountTransactionPreparedStatement.addBatch();

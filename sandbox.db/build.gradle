@@ -12,6 +12,12 @@ dependencies {
 
   compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 
+  // https://mvnrepository.com/artifact/com.jcraft/jsch
+  compile group: 'com.jcraft', name: 'jsch', version: '0.1.54'
+
+  // https://mvnrepository.com/artifact/org.apache.commons/commons-compress
+  compile group: 'org.apache.commons', name: 'commons-compress', version: '1.16.1'
+
   testCompile "kz.greetgo.depinject:greetgo.depinject.testng:$depinjectVersion"
   testCompile project(':sandbox.stand:db').sourceSets.main.output
 }

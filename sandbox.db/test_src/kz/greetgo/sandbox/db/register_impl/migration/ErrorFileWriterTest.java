@@ -12,4 +12,9 @@ public class ErrorFileWriterTest implements ErrorFile {
   public void appendErrorLine(String line) {
     errorList.add(line);
   }
+
+  @Override
+  public void finish() {
+
+  }
 }

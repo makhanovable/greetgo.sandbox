@@ -119,15 +119,15 @@ public class CiaUploader extends CommonSaxHandler {
       return;
     }
     if (path.equals(TAG_CLIENT_SURNAME)) {
-      clientData.surname = attributes.getValue("value");
+      clientData.surname = attributes.getValue("value").trim();
       return;
     }
     if (path.equals(TAG_CLIENT_NAME)) {
-      clientData.name = attributes.getValue("value");
+      clientData.name = attributes.getValue("value").trim();
       return;
     }
     if (path.equals(TAG_CLIENT_PATRONYMIC)) {
-      clientData.patronymic = attributes.getValue("value");
+      clientData.patronymic = attributes.getValue("value").trim();
       return;
     }
     if (path.equals(TAG_CLIENT_GENDER)) {
@@ -139,29 +139,41 @@ public class CiaUploader extends CommonSaxHandler {
       return;
     }
     if (path.equals(TAG_CLIENT_CHARM)) {
-      clientData.charmName = attributes.getValue("value");
+      clientData.charmName = attributes.getValue("value").trim();
       return;
     }
     if (path.equals(TAG_CLIENT_ADDRESS_FACTUAL)) {
       clientAddressData = new ClientAddressData();
       clientAddressData.type = AddressType.FACTUAL.name();
-      clientAddressData.street = attributes.getValue("street");
-      clientAddressData.house = attributes.getValue("house");
-      clientAddressData.flat = attributes.getValue("flat");
+      clientAddressData.street = attributes.getValue("street").trim();
+      clientAddressData.house = attributes.getValue("house").trim();
+      clientAddressData.flat = attributes.getValue("flat").trim();
       curClientAddressRecordNum++;
 
       //TODO: добавлять после закрытия тега cia?
-      this.addClientAddressToBatch();
+      try {
+        this.addClientAddressToBatch();
+      } /*catch (ParsingValueException e) {
+        errorFileWriter.appendErrorLine(e.getMessage());
+      } */ catch (Exception e) {
+        throw new RuntimeException(e);
+      }
       return;
     }
     if (path.equals(TAG_CLIENT_ADDRESS_REGISTRATION)) {
       clientAddressData.type = AddressType.REGISTRATION.name();
-      clientAddressData.street = attributes.getValue("street");
-      clientAddressData.house = attributes.getValue("house");
-      clientAddressData.flat = attributes.getValue("flat");
+      clientAddressData.street = attributes.getValue("street").trim();
+      clientAddressData.house = attributes.getValue("house").trim();
+      clientAddressData.flat = attributes.getValue("flat").trim();
       curClientAddressRecordNum++;
 
-      this.addClientAddressToBatch();
+      try {
+        this.addClientAddressToBatch();
+      } /*catch (ParsingValueException e) {
+        errorFileWriter.appendErrorLine(e.getMessage());
+      } */ catch (Exception e) {
+        throw new RuntimeException(e);
+      }
       return;
     }
   }
@@ -172,7 +184,7 @@ public class CiaUploader extends CommonSaxHandler {
 
     if (path.endsWith(TAG_CLIENT_PHONE)) {
       clientPhoneData = new ClientPhoneData();
-      clientPhoneData.number = text();
+      clientPhoneData.number = text().trim();
       //TODO: model of sandbox should match clientGenerator's?
       switch (path) {
         case TAG_CLIENT_HOME_PHONE: {
@@ -193,7 +205,13 @@ public class CiaUploader extends CommonSaxHandler {
       }
       curClientPhoneRecordNum++;
 
-      this.addClientPhoneToBatch();
+      try {
+        this.addClientPhoneToBatch();
+      } /*catch (ParsingValueException e) {
+        errorFileWriter.appendErrorLine(e.getMessage());
+      } */ catch (Exception e) {
+        throw new RuntimeException(e);
+      }
       return;
     }
     if (path.equals(TAG_CLIENT)) {
@@ -241,6 +259,8 @@ public class CiaUploader extends CommonSaxHandler {
       throw new ParsingValueException("Пустое значение name у ciaId = " + clientData.ciaId);
     if (clientData.birthdate == null || clientData.birthdate.length() == 0)
       throw new ParsingValueException("Пустое значение birth у ciaId = " + clientData.ciaId);
+    if (clientData.charmName == null || clientData.charmName.length() == 0)
+      throw new ParsingValueException("Пустое значение charm_name у ciaId = " + clientData.ciaId);
 
     Date birthdate;
     try {

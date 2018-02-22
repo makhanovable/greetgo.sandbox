@@ -3,6 +3,7 @@ package kz.greetgo.sandbox.db.test.util;
 import kz.greetgo.depinject.core.BeanContainer;
 import kz.greetgo.depinject.core.Include;
 import kz.greetgo.sandbox.db.register_impl.migration.MigrationController;
+import kz.greetgo.sandbox.db.register_impl.migration.MigrationManager;
 import kz.greetgo.sandbox.db.test.beans._develop_.DbLoader;
 import kz.greetgo.sandbox.db.test.beans._develop_.DbWorker;
 
@@ -13,4 +14,6 @@ public interface TestsBeanContainer extends BeanContainer {
   DbLoader dbLoader();
 
   MigrationController migrationController();
+
+  MigrationManager migrationManager();
 }

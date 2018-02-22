@@ -6,8 +6,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -15,7 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class MigrateOneCiaFile {
-  public File inputFile;
+  public InputStream inputStream;
   public ErrorFile outputErrorFile;
   public int maxBatchSize = 100;
   public Connection connection;
@@ -89,10 +88,9 @@ public class MigrateOneCiaFile {
     ciaUploader.clientPhoneTable = tmpClientPhoneTableName;
     reader.setContentHandler(ciaUploader);
 
-    try (FileInputStream fileInputStream = new FileInputStream(inputFile)) {
-      reader.parse(new InputSource(fileInputStream));
-    }
+    reader.parse(new InputSource(inputStream));
 
+    ciaUploader.errorFileWriter.finish();
     connection.setAutoCommit(true);
   }
 

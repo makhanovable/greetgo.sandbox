@@ -6,6 +6,7 @@ import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -34,7 +35,7 @@ public class MigrateOneFrsFileTest extends MigrateCommonTests {
 
     MigrateOneFrsFile oneFrsFile = new MigrateOneFrsFile();
     oneFrsFile.connection = connection;
-    oneFrsFile.inputFile = inFile;
+    oneFrsFile.inputStream = new FileInputStream(inFile);
     oneFrsFile.outputErrorFile = new CommonErrorFileWriter(outputErrorFile);
     oneFrsFile.prepareTmpTables();
     oneFrsFile.uploadData();
@@ -75,7 +76,7 @@ public class MigrateOneFrsFileTest extends MigrateCommonTests {
 
     MigrateOneFrsFile oneFrsFile = new MigrateOneFrsFile();
     oneFrsFile.connection = connection;
-    oneFrsFile.inputFile = inFile;
+    oneFrsFile.inputStream = new FileInputStream(inFile);
     oneFrsFile.outputErrorFile = new ErrorFileWriterTest();
     oneFrsFile.prepareTmpTables();
     oneFrsFile.uploadData();
