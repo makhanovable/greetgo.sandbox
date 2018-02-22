@@ -9,11 +9,10 @@ import kz.greetgo.sandbox.controller.model.ClientPhoneNumberToSave;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.controller.report.ClientReport;
-import kz.greetgo.sandbox.controller.report.ClientReportPDF;
-import kz.greetgo.sandbox.controller.report.ClientReportXLSX;
+import kz.greetgo.sandbox.controller.report.ClientReportView;
+import kz.greetgo.sandbox.controller.report.ClientReportViewPDF;
+import kz.greetgo.sandbox.controller.report.ClientReportViewXLSX;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
-import kz.greetgo.sandbox.db.stand.model.CharmDot;
 import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
 import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
@@ -22,9 +21,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @SuppressWarnings("ConstantConditions")
 @Bean
@@ -42,44 +39,7 @@ public class ClientRegisterStand implements ClientRegister {
 
     setClientData(clientDot, clientToSave);
   }
-
-  @SuppressWarnings("Duplicates")
-  @Override
-  public void generateReport(OutputStream out, String type, String orderBy, int order, String filter) throws Exception {
-    ClientReport clientReport = null;
-    String[] headers = {"id", "name", "surname", "patronymic", "age", "charm", "total Account Balance", "maximum Balance", "minimum Balance"};
-
-    Map<String, String> charms = new HashMap<>();
-    for (CharmDot charmDot : db.get().charmStorage.values())
-      charms.put(charmDot.id, charmDot.name);
-
-    switch (type) {
-      case "pdf":
-        clientReport = new ClientReportPDF(out, headers);
-        ((ClientReportPDF) clientReport).setCharms(charms);
-        break;
-      case "xlsx":
-        clientReport = new ClientReportXLSX(out, headers);
-        ((ClientReportXLSX) clientReport).setCharms(charms);
-        break;
-    }
-
-    if (clientReport != null) {
-      long records = this.getClientsSize(filter);
-      int chunk = 100;
-
-      for (int page = 0; page < Math.ceil(records / (double) chunk); page++) {
-        clientReport.appendRows(this.getClientInfoList(chunk, page, filter, orderBy, order));
-      }
-
-      clientReport.finish();
-    } else {
-      throw new NotImplementedException();
-    }
-
-
-  }
-
+  
   @Override
   public ClientDetail detail(String id) {
     ClientDetail clientDetail = this.db.get().clientStorage.get(id).toClientForm();
