@@ -1,106 +1,32 @@
 package kz.greetgo.sandbox.db.register_impl;
 
-import kz.greetgo.db.ConnectionCallback;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.enums.AddressType;
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.ClientAddress;
+import kz.greetgo.sandbox.controller.model.ClientDetail;
+import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
+import kz.greetgo.sandbox.controller.model.ClientPhoneNumberToSave;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.controller.report.ClientReport;
-import kz.greetgo.sandbox.controller.report.ClientReportPDF;
-import kz.greetgo.sandbox.controller.report.ClientReportXLSX;
-import kz.greetgo.sandbox.db.dao.CharmDao;
 import kz.greetgo.sandbox.db.dao.ClientDao;
+import kz.greetgo.sandbox.db.util.ClientUtils;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
-import org.apache.poi.xssf.streaming.SXSSFSheet;
 
-import java.io.File;
-import java.io.OutputStream;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 @Bean
 public class ClientRegisterImpl implements ClientRegister {
 
   public BeanGetter<ClientDao> clientDao;
-  public BeanGetter<CharmDao> charmDao;
   public BeanGetter<IdGenerator> idGenerator;
   public BeanGetter<JdbcSandbox> jdbcSandbox;
-
-
-  @Override
-  public void generateReport(OutputStream out, String type, String orderBy, int order, String filter) throws Exception {
-    String[] headers = {"id", "name", "surname", "patronymic", "age", "charm", "total Account Balance", "maximum Balance", "minimum Balance"};
-    final ClientReport clientReport;
-
-    switch (type) {
-      case "pdf":
-        clientReport = new ClientReportPDF(out, headers);
-        break;
-      case "xlsx":
-        clientReport = new ClientReportXLSX(out, headers);
-        break;
-      default:
-        return;
-    }
-
-    //noinspection ConstantConditions
-    if (clientReport != null) {
-
-      String[] orders = {"age", "totalAccountBalance", "maximumBalance", "minimumBalance"};
-      Boolean match = orderBy != null && Arrays.stream(orders).anyMatch(o -> o.equals(orderBy));
-      String queryFilter = getFormattedFilter(filter);
-
-      StringBuilder query = new StringBuilder();
-
-      query.append("select c.id, c.name, c.surname, c.patronymic, date_part('year',age(c.birthDate)) as age, c.charm, ca.totalAccountBalance, ca.maximumBalance, ca.minimumBalance");
-      query.append(" from (select * from Client where actual=true");
-      if (queryFilter != null)
-        query.append(" and lower(concat(name, surname, patronymic)) SIMILAR TO ?");
-      query.append(") c");
-      query.append(" left join (select client, max(money) maximumBalance, min(money) minimumBalance, sum(money) totalAccountBalance from ClientAccount group by client) ca on ca.client=c.id");
-      if (match)
-        query.append(" order by ").append(orderBy);
-      else
-        query.append(" order by concat(name, surname, patronymic)");
-      if (order == 1)
-        query.append(" desc");
-
-      jdbcSandbox.get().execute(connection -> {
-        try (PreparedStatement ps = connection.prepareStatement(query.toString())) {
-
-          if (filter != null && !filter.isEmpty())
-            ps.setString(1, getFormattedFilter(filter));
-
-          try (ResultSet resultSet = ps.executeQuery()) {
-
-            while (resultSet.next()) {
-              ClientRecord record = new ClientRecord();
-
-              record.id = resultSet.getString("id");
-              record.name = resultSet.getString("name");
-              record.surname = resultSet.getString("surname");
-              record.patronymic = resultSet.getString("patronymic");
-              record.age = Integer.parseInt(resultSet.getString("age"));
-              record.charm = resultSet.getString("charm");
-              record.totalAccountBalance = Float.parseFloat(resultSet.getString("totalAccountBalance"));
-              record.maximumBalance = Float.parseFloat(resultSet.getString("maximumBalance"));
-              record.minimumBalance = Float.parseFloat(resultSet.getString("minimumBalance"));
-              clientReport.appendRow(record);
-            }
-          }
-        }
-
-        return null;
-      });
-
-      clientReport.finish();
-    }
-  }
-
 
   @Override
   public List<ClientRecord> getClientInfoList(int limit, int page, String filter, final String orderBy, int desc) {
@@ -109,12 +35,12 @@ public class ClientRegisterImpl implements ClientRegister {
 
     List<ClientRecord> result = new ArrayList<>();
 
-    String[] orders = {"age", "totalAccountBalance", "maximumBalance", "minimumBalance"};
+    String[] orders = ClientUtils.sortableColumns;
     Boolean match = orderBy != null && Arrays.stream(orders).anyMatch(o -> o.equals(orderBy));
 
     int offset = limit * page;
 
-    String queryFilter = getFormattedFilter(filter);
+    String queryFilter = ClientUtils.getFormattedFilter(filter);
 
     StringBuilder query = new StringBuilder();
     query.append("select c.id, c.name, c.surname, c.patronymic, date_part('year',age(c.birthDate)) as age, c.charm, ca.totalAccountBalance, ca.maximumBalance, ca.minimumBalance");
@@ -144,17 +70,7 @@ public class ClientRegisterImpl implements ClientRegister {
         try (ResultSet resultSet = ps.executeQuery()) {
 
           while (resultSet.next()) {
-            ClientRecord record = new ClientRecord();
-
-            record.id = resultSet.getString("id");
-            record.name = resultSet.getString("name");
-            record.surname = resultSet.getString("surname");
-            record.patronymic = resultSet.getString("patronymic");
-            record.age = (int) Float.parseFloat(resultSet.getString("age"));
-            record.charm = resultSet.getString("charm");
-            record.totalAccountBalance = Float.parseFloat(resultSet.getString("totalAccountBalance"));
-            record.maximumBalance = Float.parseFloat(resultSet.getString("maximumBalance"));
-            record.minimumBalance = Float.parseFloat(resultSet.getString("minimumBalance"));
+            ClientRecord record = ClientUtils.rsToClientRecord(resultSet);
             result.add(record);
           }
         }
@@ -170,7 +86,7 @@ public class ClientRegisterImpl implements ClientRegister {
   public long getClientsSize(String filter) {
     if (filter == null)
       return this.clientDao.get().countAll();
-    filter = this.getFormattedFilter(filter);
+    filter = ClientUtils.getFormattedFilter(filter);
     return this.clientDao.get().countByFilter(filter);
   }
 
@@ -243,12 +159,5 @@ public class ClientRegisterImpl implements ClientRegister {
     }
   }
 
-  private String getFormattedFilter(String filter) {
-    if (filter == null || filter.isEmpty())
-      return null;
-    String[] filters = filter.trim().split(" ");
-    filter = String.join("|", filters);
-    filter = "%(" + filter.toLowerCase() + ")%";
-    return filter;
-  }
+
 }
