@@ -23,6 +23,7 @@ public class ClientController implements Controller {
 
   public BeanGetter<ClientRegister> clientRegister;
 
+  
   @Mapping("/ping")
   public void ping(RequestTunnel requestTunnel) {
 
@@ -61,22 +62,5 @@ public class ClientController implements Controller {
   public void addOrUpdate(@Par("client") @Json ClientToSave clientToSave) {
     this.clientRegister.get().addOrUpdate(clientToSave);
   }
-
-  // FIXME: 2/21/18 Для отчета нужно создать отдельный контролер. Название мапинга и метода должны быть интуитивно понятны
-  @Mapping("/report")
-  public void generateReport(@Par("type") String type, @Par("orderBy") String orderBy, @Par("order") int order,
-                             @Par("filter") String filter, RequestTunnel requestTunnel) throws Exception {
-
-    if (type == null || !(type.equals("pdf") || type.equals("xlsx"))) {
-      throw new Exception("Unsupported File Format");
-    }
-
-    String filename = "client_report_" + new Date() + "." + type;
-    requestTunnel.setResponseHeader("Content-disposition", "attachment; filename=" + filename);
-
-    this.clientRegister.get().generateReport(requestTunnel.getResponseOutputStream(), type, orderBy, order, filter);
-
-  }
-
 
 }
