@@ -290,6 +290,7 @@ public class MigrateCommonTests extends ParentTestNg {
   void resetAllTables() {
     this.resetClientAddrTable();
     this.resetClientPhoneTable();
+    this.resetClientAccountTransactionTable();
     this.resetClientAccountTable();
     this.resetClientTable();
     this.resetCharmTable();
@@ -302,6 +303,10 @@ public class MigrateCommonTests extends ParentTestNg {
 
   void resetClientAddrTable() {
     migrationTestDao.get().deleteAllTableClientAddr();
+  }
+
+  void resetClientAccountTransactionTable() {
+    migrationTestDao.get().deleteAllTableClientAccountTransaction();
   }
 
   void resetClientAccountTable() {

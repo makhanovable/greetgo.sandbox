@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class CommonErrorFileWriter implements ErrorFile {
-  private long lineNo = 0;
+  private long errorCount = 0;
   private PrintWriter printWriter;
 
   private static final long FILE_FLUSH_TIME = 1000;
@@ -18,23 +18,24 @@ public class CommonErrorFileWriter implements ErrorFile {
 
   @Override
   public void appendErrorLine(String line) {
-    lineNo++;
-    printWriter.write(String.valueOf(lineNo) + ". " + line + "\n");
+    errorCount++;
+    printWriter.write(String.valueOf(errorCount) + ". " + line + "\n");
 
     this.flush();
   }
 
   @Override
-  public void finish() {
+  public long finish() {
     this.flush();
-
     printWriter.close();
+
+    return errorCount;
   }
 
   private void flush() {
-    if (lineNo > FILE_FLUSH_TIME) {
+    if (errorCount > FILE_FLUSH_TIME) {
       printWriter.flush();
-      lineNo = 0;
+      errorCount = 0;
     }
   }
 }

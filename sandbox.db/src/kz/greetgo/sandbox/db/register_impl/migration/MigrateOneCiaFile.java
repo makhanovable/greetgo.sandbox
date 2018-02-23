@@ -2,13 +2,14 @@ package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.sandbox.controller.util.Util;
 import kz.greetgo.sandbox.db.register_impl.migration.error.ErrorFile;
+import kz.greetgo.sandbox.db.register_impl.migration.report.MigrationSimpleReport;
+import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -16,12 +17,15 @@ import java.util.Date;
 public class MigrateOneCiaFile {
   public InputStream inputStream;
   public ErrorFile outputErrorFile;
+  public MigrationSimpleReport migrationSimpleReport;
   public int maxBatchSize = 100;
   public Connection connection;
 
   String tmpClientTableName;
   String tmpClientAddressTableName;
   String tmpClientPhoneTableName;
+
+  private Logger logger = Logger.getLogger(MigrationController.class);
 
   public void migrate() throws Exception {
     prepareTmpTables();
@@ -30,7 +34,7 @@ public class MigrateOneCiaFile {
     downloadErrors();
   }
 
-  void prepareTmpTables() throws SQLException {
+  void prepareTmpTables() throws Exception {
     Date now = new Date();
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
     String additionalId = sdf.format(now) + "_" + Util.generateRandomString(8);
@@ -88,13 +92,18 @@ public class MigrateOneCiaFile {
     ciaUploader.clientPhoneTable = tmpClientPhoneTableName;
     reader.setContentHandler(ciaUploader);
 
+    long init = System.currentTimeMillis();
+
     reader.parse(new InputSource(inputStream));
 
-    ciaUploader.errorFileWriter.finish();
+    long post = System.currentTimeMillis();
+    if (migrationSimpleReport != null)
+      migrationSimpleReport.appendParseInfo((post - init) / 1000f);
+
     connection.setAutoCommit(true);
   }
 
-  /*void processValidationErrors() throws SQLException {
+  /*void processValidationErrors() throws Exception {
     exec("UPDATE client_to_replace " +
       "SET error = 'Пустое значение surname у ciaId = '||cia_id " +
       "WHERE surname IS NULL OR length(trim(surname)) = 0 "
@@ -126,7 +135,7 @@ public class MigrateOneCiaFile {
     );
   }*/
 
-  void migrateData() throws SQLException {
+  void migrateData() throws Exception {
     migrateData_checkForDuplicatesOfTmpClient();
     migrateData_checkForDuplicatesOfTmpClientPhoneTable();
 
@@ -144,9 +153,9 @@ public class MigrateOneCiaFile {
   /**
    * Статус = 1, отсеивание дубликатов с приоритетом на последнюю запись в списке
    *
-   * @throws SQLException проброс для удобства
+   * @throws Exception проброс для удобства
    */
-  void migrateData_checkForDuplicatesOfTmpClient() throws SQLException {
+  void migrateData_checkForDuplicatesOfTmpClient() throws Exception {
     exec("UPDATE client_to_replace " +
       "SET status = 1 " +
       "FROM ( " +
@@ -161,9 +170,9 @@ public class MigrateOneCiaFile {
   /**
    * Отдельный статус для телефонов, где 1 означает, что это уникальный номер
    *
-   * @throws SQLException
+   * @throws Exception проброс для удобства
    */
-  void migrateData_checkForDuplicatesOfTmpClientPhoneTable() throws SQLException {
+  void migrateData_checkForDuplicatesOfTmpClientPhoneTable() throws Exception {
     exec("UPDATE client_phone_to_replace " +
       "SET status = 1 " +
       "FROM ( " +
@@ -179,9 +188,9 @@ public class MigrateOneCiaFile {
   /**
    * Заполнение таблицы charm
    *
-   * @throws SQLException проброс для удобства
+   * @throws Exception проброс для удобства
    */
-  void migrateData_finalOfCharmTable() throws SQLException {
+  void migrateData_finalOfCharmTable() throws Exception {
     exec("INSERT INTO charm(id, name) " +
       "SELECT nextval('charm_id_seq') AS charm_id, charm_dictionary.name " +
       "FROM ( " +
@@ -197,9 +206,9 @@ public class MigrateOneCiaFile {
    * Статус = 2, если cia_id присутствует в постоянной таблице client (update)
    * Статус = 3, если отсутствует в постоянной таблице client (insert)
    *
-   * @throws SQLException проброс для удобства
+   * @throws Exception проброс для удобства
    */
-  void migrateData_checkForExistingRecordsOfClientTable() throws SQLException {
+  void migrateData_checkForExistingRecordsOfClientTable() throws Exception {
     exec("UPDATE client_to_replace " +
       "SET id = c.id, status = 2 " +
       "FROM client AS c " +
@@ -215,9 +224,9 @@ public class MigrateOneCiaFile {
   /**
    * Заполнение постоянной client таблицы
    *
-   * @throws SQLException проброс для удобства
+   * @throws Exception проброс для удобства
    */
-  void migrateData_finalOfClientTable() throws SQLException {
+  void migrateData_finalOfClientTable() throws Exception {
     exec("UPDATE client " +
       "SET id = c_r.id," +
       "  surname = c_r.surname, " +
@@ -243,9 +252,9 @@ public class MigrateOneCiaFile {
   /**
    * Заполнение постоянной client_address таблицы
    *
-   * @throws SQLException проброс для удобства
+   * @throws Exception проброс для удобства
    */
-  void migrateData_finalOfClientAddressTable() throws SQLException {
+  void migrateData_finalOfClientAddressTable() throws Exception {
     exec("INSERT INTO client_addr(client, type, street, house, flat) " +
       "SELECT c_r.id, cad_r.type, cad_r.street, cad_r.house, cad_r.flat " +
       "FROM client_to_replace AS c_r " +
@@ -259,9 +268,9 @@ public class MigrateOneCiaFile {
   /**
    * Заполнение постоянной client_phone таблицы
    *
-   * @throws SQLException проброс для удобства
+   * @throws Exception проброс для удобства
    */
-  void migrateData_finalOfClientPhoneTable() throws SQLException {
+  void migrateData_finalOfClientPhoneTable() throws Exception {
     exec("INSERT INTO client_phone(client, number, type) " +
       "SELECT c_r.id, ph_r.number, ph_r.type " +
       "FROM client_to_replace AS c_r " +
@@ -275,9 +284,9 @@ public class MigrateOneCiaFile {
   /**
    * Статусы для пройденной миграции
    *
-   * @throws SQLException проброс для удобства
+   * @throws Exception проброс для удобства
    */
-  void migrateData_close() throws SQLException {
+  void migrateData_close() throws Exception {
     exec("UPDATE client_to_replace " +
       "SET status = 4 " +
       "WHERE status IN (2, 3)"
@@ -288,13 +297,19 @@ public class MigrateOneCiaFile {
 
   }
 
-  private void exec(String sql) throws SQLException {
+  private void exec(String sql) throws Exception {
     sql = sql.replaceAll("client_to_replace", tmpClientTableName);
     sql = sql.replaceAll("client_address_to_replace", tmpClientAddressTableName);
     sql = sql.replaceAll("client_phone_to_replace", tmpClientPhoneTableName);
 
+    long init = System.currentTimeMillis();
+
     try (Statement statement = connection.createStatement()) {
       statement.execute(sql);
     }
+
+    long post = System.currentTimeMillis();
+    if (migrationSimpleReport != null)
+      migrationSimpleReport.append((post - init) / 1000f, sql);
   }
 }

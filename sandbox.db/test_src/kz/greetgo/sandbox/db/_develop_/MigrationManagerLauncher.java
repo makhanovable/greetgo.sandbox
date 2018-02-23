@@ -16,16 +16,13 @@ public class MigrationManagerLauncher {
     long init = System.currentTimeMillis();
 
     boolean keep = true;
-    while (true) {
+    while (keep) {
       keep = false;
       if (bc.migrationManager().connectAndMigrateOneCiaFile())
         keep = true;
 
       if (bc.migrationManager().connectAndMigrateOneFrsFile())
         keep = true;
-
-      if (!keep)
-        break;
 
       System.out.println("Произведена итерация");
 

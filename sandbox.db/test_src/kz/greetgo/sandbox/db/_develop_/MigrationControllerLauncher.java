@@ -17,7 +17,9 @@ public class MigrationControllerLauncher {
     String ciaFilename = null;
     String ciaFilepath = "" + ciaFilename + ".xml";
     File errorFile = new File(ciaFilename + ".error.txt");
+    File reportFile = new File(ciaFilename + ".ods");
 
-    bc.migrationController().migrateOneCiaFile(new FileInputStream(new File(ciaFilepath)), ciaFilename, errorFile);
+    bc.migrationController()
+      .migrateOneCiaFile(new FileInputStream(new File(ciaFilepath)), ciaFilename, errorFile, reportFile);
   }
 }

@@ -77,7 +77,10 @@ public class MigrationManager extends SSHWorker {
                   if (archiveEntry.getSize() < 1 || archiveEntry.isDirectory())
                     continue;
 
-                  if (controller.get().migrateOneCiaFile(tarin, ciaFilename, localErrorFile)) {
+                  File localReportFile =
+                    new File(config.get().localTempDir() + "/" + ciaFilename + "." + rndId + ".ods");
+
+                  if (controller.get().migrateOneCiaFile(tarin, ciaFilename, localErrorFile, localReportFile)) {
                     channelSftp.rename(remoteCiaToSendDir + "/" + remoteTempArchiveFilenameWithExt,
                       config.get().ciaPathSent() + "/" + remoteTempArchiveFilenameWithExt);
 
@@ -170,7 +173,10 @@ public class MigrationManager extends SSHWorker {
                   if (archiveEntry.getSize() < 1 || archiveEntry.isDirectory())
                     continue;
 
-                  if (controller.get().migrateOneFrsFile(tarin, frsFilename, localErrorFile)) {
+                  File localReportFile =
+                    new File(config.get().localTempDir() + "/" + frsFilename + "." + rndId + ".ods");
+
+                  if (controller.get().migrateOneFrsFile(tarin, frsFilename, localErrorFile, localReportFile)) {
                     channelSftp.rename(remoteFrsToSendDir + "/" + remoteTempArchiveFilenameWithExt,
                       config.get().frsPathSent() + "/" + remoteTempArchiveFilenameWithExt);
 

@@ -8,9 +8,6 @@ import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -93,7 +90,7 @@ public abstract class ClientCommonTest extends ParentTestNg {
       clientRecordListHelper.clientRecordList.add(clientRecord);
       float totalMoney = 0;
       for (int j = 0; j < RND.plusInt(4) + 1; j++) {
-        float money = (float) RND.plusDouble(100000, 2);
+        float money = RND.plusInt(100000);
         totalMoney += money;
         this.insertClientAccount(clientRecord.id, money, RND.str(11), new Timestamp(0));
       }
@@ -121,7 +118,7 @@ public abstract class ClientCommonTest extends ParentTestNg {
       clientRecordListHelper.clientRecordList.add(clientRecord);
       float totalMoney = 0;
       for (int j = 0; j < RND.plusInt(4) + 1; j++) {
-        float money = (float) RND.plusDouble(200000, 2);
+        float money = RND.plusInt(200000);
         totalMoney += money;
         this.insertClientAccount(clientRecord.id, money, RND.str(11), new Timestamp(0));
       }

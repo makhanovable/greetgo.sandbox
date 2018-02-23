@@ -14,7 +14,7 @@ public class ErrorFileWriterTest implements ErrorFile {
   }
 
   @Override
-  public void finish() {
-
+  public long finish() {
+    return 0;
   }
 }

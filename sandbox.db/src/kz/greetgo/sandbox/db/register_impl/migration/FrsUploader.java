@@ -84,11 +84,11 @@ public class FrsUploader {
           while ((token = parser.nextToken()) != null) {
             field = parser.getCurrentName();
 
-            if (token.equals(JsonToken.FIELD_NAME) && field.equals("type")) {
+            if (JsonToken.FIELD_NAME.equals(token) && "type".equals(field)) {
               parser.nextToken();
               value = parser.getValueAsString();
 
-              if (value.equals("transaction")) {
+              if ("transaction".equals(value)) {
                 clientAccountTransactionData = objectMapper.readValue(line, ClientAccountTransactionData.class);
                 curClientAccountTransactionRecordNum++;
 
@@ -97,7 +97,7 @@ public class FrsUploader {
                 } catch (ParsingValueException e) {
                   errorFileWriter.appendErrorLine(e.getMessage());
                 }
-              } else if (value.equals("new_account")) {
+              } else if ("new_account".equals(value)) {
                 clientAccountData = objectMapper.readValue(line, ClientAccountData.class);
                 curClientAccountRecordNum++;
 

@@ -83,6 +83,9 @@ public interface MigrationTestDao {
   @Delete("DELETE FROM client_account")
   void deleteAllTableClientAccount();
 
+  @Delete("DELETE FROM client_account_transaction")
+  void deleteAllTableClientAccountTransaction();
+
   @Delete("DELETE FROM transaction_type")
   void deleteAllTableTransactionType();
 }

@@ -108,41 +108,41 @@ public class CiaUploader extends CommonSaxHandler {
   @Override
   protected void startTag(Attributes attributes) throws SQLException {
     String path = path();
-    if (path.equals(TAG_CIA)) {
+    if (TAG_CIA.equals(path)) {
       prepare();
       return;
     }
-    if (path.equals(TAG_CLIENT)) {
+    if (TAG_CLIENT.equals(path)) {
       clientData = new ClientData();
       clientData.ciaId = attributes.getValue("id");
       curClientRecordNum++;
       return;
     }
-    if (path.equals(TAG_CLIENT_SURNAME)) {
+    if (TAG_CLIENT_SURNAME.equals(path)) {
       clientData.surname = attributes.getValue("value").trim();
       return;
     }
-    if (path.equals(TAG_CLIENT_NAME)) {
+    if (TAG_CLIENT_NAME.equals(path)) {
       clientData.name = attributes.getValue("value").trim();
       return;
     }
-    if (path.equals(TAG_CLIENT_PATRONYMIC)) {
+    if (TAG_CLIENT_PATRONYMIC.equals(path)) {
       clientData.patronymic = attributes.getValue("value").trim();
       return;
     }
-    if (path.equals(TAG_CLIENT_GENDER)) {
+    if (TAG_CLIENT_GENDER.equals(path)) {
       clientData.gender = attributes.getValue("value");
       return;
     }
-    if (path.equals(TAG_CLIENT_BIRTH)) {
+    if (TAG_CLIENT_BIRTH.equals(path)) {
       clientData.birthdate = attributes.getValue("value");
       return;
     }
-    if (path.equals(TAG_CLIENT_CHARM)) {
+    if (TAG_CLIENT_CHARM.equals(path)) {
       clientData.charmName = attributes.getValue("value").trim();
       return;
     }
-    if (path.equals(TAG_CLIENT_ADDRESS_FACTUAL)) {
+    if (TAG_CLIENT_ADDRESS_FACTUAL.equals(path)) {
       clientAddressData = new ClientAddressData();
       clientAddressData.type = AddressType.FACTUAL.name();
       clientAddressData.street = attributes.getValue("street").trim();
@@ -160,7 +160,7 @@ public class CiaUploader extends CommonSaxHandler {
       }
       return;
     }
-    if (path.equals(TAG_CLIENT_ADDRESS_REGISTRATION)) {
+    if (TAG_CLIENT_ADDRESS_REGISTRATION.equals(path)) {
       clientAddressData.type = AddressType.REGISTRATION.name();
       clientAddressData.street = attributes.getValue("street").trim();
       clientAddressData.house = attributes.getValue("house").trim();
@@ -214,7 +214,7 @@ public class CiaUploader extends CommonSaxHandler {
       }
       return;
     }
-    if (path.equals(TAG_CLIENT)) {
+    if (TAG_CLIENT.equals(path)) {
       try {
         this.addClientToBatch();
       } catch (ParsingValueException e) {
@@ -224,7 +224,7 @@ public class CiaUploader extends CommonSaxHandler {
       }
       return;
     }
-    if (path.equals(TAG_CIA)) {
+    if (TAG_CIA.equals(path)) {
       boolean needCommit = false;
 
       if (curClientBatchCount > 0) {

@@ -4,6 +4,7 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.db.configs.DbConfig;
 import kz.greetgo.sandbox.db.register_impl.migration.error.CommonErrorFileWriter;
+import kz.greetgo.sandbox.db.register_impl.migration.report.MigrationSimpleReport;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -24,20 +25,28 @@ public class MigrationController {
     return DriverManager.getConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password());
   }
 
-  public boolean migrateOneCiaFile(InputStream is, String filename, File errorFile) {
+  public boolean migrateOneCiaFile(InputStream is, String filename, File errorFile, File reportFile) {
     logger.info("Начало миграции CIA файла " + filename + ". Файл ошибки " + errorFile.getAbsolutePath());
 
     try (Connection connection = createConnection()) {
-      long init = System.currentTimeMillis();
+      MigrationSimpleReport migrationSimpleReport = new MigrationSimpleReport(reportFile);
+      CommonErrorFileWriter commonErrorFileWriter = new CommonErrorFileWriter(errorFile);
+
       MigrateOneCiaFile migrationCiaFile = new MigrateOneCiaFile();
       migrationCiaFile.inputStream = is;
-
-      migrationCiaFile.outputErrorFile = new CommonErrorFileWriter(errorFile);
+      migrationCiaFile.migrationSimpleReport = migrationSimpleReport;
+      migrationCiaFile.outputErrorFile = commonErrorFileWriter;
       migrationCiaFile.maxBatchSize = 100_000;
       migrationCiaFile.connection = connection;
 
+      migrationSimpleReport.start();
+      long init = System.currentTimeMillis();
+
       migrationCiaFile.migrate();
+
       long post = System.currentTimeMillis();
+      long errorCount = commonErrorFileWriter.finish();
+      migrationSimpleReport.finish((post - init) / 1000f, errorCount, "");
 
       logger.info("Конец миграции CIA файла " + filename +
         ". Затраченное время " + TimeUnit.MILLISECONDS.toSeconds(post - init) + " секунд");
@@ -49,20 +58,28 @@ public class MigrationController {
     return true;
   }
 
-  public boolean migrateOneFrsFile(InputStream is, String filename, File errorFile) {
+  public boolean migrateOneFrsFile(InputStream is, String filename, File errorFile, File reportFile) {
     logger.info("Начало миграции FRS файла " + filename + ". Файл ошибки " + errorFile.getAbsolutePath());
 
     try (Connection connection = createConnection()) {
-      long init = System.currentTimeMillis();
+      MigrationSimpleReport migrationSimpleReport = new MigrationSimpleReport(reportFile);
+      CommonErrorFileWriter commonErrorFileWriter = new CommonErrorFileWriter(errorFile);
+
       MigrateOneFrsFile migrationFrsFile = new MigrateOneFrsFile();
       migrationFrsFile.inputStream = is;
-
-      migrationFrsFile.outputErrorFile = new CommonErrorFileWriter(errorFile);
+      migrationFrsFile.migrationSimpleReport = migrationSimpleReport;
+      migrationFrsFile.outputErrorFile = commonErrorFileWriter;
       migrationFrsFile.maxBatchSize = 100_000;
       migrationFrsFile.connection = connection;
 
+      migrationSimpleReport.start();
+      long init = System.currentTimeMillis();
+
       migrationFrsFile.migrate();
+
       long post = System.currentTimeMillis();
+      long errorCount = commonErrorFileWriter.finish();
+      migrationSimpleReport.finish((post - init) / 1000f, errorCount, "");
 
       logger.info("Конец миграции FRS файла " + filename +
         ". Затраченное время " + TimeUnit.MILLISECONDS.toSeconds(post - init) + " секунд");
