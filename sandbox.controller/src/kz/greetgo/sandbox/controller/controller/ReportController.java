@@ -21,10 +21,11 @@ public class ReportController implements Controller {
 
   public BeanGetter<ReportRegister> reportRegister;
 
+  // FIXME: 2/23/18 download что? Не понятно о каком отчете идет речь
   @Mapping("/download")
   public void generateReport(@Par("type") String type, @Par("orderBy") String orderBy, @Par("order") int order,
                              @Par("filter") String filter, RequestTunnel requestTunnel) throws Exception {
-
+    // FIXME: 2/23/18 Можно не проверять на нулл, а сразу "pdf".equals(type) или "xlsx".equals(type)
     if (type == null || !(type.equals("pdf") || type.equals("xlsx"))) {
       throw new Exception("Unsupported File Format");
     }

@@ -11,6 +11,9 @@ import java.util.Arrays;
 import java.util.Map;
 
 public class ClientReportJdbc implements ConnectionCallback<Void> {
+
+  // FIXME: 2/23/18 Код для web-view, количества клиентов и отчета должен быть один
+  // FIXME: 2/23/18 На отчеты теста не нашел
   private final ClientReportView view;
   private final String filter;
   private final String orderBy;
