@@ -6,8 +6,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
-public interface ClientReport {
-  void appendRows(List<ClientRecord> records) throws Exception;
+public interface ClientReportView {
+
+  void start(String[] headers) throws Exception;
+
+  void appendRow(ClientRecord record) throws Exception;
 
   void finish() throws Exception;
 }

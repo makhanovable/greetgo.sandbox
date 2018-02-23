@@ -3,86 +3,90 @@ package kz.greetgo.sandbox.db.register_impl;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.enums.AddressType;
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.ClientAddress;
+import kz.greetgo.sandbox.controller.model.ClientDetail;
+import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
+import kz.greetgo.sandbox.controller.model.ClientPhoneNumberToSave;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.controller.report.ClientReport;
-import kz.greetgo.sandbox.controller.report.ClientReportPDF;
-import kz.greetgo.sandbox.controller.report.ClientReportXLSX;
-import kz.greetgo.sandbox.db.dao.CharmDao;
 import kz.greetgo.sandbox.db.dao.ClientDao;
+import kz.greetgo.sandbox.db.util.ClientUtils;
+import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
-import java.io.File;
-import java.io.OutputStream;
-import java.util.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 @Bean
 public class ClientRegisterImpl implements ClientRegister {
 
   public BeanGetter<ClientDao> clientDao;
-  public BeanGetter<CharmDao> charmDao;
   public BeanGetter<IdGenerator> idGenerator;
-
-  @SuppressWarnings({"Duplicates"})
-  @Override
-  public void generateReport(OutputStream out, String type, String orderBy, int order, String filter) throws Exception {
-    ClientReport clientReport = null;
-    String filename = "report" + idGenerator.get().newId() + "." + type;
-    File file = new File(filename);
-    String[] headers = {"id", "name", "surname", "patronymic", "age", "charm", "total Account Balance", "maximum Balance", "minimum Balance"};
-
-    Map<String, String> charms = new HashMap<>();
-    for (CharmRecord cr : charmDao.get().getAll())
-      charms.put(cr.id, cr.name);
-
-    switch (type) {
-      case "pdf":
-        clientReport = new ClientReportPDF(out, headers);
-        ((ClientReportPDF) clientReport).setCharms(charms);
-        break;
-      case "xlsx":
-        clientReport = new ClientReportXLSX(out, headers);
-        ((ClientReportXLSX) clientReport).setCharms(charms);
-        break;
-    }
-
-
-    if (clientReport != null) {
-      long records = this.getClientsSize(filter);
-      int chunk = 100;
-      for (int page = 0; page < Math.ceil(records / (double) chunk); page++) {
-        // FIXME: 2/21/18 Если количество клиентов=100_000, то тысячу раз будешь один и тот же запрос выполнять с сорировкой и выборкой?
-        clientReport.appendRows(this.getClientInfoList(chunk, page, filter, orderBy, order));
-      }
-
-      clientReport.finish();
-    }
-
-  }
-
+  public BeanGetter<JdbcSandbox> jdbcSandbox;
 
   @Override
   public List<ClientRecord> getClientInfoList(int limit, int page, String filter, final String orderBy, int desc) {
 
-    if (limit == 0) return new ArrayList<>();
+    if (limit <= 0) return new ArrayList<>();
 
-    String[] orders = {"age", "totalAccountBalance", "maximumBalance", "minimumBalance"};
+    List<ClientRecord> result = new ArrayList<>();
+
+    String[] orders = ClientUtils.sortableColumns;
     Boolean match = orderBy != null && Arrays.stream(orders).anyMatch(o -> o.equals(orderBy));
 
-    String ob = match ? orderBy : "concat(name, surname, patronymic)";
-    limit = limit > 100 ? 100 : limit;
     int offset = limit * page;
-    String order = desc == 1 ? "desc" : "asc";
-    filter = getFormattedFilter(filter);
-    // FIXME: 2/21/18 ЕСЛИ ФИЛЬТРА НЕТ, ТО ВЫБОРКИ ПО "LIKE" ВООБЩЕ НЕ ДОЛЖНО БЫТЬ В ЗАПРОСЕ!!!
-    return this.clientDao.get().getClients(limit, offset, ob, order, filter);
+
+    String queryFilter = ClientUtils.getFormattedFilter(filter);
+
+    StringBuilder query = new StringBuilder();
+    query.append("select c.id, c.name, c.surname, c.patronymic, date_part('year',age(c.birthDate)) as age, c.charm, ca.totalAccountBalance, ca.maximumBalance, ca.minimumBalance");
+    query.append(" from (select * from Client where actual=true");
+    if (queryFilter != null)
+      query.append(" and lower(concat(name, surname, patronymic)) SIMILAR TO ?");
+    query.append(") c");
+    query.append(" left join (select client, max(money) maximumBalance, min(money) minimumBalance, sum(money) totalAccountBalance from ClientAccount group by client) ca on ca.client=c.id");
+    if (match)
+      query.append(" order by ").append(orderBy);
+    else
+      query.append(" order by concat(name, surname, patronymic)");
+    if (desc == 1)
+      query.append(" desc");
+    query.append(" limit ? offset ?");
+
+    jdbcSandbox.get().execute(connection -> {
+
+      try (PreparedStatement ps = connection.prepareStatement(query.toString())) {
+
+        int argIndex = 1;
+        if (queryFilter != null)
+          ps.setString(argIndex++, queryFilter);
+        ps.setInt(argIndex++, limit);
+        ps.setInt(argIndex, offset);
+
+        try (ResultSet resultSet = ps.executeQuery()) {
+
+          while (resultSet.next()) {
+            ClientRecord record = ClientUtils.rsToClientRecord(resultSet);
+            result.add(record);
+          }
+        }
+      }
+
+      return null;
+    });
+
+    return result;
   }
 
   @Override
   public long getClientsSize(String filter) {
     if (filter == null)
       return this.clientDao.get().countAll();
-    filter = this.getFormattedFilter(filter);
+    filter = ClientUtils.getFormattedFilter(filter);
     return this.clientDao.get().countByFilter(filter);
   }
 
@@ -155,12 +159,5 @@ public class ClientRegisterImpl implements ClientRegister {
     }
   }
 
-  private String getFormattedFilter(String filter) {
-    if (filter == null || filter.isEmpty())
-      return "%%";
-    String[] filters = filter.trim().split(" ");
-    filter = String.join("|", filters);
-    filter = "%(" + filter.toLowerCase() + ")%";
-    return filter;
-  }
+
 }

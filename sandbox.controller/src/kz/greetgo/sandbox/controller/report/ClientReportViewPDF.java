@@ -9,18 +9,20 @@ import com.itextpdf.text.PageSize;
 
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-public class ClientReportPDF implements ClientReport {
+public class ClientReportViewPDF implements ClientReportView {
 
-  private Map<String, String> charms;
   private Document document;
+  private OutputStream out;
   private PdfPTable table;
+  private int count = 0;
 
-  public ClientReportPDF(OutputStream out, String[] headers) throws Exception {
+  public ClientReportViewPDF(OutputStream out) throws Exception {
+    this.out = out;
+  }
+
+  @Override
+  public void start(String[] headers) throws Exception {
     document = new Document(PageSize.A4.rotate(), -50, -50, 50, 50);
     PdfWriter.getInstance(document, out);
     document.open();
@@ -33,20 +35,24 @@ public class ClientReportPDF implements ClientReport {
   }
 
   @Override
-  public void appendRows(List<ClientRecord> records) throws Exception {
+  public void appendRow(ClientRecord record) throws Exception {
 
-    for (ClientRecord clientRecord : records) {
-      table.addCell(clientRecord.id);
-      table.addCell(clientRecord.name);
-      table.addCell(clientRecord.surname);
-      table.addCell(clientRecord.patronymic);
-      table.addCell(String.valueOf(clientRecord.age));
-      table.addCell(this.charms.get(clientRecord.charm));
-      table.addCell(String.valueOf(clientRecord.totalAccountBalance));
-      table.addCell(String.valueOf(clientRecord.maximumBalance));
-      table.addCell(String.valueOf(clientRecord.minimumBalance));
+    table.addCell(record.id);
+    table.addCell(record.name);
+    table.addCell(record.surname);
+    table.addCell(record.patronymic);
+    table.addCell(String.valueOf(record.age));
+    table.addCell(record.charm);
+    table.addCell(String.valueOf(record.totalAccountBalance));
+    table.addCell(String.valueOf(record.maximumBalance));
+    table.addCell(String.valueOf(record.minimumBalance));
+
+    count++;
+    if (count % 1000 == 0) {
+      document.add(table);
+      count = 0;
     }
-    document.add(table);
+
   }
 
   @Override
@@ -56,18 +62,13 @@ public class ClientReportPDF implements ClientReport {
     document.close();
   }
 
-  public void setCharms(Map<String, String> charms) {
-    this.charms = charms;
-  }
 
   public static void main(String[] args) throws Exception {
     OutputStream out = new FileOutputStream("test.pdf");
     String[] headers = {"id", "name", "surname", "patronymic", "age", "charm", "total Account Balance", "maximum Balance", "minimum Balance"};
-    ClientReportPDF clientReportPDF = new ClientReportPDF(out, headers);
-    Map<String, String> charms = new HashMap<>();
-    charms.put("1", "lazy");
-    clientReportPDF.setCharms(charms);
-    List<ClientRecord> list = new ArrayList<>();
+
+    ClientReportViewPDF clientReportPDF = new ClientReportViewPDF(out);
+    clientReportPDF.start(headers);
     ClientRecord clientRecord = new ClientRecord();
     clientRecord.id = "myId";
     clientRecord.name = "myName";
@@ -79,8 +80,7 @@ public class ClientReportPDF implements ClientReport {
     clientRecord.maximumBalance = 1100f;
     clientRecord.minimumBalance = 11100f;
     for (int i = 0; i < 1000; i++)
-      list.add(clientRecord);
-    clientReportPDF.appendRows(list);
+      clientReportPDF.appendRow(clientRecord);
     clientReportPDF.finish();
     out.close();
   }

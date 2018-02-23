@@ -20,6 +20,7 @@ import kz.greetgo.sandbox.db.test.dao.AccountTetsDao;
 import kz.greetgo.sandbox.db.test.dao.CharmTestDao;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
+import kz.greetgo.sandbox.db.test.util.RegisterTestDataUtils;
 import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
@@ -30,11 +31,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-
 
 import static org.fest.assertions.api.Assertions.assertThat;
-
 
 public class ClientRegisterImplTest extends ParentTestNg {
 
@@ -44,16 +42,15 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public BeanGetter<IdGenerator> idGenerator;
   public BeanGetter<AccountTetsDao> accountTetsDao;
 
-
   @Test
   void getClientInfoListTest() throws Exception {
     this.clientTestDao.get().clear();
 
     //init data in db
+    insertRndCharms();
     List<ClientDot> clients = new ArrayList<>();
     Map<String, List<ClientAccountDot>> accountDotMap = new HashMap<>();
     this.rndClientsWithAccounts(clients, accountDotMap);
-    insertRndCharms();
 
     //init inputs
     ClientDot rndClient = clients.get(RND.plusInt(clients.size()));
@@ -83,13 +80,13 @@ public class ClientRegisterImplTest extends ParentTestNg {
               }
 
               //filtering by FIO
-              List<ClientDot> filteredClientDots = filterClientDotList(clients, filter);
+              List<ClientDot> filteredClientDots = RegisterTestDataUtils.filterClientDotList(clients, filter);
 
               //combine client data with corresponding account data: total, max, min balance
-              List<ClientRecord> expectedList = this.fromClientDotListToRecordList(filteredClientDots, accountDotMap);
+              List<ClientRecord> expectedList = RegisterTestDataUtils.fromClientDotListToRecordList(filteredClientDots, accountDotMap);
 
               //sorting
-              sortWithOrder(expectedList, orderBy, order);
+              RegisterTestDataUtils.sortClientRecordList(expectedList, orderBy, order);
 
               //slicing
               int fromIndex = limit * page;
@@ -347,6 +344,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   }
 
+
   private void assertPhoneNumber(ClientPhoneNumber target, ClientPhoneNumberDot assertion) {
     assertThat(target).isNotNull();
     assertThat(target.client).isEqualTo(assertion.client);
@@ -473,67 +471,5 @@ public class ClientRegisterImplTest extends ParentTestNg {
       this.charmTestDao.get().insertCharmDot(charmDot);
     }
   }
-
-  private List<ClientRecord> fromClientDotListToRecordList(List<ClientDot> clientDots, Map<String, List<ClientAccountDot>> accounts) {
-    List<ClientRecord> records = new ArrayList<>();
-    for (ClientDot clientDot : clientDots) {
-      ClientRecord cr = clientDot.toClientRecord();
-      List<ClientAccountDot> accList = accounts.get(clientDot.id);
-
-      // FIXME: 2/21/18 Если у клиента нет аккаунтов?
-      float max = accList.get(0).money;
-      float min = accList.get(0).money;
-      float total = 0;
-      for (ClientAccountDot cad : accList) {
-        total += cad.money;
-        if (max < cad.money)
-          max = cad.money;
-        if (min > cad.money)
-          min = cad.money;
-      }
-      cr.totalAccountBalance = total;
-      cr.maximumBalance = max;
-      cr.minimumBalance = min;
-      records.add(cr);
-    }
-    return records;
-  }
-
-  private List<ClientDot> filterClientDotList(List<ClientDot> list, String filter) {
-
-    if (filter != null && !filter.isEmpty()) {
-      String[] filterTokens = filter.trim().split(" ");
-      return list.stream().filter(o -> Arrays.stream(filterTokens).anyMatch(y -> o.getFIO().toLowerCase().contains(y.toLowerCase()))).collect(Collectors.toList());
-    } else
-      return list;
-  }
-
-  private void sortWithOrder(List<ClientRecord> list, String orderBy, int order) {
-    String ob = orderBy == null ? "default" : orderBy;
-
-    list.sort((o1, o2) -> {
-      if (order == 1) {
-        ClientRecord tmp = o1;
-        o1 = o2;
-        o2 = tmp;
-      }
-      switch (ob) {
-        case "age":
-          return Integer.compare(o1.age, o2.age);
-        case "totalAccountBalance":
-          return Double.compare(o1.totalAccountBalance, o2.totalAccountBalance);
-        case "maximumBalance":
-          return Double.compare(o1.maximumBalance, o2.maximumBalance);
-        case "minimumBalance":
-          return Double.compare(o1.minimumBalance, o2.minimumBalance);
-        default:
-          String fio1 = o1.getFIO().toLowerCase();
-          String fio2 = o2.getFIO().toLowerCase();
-          return fio1.compareTo(fio2);
-      }
-
-    });
-  }
-
 
 }

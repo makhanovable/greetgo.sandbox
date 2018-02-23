@@ -7,7 +7,7 @@ import { Component, OnInit, ViewChild } from "@angular/core";
 import { MatDialog, MatPaginator, MatSort, MatTableDataSource } from "@angular/material";
 import { SelectionModel } from "@angular/cdk/collections";
 import { ClientFormComponent } from "../clientForm/client_form.component";
-import { saveAs as importedSaveAs } from "file-saver";
+import { saveAs } from "file-saver";
 
 @Component({
   template: require('./client_list.component.html'),
@@ -171,13 +171,13 @@ export class ClientListComponent implements OnInit {
   }
 
   download() {
-    this.httpService.downloadFile("/client/report", {
+    this.httpService.downloadFile("/report/download", {
       type: this.format,
       filter: this.filter,
       orderBy: this.selectedOrder.toLowerCase(),
       order: this.desc
     }).subscribe(blob => {
-      importedSaveAs(blob, "report."+ this.format);
+      saveAs(blob, "report."+ this.format);
     })
 
   }

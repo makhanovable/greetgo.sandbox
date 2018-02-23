@@ -12,5 +12,7 @@ dependencies {
 
   testCompile "kz.greetgo.depinject:greetgo.depinject.testng:$depinjectVersion"
   testCompile project(':sandbox.stand:db').sourceSets.main.output
+// https://mvnrepository.com/artifact/com.jcraft/jsch
+  compile group: 'com.jcraft', name: 'jsch', version: '0.1.54'
 
 }

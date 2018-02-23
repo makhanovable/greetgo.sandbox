@@ -12,8 +12,10 @@ public class ClientRecord {
   public float maximumBalance;
   public float minimumBalance;
 
-  // FIXME: 2/21/18 какой будет output если patronymic is null?
   public String getFIO() {
-    return this.name + this.surname + this.patronymic;
+    if (this.patronymic == null)
+      return this.name + this.surname;
+    else
+      return this.name + this.surname + this.patronymic;
   }
 }
