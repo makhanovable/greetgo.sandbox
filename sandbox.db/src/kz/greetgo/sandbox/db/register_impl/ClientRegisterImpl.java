@@ -3,12 +3,7 @@ package kz.greetgo.sandbox.db.register_impl;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.enums.AddressType;
-import kz.greetgo.sandbox.controller.model.ClientAddress;
-import kz.greetgo.sandbox.controller.model.ClientDetail;
-import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
-import kz.greetgo.sandbox.controller.model.ClientPhoneNumberToSave;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.controller.model.ClientToSave;
+import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 import kz.greetgo.sandbox.db.util.ClientUtils;
@@ -102,6 +97,7 @@ public class ClientRegisterImpl implements ClientRegister {
     if (clientDetail != null) {
       List<ClientAddress> addresses = this.clientDao.get().getAddresses(id);
       for (ClientAddress addr : addresses) {
+        // FIXME: 2/23/18 лучше проверять так: AddressType.FACT == addr.type
         if (addr.type.equals(AddressType.FACT))
           clientDetail.actualAddress = addr;
         else if (addr.type.equals(AddressType.REG))
@@ -129,6 +125,7 @@ public class ClientRegisterImpl implements ClientRegister {
 
     if (clientToSave.numersToSave != null) {
       for (ClientPhoneNumberToSave cpn : clientToSave.numersToSave) {
+        // FIXME: 2/23/18 зачем тут проверка когда клиент нулл?
         if (cpn.client == null) {
           cpn.client = clientToSave.id;
           this.clientDao.get().insertPhone(cpn);
@@ -142,6 +139,7 @@ public class ClientRegisterImpl implements ClientRegister {
     }
 
     if (clientToSave.actualAddress != null) {
+      // FIXME: 2/23/18 зачем тут проверка когда клиент нулл?
       if (clientToSave.actualAddress.client == null) {
         clientToSave.actualAddress.client = clientToSave.id;
         this.clientDao.get().insertAddress(clientToSave.actualAddress);
@@ -150,6 +148,7 @@ public class ClientRegisterImpl implements ClientRegister {
       }
     }
     if (clientToSave.registerAddress != null) {
+      // FIXME: 2/23/18 зачем тут проверка когда клиент нулл?
       if (clientToSave.registerAddress.client == null) {
         clientToSave.registerAddress.client = clientToSave.id;
         this.clientDao.get().insertAddress(clientToSave.registerAddress);

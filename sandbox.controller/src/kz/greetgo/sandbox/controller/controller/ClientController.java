@@ -39,6 +39,7 @@ public class ClientController implements Controller {
     return clientRegister.get().getClientInfoList(limit, page, filter, orderBy, desc);
   }
 
+  // FIXME: 2/23/18 название amount не говорит, что речь идет о количестве клиентов. Amount применимо скорее к какой-то сумме денег, например
   @ToJson
   @Mapping("/amount")
   public long getAmount(@Par("filter") String filter) {
