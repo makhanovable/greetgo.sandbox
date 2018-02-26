@@ -42,6 +42,52 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public BeanGetter<IdGenerator> idGenerator;
   public BeanGetter<AccountTetsDao> accountTetsDao;
 
+
+  @Test
+  void generateReportTest() throws Exception {
+    this.clientTestDao.get().clear();
+    this.charmTestDao.get().clear();
+
+    //insert data to db
+    insertRndCharms();
+    List<ClientDot> clients = new ArrayList<>();
+    Map<String, List<ClientAccountDot>> accounts = new HashMap<>();
+    this.rndClientsWithAccounts(clients, accounts);
+
+    Map<String, String> charms = new HashMap<>();
+    for (CharmDot charmDot : this.charmTestDao.get().getAll())
+      charms.put(charmDot.id, charmDot.name);
+
+    ClientRecordTestView testView = new ClientRecordTestView();
+
+    //
+    //
+    this.clientRegister.get().generateReport(null, null, 0, testView);
+    //
+    //
+
+    int index = 0;
+    assertThat(testView.rows).isNotEmpty();
+
+    List<ClientRecord> expectedList = RegisterTestDataUtils.fromClientDotListToRecordList(clients, accounts);
+
+    RegisterTestDataUtils.sortClientRecordList(expectedList, null, 0);
+
+    for (ClientRecord clientRecord : testView.rows) {
+      ClientRecord assertion = expectedList.get(index++);
+      assertThat(clientRecord.id).isEqualTo(assertion.id);
+      assertThat(clientRecord.name).isEqualTo(assertion.name);
+      assertThat(clientRecord.surname).isEqualTo(assertion.surname);
+      assertThat(clientRecord.patronymic).isEqualTo(assertion.patronymic);
+      assertThat(clientRecord.age).isEqualTo(assertion.age);
+      assertThat(clientRecord.charm).isEqualTo(charms.get(assertion.charm));
+      assertThat(clientRecord.totalAccountBalance).isEqualTo(assertion.totalAccountBalance);
+      assertThat(clientRecord.maximumBalance).isEqualTo(assertion.maximumBalance);
+      assertThat(clientRecord.minimumBalance).isEqualTo(assertion.minimumBalance);
+    }
+  }
+
+
   @Test
   void getClientInfoListTest() throws Exception {
     this.clientTestDao.get().clear();
@@ -55,8 +101,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //init inputs
     ClientDot rndClient = clients.get(RND.plusInt(clients.size()));
     int[] limits = {20, 10, 0};
-    int[] pages = {10, 5, 2, 1, 0};
-    String[] orderBys = {null, "", "age", "totalAccountBalance", "maximumBalance", "minimumBalance"};
+    int[] pages = {0};
+    String[] orderBys = {"totalAccountBalance", "maximumBalance", "minimumBalance"};
     int[] orders = {0, 1};
     String[] filters = {null, rndClient.name + " " + rndClient.surname, rndClient.patronymic, rndClient.getFIO(), "a", "ab", RND.str(2)};
 
@@ -67,12 +113,12 @@ public class ClientRegisterImplTest extends ParentTestNg {
           for (int order : orders) {
             for (String filter : filters) {
 
-
               //
               //
               List<ClientRecord> result = this.clientRegister.get().getClientInfoList(limit, page, filter, orderBy, order);
               //
               //
+
 
               if (limit == 0) {
                 assertThat(result).isEmpty();
@@ -87,6 +133,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
               //sorting
               RegisterTestDataUtils.sortClientRecordList(expectedList, orderBy, order);
+
 
               //slicing
               int fromIndex = limit * page;
@@ -113,9 +160,10 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
                 assertThat(target.maximumBalance).isEqualTo(assertion.maximumBalance);
                 assertThat(target.minimumBalance).isEqualTo(assertion.minimumBalance);
-                assertThat(target.totalAccountBalance).isEqualTo(assertion.totalAccountBalance);
+                assertThat(Math.abs(target.totalAccountBalance - assertion.totalAccountBalance)).isLessThan(0.001f);
 
               }
+
 
             }
           }
@@ -450,7 +498,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
       List<ClientAccountDot> accList = new ArrayList<>();
       for (int j = 0; j < 2 + RND.plusInt(5); j++) {
         ClientAccountDot cad = new ClientAccountDot();
-        cad.money = (float) RND.plusDouble(1000000f, 10);
+        cad.money = (float) RND.plusDouble(1000f, 5);
         cad.id = idGenerator.get().newId();
         cad.number = idGenerator.get().newId();
         cad.client = cd.id;
