@@ -14,7 +14,7 @@ import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.report.ClientRecordView;
 import kz.greetgo.sandbox.db.SqlBuilder.ClientRecordReportViewQuery;
 import kz.greetgo.sandbox.db.SqlBuilder.ClientRecordWebViewQuery;
-import kz.greetgo.sandbox.db.SqlBuilder.CountClientRecordsQuery;
+import kz.greetgo.sandbox.db.SqlBuilder.ClientRecordsCountQuery;
 import kz.greetgo.sandbox.db.dao.CharmDao;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 import kz.greetgo.sandbox.db.util.ClientRecordJdbc;
@@ -76,7 +76,7 @@ public class ClientRegisterImpl implements ClientRegister {
       return this.clientDao.get().countAll();
     String finalFilter = ClientUtils.getFormattedFilter(filter);
 
-    CountClientRecordsQuery query = new CountClientRecordsQuery();
+    ClientRecordsCountQuery query = new ClientRecordsCountQuery();
     query.withFilter = finalFilter != null;
     final int[] result = new int[1];
     jdbcSandbox.get().execute(connection -> {

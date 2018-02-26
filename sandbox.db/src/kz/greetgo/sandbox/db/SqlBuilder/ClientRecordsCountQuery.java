@@ -1,6 +1,6 @@
 package kz.greetgo.sandbox.db.SqlBuilder;
 
-public class CountClientRecordsQuery extends ClientRecordQueryBuilder {
+public class ClientRecordsCountQuery extends ClientRecordQueryBuilder {
 
   @Override
   void select(StringBuilder sb) {
