@@ -3,17 +3,31 @@ package kz.greetgo.sandbox.db.register_impl;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.enums.AddressType;
-import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.model.CharmRecord;
+import kz.greetgo.sandbox.controller.model.ClientAddress;
+import kz.greetgo.sandbox.controller.model.ClientDetail;
+import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
+import kz.greetgo.sandbox.controller.model.ClientPhoneNumberToSave;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.controller.report.ClientRecordView;
+import kz.greetgo.sandbox.db.SqlBuilder.ClientRecordReportViewQuery;
+import kz.greetgo.sandbox.db.SqlBuilder.ClientRecordWebViewQuery;
+import kz.greetgo.sandbox.db.SqlBuilder.ClientRecordsCountQuery;
+import kz.greetgo.sandbox.db.dao.CharmDao;
 import kz.greetgo.sandbox.db.dao.ClientDao;
+import kz.greetgo.sandbox.db.util.ClientRecordJdbc;
+import kz.greetgo.sandbox.db.util.ClientRecordListView;
 import kz.greetgo.sandbox.db.util.ClientUtils;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @Bean
@@ -23,66 +37,66 @@ public class ClientRegisterImpl implements ClientRegister {
   public BeanGetter<IdGenerator> idGenerator;
   public BeanGetter<JdbcSandbox> jdbcSandbox;
 
+  public BeanGetter<CharmDao> charmDao;
+
+  @Override
+  public void generateReport(String filter, String orderBy, int order, ClientRecordView view) throws Exception {
+    Map<String, String> charms = new HashMap<>();
+    for (CharmRecord charmRecord : this.charmDao.get().getAll())
+      charms.put(charmRecord.id, charmRecord.name);
+
+    view.start(ClientUtils.reportHeaders);
+
+    ClientRecordJdbc jdbc = new ClientRecordJdbc(new ClientRecordReportViewQuery(), filter, orderBy, order, view);
+    jdbc.charms = charms;
+    jdbcSandbox.get().execute(jdbc);
+
+    view.finish();
+  }
+
+
   @Override
   public List<ClientRecord> getClientInfoList(int limit, int page, String filter, final String orderBy, int desc) {
 
     if (limit <= 0) return new ArrayList<>();
 
-    List<ClientRecord> result = new ArrayList<>();
-
-    String[] orders = ClientUtils.sortableColumns;
-    Boolean match = orderBy != null && Arrays.stream(orders).anyMatch(o -> o.equals(orderBy));
-
+    ClientRecordListView view = new ClientRecordListView();
     int offset = limit * page;
+    ClientRecordJdbc jdbc = new ClientRecordJdbc(new ClientRecordWebViewQuery(), filter, orderBy, desc, limit, offset, view);
 
-    String queryFilter = ClientUtils.getFormattedFilter(filter);
+    jdbcSandbox.get().execute(jdbc);
 
-    StringBuilder query = new StringBuilder();
-    query.append("select c.id, c.name, c.surname, c.patronymic, date_part('year',age(c.birthDate)) as age, c.charm, ca.totalAccountBalance, ca.maximumBalance, ca.minimumBalance");
-    query.append(" from (select * from Client where actual=true");
-    if (queryFilter != null)
-      query.append(" and lower(concat(name, surname, patronymic)) SIMILAR TO ?");
-    query.append(") c");
-    query.append(" left join (select client, max(money) maximumBalance, min(money) minimumBalance, sum(money) totalAccountBalance from ClientAccount group by client) ca on ca.client=c.id");
-    if (match)
-      query.append(" order by ").append(orderBy);
-    else
-      query.append(" order by concat(name, surname, patronymic)");
-    if (desc == 1)
-      query.append(" desc");
-    query.append(" limit ? offset ?");
-
-    jdbcSandbox.get().execute(connection -> {
-
-      try (PreparedStatement ps = connection.prepareStatement(query.toString())) {
-
-        int argIndex = 1;
-        if (queryFilter != null)
-          ps.setString(argIndex++, queryFilter);
-        ps.setInt(argIndex++, limit);
-        ps.setInt(argIndex, offset);
-
-        try (ResultSet resultSet = ps.executeQuery()) {
-
-          while (resultSet.next()) {
-            ClientRecord record = ClientUtils.rsToClientRecord(resultSet);
-            result.add(record);
-          }
-        }
-      }
-
-      return null;
-    });
-
-    return result;
+    return view.list;
   }
 
   @Override
   public long getClientsSize(String filter) {
+
     if (filter == null)
       return this.clientDao.get().countAll();
-    filter = ClientUtils.getFormattedFilter(filter);
-    return this.clientDao.get().countByFilter(filter);
+    String finalFilter = ClientUtils.getFormattedFilter(filter);
+
+    ClientRecordsCountQuery query = new ClientRecordsCountQuery();
+    query.withFilter = finalFilter != null;
+    final int[] result = new int[1];
+    jdbcSandbox.get().execute(connection -> {
+      try (PreparedStatement ps = connection.prepareStatement(query.generateSql(new StringBuilder()).toString())) {
+
+        int argIndex = 1;
+        if (finalFilter != null)
+          ps.setString(argIndex++, finalFilter);
+
+        try (ResultSet rs = ps.executeQuery()) {
+          while (rs.next()) {
+            result[0] = rs.getInt(1);
+          }
+          return null;
+        }
+      }
+    });
+
+//    return this.clientDao.get().countByFilter(filter);
+    return result[0];
   }
 
   @Override
@@ -97,8 +111,7 @@ public class ClientRegisterImpl implements ClientRegister {
     if (clientDetail != null) {
       List<ClientAddress> addresses = this.clientDao.get().getAddresses(id);
       for (ClientAddress addr : addresses) {
-        // FIXME: 2/23/18 лучше проверять так: AddressType.FACT == addr.type
-        if (addr.type.equals(AddressType.FACT))
+        if (addr.type == AddressType.FACT)
           clientDetail.actualAddress = addr;
         else if (addr.type.equals(AddressType.REG))
           clientDetail.registerAddress = addr;
@@ -125,7 +138,6 @@ public class ClientRegisterImpl implements ClientRegister {
 
     if (clientToSave.numersToSave != null) {
       for (ClientPhoneNumberToSave cpn : clientToSave.numersToSave) {
-        // FIXME: 2/23/18 зачем тут проверка когда клиент нулл?
         if (cpn.client == null) {
           cpn.client = clientToSave.id;
           this.clientDao.get().insertPhone(cpn);
@@ -139,7 +151,6 @@ public class ClientRegisterImpl implements ClientRegister {
     }
 
     if (clientToSave.actualAddress != null) {
-      // FIXME: 2/23/18 зачем тут проверка когда клиент нулл?
       if (clientToSave.actualAddress.client == null) {
         clientToSave.actualAddress.client = clientToSave.id;
         this.clientDao.get().insertAddress(clientToSave.actualAddress);
@@ -148,7 +159,6 @@ public class ClientRegisterImpl implements ClientRegister {
       }
     }
     if (clientToSave.registerAddress != null) {
-      // FIXME: 2/23/18 зачем тут проверка когда клиент нулл?
       if (clientToSave.registerAddress.client == null) {
         clientToSave.registerAddress.client = clientToSave.id;
         this.clientDao.get().insertAddress(clientToSave.registerAddress);
