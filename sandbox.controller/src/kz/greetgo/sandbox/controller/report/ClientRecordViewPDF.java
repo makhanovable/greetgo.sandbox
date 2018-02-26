@@ -10,14 +10,14 @@ import com.itextpdf.text.PageSize;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
-public class ClientReportViewPDF implements ClientReportView {
+public class ClientRecordViewPDF implements ClientRecordView {
 
   private Document document;
   private OutputStream out;
   private PdfPTable table;
   private int count = 0;
 
-  public ClientReportViewPDF(OutputStream out) throws Exception {
+  public ClientRecordViewPDF(OutputStream out) throws Exception {
     this.out = out;
   }
 
@@ -67,7 +67,7 @@ public class ClientReportViewPDF implements ClientReportView {
     OutputStream out = new FileOutputStream("test.pdf");
     String[] headers = {"id", "name", "surname", "patronymic", "age", "charm", "total Account Balance", "maximum Balance", "minimum Balance"};
 
-    ClientReportViewPDF clientReportPDF = new ClientReportViewPDF(out);
+    ClientRecordViewPDF clientReportPDF = new ClientRecordViewPDF(out);
     clientReportPDF.start(headers);
     ClientRecord clientRecord = new ClientRecord();
     clientRecord.id = "myId";

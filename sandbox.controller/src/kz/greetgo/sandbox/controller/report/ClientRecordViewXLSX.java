@@ -10,7 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class ClientReportViewXLSX implements ClientReportView {
+public class ClientRecordViewXLSX implements ClientRecordView {
 
   private OutputStream out;
 
@@ -19,7 +19,7 @@ public class ClientReportViewXLSX implements ClientReportView {
   private int rowNumber = 0;
   private int columnNumber = 0;
 
-  public ClientReportViewXLSX(OutputStream out) {
+  public ClientRecordViewXLSX(OutputStream out) {
     this.out = out;
   }
 
@@ -65,7 +65,7 @@ public class ClientReportViewXLSX implements ClientReportView {
     OutputStream out = new FileOutputStream("test.xlsx");
     String[] headers = {"id", "name", "surname", "patronymic", "age", "charm", "total Account Balance", "maximum Balance", "minimum Balance"};
 
-    ClientReportViewXLSX clientReportPDF = new ClientReportViewXLSX(out);
+    ClientRecordViewXLSX clientReportPDF = new ClientRecordViewXLSX(out);
     clientReportPDF.start(headers);
     ClientRecord clientRecord = new ClientRecord();
     clientRecord.id = "myId";
