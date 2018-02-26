@@ -96,7 +96,7 @@ export class ClientListComponent implements OnInit {
     clientFilter.orderBy = this.selectedOrder.toLowerCase();
 
     if (getAmount) {
-      this.httpService.get("/client/amount", {
+      this.httpService.get("/client/numberOfClients", {
         filter: clientFilter.filter,
       }).toPromise().then(res => {
         this.paginator.length = Number.parseInt(res.text());
@@ -171,7 +171,7 @@ export class ClientListComponent implements OnInit {
   }
 
   download() {
-    this.httpService.downloadFile("/report/download", {
+    this.httpService.downloadFile("/report/downloadClientReport", {
       type: this.format,
       filter: this.filter,
       orderBy: this.selectedOrder.toLowerCase(),

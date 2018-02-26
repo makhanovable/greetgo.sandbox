@@ -160,7 +160,7 @@ export class ClientFormComponent implements OnInit {
     this.formData.phoneNumbers.forEach(element => {
 
       if (element['oldNumber'] && element.number == "") {
-        element.number = element['old'];
+        element.number = element['oldNumber'];
         delete element['oldNumber'];
         toSave.numbersToDelete.push(element);
       }
