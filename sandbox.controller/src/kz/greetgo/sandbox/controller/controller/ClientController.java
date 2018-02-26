@@ -23,7 +23,7 @@ public class ClientController implements Controller {
 
   public BeanGetter<ClientRegister> clientRegister;
 
-  
+
   @Mapping("/ping")
   public void ping(RequestTunnel requestTunnel) {
 
@@ -39,9 +39,8 @@ public class ClientController implements Controller {
     return clientRegister.get().getClientInfoList(limit, page, filter, orderBy, desc);
   }
 
-  // FIXME: 2/23/18 название amount не говорит, что речь идет о количестве клиентов. Amount применимо скорее к какой-то сумме денег, например
   @ToJson
-  @Mapping("/amount")
+  @Mapping("/numberOfClients")
   public long getAmount(@Par("filter") String filter) {
     return this.clientRegister.get().getClientsSize(filter);
   }

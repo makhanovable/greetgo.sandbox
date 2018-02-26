@@ -6,10 +6,9 @@ import kz.greetgo.mvc.annotations.Mapping;
 import kz.greetgo.mvc.annotations.Par;
 import kz.greetgo.mvc.interfaces.RequestTunnel;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.controller.register.ReportRegister;
-import kz.greetgo.sandbox.controller.report.ClientReportView;
-import kz.greetgo.sandbox.controller.report.ClientReportViewPDF;
-import kz.greetgo.sandbox.controller.report.ClientReportViewXLSX;
+import kz.greetgo.sandbox.controller.report.ClientRecordView;
+import kz.greetgo.sandbox.controller.report.ClientRecordViewPDF;
+import kz.greetgo.sandbox.controller.report.ClientRecordViewXLSX;
 import kz.greetgo.sandbox.controller.util.Controller;
 
 import java.io.OutputStream;
@@ -19,14 +18,12 @@ import java.util.Date;
 @Mapping("/report")
 public class ReportController implements Controller {
 
-  public BeanGetter<ReportRegister> reportRegister;
+  public BeanGetter<ClientRegister> clientRegister;
 
-  // FIXME: 2/23/18 download что? Не понятно о каком отчете идет речь
-  @Mapping("/download")
+  @Mapping("/downloadClientReport")
   public void generateReport(@Par("type") String type, @Par("orderBy") String orderBy, @Par("order") int order,
                              @Par("filter") String filter, RequestTunnel requestTunnel) throws Exception {
-    // FIXME: 2/23/18 Можно не проверять на нулл, а сразу "pdf".equals(type) или "xlsx".equals(type)
-    if (type == null || !(type.equals("pdf") || type.equals("xlsx"))) {
+    if (!("pdf".equals(type) || "xlsx".equals(type))) {
       throw new Exception("Unsupported File Format");
     }
 
@@ -34,19 +31,19 @@ public class ReportController implements Controller {
     requestTunnel.setResponseHeader("Content-disposition", "attachment; filename=" + filename);
     OutputStream out = requestTunnel.getResponseOutputStream();
 
-    ClientReportView view;
+    ClientRecordView view;
     switch (type) {
       case "pdf":
-        view = new ClientReportViewPDF(out);
+        view = new ClientRecordViewPDF(out);
         break;
       case "xlsx":
-        view = new ClientReportViewXLSX(out);
+        view = new ClientRecordViewXLSX(out);
         break;
       default:
         return;
     }
 
-    this.reportRegister.get().generateReport(filter, orderBy, order, view);
+    this.clientRegister.get().generateReport(filter, orderBy, order, view);
     out.flush();
     requestTunnel.flushBuffer();
   }
