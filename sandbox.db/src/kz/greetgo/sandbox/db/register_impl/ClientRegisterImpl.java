@@ -14,6 +14,7 @@ import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.report.ClientRecordView;
 import kz.greetgo.sandbox.db.SqlBuilder.ClientRecordReportViewQuery;
 import kz.greetgo.sandbox.db.SqlBuilder.ClientRecordWebViewQuery;
+import kz.greetgo.sandbox.db.SqlBuilder.CountClientRecordsQuery;
 import kz.greetgo.sandbox.db.dao.CharmDao;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 import kz.greetgo.sandbox.db.util.ClientRecordJdbc;
@@ -21,6 +22,8 @@ import kz.greetgo.sandbox.db.util.ClientRecordListView;
 import kz.greetgo.sandbox.db.util.ClientUtils;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -68,10 +71,32 @@ public class ClientRegisterImpl implements ClientRegister {
 
   @Override
   public long getClientsSize(String filter) {
+
     if (filter == null)
       return this.clientDao.get().countAll();
-    filter = ClientUtils.getFormattedFilter(filter);
-    return this.clientDao.get().countByFilter(filter);
+    String finalFilter = ClientUtils.getFormattedFilter(filter);
+
+    CountClientRecordsQuery query = new CountClientRecordsQuery();
+    query.withFilter = finalFilter != null;
+    final int[] result = new int[1];
+    jdbcSandbox.get().execute(connection -> {
+      try (PreparedStatement ps = connection.prepareStatement(query.generateSql(new StringBuilder()).toString())) {
+
+        int argIndex = 1;
+        if (finalFilter != null)
+          ps.setString(argIndex++, finalFilter);
+
+        try (ResultSet rs = ps.executeQuery()) {
+          while (rs.next()) {
+            result[0] = rs.getInt(1);
+          }
+          return null;
+        }
+      }
+    });
+
+//    return this.clientDao.get().countByFilter(filter);
+    return result[0];
   }
 
   @Override
