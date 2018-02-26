@@ -9,27 +9,53 @@ import kz.greetgo.sandbox.controller.model.ClientPhoneNumberToSave;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.controller.report.ClientReportView;
-import kz.greetgo.sandbox.controller.report.ClientReportViewPDF;
-import kz.greetgo.sandbox.controller.report.ClientReportViewXLSX;
+import kz.greetgo.sandbox.controller.report.ClientRecordView;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
 import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.stand.model.ClientPhoneNumberDot;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+
 
 @SuppressWarnings("ConstantConditions")
 @Bean
 public class ClientRegisterStand implements ClientRegister {
 
+
   @SuppressWarnings("WeakerAccess")
   public BeanGetter<StandDb> db;
   private IdGenerator gen = new IdGenerator();
+
+  @Override
+  public void generateReport(String filter, String orderBy, int order, ClientRecordView view) throws Exception {
+    String[] headers = {"id", "name", "surname", "patronymic", "age", "charm", "total Account Balance", "maximum Balance", "minimum Balance"};
+
+
+    view.start(headers);
+    for (ClientDot clientDot : this.db.get().clientStorage.values()) {
+      ClientRecord clientRecord = clientDot.toClientRecord();
+      if (!this.db.get().clientAccountStorage.get(clientDot.id).isEmpty()) {
+        ClientAccountDot cad = this.db.get().clientAccountStorage.get(clientDot.id).get(0);
+        clientRecord.totalAccountBalance = 0;
+        clientRecord.maximumBalance = cad.money;
+        clientRecord.minimumBalance = cad.money;
+      }
+
+      for (ClientAccountDot clientAccountDot : this.db.get().clientAccountStorage.get(clientDot.id)) {
+        clientRecord.totalAccountBalance += clientAccountDot.money;
+        if (clientAccountDot.money > clientRecord.maximumBalance)
+          clientRecord.minimumBalance = clientAccountDot.money;
+        if (clientAccountDot.money < clientRecord.minimumBalance)
+          clientRecord.minimumBalance = clientAccountDot.money;
+      }
+      view.appendRow(clientRecord);
+    }
+    view.finish();
+  }
+
 
   @Override
   public void addOrUpdate(ClientToSave clientToSave) {
@@ -39,7 +65,7 @@ public class ClientRegisterStand implements ClientRegister {
 
     setClientData(clientDot, clientToSave);
   }
-  
+
   @Override
   public ClientDetail detail(String id) {
     ClientDetail clientDetail = this.db.get().clientStorage.get(id).toClientForm();
