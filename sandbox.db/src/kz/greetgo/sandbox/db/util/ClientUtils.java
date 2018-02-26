@@ -15,11 +15,11 @@ public class ClientUtils {
     record.name = rs.getString("name");
     record.surname = rs.getString("surname");
     record.patronymic = rs.getString("patronymic");
-    record.age = (int) Float.parseFloat(rs.getString("age"));
+    record.age = rs.getInt("age");
     record.charm = rs.getString("charm");
-    record.totalAccountBalance = Float.parseFloat(rs.getString("totalAccountBalance"));
-    record.maximumBalance = Float.parseFloat(rs.getString("maximumBalance"));
-    record.minimumBalance = Float.parseFloat(rs.getString("minimumBalance"));
+    record.totalAccountBalance = rs.getFloat("totalAccountBalance");
+    record.maximumBalance = rs.getFloat("maximumBalance");
+    record.minimumBalance = rs.getFloat("minimumBalance");
     return record;
   }
 
