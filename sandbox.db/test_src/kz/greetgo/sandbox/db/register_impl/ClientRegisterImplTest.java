@@ -81,7 +81,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
       assertThat(clientRecord.patronymic).isEqualTo(assertion.patronymic);
       assertThat(clientRecord.age).isEqualTo(assertion.age);
       assertThat(clientRecord.charm).isEqualTo(charms.get(assertion.charm));
-      assertThat(clientRecord.totalAccountBalance).isEqualTo(assertion.totalAccountBalance);
+      assertThat(Math.abs(clientRecord.totalAccountBalance - assertion.totalAccountBalance)).isLessThan(0.001f);
       assertThat(clientRecord.maximumBalance).isEqualTo(assertion.maximumBalance);
       assertThat(clientRecord.minimumBalance).isEqualTo(assertion.minimumBalance);
     }
