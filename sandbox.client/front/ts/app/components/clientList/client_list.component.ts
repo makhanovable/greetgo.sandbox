@@ -3,7 +3,7 @@ import { ClientFilter } from "../../../model/ClientFilter";
 import { CharmInfo } from "../../../model/CharmInfo";
 import { HttpService } from "../../HttpService";
 import { ClientInfo } from "../../../model/ClientInfo";
-import { Component, OnInit, ViewChild } from "@angular/core";
+import { Component, OnInit, ViewChild, ElementRef } from "@angular/core";
 import { MatDialog, MatPaginator, MatSort, MatTableDataSource } from "@angular/material";
 import { SelectionModel } from "@angular/cdk/collections";
 import { ClientFormComponent } from "../clientForm/client_form.component";
@@ -20,8 +20,7 @@ export class ClientListComponent implements OnInit {
   displayedColumns = ['select', 'fio', 'charm', 'age', 'totalAccountBalance', 'maximumBalance', 'minimumBalance'];
   dataSource: MatTableDataSource<ClientInfo>;
 
-  charmsMap: any[] = [];
-  charmsArray: CharmInfo[];
+  charmsArray: CharmInfo[] = [];
 
   tableElemets: ClientInfo[];
   selection = new SelectionModel<ClientInfo>(true, []);
@@ -31,16 +30,17 @@ export class ClientListComponent implements OnInit {
   desc: number = 0;
 
   format: string = "xlsx";
+  @ViewChild("search") searchEl: ElementRef;
 
   @ViewChild(MatSort) sort: MatSort;
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
-  constructor(public dialog: MatDialog, private httpService: HttpService, private http:Http) {
+  constructor(public dialog: MatDialog, private httpService: HttpService, private http: Http) {
   }
 
   ngOnInit() {
     this.paginator.pageSize = 10;
-    this.loadChamrs();
+    // this.loadChamrs();
     //noinspection JSUnusedLocalSymbols
     this.paginator.page.subscribe(change => {
       this.applyFilter(false);
@@ -54,16 +54,7 @@ export class ClientListComponent implements OnInit {
     });
   }
 
-  loadChamrs() {
-    this.httpService.get("/charm/list").toPromise().then(res => {
-      this.charmsArray = JSON.parse(res.text()) as CharmInfo[];
-      this.charmsArray.forEach(element => {
-        this.charmsMap[element.id] = element.name;
-
-      });
-
-    });
-  }
+  
 
   loadTableData(filter: ClientFilter) {
 
@@ -77,7 +68,6 @@ export class ClientListComponent implements OnInit {
     }).toPromise().then(res => {
       this.tableElemets = JSON.parse(res.text()) as ClientInfo[];
       this.initMatTable();
-
     });
   }
 
@@ -92,14 +82,22 @@ export class ClientListComponent implements OnInit {
     clientFilter.filter = this.filter;
     clientFilter.desc = this.desc;
     clientFilter.limit = this.paginator.pageSize;
-    clientFilter.pageIndex = this.paginator.pageIndex;
     clientFilter.orderBy = this.selectedOrder;
+    clientFilter.pageIndex = this.paginator.pageIndex;
 
     if (getAmount) {
+      if (this.filter != "") {
+        clientFilter.pageIndex = 0;
+        this.paginator.pageIndex = 0
+      } else {
+        clientFilter.pageIndex = this.paginator.pageIndex;
+      }
+
       this.httpService.get("/client/numberOfClients", {
         filter: clientFilter.filter,
       }).toPromise().then(res => {
         this.paginator.length = Number.parseInt(res.text());
+
         //
         this.loadTableData(clientFilter);
       });
@@ -154,9 +152,7 @@ export class ClientListComponent implements OnInit {
 
   openClientModalForm(selected): void {
     let dialogRef = this.dialog.open(ClientFormComponent, {
-      // minWidth: '250px',
       maxWidth: "1000px",
-      // position: {top:"100px"} ,
       data: {
         charms: this.charmsArray,
         item: selected,
@@ -167,6 +163,7 @@ export class ClientListComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result == "save")
         this.applyFilter(true);
+      this.searchEl.nativeElement.focus();
     });
   }
 
@@ -176,8 +173,13 @@ export class ClientListComponent implements OnInit {
       filter: this.filter,
       orderBy: this.selectedOrder,
       order: this.desc
-    }).subscribe(blob => {
-      saveAs(blob, "report."+ this.format);
+    }).subscribe(data => {
+
+      let fileName = data.headers.get("Content-disposition");
+      fileName = fileName.slice("attachment; filename=".length)
+      if (!fileName)
+        fileName = "report." + this.format;
+      saveAs(data.blob(), fileName);
     })
 
   }

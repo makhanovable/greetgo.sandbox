@@ -23,24 +23,7 @@ public class ClientListReportViewQuery extends AbstractClientListCommonQuery imp
     //no limit
   }
 
-  @Override
-  protected void select() {
-    super.select();
-    sql.append(", ch.name as charm\n");
-  }
-
-  @Override
-  void join() {
-    super.join();
-    sql.append("left join Charm ch on c.charm=ch.id\n");
-  }
-
-  @Override
-  protected void groupBy() {
-    super.groupBy();
-    sql.append(", ch.name\n");
-  }
-
+  
   @Override
   public Void doInConnection(Connection connection) throws Exception {
 

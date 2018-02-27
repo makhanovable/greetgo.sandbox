@@ -16,7 +16,8 @@ public abstract class AbstractClientListCommonQuery extends AbstractClientQuery 
 
   @Override
   protected void select() {
-    sql.append("select c.id, c.name, c.surname, c.patronymic, date_part('year', age(c.birthDate)) as age, max(ca.money) AS maximumBalance, min(ca.money) AS minimumBalance, sum(ca.money) AS totalAccountBalance\n");
+    sql.append("select c.id, c.name, c.surname, c.patronymic, ch.name as charm, date_part('year', age(c.birthDate)) as age,\n");
+    sql.append("coalesce(max(ca.money), 0) AS maximumBalance, coalesce(min(ca.money),0) AS minimumBalance, coalesce(sum(ca.money),0) AS totalAccountBalance\n");
   }
 
   @Override
@@ -27,11 +28,13 @@ public abstract class AbstractClientListCommonQuery extends AbstractClientQuery 
   @Override
   void join() {
     sql.append("left join ClientAccount ca on ca.client=c.id\n");
+    sql.append("left join Charm ch on c.charm=ch.id\n");
+
   }
 
   @Override
   void groupBy() {
-    sql.append("group by c.id\n");
+    sql.append("group by c.id, ch.name\n");
   }
 
   @Override

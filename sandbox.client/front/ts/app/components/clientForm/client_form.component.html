@@ -68,7 +68,8 @@
              [(ngModel)]="phone.number">
     </mat-form-field>
   </div>
-  <span *ngIf="hiddenalert" style="color:red">Fill all required fields</span>
+  <span *ngIf="fieldsAlertEnabled" style="color:red">Fill all required fields</span> 
+  <span *ngIf="mobileAlertEnabled" style="color:red"> *at least one mobile number</span>
 
 </div>
 

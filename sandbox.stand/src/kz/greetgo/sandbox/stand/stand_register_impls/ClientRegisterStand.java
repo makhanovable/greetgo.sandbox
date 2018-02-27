@@ -11,14 +11,12 @@ import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.report.ClientReportView;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
-import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
-import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
-import kz.greetgo.sandbox.db.stand.model.ClientDot;
-import kz.greetgo.sandbox.db.stand.model.ClientPhoneNumberDot;
+import kz.greetgo.sandbox.db.stand.model.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -32,7 +30,7 @@ public class ClientRegisterStand implements ClientRegister {
   private IdGenerator gen = new IdGenerator();
 
   @Override
-  public void generateReport(String filter, String orderBy, int order, ClientReportView view) throws Exception {
+  public void generateClientReport(String filter, String orderBy, int order, ClientReportView view) throws Exception {
     String[] headers = {"id", "name", "surname", "patronymic", "age", "charm", "total Account Balance", "maximum Balance", "minimum Balance"};
 
     List<ClientRecord> list = new ArrayList<>();
@@ -117,6 +115,12 @@ public class ClientRegisterStand implements ClientRegister {
 
     //filtering
     List<ClientRecord> list = this.getFilteredClientInfo(filter);
+
+    Map<String, CharmDot> charms = this.db.get().charmStorage;
+    for (ClientRecord clientRecord : list) {
+      clientRecord.charm = charms.get(clientRecord.charm).name;
+    }
+
     int clientInfoSize = list.size();
     if (limit * page > clientInfoSize)
       return null;

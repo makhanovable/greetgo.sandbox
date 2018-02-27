@@ -7,7 +7,7 @@ import java.sql.SQLException;
 
 public class ClientUtils {
   public static String[] sortableColumns = {"age", "totalAccountBalance", "maximumBalance", "minimumBalance"};
-  public static String[] reportHeaders = {"id", "name", "surname", "patronymic", "age", "charm", "total Account Balance", "maximum Balance", "minimum Balance"};
+  public static String[] reportHeaders = {"Full Name", "Charm", "Age", "Balance", "max Balance", "min Balance"};
 
   public static ClientRecord rsToClientRecord(ResultSet rs) throws SQLException {
     ClientRecord record = new ClientRecord();
