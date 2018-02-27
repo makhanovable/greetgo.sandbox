@@ -9,7 +9,7 @@ import kz.greetgo.sandbox.controller.model.ClientPhoneNumberToSave;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.controller.report.ClientRecordView;
+import kz.greetgo.sandbox.controller.report.ClientReportView;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
 import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
@@ -17,7 +17,9 @@ import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.stand.model.ClientPhoneNumberDot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @SuppressWarnings("ConstantConditions")
@@ -30,29 +32,64 @@ public class ClientRegisterStand implements ClientRegister {
   private IdGenerator gen = new IdGenerator();
 
   @Override
-  public void generateReport(String filter, String orderBy, int order, ClientRecordView view) throws Exception {
+  public void generateReport(String filter, String orderBy, int order, ClientReportView view) throws Exception {
     String[] headers = {"id", "name", "surname", "patronymic", "age", "charm", "total Account Balance", "maximum Balance", "minimum Balance"};
 
-
+    List<ClientRecord> list = new ArrayList<>();
     view.start(headers);
     for (ClientDot clientDot : this.db.get().clientStorage.values()) {
       ClientRecord clientRecord = clientDot.toClientRecord();
-      if (!this.db.get().clientAccountStorage.get(clientDot.id).isEmpty()) {
+      if (this.db.get().clientAccountStorage.get(clientDot.id) != null && !this.db.get().clientAccountStorage.get(clientDot.id).isEmpty()) {
         ClientAccountDot cad = this.db.get().clientAccountStorage.get(clientDot.id).get(0);
         clientRecord.totalAccountBalance = 0;
         clientRecord.maximumBalance = cad.money;
         clientRecord.minimumBalance = cad.money;
+        for (ClientAccountDot clientAccountDot : this.db.get().clientAccountStorage.get(clientDot.id)) {
+          clientRecord.totalAccountBalance += clientAccountDot.money;
+          if (clientAccountDot.money > clientRecord.maximumBalance)
+            clientRecord.minimumBalance = clientAccountDot.money;
+          if (clientAccountDot.money < clientRecord.minimumBalance)
+            clientRecord.minimumBalance = clientAccountDot.money;
+        }
       }
 
-      for (ClientAccountDot clientAccountDot : this.db.get().clientAccountStorage.get(clientDot.id)) {
-        clientRecord.totalAccountBalance += clientAccountDot.money;
-        if (clientAccountDot.money > clientRecord.maximumBalance)
-          clientRecord.minimumBalance = clientAccountDot.money;
-        if (clientAccountDot.money < clientRecord.minimumBalance)
-          clientRecord.minimumBalance = clientAccountDot.money;
-      }
-      view.appendRow(clientRecord);
+      clientRecord.charm = this.db.get().charmStorage.get(clientRecord.charm).name;
+      list.add(clientRecord);
     }
+
+    if (filter != null && !filter.isEmpty()) {
+      String[] filterTokens = filter.trim().split(" ");
+      list = list.stream().filter(o -> Arrays.stream(filterTokens).anyMatch(y -> o.getFIO().toLowerCase().contains(y.toLowerCase()))).collect(Collectors.toList());
+    }
+
+    String ob = orderBy == null ? "default" : orderBy;
+
+    list.sort((o1, o2) -> {
+      if (order == 1) {
+        ClientRecord tmp = o1;
+        o1 = o2;
+        o2 = tmp;
+      }
+      switch (ob) {
+        case "age":
+          return Integer.compare(o1.age, o2.age);
+        case "totalaccountbalance":
+          return Double.compare(o1.totalAccountBalance, o2.totalAccountBalance);
+        case "maximumbalance":
+          return Double.compare(o1.maximumBalance, o2.maximumBalance);
+        case "minimumbalance":
+          return Double.compare(o1.minimumBalance, o2.minimumBalance);
+        default:
+          String fio1 = o1.getFIO().toLowerCase();
+          String fio2 = o2.getFIO().toLowerCase();
+          return fio1.compareTo(fio2);
+      }
+
+    });
+
+
+    for (ClientRecord cr : list)
+      view.appendRow(cr);
     view.finish();
   }
 
@@ -139,7 +176,7 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public long getClientsSize(String filter) {
+  public int getClientsSize(String filter) {
 
     return this.getFilteredClientInfo(filter).size();
   }
@@ -193,7 +230,8 @@ public class ClientRegisterStand implements ClientRegister {
     db.get().clientAddressStorage.put(clientDot.id, addresses);
 
     List<ClientPhoneNumberDot> numbers = db.get().clientPhoneNumberStorage.get(clientDot.id);
-
+    if (numbers == null)
+      numbers = new ArrayList<>();
 
     for (ClientPhoneNumber number : clientToSave.numbersToDelete) {
       ClientPhoneNumberDot found = numbers.stream().filter(o -> o.number.equals(number.number)).findFirst().get();
