@@ -5,7 +5,7 @@ import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
 import org.apache.ibatis.annotations.Insert;
 
 @Bean
-public interface AccountTetsDao {
+public interface AccountTestDao {
 
   @Insert("insert into ClientAccount (id, client, money, number, registeredAt) " +
     "values (#{id}, #{client}, #{money}, #{number}, #{registeredAt})")
