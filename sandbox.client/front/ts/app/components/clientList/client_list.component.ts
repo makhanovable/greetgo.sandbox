@@ -93,7 +93,7 @@ export class ClientListComponent implements OnInit {
     clientFilter.desc = this.desc;
     clientFilter.limit = this.paginator.pageSize;
     clientFilter.pageIndex = this.paginator.pageIndex;
-    clientFilter.orderBy = this.selectedOrder.toLowerCase();
+    clientFilter.orderBy = this.selectedOrder;
 
     if (getAmount) {
       this.httpService.get("/client/numberOfClients", {
@@ -174,7 +174,7 @@ export class ClientListComponent implements OnInit {
     this.httpService.downloadFile("/report/downloadClientReport", {
       type: this.format,
       filter: this.filter,
-      orderBy: this.selectedOrder.toLowerCase(),
+      orderBy: this.selectedOrder,
       order: this.desc
     }).subscribe(blob => {
       saveAs(blob, "report."+ this.format);

@@ -149,9 +149,9 @@ export class ClientFormComponent implements OnInit {
   save() {
     let toSave = new ClientToSave(this.formData);
 
-    // if (this.formData.actualAddress.street || this.formData.actualAddress.house || this.formData.actualAddress.flat)
+    if (this.formData.actualAddress.street || this.formData.actualAddress.house)
     toSave.actualAddress = this.formData.actualAddress;
-    // if (this.formData.registerAddress.street || this.formData.registerAddress.house || this.formData.registerAddress.flat)
+    if (this.formData.registerAddress.street || this.formData.registerAddress.house)
     toSave.registerAddress = this.formData.registerAddress;
 
     toSave.numbersToDelete = [];
