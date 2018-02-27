@@ -16,7 +16,7 @@ import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
 import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.stand.model.ClientPhoneNumberDot;
-import kz.greetgo.sandbox.db.test.dao.AccountTetsDao;
+import kz.greetgo.sandbox.db.test.dao.AccountTestDao;
 import kz.greetgo.sandbox.db.test.dao.CharmTestDao;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
@@ -40,7 +40,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public BeanGetter<ClientTestDao> clientTestDao;
   public BeanGetter<CharmTestDao> charmTestDao;
   public BeanGetter<IdGenerator> idGenerator;
-  public BeanGetter<AccountTetsDao> accountTetsDao;
+  public BeanGetter<AccountTestDao> accountTetsDao;
 
 
   @Test
@@ -58,7 +58,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     for (CharmDot charmDot : this.charmTestDao.get().getAll())
       charms.put(charmDot.id, charmDot.name);
 
-    ClientRecordTestView testView = new ClientRecordTestView();
+    ClientReportTestView testView = new ClientReportTestView();
 
     //
     //
@@ -101,8 +101,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //init inputs
     ClientDot rndClient = clients.get(RND.plusInt(clients.size()));
     int[] limits = {20, 10, 0};
-    int[] pages = {0};
-    String[] orderBys = {"totalAccountBalance", "maximumBalance", "minimumBalance"};
+    int[] pages = {0, 1, 2, 3};
+    String[] orderBys = {null, "age", "totalAccountBalance", "maximumBalance", "minimumBalance"};
     int[] orders = {0, 1};
     String[] filters = {null, rndClient.name + " " + rndClient.surname, rndClient.patronymic, rndClient.getFIO(), "a", "ab", RND.str(2)};
 
@@ -241,11 +241,10 @@ public class ClientRegisterImplTest extends ParentTestNg {
     this.clientTestDao.get().clear();
     List<String> ids = new ArrayList<>();
 
-    for (int i = 0; i < RND.plusInt(100); i++) {
-      ClientDot cd = this.rndClientDot();
-      this.clientTestDao.get().insertClientDot(cd);
-      ids.add(cd.id);
-    }
+
+    ClientDot cd = this.rndClientDot();
+    this.clientTestDao.get().insertClientDot(cd);
+    ids.add(cd.id);
     List<String> toDeleteList = new ArrayList<>();
     String id = ids.get(0);
     toDeleteList.add(id);

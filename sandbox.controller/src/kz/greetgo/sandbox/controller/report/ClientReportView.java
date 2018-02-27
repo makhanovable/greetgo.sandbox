@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
-public interface ClientRecordView {
+public interface ClientReportView {
 
   void start(String[] headers) throws Exception;
 

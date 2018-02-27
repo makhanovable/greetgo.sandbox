@@ -3,7 +3,6 @@ package kz.greetgo.sandbox.db.register_impl;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.enums.AddressType;
-import kz.greetgo.sandbox.controller.model.CharmRecord;
 import kz.greetgo.sandbox.controller.model.ClientAddress;
 import kz.greetgo.sandbox.controller.model.ClientDetail;
 import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
@@ -11,23 +10,16 @@ import kz.greetgo.sandbox.controller.model.ClientPhoneNumberToSave;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.controller.report.ClientRecordView;
-import kz.greetgo.sandbox.db.SqlBuilder.ClientRecordReportViewQuery;
-import kz.greetgo.sandbox.db.SqlBuilder.ClientRecordWebViewQuery;
-import kz.greetgo.sandbox.db.SqlBuilder.ClientRecordsCountQuery;
+import kz.greetgo.sandbox.controller.report.ClientReportView;
 import kz.greetgo.sandbox.db.dao.CharmDao;
 import kz.greetgo.sandbox.db.dao.ClientDao;
-import kz.greetgo.sandbox.db.util.ClientRecordJdbc;
-import kz.greetgo.sandbox.db.util.ClientRecordListView;
+import kz.greetgo.sandbox.db.jdbc.ClientListReportViewQuery;
+import kz.greetgo.sandbox.db.jdbc.ClientListWebViewQuery;
+import kz.greetgo.sandbox.db.jdbc.ClientNumberQuery;
 import kz.greetgo.sandbox.db.util.ClientUtils;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 @Bean
@@ -40,63 +32,25 @@ public class ClientRegisterImpl implements ClientRegister {
   public BeanGetter<CharmDao> charmDao;
 
   @Override
-  public void generateReport(String filter, String orderBy, int order, ClientRecordView view) throws Exception {
-    Map<String, String> charms = new HashMap<>();
-    for (CharmRecord charmRecord : this.charmDao.get().getAll())
-      charms.put(charmRecord.id, charmRecord.name);
-
+  public void generateReport(String filter, String orderBy, int order, ClientReportView view) throws Exception {
+    ClientListReportViewQuery jdbc = new ClientListReportViewQuery(filter, orderBy, order, view);
     view.start(ClientUtils.reportHeaders);
-
-    ClientRecordJdbc jdbc = new ClientRecordJdbc(new ClientRecordReportViewQuery(), filter, orderBy, order, view);
-    jdbc.charms = charms;
     jdbcSandbox.get().execute(jdbc);
-
     view.finish();
   }
-
 
   @Override
   public List<ClientRecord> getClientInfoList(int limit, int page, String filter, final String orderBy, int desc) {
 
-    if (limit <= 0) return new ArrayList<>();
-
-    ClientRecordListView view = new ClientRecordListView();
     int offset = limit * page;
-    ClientRecordJdbc jdbc = new ClientRecordJdbc(new ClientRecordWebViewQuery(), filter, orderBy, desc, limit, offset, view);
-
-    jdbcSandbox.get().execute(jdbc);
-
-    return view.list;
+    ClientListWebViewQuery jdbc = new ClientListWebViewQuery(filter, orderBy, desc, limit, offset);
+    return jdbcSandbox.get().execute(jdbc);
   }
 
   @Override
-  public long getClientsSize(String filter) {
+  public int getClientsSize(String filter) {
 
-    if (filter == null)
-      return this.clientDao.get().countAll();
-    String finalFilter = ClientUtils.getFormattedFilter(filter);
-
-    ClientRecordsCountQuery query = new ClientRecordsCountQuery();
-    query.withFilter = finalFilter != null;
-    final int[] result = new int[1];
-    jdbcSandbox.get().execute(connection -> {
-      try (PreparedStatement ps = connection.prepareStatement(query.generateSql(new StringBuilder()).toString())) {
-
-        int argIndex = 1;
-        if (finalFilter != null)
-          ps.setString(argIndex++, finalFilter);
-
-        try (ResultSet rs = ps.executeQuery()) {
-          while (rs.next()) {
-            result[0] = rs.getInt(1);
-          }
-          return null;
-        }
-      }
-    });
-
-//    return this.clientDao.get().countByFilter(filter);
-    return result[0];
+    return jdbcSandbox.get().execute(new ClientNumberQuery(filter));
   }
 
   @Override
