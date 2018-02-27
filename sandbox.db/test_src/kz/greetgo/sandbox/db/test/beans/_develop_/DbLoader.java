@@ -5,8 +5,9 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.db.register_impl.TokenRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.PersonDot;
-import kz.greetgo.sandbox.db.test.dao.AccountTetsDao;
+import kz.greetgo.sandbox.db.test.dao.AccountTestDao;
 import kz.greetgo.sandbox.db.test.dao.AuthTestDao;
+import kz.greetgo.sandbox.db.test.dao.CharmTestDao;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import org.apache.log4j.Logger;
 
@@ -20,7 +21,8 @@ public class DbLoader {
 
   public BeanGetter<AuthTestDao> authTestDao;
   public BeanGetter<ClientTestDao> clientTestDao;
-  public BeanGetter<AccountTetsDao> accountTetsDao;
+  public BeanGetter<AccountTestDao> accountTestDao;
+  public BeanGetter<CharmTestDao> charmTestDao;
 
   public BeanGetter<TokenRegister> tokenManager;
 
@@ -39,15 +41,17 @@ public class DbLoader {
       .forEach(clientTestDao.get()::insertClientDot);
 
     standDb.get().clientAccountStorage.values().stream()
-      .forEach(o -> o.stream().forEach(accountTetsDao.get()::insertAccaount));
+      .forEach(o -> o.stream().forEach(accountTestDao.get()::insertAccaount));
 
     standDb.get().clientPhoneNumberStorage.values().stream()
       .forEach(o -> o.stream().forEach(clientTestDao.get()::insertPhone));
-    
+
     standDb.get().clientAddressStorage.values().stream()
       .forEach(o -> o.stream().forEach(clientTestDao.get()::insertAddress));
 
-
+    standDb.get().charmStorage.values().stream()
+      .forEach(o -> charmTestDao.get().insertCharmDot(o));
+    
     logger.info("Finish loading test data");
   }
 }
