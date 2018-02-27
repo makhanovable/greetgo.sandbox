@@ -16,7 +16,6 @@ import {AddressType} from "../../../enums/AddressType";
 })
 export class ClientFormComponent implements OnInit {
   // FIXME: 2/27/18 Хотя бы один мобильный обязателен для заполнения
-  // FIXME: 2/27/18 В окне редактирования при нажатии на Escape список не должен обновляться
   // FIXME: 2/27/18 Дата рождения человека не может быть впереди текущей даты
   formData: ClientDetail;
 
@@ -183,7 +182,7 @@ export class ClientFormComponent implements OnInit {
         alert('something went wrong');
     });
 
-    this.dialogRef.close();
+    this.dialogRef.close("save");
   }
 
   exit() {

@@ -165,7 +165,7 @@ export class ClientListComponent implements OnInit {
 
     //noinspection JSUnusedLocalSymbols
     dialogRef.afterClosed().subscribe(result => {
-      if (result != "cancel")
+      if (result == "save")
         this.applyFilter(true);
     });
   }
