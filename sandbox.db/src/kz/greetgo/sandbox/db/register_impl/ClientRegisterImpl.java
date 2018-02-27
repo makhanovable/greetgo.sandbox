@@ -41,7 +41,8 @@ public class ClientRegisterImpl implements ClientRegister {
 
   @Override
   public List<ClientRecord> getClientInfoList(int limit, int page, String filter, final String orderBy, int desc) {
-
+    // FIXME: 2/27/18 Если перейти на вторую страницу, и в фильтр ввести имя человека, то таблица будет пустой
+    // FIXME: 2/27/18 Если добавить нового пользователя, то сортировка портится
     int offset = limit * page;
     ClientListWebViewQuery jdbc = new ClientListWebViewQuery(filter, orderBy, desc, limit, offset);
     return jdbcSandbox.get().execute(jdbc);

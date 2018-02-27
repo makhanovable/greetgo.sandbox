@@ -19,6 +19,7 @@ public interface ClientRegister {
 
   void addOrUpdate(ClientToSave clientDetail);
 
+  // FIXME: 2/27/18 Опять же по названию метода непонятно что за отчет
   void generateReport(String filter, String orderBy, int order, ClientReportView view) throws Exception;
 
 }

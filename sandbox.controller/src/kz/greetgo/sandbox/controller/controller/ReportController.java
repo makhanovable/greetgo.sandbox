@@ -21,12 +21,14 @@ public class ReportController implements Controller {
   public BeanGetter<ClientRegister> clientRegister;
 
   @Mapping("/downloadClientReport")
+  // FIXME: 2/27/18 Навание метода слишком обобщенное. интуитивно должно быть понятно какой отчет
   public void generateReport(@Par("type") String type, @Par("orderBy") String orderBy, @Par("order") int order,
                              @Par("filter") String filter, RequestTunnel requestTunnel) throws Exception {
     if (!("pdf".equals(type) || "xlsx".equals(type))) {
       throw new Exception("Unsupported File Format");
     }
-
+    // FIXME: 2/27/18 Таблица в файле отчет отличается от таблицы в браузере
+    // FIXME: 2/27/18 Сгенерированный файл всегда имеет название "report"
     String filename = "client_report_" + new Date() + "." + type;
     requestTunnel.setResponseHeader("Content-disposition", "attachment; filename=" + filename);
     OutputStream out = requestTunnel.getResponseOutputStream();
