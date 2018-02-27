@@ -18,6 +18,7 @@ export class ClientFormComponent implements OnInit {
   // FIXME: 2/27/18 Хотя бы один мобильный обязателен для заполнения
   // FIXME: 2/27/18 Дата рождения человека не может быть впереди текущей даты
   formData: ClientDetail;
+  maxDate = new Date();
 
   charms: any[];
   phoneMask: any[] = ['+', '7', ' ', '(', /[0-9]/, /\d/, /\d/, ')', ' ', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/];
