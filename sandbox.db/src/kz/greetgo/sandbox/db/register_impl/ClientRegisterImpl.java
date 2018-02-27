@@ -13,8 +13,8 @@ import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.report.ClientReportView;
 import kz.greetgo.sandbox.db.dao.CharmDao;
 import kz.greetgo.sandbox.db.dao.ClientDao;
-import kz.greetgo.sandbox.db.jdbc.AbstractClientRecordReportViewQuery;
-import kz.greetgo.sandbox.db.jdbc.AbstractClientRecordWebViewQuery;
+import kz.greetgo.sandbox.db.jdbc.ClientListReportViewQuery;
+import kz.greetgo.sandbox.db.jdbc.ClientListWebViewQuery;
 import kz.greetgo.sandbox.db.jdbc.ClientListNumberQuery;
 import kz.greetgo.sandbox.db.util.ClientUtils;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
@@ -33,7 +33,7 @@ public class ClientRegisterImpl implements ClientRegister {
 
   @Override
   public void generateReport(String filter, String orderBy, int order, ClientReportView view) throws Exception {
-    AbstractClientRecordReportViewQuery jdbc = new AbstractClientRecordReportViewQuery(filter, orderBy, order, view);
+    ClientListReportViewQuery jdbc = new ClientListReportViewQuery(filter, orderBy, order, view);
     view.start(ClientUtils.reportHeaders);
     jdbcSandbox.get().execute(jdbc);
     view.finish();
@@ -43,7 +43,7 @@ public class ClientRegisterImpl implements ClientRegister {
   public List<ClientRecord> getClientInfoList(int limit, int page, String filter, final String orderBy, int desc) {
 
     int offset = limit * page;
-    AbstractClientRecordWebViewQuery jdbc = new AbstractClientRecordWebViewQuery(filter, orderBy, desc, limit, offset);
+    ClientListWebViewQuery jdbc = new ClientListWebViewQuery(filter, orderBy, desc, limit, offset);
     return jdbcSandbox.get().execute(jdbc);
   }
 

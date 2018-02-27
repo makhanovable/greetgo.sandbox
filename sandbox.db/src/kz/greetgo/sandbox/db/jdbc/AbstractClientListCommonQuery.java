@@ -4,13 +4,13 @@ import kz.greetgo.sandbox.db.util.ClientUtils;
 
 import java.util.Arrays;
 
-public abstract class AbstractClientRecordCommonViewQuery extends AbstractClientListGetter {
+public abstract class AbstractClientListCommonQuery extends AbstractClientQuery {
 
-  protected AbstractClientRecordCommonViewQuery(String filter, String orderBy, int order) {
+  protected AbstractClientListCommonQuery(String filter, String orderBy, int order) {
     super(filter, orderBy, order);
   }
 
-  protected AbstractClientRecordCommonViewQuery(String filter, String orderBy, int order, int limit, int offset) {
+  protected AbstractClientListCommonQuery(String filter, String orderBy, int order, int limit, int offset) {
     super(filter, orderBy, order, limit, offset);
   }
 
@@ -28,7 +28,7 @@ public abstract class AbstractClientRecordCommonViewQuery extends AbstractClient
   void join() {
     sql.append("left join ClientAccount ca on ca.client=c.id\n");
   }
-  
+
   @Override
   void groupBy() {
     sql.append("group by c.id\n");

@@ -6,7 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-public class ClientListNumberQuery extends AbstractClientListGetter implements ConnectionCallback<Integer> {
+public class ClientListNumberQuery extends AbstractClientQuery implements ConnectionCallback<Integer> {
 
   public ClientListNumberQuery(String filter) {
     super(filter);

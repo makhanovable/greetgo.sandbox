@@ -9,11 +9,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-public class AbstractClientRecordReportViewQuery extends AbstractClientRecordCommonViewQuery implements ConnectionCallback<Void> {
+public class ClientListReportViewQuery extends AbstractClientListCommonQuery implements ConnectionCallback<Void> {
 
   private final ClientReportView view;
 
-  public AbstractClientRecordReportViewQuery(String filter, String orderBy, int order, ClientReportView view) {
+  public ClientListReportViewQuery(String filter, String orderBy, int order, ClientReportView view) {
     super(filter, orderBy, order);
     this.view = view;
   }

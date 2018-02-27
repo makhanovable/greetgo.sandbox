@@ -10,9 +10,9 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AbstractClientRecordWebViewQuery extends AbstractClientRecordCommonViewQuery implements ConnectionCallback<List<ClientRecord>> {
+public class ClientListWebViewQuery extends AbstractClientListCommonQuery implements ConnectionCallback<List<ClientRecord>> {
 
-  public AbstractClientRecordWebViewQuery(String filter, String orderBy, int order, int limit, int offset) {
+  public ClientListWebViewQuery(String filter, String orderBy, int order, int limit, int offset) {
     super(filter, orderBy, order, limit, offset);
   }
 
