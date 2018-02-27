@@ -155,9 +155,14 @@ export class ClientFormComponent implements OnInit {
   }
 
   canSave() {
-    let ans = this.formData.name && this.formData.surname && this.formData.birthDate && this.formData.gender && this.formData.charm
+    let ans = this.formData.name && this.formData.surname  && this.formData.gender && this.formData.charm
       && this.formData.patronymic && this.formData.registerAddress && this.formData.registerAddress.street && this.formData.registerAddress.house;
 
+
+    let negativeTime:boolean = false;
+    if(new Date().getTime() - new Date(this.formData.birthDate).getTime() < 0) {
+      return false;
+    }
 
     let oneMobile: boolean = false;
     for (let i = 0; i < this.formData.phoneNumbers.length; i++) {
@@ -167,7 +172,6 @@ export class ClientFormComponent implements OnInit {
       }
     }
     this.mobileAlertEnabled = !oneMobile;
-    console.log(this.formData.phoneNumbers);
     
     return ans && oneMobile;
   }
