@@ -1,22 +1,23 @@
-package kz.greetgo.sandbox.db.util;
+package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.controller.report.ClientRecordView;
+import kz.greetgo.sandbox.controller.report.ClientReportView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClientRecordListView implements ClientRecordView {
-  public List<ClientRecord> list = new ArrayList<>();
+public class ClientReportTestView implements ClientReportView {
+  public String[] headers;
+  public List<ClientRecord> rows = new ArrayList<>();
 
   @Override
   public void start(String[] headers) throws Exception {
-
+    this.headers = headers;
   }
 
   @Override
   public void appendRow(ClientRecord record) throws Exception {
-    this.list.add(record);
+    this.rows.add(record);
   }
 
   @Override

@@ -6,9 +6,9 @@ import kz.greetgo.mvc.annotations.Mapping;
 import kz.greetgo.mvc.annotations.Par;
 import kz.greetgo.mvc.interfaces.RequestTunnel;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.controller.report.ClientRecordView;
-import kz.greetgo.sandbox.controller.report.ClientRecordViewPDF;
-import kz.greetgo.sandbox.controller.report.ClientRecordViewXLSX;
+import kz.greetgo.sandbox.controller.report.ClientReportView;
+import kz.greetgo.sandbox.controller.report.ClientReportViewPDF;
+import kz.greetgo.sandbox.controller.report.ClientReportViewXLSX;
 import kz.greetgo.sandbox.controller.util.Controller;
 
 import java.io.OutputStream;
@@ -31,13 +31,13 @@ public class ReportController implements Controller {
     requestTunnel.setResponseHeader("Content-disposition", "attachment; filename=" + filename);
     OutputStream out = requestTunnel.getResponseOutputStream();
 
-    ClientRecordView view;
+    ClientReportView view;
     switch (type) {
       case "pdf":
-        view = new ClientRecordViewPDF(out);
+        view = new ClientReportViewPDF(out);
         break;
       case "xlsx":
-        view = new ClientRecordViewXLSX(out);
+        view = new ClientReportViewXLSX(out);
         break;
       default:
         return;
