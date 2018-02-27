@@ -19,6 +19,7 @@ public class ClientListWebViewQuery extends AbstractClientListCommonQuery implem
   @Override
   protected void select() {
     super.select();
+    // FIXME: 2/27/18 название характера должно передаваться с сервера
     sql.append(", c.charm\n");
   }
 
