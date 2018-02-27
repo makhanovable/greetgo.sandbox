@@ -15,7 +15,7 @@ import kz.greetgo.sandbox.db.dao.CharmDao;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 import kz.greetgo.sandbox.db.jdbc.ClientListReportViewQuery;
 import kz.greetgo.sandbox.db.jdbc.ClientListWebViewQuery;
-import kz.greetgo.sandbox.db.jdbc.ClientListNumberQuery;
+import kz.greetgo.sandbox.db.jdbc.ClientNumberQuery;
 import kz.greetgo.sandbox.db.util.ClientUtils;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
@@ -50,7 +50,7 @@ public class ClientRegisterImpl implements ClientRegister {
   @Override
   public int getClientsSize(String filter) {
 
-    return jdbcSandbox.get().execute(new ClientListNumberQuery(filter));
+    return jdbcSandbox.get().execute(new ClientNumberQuery(filter));
   }
 
   @Override
