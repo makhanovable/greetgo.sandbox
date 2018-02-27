@@ -27,7 +27,6 @@ public class FrsUploader {
   public String clientAccountTable;
   public String clientAccountTransactionTable;
 
-  private long curFileNo = 0;
   public ErrorFile errorFileWriter;
 
   private PreparedStatement clientAccountPreparedStatement;
@@ -68,7 +67,7 @@ public class FrsUploader {
     clientAccountTransactionPreparedStatement.setString(idx, clientAccountTransactionData.account_number);
   }
 
-  void parse(InputStream is) throws Exception {
+  void parse(InputStream is) {
     JsonFactory jsonFactory = new JsonFactory();
 
     try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is))) {
@@ -79,7 +78,6 @@ public class FrsUploader {
       prepare();
 
       while ((line = bufferedReader.readLine()) != null) {
-        curFileNo++;
         try (JsonParser parser = jsonFactory.createParser(line)) {
           while ((token = parser.nextToken()) != null) {
             field = parser.getCurrentName();
@@ -139,7 +137,6 @@ public class FrsUploader {
     }
   }
 
-  // TODO: поменять все типы на int? bigint & long могут быть лишними
   int curClientAccountBatchCount = 0;
   int curClientAccountTransactionBatchCount = 0;
 
@@ -195,7 +192,7 @@ public class FrsUploader {
         clientAccountTransactionData.account_number);
     } catch (Exception e) {
       throw new RuntimeException(e);
-    }//TODO: length 0 errors?
+    }
 
     long age = Util.getAge(finishedAt.toLocalDateTime());
     if (age > 1000 || age < -1)

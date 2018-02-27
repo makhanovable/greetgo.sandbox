@@ -9,7 +9,7 @@ import kz.greetgo.conf.hot.Description;
 public interface MigrationConfig {
 
   @Description("Локальная директория, куда сохраняются файлы")
-  @DefaultStrValue("migration")
+  @DefaultStrValue("/home/nsmagulov/sandbox.d/migration")
   String localTempDir();
 
   @Description("Пользователь машины, на которой хранятся CIA файлы")

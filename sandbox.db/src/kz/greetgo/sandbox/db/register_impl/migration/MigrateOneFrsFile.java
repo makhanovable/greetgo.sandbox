@@ -1,36 +1,27 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.sandbox.controller.util.Util;
-import kz.greetgo.sandbox.db.register_impl.migration.error.ErrorFile;
-import kz.greetgo.sandbox.db.register_impl.migration.report.MigrationSimpleReport;
+import kz.greetgo.sandbox.db.register_impl.migration.report.MigrateOneFileCommon;
 
-import java.io.InputStream;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class MigrateOneFrsFile {
-  public InputStream inputStream;
-  public ErrorFile outputErrorFile;
-  public MigrationSimpleReport migrationSimpleReport;
-  public int maxBatchSize = 100;
-  public Connection connection;
+public class MigrateOneFrsFile extends MigrateOneFileCommon {
 
   String tmpClientTableName;
   String tmpClientAccountTableName;
   String tmpClientAccountTransactionTableName;
 
+  @Override
   public void migrate() throws Exception {
-    prepareTmpTables();
-    uploadData();
-    migrateData();
-    downloadErrors();
+    super.migrate();
   }
 
-  void prepareTmpTables() throws Exception {
+  @Override
+  protected void prepareTmpTables() throws SQLException {
     Date now = new Date();
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
     String additionalId = sdf.format(now) + "_" + Util.generateRandomString(8);
@@ -72,7 +63,7 @@ public class MigrateOneFrsFile {
       ")");
   }
 
-  void uploadData() throws Exception {
+  protected void uploadData() throws SQLException {
     connection.setAutoCommit(false);
 
     FrsUploader frsUploader = new FrsUploader();
@@ -88,12 +79,36 @@ public class MigrateOneFrsFile {
 
     long post = System.currentTimeMillis();
     if (migrationSimpleReport != null)
-      migrationSimpleReport.appendParseInfo((post - init) / 1000f);
+      migrationSimpleReport.addAction(Util.getSecondsFromMilliseconds(init, post), -1, "Парсинг FRS файла");
 
     connection.setAutoCommit(true);
   }
 
-  void migrateData() throws Exception {
+  protected void prepareIndexes() throws SQLException {
+    exec("CREATE INDEX IF NOT EXISTS idx_client_account_status " +
+      "ON client_account_to_replace(status)");
+
+    exec("CREATE INDEX IF NOT EXISTS idx_client_account_status_and_error " +
+      "ON client_account_to_replace(status, error)");
+
+    exec("CREATE INDEX IF NOT EXISTS idx_client_account_status_and_account_number " +
+      "ON client_account_to_replace(status, account_number)");
+
+    exec("CREATE INDEX IF NOT EXISTS idx_client_account_status_and_cia_id " +
+      "ON client_account_to_replace(status, cia_id)");
+
+    exec("CREATE INDEX IF NOT EXISTS idx_client_account_transaction_status " +
+      "ON client_account_transaction_to_replace(status)");
+
+    exec("CREATE INDEX IF NOT EXISTS idx_client_account_transaction_status_and_account_number " +
+      "ON client_account_transaction_to_replace(status, account_number)");
+
+    exec("CREATE INDEX IF NOT EXISTS " +
+      "  idx_client_account_transaction_status_and_account_number_and_money_and_finished_at " +
+      "ON client_account_transaction_to_replace(status, account_number, money, finished_at)");
+  }
+
+  protected void migrateData() throws SQLException {
     migrateData_checkForDuplicatesOfTmpClientAccountTransaction();
     migrateData_checkForDuplicatesOfTmpClientAccount();
 
@@ -113,13 +128,13 @@ public class MigrateOneFrsFile {
   /**
    * Статус = 1, для отсеивания дубликатов клиентских аккаунтов с приоритетом на последнюю запись
    *
-   * @throws Exception проброс для удобства
+   * @throws SQLException проброс для удобства
    */
-  void migrateData_checkForDuplicatesOfTmpClientAccount() throws Exception {
-    exec("UPDATE client_account_to_replace " +
+  void migrateData_checkForDuplicatesOfTmpClientAccount() throws SQLException {
+    execUpdate("UPDATE client_account_to_replace " +
       "SET status = 1 " +
       "FROM ( " +
-      "  SELECT record_no AS rno, row_number() OVER ( PARTITION BY account_number ORDER BY record_no DESC ) AS rnum " +
+      "  SELECT record_no AS rno, row_number() OVER (PARTITION BY account_number ORDER BY record_no DESC) AS rnum " +
       "  FROM client_account_to_replace " +
       "  WHERE status = 0 AND error IS NULL " +
       ") AS x " +
@@ -130,10 +145,10 @@ public class MigrateOneFrsFile {
   /**
    * Статус = 1, для отсеивания дубликатов клиентских транзакций с приоритетом на последнюю запись
    *
-   * @throws Exception проброс для удобства
+   * @throws SQLException проброс для удобства
    */
-  void migrateData_checkForDuplicatesOfTmpClientAccountTransaction() throws Exception {
-    exec("UPDATE client_account_transaction_to_replace " +
+  void migrateData_checkForDuplicatesOfTmpClientAccountTransaction() throws SQLException {
+    execUpdate("UPDATE client_account_transaction_to_replace " +
       "SET status = 1 " +
       "FROM ( " +
       "  SELECT record_no AS rno, row_number() OVER ( PARTITION BY money, finished_at, account_number " +
@@ -150,35 +165,35 @@ public class MigrateOneFrsFile {
    * Статус = 3, если cia_id присутствует в постоянной таблице client (игнорировать)
    * Статус = 4, если отсутствует (insert client_account & client)
    *
-   * @throws Exception проброс для удобства
+   * @throws SQLException проброс для удобства
    */
-  void migrateData_checkForExistingRecordsOfTmpClientAccountTable() throws Exception {
-    exec("UPDATE client_account_to_replace " +
+  void migrateData_checkForExistingRecordsOfTmpClientAccountTable() throws SQLException {
+    execUpdate("UPDATE client_account_to_replace " +
       "SET client_id = ca.client, status = 2 " +
       "FROM client_account as ca " +
       "WHERE status = 1 AND ca.number = account_number"
     );
 
-    exec("UPDATE client_account_to_replace " +
+    execUpdate("UPDATE client_account_to_replace " +
       "SET id = nextval('client_account_id_seq'), client_id = c.id, status = 3 " +
       "FROM client as c " +
       "WHERE status = 1 AND c.migration_cia_id = cia_id"
     );
 
-    exec("INSERT INTO client_to_replace(id, cia_id) " +
+    execUpdate("INSERT INTO client_to_replace(id, cia_id) " +
       "SELECT nextval('client_id_seq'), ca_r.cia_id " +
       "FROM client_account_to_replace AS ca_r " +
       "WHERE status = 1 " +
       "ON CONFLICT(cia_id) DO NOTHING ");
 
-    exec("UPDATE client_account_to_replace AS ca_r " +
+    execUpdate("UPDATE client_account_to_replace AS ca_r " +
       "SET id = nextval('client_account_id_seq'), client_id = c_r.id, status = 4 " +
       "FROM client_to_replace AS c_r " +
       "WHERE ca_r.status = 1 AND c_r.cia_id = ca_r.cia_id"
     );
   }
 
-  void migrateData_finalOfTmpTransactionTypeTable() throws Exception {
+  void migrateData_finalOfTmpTransactionTypeTable() throws SQLException {
     exec("INSERT INTO transaction_type(id, name) " +
       "SELECT nextval('transaction_type_id_seq'), trans_dictionary.type " +
       "FROM ( " +
@@ -193,9 +208,9 @@ public class MigrateOneFrsFile {
   /**
    * Заполнение постоянных client и client_account таблиц
    *
-   * @throws Exception проброс для удобства
+   * @throws SQLException проброс для удобства
    */
-  void migrateData_finalOfTmpClientAccountTable() throws Exception {
+  void migrateData_finalOfTmpClientAccountTable() throws SQLException {
     /*exec("INSERT INTO client(id, charm, migration_cia_id, actual) " +
       "SELECT ca_r.client_id, 0, ca_r.cia_id, 0 " +
       "FROM client_to_replace AS ca_r " +
@@ -231,18 +246,18 @@ public class MigrateOneFrsFile {
    * Статус = 2, если такая запись уже существует в постоянной таблице client_account_transaction (игнорировать)
    * Статус = 3, если такой номер аккаунта существует в постоянной таблице client_account (update)
    *
-   * @throws Exception проброс для удобства
+   * @throws SQLException проброс для удобства
    */
-  void migrateData_checkForExistingRecordsOfTmpClientAccountTransaction() throws Exception {
-    exec("UPDATE client_account_transaction_to_replace AS cat_r " +
+  void migrateData_checkForExistingRecordsOfTmpClientAccountTransaction() throws SQLException {
+    execUpdate("UPDATE client_account_transaction_to_replace AS cat_r " +
       "SET status = 2 " +
       "FROM client_account_transaction AS cat " +
       "JOIN client_account AS ca ON cat.account = ca.id " +
-      "WHERE cat_r.status = 1 AND cat_r.account_number = ca.number AND cat_r.money = cat.money AND " +
-      "cat_r.finished_at = cat.finished_at"
+      "WHERE cat_r.status = 1 AND cat_r.account_number = ca.number AND cat_r.money = cat.money AND " +//here
+      "  cat_r.finished_at = cat.finished_at"
     );
 
-    exec("UPDATE client_account_transaction_to_replace " +
+    execUpdate("UPDATE client_account_transaction_to_replace " +
       "SET id = nextval('client_account_transaction_id_seq'), account_id = ca.id, status = 3 " +
       "FROM client_account AS ca " +
       "WHERE status = 1 AND account_number = ca.number"
@@ -252,10 +267,10 @@ public class MigrateOneFrsFile {
   /**
    * Заполнение ошибок несуществующего клиентского аккаунта у записей со статусом = 1
    *
-   * @throws Exception проброс для удобства
+   * @throws SQLException проброс для удобства
    */
-  void migrateData_processBusinessLogicErrorsOfTmpClientAccountTransaction() throws Exception {
-    exec("UPDATE client_account_transaction_to_replace " +
+  void migrateData_processBusinessLogicErrorsOfTmpClientAccountTransaction() throws SQLException {
+    execUpdate("UPDATE client_account_transaction_to_replace " +
       "SET error = 'Аккаунт '||account_number||' не существует " +
       "во временной таблице client_account_transaction у записи = '||record_no " +
       "WHERE status = 1"
@@ -265,10 +280,10 @@ public class MigrateOneFrsFile {
   /**
    * Заполнение поля money у постоянной таблицы client_account таблицы после миграции
    *
-   * @throws Exception проброс для удобства
+   * @throws SQLException проброс для удобства
    */
-  void migrateData_fillMoneyOfTmpClientAccount() throws Exception {
-    exec("UPDATE client_account AS ca " +
+  void migrateData_fillMoneyOfTmpClientAccount() throws SQLException {
+    execUpdate("UPDATE client_account AS ca " +
       "SET money = money + x.msum " +
       "FROM ( " +
       "  SELECT SUM(money) AS msum, account_id " +
@@ -283,9 +298,9 @@ public class MigrateOneFrsFile {
   /**
    * Заполнение постоянной client_account_transaction таблицы
    *
-   * @throws Exception проброс для удобства
+   * @throws SQLException проброс для удобства
    */
-  void migrateData_finalOfTmpClientAccountTransaction() throws Exception {
+  void migrateData_finalOfTmpClientAccountTransaction() throws SQLException {
     exec("INSERT INTO client_account_transaction(id, account, money, finished_at, type) " +
       "SELECT cat_r.id, cat_r.account_id, cat_r.money, cat_r.finished_at, tt.id " +
       "FROM client_account_transaction_to_replace AS cat_r " +
@@ -297,37 +312,21 @@ public class MigrateOneFrsFile {
   /**
    * Статусы для пройденной миграции
    *
-   * @throws Exception проброс для удобства
+   * @throws SQLException проброс для удобства
    */
-  void migrateData_close() throws Exception {
-    exec("UPDATE client_account_transaction_to_replace " +
+  void migrateData_close() throws SQLException {
+    execUpdate("UPDATE client_account_transaction_to_replace " +
       "SET status = 4 " +
       "WHERE status IN (2, 3)"
     );
 
-    exec("UPDATE client_account_to_replace " +
+    execUpdate("UPDATE client_account_to_replace " +
       "SET status = 5 " +
       "WHERE status IN (3, 4)"
     );
   }
 
-  private void exec(String sql) throws Exception {
-    sql = sql.replaceAll("client_to_replace", tmpClientTableName);
-    sql = sql.replaceAll("client_account_to_replace", tmpClientAccountTableName);
-    sql = sql.replaceAll("client_account_transaction_to_replace", tmpClientAccountTransactionTableName);
-
-    long init = System.currentTimeMillis();
-
-    try (Statement statement = connection.createStatement()) {
-      statement.execute(sql);
-    }
-
-    long post = System.currentTimeMillis();
-    if (migrationSimpleReport != null)
-      migrationSimpleReport.append((post - init) / 1000f, sql);
-  }
-
-  void downloadErrors() throws Exception {
+  protected void downloadErrors() throws SQLException {
     long init = System.currentTimeMillis();
 
     String sqlQuery = "SELECT error FROM " + tmpClientAccountTableName + " WHERE status = 1 AND error IS NOT NULL";
@@ -341,6 +340,24 @@ public class MigrateOneFrsFile {
 
     long post = System.currentTimeMillis();
     if (migrationSimpleReport != null)
-      migrationSimpleReport.append((post - init) / 1000f, sqlQuery);
+      migrationSimpleReport.addAction(Util.getSecondsFromMilliseconds(init, post), -1, sqlQuery);
+  }
+
+  private String replaceTableNames(String sqlQuery) {
+    sqlQuery = sqlQuery.replaceAll("client_to_replace", tmpClientTableName);
+    sqlQuery = sqlQuery.replaceAll("client_account_to_replace", tmpClientAccountTableName);
+    sqlQuery = sqlQuery.replaceAll("client_account_transaction_to_replace", tmpClientAccountTransactionTableName);
+
+    return sqlQuery;
+  }
+
+  @Override
+  protected void exec(String sqlQuery) throws SQLException {
+    super.exec(replaceTableNames(sqlQuery));
+  }
+
+  @Override
+  protected void execUpdate(String sqlQuery) throws SQLException {
+    super.execUpdate(replaceTableNames(sqlQuery));
   }
 }

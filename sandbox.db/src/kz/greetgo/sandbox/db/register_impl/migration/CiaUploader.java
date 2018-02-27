@@ -153,9 +153,8 @@ public class CiaUploader extends CommonSaxHandler {
       //TODO: добавлять после закрытия тега cia?
       try {
         this.addClientAddressToBatch();
-      } /*catch (ParsingValueException e) {
-        errorFileWriter.appendErrorLine(e.getMessage());
-      } */ catch (Exception e) {
+      } catch (Exception e) {
+        if (e instanceof RuntimeException) throw (RuntimeException) e;
         throw new RuntimeException(e);
       }
       return;
@@ -169,9 +168,8 @@ public class CiaUploader extends CommonSaxHandler {
 
       try {
         this.addClientAddressToBatch();
-      } /*catch (ParsingValueException e) {
-        errorFileWriter.appendErrorLine(e.getMessage());
-      } */ catch (Exception e) {
+      } catch (Exception e) {
+        if (e instanceof RuntimeException) throw (RuntimeException) e;
         throw new RuntimeException(e);
       }
       return;
@@ -207,9 +205,8 @@ public class CiaUploader extends CommonSaxHandler {
 
       try {
         this.addClientPhoneToBatch();
-      } /*catch (ParsingValueException e) {
-        errorFileWriter.appendErrorLine(e.getMessage());
-      } */ catch (Exception e) {
+      } catch (Exception e) {
+        if (e instanceof RuntimeException) throw (RuntimeException) e;
         throw new RuntimeException(e);
       }
       return;
@@ -271,9 +268,9 @@ public class CiaUploader extends CommonSaxHandler {
     }
 
     int age = Util.getAge(birthdate);
-    if (age > 1000 || age < 3)
+    if (age >= 200 || age <= 10)
       throw new ParsingValueException("Значение birth выходит за рамки у ciaId = " + clientData.ciaId +
-        ".Возраст должен быть между 3 и 1000 годами");
+        ".Возраст должен быть между 10 и 200 годами");
 
     setClientPrepareStatement(birthdate);
     clientPrepareStatement.addBatch();

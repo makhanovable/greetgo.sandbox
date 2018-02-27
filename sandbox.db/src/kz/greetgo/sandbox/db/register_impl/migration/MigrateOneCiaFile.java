@@ -1,40 +1,28 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.sandbox.controller.util.Util;
-import kz.greetgo.sandbox.db.register_impl.migration.error.ErrorFile;
-import kz.greetgo.sandbox.db.register_impl.migration.report.MigrationSimpleReport;
-import org.apache.log4j.Logger;
+import kz.greetgo.sandbox.db.register_impl.migration.report.MigrateOneFileCommon;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.Statement;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class MigrateOneCiaFile {
-  public InputStream inputStream;
-  public ErrorFile outputErrorFile;
-  public MigrationSimpleReport migrationSimpleReport;
-  public int maxBatchSize = 100;
-  public Connection connection;
+public class MigrateOneCiaFile extends MigrateOneFileCommon {
 
   String tmpClientTableName;
   String tmpClientAddressTableName;
   String tmpClientPhoneTableName;
 
-  private Logger logger = Logger.getLogger(MigrationController.class);
-
+  @Override
   public void migrate() throws Exception {
-    prepareTmpTables();
-    uploadData();
-    migrateData();
-    downloadErrors();
+    super.migrate();
   }
 
-  void prepareTmpTables() throws Exception {
+  @Override
+  protected void prepareTmpTables() throws SQLException {
     Date now = new Date();
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
     String additionalId = sdf.format(now) + "_" + Util.generateRandomString(8);
@@ -78,7 +66,8 @@ public class MigrateOneCiaFile {
       ")");
   }
 
-  void uploadData() throws Exception {
+  @Override
+  protected void uploadData() throws Exception {
     connection.setAutoCommit(false);
 
     XMLReader reader = XMLReaderFactory.createXMLReader();
@@ -98,9 +87,27 @@ public class MigrateOneCiaFile {
 
     long post = System.currentTimeMillis();
     if (migrationSimpleReport != null)
-      migrationSimpleReport.appendParseInfo((post - init) / 1000f);
+      migrationSimpleReport.addAction(Util.getSecondsFromMilliseconds(init, post), -1, "Парсинг CIA файла");
 
     connection.setAutoCommit(true);
+  }
+
+  @Override
+  protected void prepareIndexes() throws SQLException {
+    exec("CREATE INDEX IF NOT EXISTS idx_client_status " +
+      "ON client_to_replace(status)");
+
+    exec("CREATE INDEX IF NOT EXISTS idx_client_status " +
+      "ON client_to_replace(cia_id)");
+
+    exec("CREATE INDEX IF NOT EXISTS idx_client_status_and_error " +
+      "ON client_to_replace(status, error)");
+
+    exec("CREATE INDEX IF NOT EXISTS idx_client_status_and_cia_id " +
+      "ON client_to_replace(status, cia_id)");
+
+    exec("CREATE INDEX IF NOT EXISTS idx_client_phone_status " +
+      "ON client_phone_to_replace(status)");
   }
 
   /*void processValidationErrors() throws Exception {
@@ -135,7 +142,8 @@ public class MigrateOneCiaFile {
     );
   }*/
 
-  void migrateData() throws Exception {
+  @Override
+  protected void migrateData() throws SQLException {
     migrateData_checkForDuplicatesOfTmpClient();
     migrateData_checkForDuplicatesOfTmpClientPhoneTable();
 
@@ -153,10 +161,10 @@ public class MigrateOneCiaFile {
   /**
    * Статус = 1, отсеивание дубликатов с приоритетом на последнюю запись в списке
    *
-   * @throws Exception проброс для удобства
+   * @throws SQLException проброс для удобства
    */
-  void migrateData_checkForDuplicatesOfTmpClient() throws Exception {
-    exec("UPDATE client_to_replace " +
+  void migrateData_checkForDuplicatesOfTmpClient() throws SQLException {
+    execUpdate("UPDATE client_to_replace " +
       "SET status = 1 " +
       "FROM ( " +
       "  SELECT record_no AS rno, row_number() OVER ( PARTITION BY cia_id ORDER BY record_no DESC ) AS rnum " +
@@ -170,10 +178,10 @@ public class MigrateOneCiaFile {
   /**
    * Отдельный статус для телефонов, где 1 означает, что это уникальный номер
    *
-   * @throws Exception проброс для удобства
+   * @throws SQLException проброс для удобства
    */
-  void migrateData_checkForDuplicatesOfTmpClientPhoneTable() throws Exception {
-    exec("UPDATE client_phone_to_replace " +
+  void migrateData_checkForDuplicatesOfTmpClientPhoneTable() throws SQLException {
+    execUpdate("UPDATE client_phone_to_replace " +
       "SET status = 1 " +
       "FROM ( " +
       "  SELECT " +
@@ -182,21 +190,22 @@ public class MigrateOneCiaFile {
       "  FROM client_phone_to_replace " +
       "  WHERE status = 0 " +
       ") AS x " +
-      "WHERE x.rnum = 1 AND x.rno = record_no");
+      "WHERE x.rnum = 1 AND x.rno = record_no"
+    );
   }
 
   /**
    * Заполнение таблицы charm
    *
-   * @throws Exception проброс для удобства
+   * @throws SQLException проброс для удобства
    */
-  void migrateData_finalOfCharmTable() throws Exception {
+  void migrateData_finalOfCharmTable() throws SQLException {
     exec("INSERT INTO charm(id, name) " +
       "SELECT nextval('charm_id_seq') AS charm_id, charm_dictionary.name " +
       "FROM ( " +
       "  SELECT DISTINCT charm_name AS name " +
       "  FROM client_to_replace " +
-      "  WHERE status = 1 AND error IS NULL " +
+      "  WHERE status = 1 " +
       "  EXCEPT SELECT name FROM charm " +
       ") AS charm_dictionary "
     );
@@ -206,35 +215,58 @@ public class MigrateOneCiaFile {
    * Статус = 2, если cia_id присутствует в постоянной таблице client (update)
    * Статус = 3, если отсутствует в постоянной таблице client (insert)
    *
-   * @throws Exception проброс для удобства
+   * @throws SQLException проброс для удобства
    */
-  void migrateData_checkForExistingRecordsOfClientTable() throws Exception {
-    exec("UPDATE client_to_replace " +
+  void migrateData_checkForExistingRecordsOfClientTable() throws SQLException {
+    execUpdate("UPDATE client_to_replace " +
       "SET id = c.id, status = 2 " +
       "FROM client AS c " +
       "WHERE status = 1 AND c.migration_cia_id = cia_id"
     );
 
-    exec("UPDATE client_to_replace " +
+//    execUpdateByParts("WITH x AS ( " +
+//      "  SELECT record_no, c.id AS c_id " +
+//      "  FROM client_to_replace " +
+//      "  INNER JOIN client AS c ON c.migration_cia_id = cia_id " +
+//      "  WHERE status = 1 " +
+//      "  limit_to_replace " +
+//      ") " +
+//      "UPDATE client_to_replace AS c_r " +
+//      "SET id = x.c_id, status = 2 " +
+//      "FROM x " +
+//      "WHERE x.record_no = c_r.record_no", 500000
+//    );
+
+    execUpdate("UPDATE client_to_replace " +
       "SET id = nextval('client_id_seq'), status = 3 " +
-      "WHERE status = 1"
+      "WHERE status = 1 "
     );
+
+//    execUpdateByParts("UPDATE client_to_replace " +
+//      "SET id = nextval('client_id_seq'), status = 3 " +
+//      "WHERE record_no IN ( " +
+//      "  SELECT record_no " +
+//      "  FROM client_to_replace " +
+//      "  WHERE status = 1 " +
+//      "  limit_to_replace " +
+//      ")", 500000
+//    );
   }
 
   /**
    * Заполнение постоянной client таблицы
    *
-   * @throws Exception проброс для удобства
+   * @throws SQLException проброс для удобства
    */
-  void migrateData_finalOfClientTable() throws Exception {
-    exec("UPDATE client " +
-      "SET id = c_r.id," +
+  void migrateData_finalOfClientTable() throws SQLException {
+    execUpdate("UPDATE client " +
+      "SET id = c_r.id, " +
       "  surname = c_r.surname, " +
       "  name = c_r.name, " +
       "  patronymic = c_r.patronymic, " +
       "  gender = c_r.gender, " +
       "  birth_date = c_r.birth_date, " +
-      "  charm = ch.id," +
+      "  charm = ch.id, " +
       "  actual = 1 " +
       "FROM client_to_replace AS c_r " +
       "JOIN charm AS ch ON ch.name = c_r.charm_name " +
@@ -252,9 +284,9 @@ public class MigrateOneCiaFile {
   /**
    * Заполнение постоянной client_address таблицы
    *
-   * @throws Exception проброс для удобства
+   * @throws SQLException проброс для удобства
    */
-  void migrateData_finalOfClientAddressTable() throws Exception {
+  void migrateData_finalOfClientAddressTable() throws SQLException {
     exec("INSERT INTO client_addr(client, type, street, house, flat) " +
       "SELECT c_r.id, cad_r.type, cad_r.street, cad_r.house, cad_r.flat " +
       "FROM client_to_replace AS c_r " +
@@ -268,9 +300,9 @@ public class MigrateOneCiaFile {
   /**
    * Заполнение постоянной client_phone таблицы
    *
-   * @throws Exception проброс для удобства
+   * @throws SQLException проброс для удобства
    */
-  void migrateData_finalOfClientPhoneTable() throws Exception {
+  void migrateData_finalOfClientPhoneTable() throws SQLException  {
     exec("INSERT INTO client_phone(client, number, type) " +
       "SELECT c_r.id, ph_r.number, ph_r.type " +
       "FROM client_to_replace AS c_r " +
@@ -284,32 +316,45 @@ public class MigrateOneCiaFile {
   /**
    * Статусы для пройденной миграции
    *
-   * @throws Exception проброс для удобства
+   * @throws SQLException проброс для удобства
    */
-  void migrateData_close() throws Exception {
-    exec("UPDATE client_to_replace " +
+  void migrateData_close() throws SQLException {
+    execUpdate("UPDATE client_to_replace " +
       "SET status = 4 " +
-      "WHERE status IN (2, 3)"
+      "WHERE status IN (2, 3) "
     );
+
+//    execUpdateByParts("UPDATE client_to_replace " +
+//      "SET status = 4 " +
+//      "WHERE record_no IN ( " +
+//      "  SELECT record_no " +
+//      "  FROM client_to_replace " +
+//      "  WHERE status IN (2, 3) " +
+//      "  limit_to_replace " +
+//      ")", 500000
+//    );
   }
 
-  void downloadErrors() {
+  @Override
+  protected void downloadErrors() {
 
   }
 
-  private void exec(String sql) throws Exception {
-    sql = sql.replaceAll("client_to_replace", tmpClientTableName);
-    sql = sql.replaceAll("client_address_to_replace", tmpClientAddressTableName);
-    sql = sql.replaceAll("client_phone_to_replace", tmpClientPhoneTableName);
+  private String replaceTableNames(String sqlQuery) {
+    sqlQuery = sqlQuery.replaceAll("client_to_replace", tmpClientTableName);
+    sqlQuery = sqlQuery.replaceAll("client_address_to_replace", tmpClientAddressTableName);
+    sqlQuery = sqlQuery.replaceAll("client_phone_to_replace", tmpClientPhoneTableName);
 
-    long init = System.currentTimeMillis();
+    return sqlQuery;
+  }
 
-    try (Statement statement = connection.createStatement()) {
-      statement.execute(sql);
-    }
+  @Override
+  protected void exec(String sqlQuery) throws SQLException {
+    super.exec(replaceTableNames(sqlQuery));
+  }
 
-    long post = System.currentTimeMillis();
-    if (migrationSimpleReport != null)
-      migrationSimpleReport.append((post - init) / 1000f, sql);
+  @Override
+  protected void execUpdate(String sqlQuery) throws SQLException {
+    super.execUpdate(replaceTableNames(sqlQuery));
   }
 }

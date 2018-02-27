@@ -8,13 +8,13 @@ import java.util.Vector;
 
 import static com.jcraft.jsch.ChannelSftp.SSH_FX_NO_SUCH_FILE;
 
-public abstract class SSHWorker {
+public class SSHWorker implements AutoCloseable {
 
-  protected Session session;
-  protected Channel channel;
-  protected ChannelSftp channelSftp;
+  public Session session;
+  public Channel channel;
+  public ChannelSftp channelSftp;
 
-  protected void prepareSession(String username, String host, String password, int port) throws JSchException {
+  public void prepareSession(String username, String host, String password, int port) throws JSchException {
     JSch jsch = new JSch();
 
     session = jsch.getSession(username, host, port);
@@ -26,19 +26,19 @@ public abstract class SSHWorker {
     session.setConfig(properties);
   }
 
-  protected void connect() throws JSchException {
+  public void connect() throws JSchException {
     session.connect();
     channel = session.openChannel("sftp");
     channel.connect();
     channelSftp = (ChannelSftp) channel;
   }
 
-  protected void disconnect() {
+  public void disconnect() {
     channel.disconnect();
     session.disconnect();
   }
 
-  protected void download(String remoteFilepath, File destFile) throws Exception {
+  public void download(String remoteFilepath, File destFile) throws Exception {
     BufferedInputStream bis = new BufferedInputStream(channelSftp.get(remoteFilepath));
     BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(destFile));
 
@@ -51,11 +51,11 @@ public abstract class SSHWorker {
     bos.close();
   }
 
-  protected void upload(File srcFile, String remoteFilename) throws Exception {
+  public void upload(File srcFile, String remoteFilename) throws Exception {
     channelSftp.put(new FileInputStream(srcFile), remoteFilename);
   }
 
-  protected boolean exists(String path) throws SftpException {
+  public boolean exists(String path) throws SftpException {
     Vector res;
     try {
       res = channelSftp.ls(path);
@@ -66,5 +66,14 @@ public abstract class SSHWorker {
       throw e;
     }
     return res != null && !res.isEmpty();
+  }
+
+  @Override
+  public void close() {
+    disconnect();
+  }
+
+  public static String makeHostname(String user, String host) {
+    return user + "@" + host;
   }
 }

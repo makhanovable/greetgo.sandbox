@@ -2,6 +2,7 @@ package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.sandbox.controller.util.Util;
 import kz.greetgo.sandbox.db.configs.DbConfig;
 import kz.greetgo.sandbox.db.register_impl.migration.error.CommonErrorFileWriter;
 import kz.greetgo.sandbox.db.register_impl.migration.report.MigrationSimpleReport;
@@ -46,11 +47,13 @@ public class MigrationController {
 
       long post = System.currentTimeMillis();
       long errorCount = commonErrorFileWriter.finish();
-      migrationSimpleReport.finish((post - init) / 1000f, errorCount, "");
+      migrationSimpleReport.finish(Util.getSecondsFromMilliseconds(init, post), errorCount);
 
       logger.info("Конец миграции CIA файла " + filename +
         ". Затраченное время " + TimeUnit.MILLISECONDS.toSeconds(post - init) + " секунд");
     } catch (Exception e) {
+      if (e instanceof RuntimeException) throw (RuntimeException) e;
+
       logger.error("Ошибка миграции CIA файла " + filename, e);
       return false;
     }
@@ -79,11 +82,13 @@ public class MigrationController {
 
       long post = System.currentTimeMillis();
       long errorCount = commonErrorFileWriter.finish();
-      migrationSimpleReport.finish((post - init) / 1000f, errorCount, "");
+      migrationSimpleReport.finish(Util.getSecondsFromMilliseconds(init, post), errorCount);
 
       logger.info("Конец миграции FRS файла " + filename +
         ". Затраченное время " + TimeUnit.MILLISECONDS.toSeconds(post - init) + " секунд");
     } catch (Exception e) {
+      if (e instanceof RuntimeException) throw (RuntimeException) e;
+
       logger.error("Ошибка миграции FRS файла " + filename, e);
       return false;
     }

@@ -68,7 +68,7 @@ public class Util {
       b.append(name);
       b.append(" ");
     }
-    if (!patronymic.isEmpty())
+    if (patronymic != null && !patronymic.isEmpty())
       b.append(patronymic);
 
     return b.toString().trim();
@@ -85,5 +85,9 @@ public class Util {
     }
 
     return sb.toString();
+  }
+
+  public static float getSecondsFromMilliseconds(long a, long b) {
+    return (b - a) / 1000.f;
   }
 }

@@ -1,11 +1,16 @@
 package kz.greetgo.sandbox.db._develop_;
 
+import kz.greetgo.sandbox.db.register_impl.migration.MigrationManager;
 import kz.greetgo.sandbox.db.test.util.TestsBeanContainer;
 import kz.greetgo.sandbox.db.test.util.TestsBeanContainerCreator;
+import org.apache.log4j.Logger;
 
 import java.util.concurrent.TimeUnit;
 
 public class MigrationManagerLauncher {
+
+  Logger logger = Logger.getLogger(MigrationManagerLauncher.class);
+
   public static void main(String[] args) throws Exception {
     new MigrationManagerLauncher().run();
   }
@@ -13,23 +18,26 @@ public class MigrationManagerLauncher {
   private void run() throws Exception {
     TestsBeanContainer bc = TestsBeanContainerCreator.create();
 
+    logger.info("Начало теста системы миграции");
+
     long init = System.currentTimeMillis();
 
-    boolean keep = true;
-    while (keep) {
+    boolean keep;
+    do {
       keep = false;
-      if (bc.migrationManager().connectAndMigrateOneCiaFile())
+
+      if (bc.migrationManager().connectAndMigrateOneFile(MigrationManager.eFiletype.CIA))
+        keep = true;
+      if (bc.migrationManager().connectAndMigrateOneFile(MigrationManager.eFiletype.FRS))
         keep = true;
 
-      if (bc.migrationManager().connectAndMigrateOneFrsFile())
-        keep = true;
-
-      System.out.println("Произведена итерация");
-
-      Thread.sleep(1000);
-    }
+      logger.info("Произведена итерация");
+      Thread.sleep(100);
+    } while (keep);
 
     long post = System.currentTimeMillis();
-    System.out.println("Затраченное время " + TimeUnit.MILLISECONDS.toSeconds(post - init));
+    logger.info("Затраченное время " + TimeUnit.MILLISECONDS.toSeconds(post - init));
+
+    System.exit(0);
   }
 }
