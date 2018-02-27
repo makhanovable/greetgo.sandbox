@@ -37,7 +37,7 @@ export class ClientListComponent {
 
   private refreshClientRecordList() {
     this.updatePageNumeration();
-    this.getClientRecordList();
+
   }
 
   private updatePageNumeration() {
@@ -53,13 +53,53 @@ export class ClientListComponent {
       if (this.pageCount > 0) {
         this.filterSuccessState = true;
 
-        for (let i = 0; i < this.pageCount; i++)
-          this.pageNums[i] = i + 1;
+        this.curPageNum = this.boundNum(this.curPageNum, 0, this.pageCount - 1);
+        this.boundPageNumArray();
       } else
         this.filterSuccessState = false;
+
+      this.getClientRecordList();
     }, error => {
       console.log(error);
     });
+  }
+
+  private boundPageNumArray() {
+    let pageRange = 2;
+    let startPageNum, lastPageNum, remainingPageNum;
+
+    if (this.curPageNum - pageRange < 0) {
+      startPageNum = this.boundNum(this.curPageNum - pageRange, 0, this.pageCount - 1);
+      remainingPageNum = this.curPageNum - startPageNum;
+
+      lastPageNum = this.curPageNum + pageRange + (pageRange - remainingPageNum);
+      lastPageNum = this.boundNum(lastPageNum, 0, this.pageCount - 1);
+    }
+    else if (this.curPageNum + pageRange > this.pageCount - 1) {
+      lastPageNum = this.boundNum(this.curPageNum + pageRange, 0, this.pageCount - 1);
+      remainingPageNum = lastPageNum - this.curPageNum;
+
+      startPageNum = this.curPageNum - pageRange - (pageRange - remainingPageNum);
+      startPageNum = this.boundNum(startPageNum, 0, this.pageCount - 1);
+    } else {
+      startPageNum = this.curPageNum - pageRange;
+      lastPageNum = this.curPageNum + pageRange;
+    }
+
+    this.pageNums = [];
+    for (let i = startPageNum, j = 0; i <= lastPageNum; i++, j++)
+      this.pageNums[j] = i + 1;
+  }
+
+  private boundNum(curNum: number, minNum: number, maxNum: number): number {
+    let finalNum = curNum;
+
+    if (curNum < minNum)
+      finalNum = minNum;
+    else if (curNum > maxNum)
+      finalNum = maxNum;
+
+    return finalNum;
   }
 
   private getClientRecordList() {
@@ -70,14 +110,6 @@ export class ClientListComponent {
       'clientRecordRequest': JSON.stringify(this.request)
     }).toPromise().then(result => {
       this.records = (result.json() as ClientRecord[]).map(ClientRecord.copy);
-
-      if (this.records.length == 0) {
-        this.curPageNum--;
-        if (this.curPageNum < 0)
-          this.curPageNum = 0;
-        else
-          this.refreshClientRecordList();
-      }
     }, error => {
       console.log(error);
     });
@@ -96,8 +128,7 @@ export class ClientListComponent {
       'clientRecordRequest': JSON.stringify(this.request),
       'fileContentType': JSON.stringify(this.downloadContentType)
     }).toPromise().then(result => {
-      window.open(this.httpService.url("/client/list/report" +
-        "?report_instance_id=" + JSON.stringify(result.json())
+      window.open(this.httpService.url("/client/list/report" + "?report_instance_id=" + JSON.stringify(result.json())
       ));
     }, error => {
       console.log(error);
@@ -140,6 +171,36 @@ export class ClientListComponent {
 
   onPageNumberButtonClick(pageNum: number) {
     this.curPageNum = pageNum;
+    this.refreshClientRecordList();
+  }
+
+  static PAGE_NAVIGATION_FIRST: number = 0;
+  static PAGE_NAVIGATION_PREVIOUS: number = 1;
+  static PAGE_NAVIGATION_NEXT: number = 2;
+  static PAGE_NAVIGATION_LAST: number = 3;
+
+  onPageNavigationButtonClick(pageNavigation: number) {
+    switch (pageNavigation) {
+      case ClientListComponent.PAGE_NAVIGATION_FIRST: {
+        this.curPageNum = 0;
+        break;
+      }
+      case ClientListComponent.PAGE_NAVIGATION_PREVIOUS: {
+        this.curPageNum--;
+        this.curPageNum = this.boundNum(this.curPageNum, 0, this.pageCount - 1);
+        break;
+      }
+      case ClientListComponent.PAGE_NAVIGATION_NEXT: {
+        this.curPageNum++;
+        this.curPageNum = this.boundNum(this.curPageNum, 0, this.pageCount - 1);
+        break;
+      }
+      case ClientListComponent.PAGE_NAVIGATION_LAST: {
+        this.curPageNum = this.pageCount - 1;
+        break;
+      }
+    }
+
     this.refreshClientRecordList();
   }
 

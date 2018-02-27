@@ -279,8 +279,7 @@ public class ClientRegisterImplTest extends ClientCommonTest {
 
     assertThat(realRecordList.size()).isEqualTo(expectedTotalMoneyList.size());
     for (int i = 0; i < realRecordList.size(); i++)
-      assertThat((int) Float.parseFloat(realRecordList.get(i).totalAccountBalance))
-        .isEqualTo((int) Float.parseFloat(expectedTotalMoneyList.get(i)));
+      assertThat(realRecordList.get(i).totalAccountBalance).isEqualTo(expectedTotalMoneyList.get(i));
   }
 
   @Test
@@ -294,10 +293,8 @@ public class ClientRegisterImplTest extends ClientCommonTest {
     List<ClientRecord> realRecordList = clientRegister.get().getRecordList(clientRecordListHelper.clientRecordRequest);
 
     assertThat(realRecordList.size()).isEqualTo(expectedTotalMoneyList.size());
-    for (int i = 0; i < realRecordList.size(); i++) {
-      assertThat((int) Float.parseFloat(realRecordList.get(i).totalAccountBalance))
-        .isEqualTo((int) Float.parseFloat(expectedTotalMoneyList.get(i)));
-    }
+    for (int i = 0; i < realRecordList.size(); i++)
+      assertThat(realRecordList.get(i).totalAccountBalance).isEqualTo(expectedTotalMoneyList.get(i));
   }
 
   @Test
@@ -730,13 +727,13 @@ public class ClientRegisterImplTest extends ClientCommonTest {
     assertThat(realClientDetails.factualAddressInfo.flat).isEqualTo("52");
     assertThat(realClientDetails.phones).hasSize(4);
     assertThat(realClientDetails.phones.stream().anyMatch(phone ->
-      phone.number.equals("+72822590121") && phone.type == PhoneType.HOME)).isEqualTo(true);
+      "+72822590121".equals(phone.number) && phone.type == PhoneType.HOME)).isEqualTo(true);
     assertThat(realClientDetails.phones.stream().anyMatch(phone ->
-      phone.number.equals("+77071112233") && phone.type == PhoneType.MOBILE)).isEqualTo(true);
+      "+77071112233".equals(phone.number) && phone.type == PhoneType.MOBILE)).isEqualTo(true);
     assertThat(realClientDetails.phones.stream().anyMatch(phone ->
-      phone.number.equals("+77471234567") && phone.type == PhoneType.MOBILE)).isEqualTo(true);
+      "+77471234567".equals(phone.number) && phone.type == PhoneType.MOBILE)).isEqualTo(true);
     assertThat(realClientDetails.phones.stream().anyMatch(phone ->
-      phone.number.equals("+77770001155") && phone.type == PhoneType.OTHER)).isEqualTo(true);
+      "+77770001155".equals(phone.number) && phone.type == PhoneType.OTHER)).isEqualTo(true);
   }
 
   @Test
@@ -805,17 +802,17 @@ public class ClientRegisterImplTest extends ClientCommonTest {
     assertThat(realClientDetails.factualAddressInfo.flat).isEqualTo("flat-res");
     assertThat(realClientDetails.phones).hasSize(6);
     assertThat(realClientDetails.phones.stream().anyMatch(phone ->
-      phone.number.equals("+71111") && phone.type == PhoneType.HOME)).isEqualTo(true);
+      "+71111".equals(phone.number) && phone.type == PhoneType.HOME)).isEqualTo(true);
     assertThat(realClientDetails.phones.stream().anyMatch(phone ->
-      phone.number.equals("+77071230011") && phone.type == PhoneType.EMBEDDED)).isEqualTo(true);
+      "+77071230011".equals(phone.number) && phone.type == PhoneType.EMBEDDED)).isEqualTo(true);
     assertThat(realClientDetails.phones.stream().anyMatch(phone ->
-      phone.number.equals("+70000") && phone.type == PhoneType.HOME)).isEqualTo(true);
+      "+70000".equals(phone.number) && phone.type == PhoneType.HOME)).isEqualTo(true);
     assertThat(realClientDetails.phones.stream().anyMatch(phone ->
-      phone.number.equals("+00000") && phone.type == PhoneType.OTHER)).isEqualTo(true);
+      "+00000".equals(phone.number) && phone.type == PhoneType.OTHER)).isEqualTo(true);
     assertThat(realClientDetails.phones.stream().anyMatch(phone ->
-      phone.number.equals("111111") && phone.type == PhoneType.WORK)).isEqualTo(true);
+      "111111".equals(phone.number) && phone.type == PhoneType.WORK)).isEqualTo(true);
     assertThat(realClientDetails.phones.stream().anyMatch(phone ->
-      phone.number.equals("222222") && phone.type == PhoneType.OTHER)).isEqualTo(true);
+      "222222".equals(phone.number) && phone.type == PhoneType.OTHER)).isEqualTo(true);
 
     assertThat(realClientRecord).isNotNull();
     assertThat(realClientRecord.fullName).isEqualTo("surname lastname patronymic");
@@ -902,19 +899,19 @@ public class ClientRegisterImplTest extends ClientCommonTest {
     assertThat(realClientDetails.factualAddressInfo.flat).isEqualTo("flat-res");
     assertThat(realClientDetails.phones).hasSize(7);
     assertThat(realClientDetails.phones.stream().anyMatch(phone ->
-      phone.number.equals("+71111") && phone.type == PhoneType.HOME)).isEqualTo(true);
+      "+71111".equals(phone.number) && phone.type == PhoneType.HOME)).isEqualTo(true);
     assertThat(realClientDetails.phones.stream().anyMatch(phone ->
-      phone.number.equals("+77071230011") && phone.type == PhoneType.EMBEDDED)).isEqualTo(true);
+      "+77071230011".equals(phone.number) && phone.type == PhoneType.EMBEDDED)).isEqualTo(true);
     assertThat(realClientDetails.phones.stream().anyMatch(phone ->
-      phone.number.equals("+70000") && phone.type == PhoneType.HOME)).isEqualTo(true);
+      "+70000".equals(phone.number) && phone.type == PhoneType.HOME)).isEqualTo(true);
     assertThat(realClientDetails.phones.stream().anyMatch(phone ->
-      phone.number.equals("+00000") && phone.type == PhoneType.OTHER)).isEqualTo(true);
+      "+00000".equals(phone.number) && phone.type == PhoneType.OTHER)).isEqualTo(true);
     assertThat(realClientDetails.phones.stream().anyMatch(phone ->
-      phone.number.equals("111111") && phone.type == PhoneType.WORK)).isEqualTo(true);
+      "111111".equals(phone.number) && phone.type == PhoneType.WORK)).isEqualTo(true);
     assertThat(realClientDetails.phones.stream().anyMatch(phone ->
-      phone.number.equals("222222") && phone.type == PhoneType.OTHER)).isEqualTo(true);
+      "222222".equals(phone.number) && phone.type == PhoneType.OTHER)).isEqualTo(true);
     assertThat(realClientDetails.phones.stream().anyMatch(phone ->
-      phone.number.equals("+72822590121") && phone.type == PhoneType.HOME)).isEqualTo(true);
+      "+72822590121".equals(phone.number) && phone.type == PhoneType.HOME)).isEqualTo(true);
 
     assertThat(realClientRecord).isNotNull();
     assertThat(realClientRecord.fullName).isEqualTo("surname lastname patronymic");

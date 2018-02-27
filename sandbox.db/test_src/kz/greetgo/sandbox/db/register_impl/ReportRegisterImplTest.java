@@ -102,8 +102,8 @@ public class ReportRegisterImplTest extends ClientCommonTest {
     ClientListReportViewFake fakeView = this.testViewCommon(clientRecordListHelper);
 
     for (int i = 0; i < fakeView.list.size(); i++)
-      assertThat((int) fakeView.list.get(i).totalAccountBalance)
-        .isEqualTo((int) Float.parseFloat(clientRecordListHelper.clientRecordList.get(i).totalAccountBalance));
+      assertThat(fakeView.list.get(i).totalAccountBalance + "")
+        .isEqualTo(clientRecordListHelper.clientRecordList.get(i).totalAccountBalance);
   }
 
   @Test
@@ -115,8 +115,8 @@ public class ReportRegisterImplTest extends ClientCommonTest {
     ClientListReportViewFake fakeView = this.testViewCommon(clientRecordListHelper);
 
     for (int i = 0; i < fakeView.list.size(); i++)
-      assertThat((int) fakeView.list.get(i).totalAccountBalance)
-        .isEqualTo((int) Float.parseFloat(clientRecordListHelper.clientRecordList.get(i).totalAccountBalance));
+      assertThat(fakeView.list.get(i).totalAccountBalance + "")
+        .isEqualTo(clientRecordListHelper.clientRecordList.get(i).totalAccountBalance);
   }
 
   @Test

@@ -27,7 +27,7 @@ public class ClientListReportViewPdf extends PdfPageEventHelper implements Clien
   private Font defaultFont;
   private long rowIterator;
 
-  private static final long tableFlushTime = 1000;
+  private static final long TABLE_FLUSH_TIME = 1000;
 
   public ClientListReportViewPdf(OutputStream outputStream) {
     this.outputStream = outputStream;
@@ -77,7 +77,7 @@ public class ClientListReportViewPdf extends PdfPageEventHelper implements Clien
     table.addCell(new Phrase(String.format(Util.floatFormat, itemData.minAccountBalance), defaultFont));
 
     rowIterator++;
-    if (rowIterator == tableFlushTime) {
+    if (rowIterator == TABLE_FLUSH_TIME) {
       document.add(table);
       rowIterator = 0;
     }

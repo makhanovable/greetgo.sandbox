@@ -62,6 +62,7 @@
   <root>
     <priority value="INFO"/>
     <appender-ref ref="SERVER"/>
+    <appender-ref ref="CONSOLE"/>
   </root>
 
 </log4j:configuration>

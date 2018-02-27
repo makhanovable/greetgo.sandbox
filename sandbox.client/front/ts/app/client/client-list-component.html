@@ -172,14 +172,29 @@
   <div class="col-xs-8 col-xs-pull-1">
     <div class="text-center">
       <div class="btn-group btn-group-lg">
+        <button class="btn btn-default"
+                (click)="onPageNavigationButtonClick(0)">
+          <span class="glyphicon glyphicon-step-backward"></span>
+        </button>
+        <button class="btn btn-default"
+                (click)="onPageNavigationButtonClick(1)">
+          <span class="glyphicon glyphicon glyphicon-chevron-left"></span>
+        </button>
         <button *ngFor="let pageNum of pageNums"
-                class="btn btn-default"
+                class="btn btn-default "
                 [ngClass]="{'active': pageNum == curPageNum + 1}"
                 (click)="onPageNumberButtonClick(pageNum - 1)">
           {{pageNum}}
+        </button>
+        <button class="btn btn-default"
+                (click)="onPageNavigationButtonClick(2)">
+          <span class="glyphicon glyphicon glyphicon-chevron-right"></span>
+        </button>
+        <button class="btn btn-default"
+                (click)="onPageNavigationButtonClick(3)">
+          <span class="glyphicon glyphicon glyphicon glyphicon-step-forward"></span>
         </button>
       </div>
     </div>
   </div>
 </div>
-

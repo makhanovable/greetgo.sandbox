@@ -11,7 +11,7 @@ import kz.greetgo.sandbox.db.register_impl.migration.model.ClientAccountData;
 import kz.greetgo.sandbox.db.register_impl.migration.model.ClientAccountTransactionData;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -27,9 +27,7 @@ public class FrsUploader {
   public String clientAccountTable;
   public String clientAccountTransactionTable;
 
-  private long curFileNo = 0;
   public ErrorFile errorFileWriter;
-  public String inputFileName;
 
   private PreparedStatement clientAccountPreparedStatement;
   private PreparedStatement clientAccountTransactionPreparedStatement;
@@ -69,10 +67,10 @@ public class FrsUploader {
     clientAccountTransactionPreparedStatement.setString(idx, clientAccountTransactionData.account_number);
   }
 
-  void parse(FileInputStream fileInputStream) throws Exception {
+  void parse(InputStream is) {
     JsonFactory jsonFactory = new JsonFactory();
 
-    try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream))) {
+    try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is))) {
       String line, field, value;
       ObjectMapper objectMapper = new ObjectMapper();
       JsonToken token;
@@ -80,16 +78,15 @@ public class FrsUploader {
       prepare();
 
       while ((line = bufferedReader.readLine()) != null) {
-        curFileNo++;
         try (JsonParser parser = jsonFactory.createParser(line)) {
           while ((token = parser.nextToken()) != null) {
             field = parser.getCurrentName();
 
-            if (token.equals(JsonToken.FIELD_NAME) && field.equals("type")) {
+            if (JsonToken.FIELD_NAME.equals(token) && "type".equals(field)) {
               parser.nextToken();
               value = parser.getValueAsString();
 
-              if (value.equals("transaction")) {
+              if ("transaction".equals(value)) {
                 clientAccountTransactionData = objectMapper.readValue(line, ClientAccountTransactionData.class);
                 curClientAccountTransactionRecordNum++;
 
@@ -98,7 +95,7 @@ public class FrsUploader {
                 } catch (ParsingValueException e) {
                   errorFileWriter.appendErrorLine(e.getMessage());
                 }
-              } else if (value.equals("new_account")) {
+              } else if ("new_account".equals(value)) {
                 clientAccountData = objectMapper.readValue(line, ClientAccountData.class);
                 curClientAccountRecordNum++;
 
@@ -108,8 +105,7 @@ public class FrsUploader {
                   errorFileWriter.appendErrorLine(e.getMessage());
                 }
               } else {
-                errorFileWriter.appendErrorLine("Неизвестная команда " + value +
-                  " . Строка номер " + curFileNo + " в файле " + inputFileName);
+                errorFileWriter.appendErrorLine("Неизвестная команда " + value);
               }
             }
           }
@@ -141,7 +137,6 @@ public class FrsUploader {
     }
   }
 
-  // TODO: поменять все типы на int? bigint & long могут быть лишними
   int curClientAccountBatchCount = 0;
   int curClientAccountTransactionBatchCount = 0;
 
@@ -155,7 +150,7 @@ public class FrsUploader {
         .parse(clientAccountData.registered_at.replace("T", " ")).getTime());
     } catch (NumberFormatException | ParseException e) {
       throw new ParsingValueException("Неправильный формат временного штампа registered_at у account_number = " +
-        clientAccountData.client_id + ". Строка номер " + curFileNo + " в файле " + inputFileName);
+        clientAccountData.client_id);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -163,8 +158,7 @@ public class FrsUploader {
     long age = Util.getAge(registeredAt.toLocalDateTime());
     if (age > 1000 || age < -1)
       throw new ParsingValueException("Значение registered_at выходит за рамки у account_number = " +
-        clientAccountTransactionData.account_number + ".Возраст должен быть между -1 и 1000 годами" +
-        ". Строка номер " + curFileNo + " в файле " + inputFileName);
+        clientAccountTransactionData.account_number + ".Возраст должен быть между -1 и 1000 годами");
 
     setClientAccountPrepareStatement(registeredAt);
     clientAccountPreparedStatement.addBatch();
@@ -185,7 +179,7 @@ public class FrsUploader {
       money = new BigDecimal(clientAccountTransactionData.money.replaceAll("_", ""));
     } catch (NumberFormatException e) {
       throw new ParsingValueException("Неправильный формат денег money у account_number = " +
-        clientAccountTransactionData.account_number + ". Строка номер " + curFileNo + " в файле " + inputFileName);
+        clientAccountTransactionData.account_number);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -195,16 +189,15 @@ public class FrsUploader {
         .parse(clientAccountTransactionData.finished_at.replace("T", " ")).getTime());
     } catch (IllegalArgumentException | ParseException e) {
       throw new ParsingValueException("Неправильный формат временного штампа finished_at у account_number = " +
-        clientAccountTransactionData.account_number + ". Строка номер " + curFileNo + " в файле " + inputFileName);
+        clientAccountTransactionData.account_number);
     } catch (Exception e) {
       throw new RuntimeException(e);
-    }//TODO: length 0 errors?
+    }
 
     long age = Util.getAge(finishedAt.toLocalDateTime());
     if (age > 1000 || age < -1)
       throw new ParsingValueException("Значение finished_at выходит за рамки у account_number = " +
-        clientAccountTransactionData.account_number + ".Возраст должен быть между -1 и 1000 годами" +
-        ". Строка номер " + curFileNo + " в файле " + inputFileName);
+        clientAccountTransactionData.account_number + ".Возраст должен быть между -1 и 1000 годами");
 
     setClientAccountTransactionPrepareStatement(money, finishedAt);
     clientAccountTransactionPreparedStatement.addBatch();

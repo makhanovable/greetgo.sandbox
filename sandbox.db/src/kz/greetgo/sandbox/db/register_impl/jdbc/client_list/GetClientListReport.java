@@ -45,12 +45,7 @@ public class GetClientListReport extends GetClientList {
 
       try (ResultSet rs = ps.executeQuery()) {
         while (rs.next())
-          try {
-            reportView.append(rsToReportItemData(rs));
-          }catch (Exception e) {
-            System.out.println(e.getMessage());
-          }
-
+          reportView.append(rsToReportItemData(rs));
       }
     }
 

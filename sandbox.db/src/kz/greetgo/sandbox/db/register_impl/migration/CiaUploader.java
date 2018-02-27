@@ -108,60 +108,70 @@ public class CiaUploader extends CommonSaxHandler {
   @Override
   protected void startTag(Attributes attributes) throws SQLException {
     String path = path();
-    if (path.equals(TAG_CIA)) {
+    if (TAG_CIA.equals(path)) {
       prepare();
       return;
     }
-    if (path.equals(TAG_CLIENT)) {
+    if (TAG_CLIENT.equals(path)) {
       clientData = new ClientData();
       clientData.ciaId = attributes.getValue("id");
       curClientRecordNum++;
       return;
     }
-    if (path.equals(TAG_CLIENT_SURNAME)) {
-      clientData.surname = attributes.getValue("value");
+    if (TAG_CLIENT_SURNAME.equals(path)) {
+      clientData.surname = attributes.getValue("value").trim();
       return;
     }
-    if (path.equals(TAG_CLIENT_NAME)) {
-      clientData.name = attributes.getValue("value");
+    if (TAG_CLIENT_NAME.equals(path)) {
+      clientData.name = attributes.getValue("value").trim();
       return;
     }
-    if (path.equals(TAG_CLIENT_PATRONYMIC)) {
-      clientData.patronymic = attributes.getValue("value");
+    if (TAG_CLIENT_PATRONYMIC.equals(path)) {
+      clientData.patronymic = attributes.getValue("value").trim();
       return;
     }
-    if (path.equals(TAG_CLIENT_GENDER)) {
+    if (TAG_CLIENT_GENDER.equals(path)) {
       clientData.gender = attributes.getValue("value");
       return;
     }
-    if (path.equals(TAG_CLIENT_BIRTH)) {
+    if (TAG_CLIENT_BIRTH.equals(path)) {
       clientData.birthdate = attributes.getValue("value");
       return;
     }
-    if (path.equals(TAG_CLIENT_CHARM)) {
-      clientData.charmName = attributes.getValue("value");
+    if (TAG_CLIENT_CHARM.equals(path)) {
+      clientData.charmName = attributes.getValue("value").trim();
       return;
     }
-    if (path.equals(TAG_CLIENT_ADDRESS_FACTUAL)) {
+    if (TAG_CLIENT_ADDRESS_FACTUAL.equals(path)) {
       clientAddressData = new ClientAddressData();
       clientAddressData.type = AddressType.FACTUAL.name();
-      clientAddressData.street = attributes.getValue("street");
-      clientAddressData.house = attributes.getValue("house");
-      clientAddressData.flat = attributes.getValue("flat");
+      clientAddressData.street = attributes.getValue("street").trim();
+      clientAddressData.house = attributes.getValue("house").trim();
+      clientAddressData.flat = attributes.getValue("flat").trim();
       curClientAddressRecordNum++;
 
       //TODO: добавлять после закрытия тега cia?
-      this.addClientAddressToBatch();
+      try {
+        this.addClientAddressToBatch();
+      } catch (Exception e) {
+        if (e instanceof RuntimeException) throw (RuntimeException) e;
+        throw new RuntimeException(e);
+      }
       return;
     }
-    if (path.equals(TAG_CLIENT_ADDRESS_REGISTRATION)) {
+    if (TAG_CLIENT_ADDRESS_REGISTRATION.equals(path)) {
       clientAddressData.type = AddressType.REGISTRATION.name();
-      clientAddressData.street = attributes.getValue("street");
-      clientAddressData.house = attributes.getValue("house");
-      clientAddressData.flat = attributes.getValue("flat");
+      clientAddressData.street = attributes.getValue("street").trim();
+      clientAddressData.house = attributes.getValue("house").trim();
+      clientAddressData.flat = attributes.getValue("flat").trim();
       curClientAddressRecordNum++;
 
-      this.addClientAddressToBatch();
+      try {
+        this.addClientAddressToBatch();
+      } catch (Exception e) {
+        if (e instanceof RuntimeException) throw (RuntimeException) e;
+        throw new RuntimeException(e);
+      }
       return;
     }
   }
@@ -172,7 +182,7 @@ public class CiaUploader extends CommonSaxHandler {
 
     if (path.endsWith(TAG_CLIENT_PHONE)) {
       clientPhoneData = new ClientPhoneData();
-      clientPhoneData.number = text();
+      clientPhoneData.number = text().trim();
       //TODO: model of sandbox should match clientGenerator's?
       switch (path) {
         case TAG_CLIENT_HOME_PHONE: {
@@ -193,10 +203,15 @@ public class CiaUploader extends CommonSaxHandler {
       }
       curClientPhoneRecordNum++;
 
-      this.addClientPhoneToBatch();
+      try {
+        this.addClientPhoneToBatch();
+      } catch (Exception e) {
+        if (e instanceof RuntimeException) throw (RuntimeException) e;
+        throw new RuntimeException(e);
+      }
       return;
     }
-    if (path.equals(TAG_CLIENT)) {
+    if (TAG_CLIENT.equals(path)) {
       try {
         this.addClientToBatch();
       } catch (ParsingValueException e) {
@@ -206,7 +221,7 @@ public class CiaUploader extends CommonSaxHandler {
       }
       return;
     }
-    if (path.equals(TAG_CIA)) {
+    if (TAG_CIA.equals(path)) {
       boolean needCommit = false;
 
       if (curClientBatchCount > 0) {
@@ -241,6 +256,8 @@ public class CiaUploader extends CommonSaxHandler {
       throw new ParsingValueException("Пустое значение name у ciaId = " + clientData.ciaId);
     if (clientData.birthdate == null || clientData.birthdate.length() == 0)
       throw new ParsingValueException("Пустое значение birth у ciaId = " + clientData.ciaId);
+    if (clientData.charmName == null || clientData.charmName.length() == 0)
+      throw new ParsingValueException("Пустое значение charm_name у ciaId = " + clientData.ciaId);
 
     Date birthdate;
     try {
@@ -251,9 +268,9 @@ public class CiaUploader extends CommonSaxHandler {
     }
 
     int age = Util.getAge(birthdate);
-    if (age > 1000 || age < 3)
+    if (age >= 200 || age <= 10)
       throw new ParsingValueException("Значение birth выходит за рамки у ciaId = " + clientData.ciaId +
-        ".Возраст должен быть между 3 и 1000 годами");
+        ".Возраст должен быть между 10 и 200 годами");
 
     setClientPrepareStatement(birthdate);
     clientPrepareStatement.addBatch();
