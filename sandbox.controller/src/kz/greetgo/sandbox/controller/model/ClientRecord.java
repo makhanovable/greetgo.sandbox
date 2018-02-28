@@ -14,8 +14,8 @@ public class ClientRecord {
 
   public String getFIO() {
     if (this.patronymic == null)
-      return this.name + this.surname;
+      return this.surname + this.name;
     else
-      return this.name + this.surname + this.patronymic;
+      return this.surname + this.name + this.patronymic;
   }
 }

@@ -11,7 +11,6 @@ import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.report.ClientReportView;
-import kz.greetgo.sandbox.db.dao.CharmDao;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 import kz.greetgo.sandbox.db.jdbc.ClientListReportViewQuery;
 import kz.greetgo.sandbox.db.jdbc.ClientListWebViewQuery;
@@ -21,58 +20,12 @@ import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
 import java.util.List;
 
-
 @Bean
 public class ClientRegisterImpl implements ClientRegister {
 
   public BeanGetter<ClientDao> clientDao;
   public BeanGetter<IdGenerator> idGenerator;
   public BeanGetter<JdbcSandbox> jdbcSandbox;
-
-  public BeanGetter<CharmDao> charmDao;
-
-  @Override
-  public void generateClientReport(String filter, String orderBy, int order, ClientReportView view) throws Exception {
-    ClientListReportViewQuery jdbc = new ClientListReportViewQuery(filter, orderBy, order, view);
-    view.start(ClientUtils.reportHeaders);
-    jdbcSandbox.get().execute(jdbc);
-    view.finish();
-  }
-
-  @Override
-  public List<ClientRecord> getClientInfoList(int limit, int page, String filter, final String orderBy, int desc) {
-    int offset = limit * page;
-    ClientListWebViewQuery jdbc = new ClientListWebViewQuery(filter, orderBy, desc, limit, offset);
-    return jdbcSandbox.get().execute(jdbc);
-  }
-
-  @Override
-  public int getClientsSize(String filter) {
-
-    return jdbcSandbox.get().execute(new ClientNumberQuery(filter));
-  }
-
-  @Override
-  public int remove(List<String> id) {
-    return this.clientDao.get().changeClientsActuality(id, false);
-  }
-
-  @Override
-  public ClientDetail detail(String id) {
-    ClientDetail clientDetail = this.clientDao.get().detail(id);
-
-    if (clientDetail != null) {
-      List<ClientAddress> addresses = this.clientDao.get().getAddresses(id);
-      for (ClientAddress addr : addresses) {
-        if (addr.type == AddressType.FACT)
-          clientDetail.actualAddress = addr;
-        else if (addr.type.equals(AddressType.REG))
-          clientDetail.registerAddress = addr;
-      }
-    }
-
-    return clientDetail;
-  }
 
   @Override
   public void addOrUpdate(ClientToSave clientToSave) {
@@ -89,8 +42,8 @@ public class ClientRegisterImpl implements ClientRegister {
       }
     }
 
-    if (clientToSave.numersToSave != null) {
-      for (ClientPhoneNumberToSave cpn : clientToSave.numersToSave) {
+    if (clientToSave.numbersToSave != null) {
+      for (ClientPhoneNumberToSave cpn : clientToSave.numbersToSave) {
         if (cpn.client == null) {
           cpn.client = clientToSave.id;
           this.clientDao.get().insertPhone(cpn);
@@ -103,7 +56,7 @@ public class ClientRegisterImpl implements ClientRegister {
       }
     }
 
-    if (clientToSave.actualAddress != null) {
+    if (clientToSave.actualAddress != null && clientToSave.actualAddress.street != null && clientToSave.actualAddress.house != null) {
       if (clientToSave.actualAddress.client == null) {
         clientToSave.actualAddress.client = clientToSave.id;
         this.clientDao.get().insertAddress(clientToSave.actualAddress);
@@ -111,7 +64,8 @@ public class ClientRegisterImpl implements ClientRegister {
         this.clientDao.get().updateAddress(clientToSave.actualAddress);
       }
     }
-    if (clientToSave.registerAddress != null) {
+    if (clientToSave.registerAddress != null && clientToSave.registerAddress.street != null && clientToSave.registerAddress.house != null) {
+
       if (clientToSave.registerAddress.client == null) {
         clientToSave.registerAddress.client = clientToSave.id;
         this.clientDao.get().insertAddress(clientToSave.registerAddress);
@@ -121,5 +75,46 @@ public class ClientRegisterImpl implements ClientRegister {
     }
   }
 
+  @Override
+  public ClientDetail getDetail(String id) {
+    ClientDetail clientDetail = this.clientDao.get().detail(id);
+
+    if (clientDetail != null) {
+      List<ClientAddress> addresses = this.clientDao.get().getAddresses(id);
+      for (ClientAddress addr : addresses) {
+        if (addr.type == AddressType.FACT)
+          clientDetail.actualAddress = addr;
+        else if (addr.type.equals(AddressType.REG))
+          clientDetail.registerAddress = addr;
+      }
+    }
+
+    return clientDetail;
+  }
+
+  @Override
+  public int removeClients(List<String> id) {
+    return this.clientDao.get().changeClientsActuality(id, false);
+  }
+
+  @Override
+  public List<ClientRecord> getClientRecordList(int limit, int page, String filter, final String orderBy, int desc) {
+    int offset = limit * page;
+    ClientListWebViewQuery jdbc = new ClientListWebViewQuery(filter, orderBy, desc, limit, offset);
+    return jdbcSandbox.get().execute(jdbc);
+  }
+
+  @Override
+  public int getNumberOfClients(String filter) {
+    return jdbcSandbox.get().execute(new ClientNumberQuery(filter));
+  }
+
+  @Override
+  public void genClientRecordListReport(String filter, String orderBy, int desc, ClientReportView view) throws Exception {
+    ClientListReportViewQuery jdbc = new ClientListReportViewQuery(filter, orderBy, desc, view);
+    view.start(ClientUtils.reportHeaders);
+    jdbcSandbox.get().execute(jdbc);
+    view.finish();
+  }
 
 }

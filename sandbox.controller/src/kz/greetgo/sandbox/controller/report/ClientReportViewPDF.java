@@ -47,7 +47,6 @@ public class ClientReportViewPDF implements ClientReportView {
     count++;
     if (count % 1000 == 0) {
       document.add(table);
-      count = 0;
     }
   }
 

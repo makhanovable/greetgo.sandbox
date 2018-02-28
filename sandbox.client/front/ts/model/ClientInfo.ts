@@ -1,4 +1,4 @@
-export class ClientInfo {
+export class ClientRecord {
 
   public id: string;
   public name: string;

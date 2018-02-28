@@ -20,21 +20,13 @@ public class ReportController implements Controller {
 
   public BeanGetter<ClientRegister> clientRegister;
 
-  // FIXME: 2/28/18 Все еще не понятно какой отчет
-  @Mapping("/downloadClientReport")
-  public void downloadClientReport(@Par("type") String type, @Par("orderBy") String orderBy, @Par("order") int order,
-                                   @Par("filter") String filter, RequestTunnel requestTunnel) throws Exception {
-    if (!("pdf".equals(type) || "xlsx".equals(type))) {
-      throw new Exception("Unsupported File Format");
-    }
-
-    String fileName = "client_report_" + new Date() + "." + type;
-    requestTunnel.setResponseHeader("Content-disposition", "attachment; filename=" + fileName);
-    requestTunnel.setResponseHeader("Access-Control-Expose-Headers", "Content-disposition");
+  @Mapping("/clientRecordList")
+  public void clientRecordList(@Par("type") String type, @Par("orderBy") String orderBy, @Par("desc") int desc,
+                               @Par("filter") String filter, RequestTunnel requestTunnel) throws Exception {
 
     OutputStream out = requestTunnel.getResponseOutputStream();
-
     ClientReportView view;
+
     switch (type) {
       case "pdf":
         view = new ClientReportViewPDF(out);
@@ -43,10 +35,14 @@ public class ReportController implements Controller {
         view = new ClientReportViewXLSX(out);
         break;
       default:
-        return;
+        throw new Exception("Unsupported File Format");
     }
 
-    this.clientRegister.get().generateClientReport(filter, orderBy, order, view);
+    String fileName = "client_report_" + new Date() + "." + type;
+    requestTunnel.setResponseHeader("Content-disposition", "attachment; filename=" + fileName);
+    requestTunnel.setResponseHeader("Access-Control-Expose-Headers", "Content-disposition");
+
+    this.clientRegister.get().genClientRecordListReport(filter, orderBy, desc, view);
     out.flush();
     requestTunnel.flushBuffer();
   }

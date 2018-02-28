@@ -12,8 +12,8 @@ import java.util.List;
 
 public class ClientListWebViewQuery extends AbstractClientListCommonQuery implements ConnectionCallback<List<ClientRecord>> {
 
-  public ClientListWebViewQuery(String filter, String orderBy, int order, int limit, int offset) {
-    super(filter, orderBy, order, limit, offset);
+  public ClientListWebViewQuery(String filter, String orderBy, int desc, int limit, int offset) {
+    super(filter, orderBy, desc, limit, offset);
   }
 
 
@@ -35,7 +35,7 @@ public class ClientListWebViewQuery extends AbstractClientListCommonQuery implem
 
       try (ResultSet rs = ps.executeQuery()) {
         while (rs.next()) {
-          ClientRecord cr = ClientUtils.rsToClientRecord(rs);
+          ClientRecord cr = rsToClientRecord(rs);
           result.add(cr);
         }
 

@@ -4,7 +4,6 @@ import kz.greetgo.sandbox.controller.model.ClientAddress;
 import kz.greetgo.sandbox.controller.model.ClientDetail;
 import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
 import kz.greetgo.sandbox.controller.model.ClientPhoneNumberToSave;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientToSave;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
@@ -27,8 +26,16 @@ public interface ClientDao {
   })
   ClientDetail detail(@Param("id") String id);
 
+  @SuppressWarnings("unused")
+  @Select("select client, number, type from ClientPhone where client=#{client}")
+  List<ClientPhoneNumber> getNumbersById(String client);
+
   @Select("select client, type, street, house, flat from ClientAddr where client=#{client}")
   List<ClientAddress> getAddresses(@Param("client") String client);
+
+  @Insert("insert into Client (id, name, surname, patronymic, birthDate, gender, charm) " +
+    "values (#{id}, #{name}, #{surname}, #{patronymic}, #{birthDate}, #{gender}, #{charm})")
+  void insertClient(ClientToSave client);
 
   @Insert("insert into ClientPhone (client, number, type) " +
     "values (#{client}, #{number}, #{type})")
@@ -38,23 +45,17 @@ public interface ClientDao {
     "values (#{client}, #{type}, #{street}, #{house}, #{flat})")
   void insertAddress(ClientAddress address);
 
-  @Insert("insert into Client (id, name, surname, patronymic, birthDate, gender, charm) " +
-    "values (#{id}, #{name}, #{surname}, #{patronymic}, #{birthDate}, #{gender}, #{charm})")
-  void insertClient(ClientToSave client);
-
   @Update("update Client set (name, surname, patronymic, birthDate, gender, charm) = " +
     "(#{name}, #{surname}, #{patronymic}, #{birthDate}, #{gender}, #{charm}) where id=#{id}")
   void updateClient(ClientToSave client);
 
-  @Update("update ClientAddr set (street, house, flat)=(#{street}, #{house}, #{flat}) where client=#{client} and type=#{type}")
-  void updateAddress(ClientAddress address);
-
-  @Delete("delete from ClientPhone where client=#{client} and number=#{number}")
-  void deletePhone(ClientPhoneNumber number);
-
   @Update("update ClientPhone set number=#{number} where client=#{client} and number=#{oldNumber}")
   void updatePhone(ClientPhoneNumberToSave number);
 
+  @Update("update ClientAddr set (street, house, flat)=(#{street}, #{house}, #{flat}) where client=#{client} and type=#{type}")
+  void updateAddress(ClientAddress address);
+
+  @SuppressWarnings("SameParameterValue")
   @Update("<script> update Client set actual=#{actual} WHERE id IN " +
     "<foreach item='item' collection='ids'" +
     " open='(' separator=',' close=')'>" +
@@ -62,5 +63,9 @@ public interface ClientDao {
     "</foreach>" +
     "</script>")
   int changeClientsActuality(@Param("ids") List<String> ids, @Param("actual") Boolean actual);
-  
+
+  @Delete("delete from ClientPhone where client=#{client} and number=#{number}")
+  void deletePhone(ClientPhoneNumber number);
+
+
 }

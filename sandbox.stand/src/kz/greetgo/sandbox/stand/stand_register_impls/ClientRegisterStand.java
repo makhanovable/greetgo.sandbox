@@ -30,8 +30,8 @@ public class ClientRegisterStand implements ClientRegister {
   private IdGenerator gen = new IdGenerator();
 
   @Override
-  public void generateClientReport(String filter, String orderBy, int order, ClientReportView view) throws Exception {
-    String[] headers = {"id", "name", "surname", "patronymic", "age", "charm", "total Account Balance", "maximum Balance", "minimum Balance"};
+  public void genClientRecordListReport(String filter, String orderBy, int order, ClientReportView view) throws Exception {
+    String[] headers = {"Full Name", "Charm", "Age", "Balance", "max Balance", "min Balance"};
 
     List<ClientRecord> list = new ArrayList<>();
     view.start(headers);
@@ -102,7 +102,7 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public ClientDetail detail(String id) {
+  public ClientDetail getDetail(String id) {
     ClientDetail clientDetail = this.db.get().clientStorage.get(id).toClientForm();
     this.setDetails(clientDetail);
     return clientDetail;
@@ -111,7 +111,7 @@ public class ClientRegisterStand implements ClientRegister {
 
   @SuppressWarnings("StringBufferReplaceableByString")
   @Override
-  public List<ClientRecord> getClientInfoList(int limit, int page, String filter, String orderBy, int desc) {
+  public List<ClientRecord> getClientRecordList(int limit, int page, String filter, String orderBy, int desc) {
 
     //filtering
     List<ClientRecord> list = this.getFilteredClientInfo(filter);
@@ -180,13 +180,13 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public int getClientsSize(String filter) {
+  public int getNumberOfClients(String filter) {
 
     return this.getFilteredClientInfo(filter).size();
   }
 
   @Override
-  public int remove(List<String> ids) {
+  public int removeClients(List<String> ids) {
 
     int success = 0;
     for (String id : ids) {
@@ -242,7 +242,7 @@ public class ClientRegisterStand implements ClientRegister {
       numbers.remove(found);
     }
 
-    for (ClientPhoneNumberToSave number : clientToSave.numersToSave) {
+    for (ClientPhoneNumberToSave number : clientToSave.numbersToSave) {
       if (number.oldNumber != null) {
         Boolean found = numbers.stream().anyMatch(o -> o.number.equals(number.oldNumber));
         if (found) {
