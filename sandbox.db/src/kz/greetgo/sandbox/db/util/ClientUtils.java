@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class ClientUtils {
+  // FIXME: 2/28/18 Методы используются только с одного места.
+  // И скорее всего так и останется, поэтому перенеси их в класс, где они используются
   public static String[] sortableColumns = {"age", "totalAccountBalance", "maximumBalance", "minimumBalance"};
   public static String[] reportHeaders = {"Full Name", "Charm", "Age", "Balance", "max Balance", "min Balance"};
 

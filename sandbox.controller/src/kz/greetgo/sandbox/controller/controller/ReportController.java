@@ -20,12 +20,14 @@ public class ReportController implements Controller {
 
   public BeanGetter<ClientRegister> clientRegister;
 
+  // FIXME: 2/28/18 Все еще не понятно какой отчет
   @Mapping("/downloadClientReport")
   public void downloadClientReport(@Par("type") String type, @Par("orderBy") String orderBy, @Par("order") int order,
                                    @Par("filter") String filter, RequestTunnel requestTunnel) throws Exception {
     if (!("pdf".equals(type) || "xlsx".equals(type))) {
       throw new Exception("Unsupported File Format");
     }
+
     String fileName = "client_report_" + new Date() + "." + type;
     requestTunnel.setResponseHeader("Content-disposition", "attachment; filename=" + fileName);
     requestTunnel.setResponseHeader("Access-Control-Expose-Headers", "Content-disposition");

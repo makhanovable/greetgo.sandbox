@@ -39,6 +39,8 @@ public class ClientController implements Controller {
     return clientRegister.get().getClientInfoList(limit, page, filter, orderBy, desc);
   }
 
+  // FIXME: 2/28/18 почему все еще getAmount?!
+  // почему мапер называется numberOfClients (число клиентов), а метод регистра clientsSize (размер клиентов)?!
   @ToJson
   @Mapping("/numberOfClients")
   public long getAmount(@Par("filter") String filter) {
