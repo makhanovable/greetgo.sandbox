@@ -19,19 +19,6 @@ import java.util.List;
 
 public interface ClientDao {
 
-  @Select("select c.id, c.name, c.surname, c.patronymic, date_part('year',age(c.birthDate)) as age, c.charm, " +
-    "ca.totalAccountBalance, ca.maximumBalance, ca.minimumBalance from (select * from Client where lower(concat(name, surname, patronymic)) SIMILAR TO #{filter} and actual=true) c " +
-    "left join (select client, max(money) maximumBalance, min(money) minimumBalance, sum(money) totalAccountBalance from ClientAccount group by client) ca on ca.client=c.id " +
-    "order by ${orderBy} ${order} limit ${limit} offset ${offset} ")
-  List<ClientRecord> getClients(@Param("limit") int limit, @Param("offset") int offset, @Param("orderBy") String orderBy,
-                                @Param("order") String order, @Param("filter") String filter);
-
-  @Select("select count(1) from Client c where lower(concat(c.name, c.surname, c.patronymic)) SIMILAR TO #{filter} and actual=true")
-  long countByFilter(@Param("filter") String filter);
-
-  @Select("select count(1) from Client where actual=true")
-  int countAll();
-
   @Select("select id, name, surname, patronymic, birthDate, gender, charm from client where id=#{id} and actual=true")
   @Results({
     @Result(property = "id", column = "id"),
@@ -39,9 +26,6 @@ public interface ClientDao {
       many = @Many(select = "getNumbersById"))
   })
   ClientDetail detail(@Param("id") String id);
-
-  @Select("select client, number, type from ClientPhone where client=#{client}")
-  List<ClientPhoneNumber> getNumbersById(String client);
 
   @Select("select client, type, street, house, flat from ClientAddr where client=#{client}")
   List<ClientAddress> getAddresses(@Param("client") String client);
@@ -78,6 +62,5 @@ public interface ClientDao {
     "</foreach>" +
     "</script>")
   int changeClientsActuality(@Param("ids") List<String> ids, @Param("actual") Boolean actual);
-
-
+  
 }
