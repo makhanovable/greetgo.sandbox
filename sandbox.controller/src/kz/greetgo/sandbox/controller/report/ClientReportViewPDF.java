@@ -23,7 +23,7 @@ public class ClientReportViewPDF implements ClientReportView {
 
   @Override
   public void start(String[] headers) throws Exception {
-    document = new Document(PageSize.A4.rotate(), -50, -50, 50, 50);
+    document = new Document(PageSize.A4, -30, -30, 30, 30);
     PdfWriter.getInstance(document, out);
     document.open();
     table = new PdfPTable(headers.length);
@@ -37,12 +37,9 @@ public class ClientReportViewPDF implements ClientReportView {
   @Override
   public void appendRow(ClientRecord record) throws Exception {
 
-    table.addCell(record.id);
-    table.addCell(record.name);
-    table.addCell(record.surname);
-    table.addCell(record.patronymic);
-    table.addCell(String.valueOf(record.age));
+    table.addCell(record.surname + " " + record.name + " " + record.patronymic);
     table.addCell(record.charm);
+    table.addCell(String.valueOf(record.age));
     table.addCell(String.valueOf(record.totalAccountBalance));
     table.addCell(String.valueOf(record.maximumBalance));
     table.addCell(String.valueOf(record.minimumBalance));
@@ -52,7 +49,6 @@ public class ClientReportViewPDF implements ClientReportView {
       document.add(table);
       count = 0;
     }
-
   }
 
   @Override
@@ -65,8 +61,7 @@ public class ClientReportViewPDF implements ClientReportView {
 
   public static void main(String[] args) throws Exception {
     OutputStream out = new FileOutputStream("test.pdf");
-    String[] headers = {"id", "name", "surname", "patronymic", "age", "charm", "total Account Balance", "maximum Balance", "minimum Balance"};
-
+    String[] headers = {"Full Name", "Charm", "Age", "Balance", "max Balance", "min Balance"};
     ClientReportViewPDF clientReportPDF = new ClientReportViewPDF(out);
     clientReportPDF.start(headers);
     ClientRecord clientRecord = new ClientRecord();

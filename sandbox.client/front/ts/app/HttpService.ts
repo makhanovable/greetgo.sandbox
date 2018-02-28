@@ -1,12 +1,12 @@
-import { Injectable } from "@angular/core";
-import { Observable } from "rxjs";
-import { Headers, Http, Request, RequestOptionsArgs, Response, RequestOptions, ResponseContentType } from "@angular/http";
+import {Injectable} from "@angular/core";
+import {Observable} from "rxjs";
+import {Headers, Http, Request, RequestOptionsArgs, Response, RequestOptions, ResponseContentType} from "@angular/http";
 
 class OptionsBuilder {
   private appendingHeaders: { [key: string]: string }[] = [];
 
   public appendHeader(key: string, value: string | null): void {
-    if (value) this.appendingHeaders.push({ key: key, value: value });
+    if (value) this.appendingHeaders.push({key: key, value: value});
   }
 
   private get headers(): Headers {
@@ -17,7 +17,7 @@ class OptionsBuilder {
 
   public get(): RequestOptionsArgs | undefined {
     if (this.appendingHeaders.length == 0) return undefined;
-    return { headers: this.headers };
+    return {headers: this.headers};
   }
 }
 
@@ -26,7 +26,8 @@ export class HttpService {
 
   public pageSize: number = 10;
 
-  constructor(private http: Http) { }
+  constructor(private http: Http) {
+  }
 
   private prefix(): string {
     return (<any>window).urlPrefix;
@@ -107,7 +108,7 @@ export class HttpService {
     return this.http.delete(this.url(urlSuffix) + post, this.newOptionsBuilder().get());
   }
 
-  public downloadFile(urlSuffix: string, keyValue?: { [key: string]: | string | number | null }): Observable<Blob> {
+  public downloadFile(urlSuffix: string, keyValue?: { [key: string]: | string | number | null }): Observable<Response> {
     let post: string = '';
 
     if (keyValue) {
@@ -127,6 +128,7 @@ export class HttpService {
     let options = this.newOptionsBuilder().get()
     options.responseType = ResponseContentType.Blob;
 
-    return this.http.get(this.url(urlSuffix) + post, options).map(res => res.blob())
+    return this.http.get(this.url(urlSuffix) + post, options)
   }
+
 }

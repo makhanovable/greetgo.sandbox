@@ -1,13 +1,14 @@
-import {ClientPhone} from "../../../model/ClientPhone";
-import {ClientAddress} from "../../../model/ClientAddress";
-import {ClientToSave} from "../../../model/ClientToSave";
-import {ClientDetail} from "../../../model/ClientDetail";
-import {PhoneNumberType} from "../../../enums/PhoneNumberType";
-import {HttpService} from "../../HttpService";
-import {ClientInfo} from "../../../model/ClientInfo";
-import {Component, Inject, OnInit} from "@angular/core";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material";
-import {AddressType} from "../../../enums/AddressType";
+import { CharmInfo } from './../../../model/CharmInfo';
+import { PhoneNumberType } from './../../../enums/PhoneNumberType';
+import { ClientPhone } from "../../../model/ClientPhone";
+import { ClientAddress } from "../../../model/ClientAddress";
+import { ClientToSave } from "../../../model/ClientToSave";
+import { ClientDetail } from "../../../model/ClientDetail";
+import { HttpService } from "../../HttpService";
+import { ClientInfo } from "../../../model/ClientInfo";
+import { Component, Inject, OnInit } from "@angular/core";
+import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material";
+import { AddressType } from "../../../enums/AddressType";
 
 @Component({
   selector: 'client-form-component',
@@ -15,30 +16,32 @@ import {AddressType} from "../../../enums/AddressType";
   styles: [require('./client_form.component.css')],
 })
 export class ClientFormComponent implements OnInit {
-  // FIXME: 2/27/18 Хотя бы один мобильный обязателен для заполнения
-  // FIXME: 2/27/18 В окне редактирования при нажатии на Escape список не должен обновляться
-  // FIXME: 2/27/18 Дата рождения человека не может быть впереди текущей даты
   formData: ClientDetail;
-
+  maxDate = new Date();
   charms: any[];
   phoneMask: any[] = ['+', '7', ' ', '(', /[0-9]/, /\d/, /\d/, ')', ' ', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/];
-  newForm: boolean = false;
-  hiddenalert: boolean = false;
-  requiredPhoneNumbers = {
+  fieldsAlertEnabled: boolean = false;
+  mobileAlertEnabled: boolean = false;
+
+  PhoneNumbersToShow = {
     "HOME": 1,
     "WORK": 1,
     "MOBILE": 3,
   };
+  requiredPhoneNumbers = {
+    "MOBILE": 1,
+  };
+
 
   constructor(public dialogRef: MatDialogRef<ClientFormComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: any,
-              private httpService: HttpService) {
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private httpService: HttpService) {
   }
 
   ngOnInit() {
+    
     if (this.data.item) {
       this.loadEditableData(this.data.item.id);
-      this.newForm = true;
     } else {
       this.formData = new ClientDetail;
       this.formData.phoneNumbers = [];
@@ -46,13 +49,24 @@ export class ClientFormComponent implements OnInit {
       this.formData.registerAddress.type = AddressType.REG;
       this.formData.actualAddress = new ClientAddress;
       this.formData.actualAddress.type = AddressType.FACT;
-      this.fillMissingPhones();
+      this.prepareNumbers();
     }
     this.charms = this.data.charms;
-
+    if(this.charms.length == 0) {
+      this.loadChamrs();
+    }
   }
 
-  loadEditableData(id: number): ClientInfo {
+  loadChamrs() {
+    this.httpService.get("/charm/list").toPromise().then(res => {
+      (JSON.parse(res.text()) as CharmInfo[]).forEach(element => {
+        this.charms.push(element);
+      });;    
+    });
+  }
+
+
+  loadEditableData(id: number) {
 
     this.httpService.get("/client/detail", {
       id: id,
@@ -68,32 +82,30 @@ export class ClientFormComponent implements OnInit {
         this.formData.registerAddress = new ClientAddress;
         this.formData.registerAddress.type = AddressType.REG;
       }
-
-      if (this.formData.phoneNumbers) {
-        this.formData.phoneNumbers.forEach(element => {
-          element['oldNumber'] = element.number;
-          this.requiredPhoneNumbers[element.type] = this.requiredPhoneNumbers[element.type] - 1;
-          element.type = this.getPhoneType(element.type);
-        });
-      }
-      else {
-        this.formData.phoneNumbers = [];
-      }
-
-      this.fillMissingPhones();
+      this.prepareNumbers();
     });
-
-    return null
   }
 
-  fillMissingPhones() {
+  prepareNumbers() {
 
-    for (let i = 0; i < this.requiredPhoneNumbers["HOME"]; i++)
-      this.formData.phoneNumbers.push({number: "", type: PhoneNumberType.HOME} as ClientPhone);
-    for (let i = 0; i < this.requiredPhoneNumbers["WORK"]; i++)
-      this.formData.phoneNumbers.push({number: "", type: PhoneNumberType.WORK} as ClientPhone);
-    for (let i = 0; i < this.requiredPhoneNumbers["MOBILE"]; i++)
-      this.formData.phoneNumbers.push({number: "", type: PhoneNumberType.MOBILE} as ClientPhone);
+    if (this.formData.phoneNumbers) {
+      this.formData.phoneNumbers.forEach(element => {
+        element['oldNumber'] = element.number;
+        this.PhoneNumbersToShow[element.type] = this.PhoneNumbersToShow[element.type] - 1;
+        element.type = this.getPhoneType(element.type);
+
+      });
+    }
+    else {
+      this.formData.phoneNumbers = [];
+    }
+
+    for (let i = 0; i < this.PhoneNumbersToShow["HOME"]; i++)
+      this.formData.phoneNumbers.push({ number: "", type: PhoneNumberType.HOME } as ClientPhone);
+    for (let i = 0; i < this.PhoneNumbersToShow["WORK"]; i++)
+      this.formData.phoneNumbers.push({ number: "", type: PhoneNumberType.WORK } as ClientPhone);
+    for (let i = 0; i < this.PhoneNumbersToShow["MOBILE"]; i++)
+      this.formData.phoneNumbers.push({ number: "", type: PhoneNumberType.MOBILE } as ClientPhone);
 
     this.formData.phoneNumbers.sort((a, b) => {
       let nameA = a.type;
@@ -138,14 +150,30 @@ export class ClientFormComponent implements OnInit {
   saveButton() {
     if (this.canSave())
       this.save();
-    else {
-      this.hiddenalert = true;
-    }
+    else
+      this.fieldsAlertEnabled = true;
   }
 
   canSave() {
-    return this.formData.name && this.formData.surname && this.formData.birthDate && this.formData.gender && this.formData.charm
+    let ans = this.formData.name && this.formData.surname  && this.formData.gender && this.formData.charm
       && this.formData.patronymic && this.formData.registerAddress && this.formData.registerAddress.street && this.formData.registerAddress.house;
+
+
+    let negativeTime:boolean = false;
+    if(new Date().getTime() - new Date(this.formData.birthDate).getTime() < 0) {
+      return false;
+    }
+
+    let oneMobile: boolean = false;
+    for (let i = 0; i < this.formData.phoneNumbers.length; i++) {
+      if (this.formData.phoneNumbers[i].type == PhoneNumberType.MOBILE && this.formData.phoneNumbers[i].number != "") {
+        oneMobile = true;
+        break;
+      }
+    }
+    this.mobileAlertEnabled = !oneMobile;
+    
+    return ans && oneMobile;
   }
 
   save() {
@@ -183,7 +211,7 @@ export class ClientFormComponent implements OnInit {
         alert('something went wrong');
     });
 
-    this.dialogRef.close();
+    this.dialogRef.close("save");
   }
 
   exit() {

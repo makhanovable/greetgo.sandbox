@@ -37,15 +37,12 @@ public class ClientReportViewXLSX implements ClientReportView {
   @Override
   public void appendRow(ClientRecord record) throws IOException {
     Row row = sh.createRow(rowNumber++);
-    row.createCell(0).setCellValue(record.id);
-    row.createCell(1).setCellValue(record.name);
-    row.createCell(2).setCellValue(record.surname);
-    row.createCell(3).setCellValue(record.patronymic);
-    row.createCell(4).setCellValue(record.age);
-    row.createCell(5).setCellValue(record.charm);
-    row.createCell(6).setCellValue(record.totalAccountBalance);
-    row.createCell(7).setCellValue(record.maximumBalance);
-    row.createCell(8).setCellValue(record.minimumBalance);
+    row.createCell(0).setCellValue(record.surname + " " + record.name + " " + record.patronymic);
+    row.createCell(1).setCellValue(record.charm);
+    row.createCell(2).setCellValue(record.age);
+    row.createCell(3).setCellValue(record.totalAccountBalance);
+    row.createCell(4).setCellValue(record.maximumBalance);
+    row.createCell(5).setCellValue(record.minimumBalance);
 
     if (rowNumber % 1000 == 0)
       ((SXSSFSheet) sh).flushRows();
@@ -63,8 +60,7 @@ public class ClientReportViewXLSX implements ClientReportView {
 
   public static void main(String[] args) throws Exception {
     OutputStream out = new FileOutputStream("test.xlsx");
-    String[] headers = {"id", "name", "surname", "patronymic", "age", "charm", "total Account Balance", "maximum Balance", "minimum Balance"};
-
+    String[] headers = {"Full Name", "Charm", "Age", "Balance", "max Balance", "min Balance"};
     ClientReportViewXLSX clientReportPDF = new ClientReportViewXLSX(out);
     clientReportPDF.start(headers);
     ClientRecord clientRecord = new ClientRecord();

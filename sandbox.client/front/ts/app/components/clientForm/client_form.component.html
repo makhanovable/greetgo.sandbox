@@ -28,7 +28,7 @@
     </mat-form-field>
 
     <mat-form-field>
-      <input matInput [matDatepicker]="picker" placeholder="Birth day" [(ngModel)]="formData.birthDate" required>
+      <input matInput [matDatepicker]="picker" placeholder="Birth day" [(ngModel)]="formData.birthDate" [max]="maxDate" required>
       <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
       <mat-datepicker #picker></mat-datepicker>
     </mat-form-field>
@@ -68,7 +68,8 @@
              [(ngModel)]="phone.number">
     </mat-form-field>
   </div>
-  <span *ngIf="hiddenalert" style="color:red">Fill all required fields</span>
+  <span *ngIf="fieldsAlertEnabled" style="color:red">Fill all required fields</span> 
+  <span *ngIf="mobileAlertEnabled" style="color:red"> *at least one mobile number</span>
 
 </div>
 

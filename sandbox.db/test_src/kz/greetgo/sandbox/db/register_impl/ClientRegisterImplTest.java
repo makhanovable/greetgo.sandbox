@@ -44,56 +44,12 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
 
   @Test
-  void generateReportTest() throws Exception {
+  void getClientInfoListTestAndReportGenerating() throws Exception {
     this.clientTestDao.get().clear();
     this.charmTestDao.get().clear();
 
-    //insert data to db
-    insertRndCharms();
-    List<ClientDot> clients = new ArrayList<>();
-    Map<String, List<ClientAccountDot>> accounts = new HashMap<>();
-    this.rndClientsWithAccounts(clients, accounts);
-
-    Map<String, String> charms = new HashMap<>();
-    for (CharmDot charmDot : this.charmTestDao.get().getAll())
-      charms.put(charmDot.id, charmDot.name);
-
-    ClientReportTestView testView = new ClientReportTestView();
-
-    //
-    //
-    this.clientRegister.get().generateReport(null, null, 0, testView);
-    //
-    //
-
-    int index = 0;
-    assertThat(testView.rows).isNotEmpty();
-
-    List<ClientRecord> expectedList = RegisterTestDataUtils.fromClientDotListToRecordList(clients, accounts);
-
-    RegisterTestDataUtils.sortClientRecordList(expectedList, null, 0);
-
-    for (ClientRecord clientRecord : testView.rows) {
-      ClientRecord assertion = expectedList.get(index++);
-      assertThat(clientRecord.id).isEqualTo(assertion.id);
-      assertThat(clientRecord.name).isEqualTo(assertion.name);
-      assertThat(clientRecord.surname).isEqualTo(assertion.surname);
-      assertThat(clientRecord.patronymic).isEqualTo(assertion.patronymic);
-      assertThat(clientRecord.age).isEqualTo(assertion.age);
-      assertThat(clientRecord.charm).isEqualTo(charms.get(assertion.charm));
-      assertThat(Math.abs(clientRecord.totalAccountBalance - assertion.totalAccountBalance)).isLessThan(0.001f);
-      assertThat(clientRecord.maximumBalance).isEqualTo(assertion.maximumBalance);
-      assertThat(clientRecord.minimumBalance).isEqualTo(assertion.minimumBalance);
-    }
-  }
-
-
-  @Test
-  void getClientInfoListTest() throws Exception {
-    this.clientTestDao.get().clear();
-
     //init data in db
-    insertRndCharms();
+    Map<String, String> charms = insertRndCharms();
     List<ClientDot> clients = new ArrayList<>();
     Map<String, List<ClientAccountDot>> accountDotMap = new HashMap<>();
     this.rndClientsWithAccounts(clients, accountDotMap);
@@ -102,17 +58,17 @@ public class ClientRegisterImplTest extends ParentTestNg {
     ClientDot rndClient = clients.get(RND.plusInt(clients.size()));
     int[] limits = {20, 10, 0};
     int[] pages = {0, 1, 2, 3};
-    String[] orderBys = {null, "age", "totalAccountBalance", "maximumBalance", "minimumBalance"};
+    String[] orderBys = {null, "age", "totalAccountBalance", "maximumBalance", "minimumBalance", "trap"};
     int[] orders = {0, 1};
     String[] filters = {null, rndClient.name + " " + rndClient.surname, rndClient.patronymic, rndClient.getFIO(), "a", "ab", RND.str(2)};
 
     //test for all possible inputs
-    for (int limit : limits) {
-      for (int page : pages) {
-        for (String orderBy : orderBys) {
-          for (int order : orders) {
-            for (String filter : filters) {
 
+    for (String orderBy : orderBys) {
+      for (int order : orders) {
+        for (String filter : filters) {
+          for (int limit : limits) {
+            for (int page : pages) {
               //
               //
               List<ClientRecord> result = this.clientRegister.get().getClientInfoList(limit, page, filter, orderBy, order);
@@ -130,6 +86,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
               //combine client data with corresponding account data: total, max, min balance
               List<ClientRecord> expectedList = RegisterTestDataUtils.fromClientDotListToRecordList(filteredClientDots, accountDotMap);
+
 
               //sorting
               RegisterTestDataUtils.sortClientRecordList(expectedList, orderBy, order);
@@ -153,7 +110,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
                 assertThat(target.id).isEqualTo(assertion.id);
                 assertThat(target.age).isEqualTo(assertion.age);
-                assertThat(target.charm).isEqualTo(assertion.charm);
+                assertThat(target.charm).isEqualTo(charms.get(assertion.charm));
                 assertThat(target.surname).isEqualTo(assertion.surname);
                 assertThat(target.patronymic).isEqualTo(assertion.patronymic);
                 assertThat(target.name).isEqualTo(assertion.name);
@@ -165,8 +122,40 @@ public class ClientRegisterImplTest extends ParentTestNg {
               }
 
 
-            }
+            } // for pages closed
+          } //for limit closed
+
+          //report test
+
+          ClientReportTestView testView = new ClientReportTestView();
+
+          //
+          //
+          this.clientRegister.get().generateClientReport(null, null, 0, testView);
+          //
+          //
+
+          int index = 0;
+          assertThat(testView.rows).isNotEmpty();
+
+          List<ClientRecord> expectedList = RegisterTestDataUtils.fromClientDotListToRecordList(clients, accountDotMap);
+
+          RegisterTestDataUtils.sortClientRecordList(expectedList, null, 0);
+
+          for (ClientRecord clientRecord : testView.rows) {
+            ClientRecord assertion = expectedList.get(index++);
+            assertThat(clientRecord.id).isEqualTo(assertion.id);
+            assertThat(clientRecord.name).isEqualTo(assertion.name);
+            assertThat(clientRecord.surname).isEqualTo(assertion.surname);
+            assertThat(clientRecord.patronymic).isEqualTo(assertion.patronymic);
+            assertThat(clientRecord.age).isEqualTo(assertion.age);
+            assertThat(clientRecord.charm).isEqualTo(charms.get(assertion.charm));
+            assertThat(Math.abs(clientRecord.totalAccountBalance - assertion.totalAccountBalance)).isLessThan(0.001f);
+            assertThat(clientRecord.maximumBalance).isEqualTo(assertion.maximumBalance);
+            assertThat(clientRecord.minimumBalance).isEqualTo(assertion.minimumBalance);
           }
+
+
         }
       }
     }
@@ -510,13 +499,16 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
   }
 
-  private void insertRndCharms() {
+  private Map<String, String> insertRndCharms() {
+    Map<String, String> charmIdToName = new HashMap<>();
     for (int i = 0; i < 10; i++) {
       CharmDot charmDot = new CharmDot();
       charmDot.id = idGenerator.get().newId();
       charmDot.name = RND.str(10);
+      charmIdToName.put(charmDot.id, charmDot.name);
       this.charmTestDao.get().insertCharmDot(charmDot);
     }
+    return charmIdToName;
   }
 
 }

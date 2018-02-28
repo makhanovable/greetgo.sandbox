@@ -4,6 +4,7 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.register.MigrationRegister;
 import kz.greetgo.sandbox.db.beans.all.AllConfigFactory;
 import kz.greetgo.sandbox.db.configs.SshConfig;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class MigrationRegisterImplSSH implements MigrationRegister {
 
@@ -12,7 +13,7 @@ public class MigrationRegisterImplSSH implements MigrationRegister {
 
   @Override
   public void migrate() {
-    //migrate
+    throw new NotImplementedException();
   }
 
   public static void main(String[] args) {
