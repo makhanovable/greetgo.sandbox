@@ -1,33 +1,31 @@
 package kz.greetgo.sandbox.db.jdbc;
 
-import kz.greetgo.sandbox.db.util.ClientUtils;
-
 import java.util.ArrayList;
 import java.util.List;
 
 abstract public class AbstractClientQuery {
 
   protected StringBuilder sql = new StringBuilder();
-  protected List<Object> params = new ArrayList<>();
+  List<Object> params = new ArrayList<>();
 
-  protected String filter;
-  protected String orderBy;
-  protected int order;
-  protected int limit;
-  protected int offset;
+  private String filter;
+  String orderBy;
+  int desc;
+  int limit;
+  int offset;
 
 
-  public AbstractClientQuery(String filter) {
-    this.filter = ClientUtils.getFormattedFilter(filter);
+  AbstractClientQuery(String filter) {
+    this.filter = getFormattedFilter(filter);
   }
 
-  public AbstractClientQuery(String filter, String orderBy, int order) {
+  AbstractClientQuery(String filter, String orderBy, int desc) {
     this(filter);
     this.orderBy = orderBy;
-    this.order = order;
+    this.desc = desc;
   }
 
-  public AbstractClientQuery(String filter, String orderBy, int order, int limit, int offset) {
+  AbstractClientQuery(String filter, String orderBy, int order, int limit, int offset) {
     this(filter, orderBy, order);
     this.limit = limit;
     this.offset = offset;
@@ -43,10 +41,10 @@ abstract public class AbstractClientQuery {
 
   abstract void join();
 
-  void where() {
+  private void where() {
     sql.append("where c.actual=true\n");
     if (filter != null) {
-      sql.append("and lower(concat(c.name, c.surname, c.patronymic)) SIMILAR TO ?\n");
+      sql.append("and lower(concat(c.surname, c.name, c.patronymic)) SIMILAR TO ?\n");
       params.add(filter);
     }
   }
@@ -57,7 +55,7 @@ abstract public class AbstractClientQuery {
 
   abstract void limit();
 
-  public void generateSql() {
+  void generateSql() {
     select();
     from();
     join();
@@ -66,6 +64,17 @@ abstract public class AbstractClientQuery {
     orderBy();
     limit();
   }
+
+  private String getFormattedFilter(String filter) {
+    if (filter == null || filter.isEmpty())
+      return null;
+    String[] filters = filter.trim().split(" ");
+    filter = String.join("|", filters);
+    filter = "%(" + filter.toLowerCase() + ")%";
+    return filter;
+  }
+
+
 }
 
 

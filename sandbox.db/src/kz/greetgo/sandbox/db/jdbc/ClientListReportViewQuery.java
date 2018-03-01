@@ -23,7 +23,7 @@ public class ClientListReportViewQuery extends AbstractClientListCommonQuery imp
     //no limit
   }
 
-  
+
   @Override
   public Void doInConnection(Connection connection) throws Exception {
 
@@ -35,7 +35,7 @@ public class ClientListReportViewQuery extends AbstractClientListCommonQuery imp
 
       try (ResultSet rs = ps.executeQuery()) {
         while (rs.next()) {
-          ClientRecord cr = ClientUtils.rsToClientRecord(rs);
+          ClientRecord cr = rsToClientRecord(rs);
           view.appendRow(cr);
         }
 

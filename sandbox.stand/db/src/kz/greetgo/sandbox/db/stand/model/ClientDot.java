@@ -24,7 +24,7 @@ public class ClientDot {
 
   @SuppressWarnings("StringBufferReplaceableByString")
   public String getFIO() {
-    return new StringBuilder(this.name).append(this.surname).append(this.patronymic).toString();
+    return new StringBuilder(this.surname).append(this.name).append(this.patronymic).toString();
   }
 
   public ClientDot() {

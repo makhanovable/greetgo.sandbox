@@ -5,7 +5,7 @@ import { ClientAddress } from "../../../model/ClientAddress";
 import { ClientToSave } from "../../../model/ClientToSave";
 import { ClientDetail } from "../../../model/ClientDetail";
 import { HttpService } from "../../HttpService";
-import { ClientInfo } from "../../../model/ClientInfo";
+import { ClientRecord } from "../../../model/ClientInfo";
 import { Component, Inject, OnInit } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material";
 import { AddressType } from "../../../enums/AddressType";
@@ -22,6 +22,7 @@ export class ClientFormComponent implements OnInit {
   phoneMask: any[] = ['+', '7', ' ', '(', /[0-9]/, /\d/, /\d/, ')', ' ', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/];
   fieldsAlertEnabled: boolean = false;
   mobileAlertEnabled: boolean = false;
+  newClient:boolean = false;
 
   PhoneNumbersToShow = {
     "HOME": 1,
@@ -42,6 +43,7 @@ export class ClientFormComponent implements OnInit {
     
     if (this.data.item) {
       this.loadEditableData(this.data.item.id);
+      this.newClient = true;
     } else {
       this.formData = new ClientDetail;
       this.formData.phoneNumbers = [];
@@ -68,7 +70,7 @@ export class ClientFormComponent implements OnInit {
 
   loadEditableData(id: number) {
 
-    this.httpService.get("/client/detail", {
+    this.httpService.get("/client/getDetail", {
       id: id,
     }).toPromise().then(res => {
       this.formData = JSON.parse(res.text()) as ClientDetail;
@@ -185,7 +187,7 @@ export class ClientFormComponent implements OnInit {
       toSave.registerAddress = this.formData.registerAddress;
 
     toSave.numbersToDelete = [];
-    toSave.numersToSave = [];
+    toSave.numbersToSave = [];
 
     this.formData.phoneNumbers.forEach(element => {
 
@@ -195,10 +197,10 @@ export class ClientFormComponent implements OnInit {
         toSave.numbersToDelete.push(element);
       }
       else if (element['oldNumber'] && element.number != element['oldNumber']) {
-        toSave.numersToSave.push(element);
+        toSave.numbersToSave.push(element);
       } else if (!element['oldNumber'] && element.number != "") {
         element['oldNumber'] = null;
-        toSave.numersToSave.push(element);
+        toSave.numbersToSave.push(element);
       }
 
     });

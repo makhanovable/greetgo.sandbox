@@ -9,6 +9,6 @@ public interface AccountTestDao {
 
   @Insert("insert into ClientAccount (id, client, money, number, registeredAt) " +
     "values (#{id}, #{client}, #{money}, #{number}, #{registeredAt})")
-  public void insertAccaount(ClientAccountDot accountDot);
+  public void insertAccount(ClientAccountDot accountDot);
 
 }

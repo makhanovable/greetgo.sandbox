@@ -1,13 +1,12 @@
-import { Http } from '@angular/http';
-import { ClientFilter } from "../../../model/ClientFilter";
-import { CharmInfo } from "../../../model/CharmInfo";
-import { HttpService } from "../../HttpService";
-import { ClientInfo } from "../../../model/ClientInfo";
-import { Component, OnInit, ViewChild, ElementRef } from "@angular/core";
-import { MatDialog, MatPaginator, MatSort, MatTableDataSource } from "@angular/material";
-import { SelectionModel } from "@angular/cdk/collections";
-import { ClientFormComponent } from "../clientForm/client_form.component";
-import { saveAs } from "file-saver";
+import {ClientFilter} from "../../../model/ClientFilter";
+import {CharmInfo} from "../../../model/CharmInfo";
+import {HttpService} from "../../HttpService";
+import {ClientRecord} from "../../../model/ClientInfo";
+import {Component, OnInit, ViewChild, ElementRef} from "@angular/core";
+import {MatDialog, MatPaginator, MatSort, MatTableDataSource} from "@angular/material";
+import {SelectionModel} from "@angular/cdk/collections";
+import {ClientFormComponent} from "../clientForm/client_form.component";
+import {saveAs} from "file-saver";
 
 @Component({
   template: require('./client_list.component.html'),
@@ -18,12 +17,12 @@ import { saveAs } from "file-saver";
 export class ClientListComponent implements OnInit {
 
   displayedColumns = ['select', 'fio', 'charm', 'age', 'totalAccountBalance', 'maximumBalance', 'minimumBalance'];
-  dataSource: MatTableDataSource<ClientInfo>;
+  dataSource: MatTableDataSource<ClientRecord>;
 
   charmsArray: CharmInfo[] = [];
 
-  tableElemets: ClientInfo[];
-  selection = new SelectionModel<ClientInfo>(true, []);
+  tableElemets: ClientRecord[];
+  selection = new SelectionModel<ClientRecord>(true, []);
 
   filter: string = '';
   selectedOrder = 'fio';
@@ -35,12 +34,12 @@ export class ClientListComponent implements OnInit {
   @ViewChild(MatSort) sort: MatSort;
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
-  constructor(public dialog: MatDialog, private httpService: HttpService, private http: Http) {
+  constructor(public dialog: MatDialog, private httpService: HttpService) {
   }
 
   ngOnInit() {
     this.paginator.pageSize = 10;
-    // this.loadChamrs();
+
     //noinspection JSUnusedLocalSymbols
     this.paginator.page.subscribe(change => {
       this.applyFilter(false);
@@ -54,11 +53,10 @@ export class ClientListComponent implements OnInit {
     });
   }
 
-  
 
   loadTableData(filter: ClientFilter) {
 
-    this.httpService.get("/client/list", {
+    this.httpService.get("/client/getList", {
       limit: filter.limit,
       page: filter.pageIndex,
       filter: filter.filter,
@@ -66,14 +64,14 @@ export class ClientListComponent implements OnInit {
       desc: filter.desc,
 
     }).toPromise().then(res => {
-      this.tableElemets = JSON.parse(res.text()) as ClientInfo[];
+      this.tableElemets = JSON.parse(res.text()) as ClientRecord[];
       this.initMatTable();
     });
   }
 
   initMatTable() {
     this.selection.clear();
-    this.dataSource = new MatTableDataSource<ClientInfo>(this.tableElemets);
+    this.dataSource = new MatTableDataSource<ClientRecord>(this.tableElemets);
   }
 
   applyFilter(getAmount: boolean) {
@@ -93,7 +91,7 @@ export class ClientListComponent implements OnInit {
         clientFilter.pageIndex = this.paginator.pageIndex;
       }
 
-      this.httpService.get("/client/numberOfClients", {
+      this.httpService.get("/client/getNumberOfClients", {
         filter: clientFilter.filter,
       }).toPromise().then(res => {
         this.paginator.length = Number.parseInt(res.text());
@@ -123,7 +121,7 @@ export class ClientListComponent implements OnInit {
       });
 
       //noinspection JSUnusedLocalSymbols
-      this.httpService.get("/client/remove", {
+      this.httpService.get("/client/removeClients", {
         ids: JSON.stringify(ids)
       }).toPromise().then(res => {
         this.applyFilter(true);
@@ -168,15 +166,15 @@ export class ClientListComponent implements OnInit {
   }
 
   download() {
-    this.httpService.downloadFile("/report/downloadClientReport", {
+    this.httpService.downloadFile("/report/clientRecordList", {
       type: this.format,
       filter: this.filter,
       orderBy: this.selectedOrder,
-      order: this.desc
+      desc: this.desc
     }).subscribe(data => {
 
       let fileName = data.headers.get("Content-disposition");
-      fileName = fileName.slice("attachment; filename=".length)
+      fileName = fileName.slice("attachment; filename=".length);
       if (!fileName)
         fileName = "report." + this.format;
       saveAs(data.blob(), fileName);

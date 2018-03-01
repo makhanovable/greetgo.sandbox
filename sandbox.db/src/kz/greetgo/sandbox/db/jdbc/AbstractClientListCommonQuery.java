@@ -1,17 +1,20 @@
 package kz.greetgo.sandbox.db.jdbc;
 
+import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.db.util.ClientUtils;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Arrays;
 
 public abstract class AbstractClientListCommonQuery extends AbstractClientQuery {
 
-  protected AbstractClientListCommonQuery(String filter, String orderBy, int order) {
+  AbstractClientListCommonQuery(String filter, String orderBy, int order) {
     super(filter, orderBy, order);
   }
 
-  protected AbstractClientListCommonQuery(String filter, String orderBy, int order, int limit, int offset) {
-    super(filter, orderBy, order, limit, offset);
+  AbstractClientListCommonQuery(String filter, String orderBy, int desc, int limit, int offset) {
+    super(filter, orderBy, desc, limit, offset);
   }
 
   @Override
@@ -44,10 +47,24 @@ public abstract class AbstractClientListCommonQuery extends AbstractClientQuery 
     if (orderByIsMatch)
       sql.append("order by ").append(orderBy);
     else
-      sql.append("order by concat(c.name, c.surname, c.patronymic)");
-    if (order == 1)
+      sql.append("order by concat(c.surname, c.name, c.patronymic)");
+    if (desc == 1)
       sql.append(" desc");
     sql.append("\n");
+  }
+
+  ClientRecord rsToClientRecord(ResultSet rs) throws SQLException {
+    ClientRecord record = new ClientRecord();
+    record.id = rs.getString("id");
+    record.name = rs.getString("name");
+    record.surname = rs.getString("surname");
+    record.patronymic = rs.getString("patronymic");
+    record.age = rs.getInt("age");
+    record.charm = rs.getString("charm");
+    record.totalAccountBalance = rs.getFloat("totalAccountBalance");
+    record.maximumBalance = rs.getFloat("maximumBalance");
+    record.minimumBalance = rs.getFloat("minimumBalance");
+    return record;
   }
 
 

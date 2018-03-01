@@ -18,9 +18,6 @@ import java.util.List;
 
 public interface ClientTestDao {
 
-  @Select("select id from Client where actual=true")
-  List<ClientDot> getAllIds();
-
   @Insert("insert into Client (id, name, surname, patronymic, gender, birthDate, charm) " +
     "values (#{id}, #{name}, #{surname}, #{patronymic}, #{gender}, #{birthDate}, #{charm})")
   void insertClientDot(ClientDot clientDot);
@@ -33,6 +30,7 @@ public interface ClientTestDao {
     "values (#{client}, #{type}, #{street}, #{house}, #{flat})")
   void insertAddress(ClientAddressDot address);
 
+  @SuppressWarnings("SameParameterValue")
   @Select("select id, name, surname, patronymic, birthDate, gender, charm from client where id=#{id} and actual=#{actual}")
   @Results({
     @Result(property = "id", column = "id"),

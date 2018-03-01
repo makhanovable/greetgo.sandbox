@@ -37,21 +37,21 @@ public class DbLoader {
       .peek(PersonDot::showInfo)
       .forEach(authTestDao.get()::insertPersonDot);
 
-    standDb.get().clientStorage.values().stream()
+    standDb.get().clientStorage.values()
       .forEach(clientTestDao.get()::insertClientDot);
 
-    standDb.get().clientAccountStorage.values().stream()
-      .forEach(o -> o.stream().forEach(accountTestDao.get()::insertAccaount));
+    standDb.get().clientAccountStorage.values()
+      .forEach(o -> o.forEach(accountTestDao.get()::insertAccount));
 
-    standDb.get().clientPhoneNumberStorage.values().stream()
-      .forEach(o -> o.stream().forEach(clientTestDao.get()::insertPhone));
+    standDb.get().clientPhoneNumberStorage.values()
+      .forEach(o -> o.forEach(clientTestDao.get()::insertPhone));
 
-    standDb.get().clientAddressStorage.values().stream()
-      .forEach(o -> o.stream().forEach(clientTestDao.get()::insertAddress));
+    standDb.get().clientAddressStorage.values()
+      .forEach(o -> o.forEach(clientTestDao.get()::insertAddress));
 
-    standDb.get().charmStorage.values().stream()
+    standDb.get().charmStorage.values()
       .forEach(o -> charmTestDao.get().insertCharmDot(o));
-    
+
     logger.info("Finish loading test data");
   }
 }

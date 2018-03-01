@@ -10,7 +10,6 @@ public class MigrationRegisterImplSSH implements MigrationRegister {
 
   public BeanGetter<AllConfigFactory> allConfigFactory;
 
-
   @Override
   public void migrate() {
     throw new NotImplementedException();

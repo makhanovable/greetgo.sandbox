@@ -4,6 +4,13 @@
   width: 100%;
 }
 
+.controls{
+  margin-top: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
 .client-form-row {
   display: flex;
   flex-direction: row;

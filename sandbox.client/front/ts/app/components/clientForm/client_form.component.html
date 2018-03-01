@@ -1,4 +1,5 @@
-<h1>hello i am client form component</h1>
+<h1 *ngIf="!newClient">New client</h1>
+<h1 *ngIf="newClient">Edit client</h1>
 
 <div class="client-form-container" *ngIf="formData">
   <div class="client-form-row">
@@ -73,5 +74,7 @@
 
 </div>
 
-<button mat-button (click)="exit()">cancel</button>
-<button mat-button (click)="saveButton()" *ngIf="formData" >save</button>
+<div class="controls">
+  <button mat-button (click)="exit()">cancel</button>
+  <button mat-button (click)="saveButton()" *ngIf="formData"> <div *ngIf="newClient">update</div> <div *ngIf="!newClient">save</div></button>
+</div>
