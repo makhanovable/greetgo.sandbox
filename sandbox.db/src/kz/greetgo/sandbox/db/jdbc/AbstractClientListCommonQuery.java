@@ -23,6 +23,20 @@ public abstract class AbstractClientListCommonQuery extends AbstractClientQuery 
     sql.append("coalesce(max(ca.money), 0) AS maximumBalance, coalesce(min(ca.money),0) AS minimumBalance, coalesce(sum(ca.money),0) AS totalAccountBalance\n");
   }
 
+  protected ClientRecord rsToClientRecord(ResultSet rs) throws SQLException {
+    ClientRecord record = new ClientRecord();
+    record.id = rs.getString("id");
+    record.name = rs.getString("name");
+    record.surname = rs.getString("surname");
+    record.patronymic = rs.getString("patronymic");
+    record.age = rs.getInt("age");
+    record.charm = rs.getString("charm");
+    record.totalAccountBalance = rs.getFloat("totalAccountBalance");
+    record.maximumBalance = rs.getFloat("maximumBalance");
+    record.minimumBalance = rs.getFloat("minimumBalance");
+    return record;
+  }
+
   @Override
   void from() {
     sql.append("from Client c\n");
@@ -52,20 +66,4 @@ public abstract class AbstractClientListCommonQuery extends AbstractClientQuery 
       sql.append(" desc");
     sql.append("\n");
   }
-
-  ClientRecord rsToClientRecord(ResultSet rs) throws SQLException {
-    ClientRecord record = new ClientRecord();
-    record.id = rs.getString("id");
-    record.name = rs.getString("name");
-    record.surname = rs.getString("surname");
-    record.patronymic = rs.getString("patronymic");
-    record.age = rs.getInt("age");
-    record.charm = rs.getString("charm");
-    record.totalAccountBalance = rs.getFloat("totalAccountBalance");
-    record.maximumBalance = rs.getFloat("maximumBalance");
-    record.minimumBalance = rs.getFloat("minimumBalance");
-    return record;
-  }
-
-
 }
