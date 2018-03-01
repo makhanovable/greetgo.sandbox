@@ -23,7 +23,7 @@
         </ng-container>
 
         <ng-container matColumnDef="fio">
-          <mat-header-cell *matHeaderCellDef> Full name</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header > Full name</mat-header-cell>
           <mat-cell *matCellDef="let element"> {{[element.surname, element.name, element.patronymic].join(' ') }}
           </mat-cell>
         </ng-container>
@@ -35,15 +35,15 @@
           <mat-header-cell *matHeaderCellDef mat-sort-header> Age</mat-header-cell>
           <mat-cell *matCellDef="let element"> {{element.age }}</mat-cell>
         </ng-container>
-        <ng-container matColumnDef="totalAccountBalance">
+        <ng-container matColumnDef="total">
           <mat-header-cell *matHeaderCellDef mat-sort-header> Balance</mat-header-cell>
           <mat-cell *matCellDef="let element"> {{element.totalAccountBalance}}</mat-cell>
         </ng-container>
-        <ng-container matColumnDef="maximumBalance">
+        <ng-container matColumnDef="max">
           <mat-header-cell *matHeaderCellDef mat-sort-header> MaxBalance</mat-header-cell>
           <mat-cell *matCellDef="let element"> {{element.maximumBalance}}</mat-cell>
         </ng-container>
-        <ng-container matColumnDef="minimumBalance">
+        <ng-container matColumnDef="min">
           <mat-header-cell *matHeaderCellDef mat-sort-header> MinBalance</mat-header-cell>
           <mat-cell *matCellDef="let element"> {{element.minimumBalance}}</mat-cell>
         </ng-container>

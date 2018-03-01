@@ -11,8 +11,6 @@ import kz.greetgo.sandbox.controller.model.ClientPhoneNumberToSave;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.db.stand.model.CharmDot;
-import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
 import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.stand.model.ClientPhoneNumberDot;
@@ -20,17 +18,15 @@ import kz.greetgo.sandbox.db.test.dao.AccountTestDao;
 import kz.greetgo.sandbox.db.test.dao.CharmTestDao;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
-import kz.greetgo.sandbox.db.test.util.RegisterTestDataUtils;
 import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
+
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -44,162 +40,382 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
 
   @Test
-  void getClientInfoListTestAndReportGenerating() throws Exception {
+  void clientRecordListAndReportFilterByNameTest() throws Exception {
     this.clientTestDao.get().clear();
     this.charmTestDao.get().clear();
 
-    //init data in db
-    Map<String, String> charms = insertRndCharms();
-    List<ClientDot> clients = new ArrayList<>();
-    Map<String, List<ClientAccountDot>> accountDotMap = new HashMap<>();
-    this.rndClientsWithAccounts(clients, accountDotMap);
+    ClientDot clientDot1 = rndClientDot();
+    this.clientTestDao.get().insertClientDot(clientDot1);
 
-    //init inputs
-    ClientDot rndClient = clients.get(RND.plusInt(clients.size()));
-    int[] limits = {20, 10, 0};
-    int[] pages = {0, 1, 2, 3};
-    String[] orderBys = {null, "age", "totalAccountBalance", "maximumBalance", "minimumBalance", "trap"};
-    int[] orders = {0, 1};
-    String[] filters = {null, rndClient.name + " " + rndClient.surname, rndClient.patronymic, rndClient.getFIO(), "a", "ab", RND.str(2)};
+    ClientDot assertion = rndClientDot();
+    this.clientTestDao.get().insertClientDot(assertion);
 
-    //test for all possible inputs
+    {//getClientRecordList
 
-    for (String orderBy : orderBys) {
-      for (int order : orders) {
-        for (String filter : filters) {
-          for (int limit : limits) {
-            for (int page : pages) {
-              //
-              //
-              List<ClientRecord> result = this.clientRegister.get().getClientRecordList(limit, page, filter, orderBy, order);
-              //
-              //
+      //
+      //
+      List<ClientRecord> list = this.clientRegister.get().getClientRecordList(10, 0, assertion.name, null, 0);
+      //
+      //
 
-
-              if (limit == 0) {
-                assertThat(result).isEmpty();
-                continue;
-              }
-
-              //filtering by FIO
-              List<ClientDot> filteredClientDots = RegisterTestDataUtils.filterClientDotList(clients, filter);
-
-              //combine client data with corresponding account data: total, max, min balance
-              List<ClientRecord> expectedList = RegisterTestDataUtils.fromClientDotListToRecordList(filteredClientDots, accountDotMap);
-
-
-              //sorting
-              RegisterTestDataUtils.sortClientRecordList(expectedList, orderBy, order);
-
-
-              //slicing
-              int fromIndex = limit * page;
-              int endIndex = fromIndex + limit <= expectedList.size() ? fromIndex + limit : expectedList.size();
-              if (endIndex <= fromIndex)
-                expectedList = new ArrayList<>();
-              else
-                expectedList = expectedList.subList(fromIndex, endIndex);
-
-
-              //test
-              assertThat(result).hasSize(expectedList.size());
-
-              for (int i = 0; i < result.size(); i++) {
-                ClientRecord target = result.get(i);
-                ClientRecord assertion = expectedList.get(i);
-
-                assertThat(target.id).isEqualTo(assertion.id);
-                assertThat(target.age).isEqualTo(assertion.age);
-                assertThat(target.charm).isEqualTo(charms.get(assertion.charm));
-                assertThat(target.surname).isEqualTo(assertion.surname);
-                assertThat(target.patronymic).isEqualTo(assertion.patronymic);
-                assertThat(target.name).isEqualTo(assertion.name);
-
-                assertThat(target.maximumBalance).isEqualTo(assertion.maximumBalance);
-                assertThat(target.minimumBalance).isEqualTo(assertion.minimumBalance);
-                assertThat(Math.abs(target.totalAccountBalance - assertion.totalAccountBalance)).isLessThan(0.001f);
-
-              }
-
-
-            } // for pages closed
-          } //for limit closed
-
-          //report test
-
-          ClientReportTestView testView = new ClientReportTestView();
-
-          //
-          //
-          this.clientRegister.get().genClientRecordListReport(null, null, 0, testView);
-          //
-          //
-
-          int index = 0;
-          assertThat(testView.rows).isNotEmpty();
-
-          List<ClientRecord> expectedList = RegisterTestDataUtils.fromClientDotListToRecordList(clients, accountDotMap);
-
-          RegisterTestDataUtils.sortClientRecordList(expectedList, null, 0);
-
-          for (ClientRecord clientRecord : testView.rows) {
-            ClientRecord assertion = expectedList.get(index++);
-            assertThat(clientRecord.id).isEqualTo(assertion.id);
-            assertThat(clientRecord.name).isEqualTo(assertion.name);
-            assertThat(clientRecord.surname).isEqualTo(assertion.surname);
-            assertThat(clientRecord.patronymic).isEqualTo(assertion.patronymic);
-            assertThat(clientRecord.age).isEqualTo(assertion.age);
-            assertThat(clientRecord.charm).isEqualTo(charms.get(assertion.charm));
-            assertThat(Math.abs(clientRecord.totalAccountBalance - assertion.totalAccountBalance)).isLessThan(0.001f);
-            assertThat(clientRecord.maximumBalance).isEqualTo(assertion.maximumBalance);
-            assertThat(clientRecord.minimumBalance).isEqualTo(assertion.minimumBalance);
-          }
-
-
-        }
-      }
+      assertThat(list).hasSize(1);
+      ClientRecord result = list.get(0);
+      assertThat(result.name).isEqualTo(assertion.name);
     }
 
+
+    {//genClientRecordListReport
+
+      ClientReportTestView testView = new ClientReportTestView();
+
+      //
+      //
+      this.clientRegister.get().genClientRecordListReport(assertion.name, null, 0, testView);
+      //
+      //
+
+      assertThat(testView.rows).hasSize(1);
+      ClientRecord result = testView.rows.get(0);
+      assertThat(result.name).isEqualTo(assertion.name);
+    }
+  }
+
+  @Test
+  void clientRecordListAndReportFilterBySurnameTest() throws Exception {
+    this.clientTestDao.get().clear();
+    this.charmTestDao.get().clear();
+
+    ClientDot clientDot1 = rndClientDot();
+    this.clientTestDao.get().insertClientDot(clientDot1);
+
+    ClientDot assertion = rndClientDot();
+    this.clientTestDao.get().insertClientDot(assertion);
+
+    {//getClientRecordList
+
+      //
+      //
+      List<ClientRecord> list = this.clientRegister.get().getClientRecordList(10, 0, assertion.surname, null, 0);
+      //
+      //
+
+      assertThat(list).hasSize(1);
+      ClientRecord result = list.get(0);
+      assertThat(result.surname).isEqualTo(assertion.surname);
+    }
+
+
+    {//genClientRecordListReport
+
+      ClientReportTestView testView = new ClientReportTestView();
+
+      //
+      //
+      this.clientRegister.get().genClientRecordListReport(assertion.surname, null, 0, testView);
+      //
+      //
+
+      assertThat(testView.rows).hasSize(1);
+      ClientRecord result = testView.rows.get(0);
+      assertThat(result.surname).isEqualTo(assertion.surname);
+    }
+  }
+
+  @Test
+  void clientRecordListAndReportFilterByPatronymicTest() throws Exception {
+    this.clientTestDao.get().clear();
+    this.charmTestDao.get().clear();
+
+    ClientDot clientDot1 = rndClientDot();
+    this.clientTestDao.get().insertClientDot(clientDot1);
+
+    ClientDot assertion = rndClientDot();
+    this.clientTestDao.get().insertClientDot(assertion);
+
+    {//Client Record List
+
+      //
+      //
+      List<ClientRecord> list = this.clientRegister.get().getClientRecordList(10, 0, assertion.patronymic, null, 0);
+      //
+      //
+
+      assertThat(list).hasSize(1);
+      ClientRecord result = list.get(0);
+      assertThat(result.patronymic).isEqualTo(assertion.patronymic);
+    }
+
+
+    {//Report
+
+      ClientReportTestView testView = new ClientReportTestView();
+
+      //
+      //
+      this.clientRegister.get().genClientRecordListReport(assertion.patronymic, null, 0, testView);
+      //
+      //
+
+      assertThat(testView.rows).hasSize(1);
+      ClientRecord result = testView.rows.get(0);
+      assertThat(result.patronymic).isEqualTo(assertion.patronymic);
+    }
+  }
+
+
+  @Test
+  void clientRecordListAndReportOrderByAgeAscTest() throws Exception {
+    this.clientTestDao.get().clear();
+    this.charmTestDao.get().clear();
+
+    insertNRndClients(10);
+
+    {//Client Record List
+
+      //
+      //
+      List<ClientRecord> list = this.clientRegister.get().getClientRecordList(10, 0, null, "age", 0);
+      //
+      //
+
+      assertThat(list).isNotEmpty();
+      for (int i = 0; i < list.size() - 1; i++) {
+        ClientRecord record = list.get(i);
+        ClientRecord nextRecord = list.get(i + 1);
+        assertThat(record.age).isLessThanOrEqualTo(nextRecord.age);
+      }
+
+    }
+
+    {//Report
+
+      ClientReportTestView testView = new ClientReportTestView();
+
+      //
+      //
+      this.clientRegister.get().genClientRecordListReport(null, "age", 0, testView);
+      //
+      //
+
+
+      assertThat(testView.rows).isNotEmpty();
+      for (int i = 0; i < testView.rows.size() - 1; i++) {
+        ClientRecord record = testView.rows.get(i);
+        ClientRecord nextRecord = testView.rows.get(i + 1);
+
+        assertThat(record.age).isLessThanOrEqualTo(nextRecord.age);
+      }
+
+    }
+  }
+
+  @Test
+  void clientRecordListAndReportOrderByAgeDescTest() throws Exception {
+    this.clientTestDao.get().clear();
+    this.charmTestDao.get().clear();
+
+    insertNRndClients(10);
+
+    {//Client Record List
+
+      //
+      //
+      List<ClientRecord> list = this.clientRegister.get().getClientRecordList(10, 0, null, "age", 1);
+      //
+      //
+
+      assertThat(list).isNotEmpty();
+      for (int i = 0; i < list.size() - 1; i++) {
+        ClientRecord record = list.get(i);
+        ClientRecord nextRecord = list.get(i + 1);
+        assertThat(record.age).isGreaterThanOrEqualTo(nextRecord.age);
+      }
+
+    }
+
+    {//Report
+
+      ClientReportTestView testView = new ClientReportTestView();
+
+      //
+      //
+      this.clientRegister.get().genClientRecordListReport(null, "age", 1, testView);
+      //
+      //
+
+
+      assertThat(testView.rows).isNotEmpty();
+      for (int i = 0; i < testView.rows.size() - 1; i++) {
+        ClientRecord record = testView.rows.get(i);
+        ClientRecord nextRecord = testView.rows.get(i + 1);
+
+        assertThat(record.age).isGreaterThanOrEqualTo(nextRecord.age);
+      }
+
+    }
+  }
+
+
+  @Test
+  void clientRecordListLimitOffsetHeadTest() throws Exception {
+    this.clientTestDao.get().clear();
+    this.charmTestDao.get().clear();
+
+    int numberOfClients = 100;
+    List<ClientDot> clients = insertNRndClients(numberOfClients);
+
+
+    int limit = 10, page = 0;
+    //
+    //
+    List<ClientRecord> list = this.clientRegister.get().getClientRecordList(limit, page, null, "fio", 0);
+    //
+    //
+
+    assertThat(list).isNotEmpty();
+
+    clients.sort(Comparator.comparing(ClientDot::getFIO));
+    int startIndex = page * limit;
+    int endIndex = startIndex + limit;
+    endIndex = endIndex >= numberOfClients ? numberOfClients : endIndex;
+    clients = clients.subList(startIndex, endIndex);
+
+    assertThat(list).hasSize(clients.size());
+
+    for (int i = 0; i < list.size(); i++) {
+      ClientRecord record = list.get(i);
+      ClientDot expected = clients.get(i);
+
+      assertThat(record.id).isEqualTo(expected.id);
+    }
 
   }
 
   @Test
-  void getClientsSizeTest() {
+  void clientRecordListLimitOffsetMiddleTest() throws Exception {
     this.clientTestDao.get().clear();
+    this.charmTestDao.get().clear();
 
-    List<ClientDot> clients = new ArrayList<>();
-    for (int i = 0; i < 1000; i++) {
-      ClientDot cd = this.rndClientDot();
-      this.clientTestDao.get().insertClientDot(cd);
-      clients.add(cd);
-    }
+    int numberOfClients = 100;
+    List<ClientDot> clients = insertNRndClients(numberOfClients);
 
-    String[] filters = {
-      null,
-      clients.get(RND.plusInt(clients.size())).name,
-      clients.get(RND.plusInt(clients.size())).surname,
-      clients.get(RND.plusInt(clients.size())).patronymic,
-      clients.get(RND.plusInt(clients.size())).getFIO()};
 
-    for (String filter : filters) {
+    int limit = 10;
+    int page = numberOfClients / limit / 2;
+    //
+    //
+    List<ClientRecord> list = this.clientRegister.get().getClientRecordList(limit, page, null, "fio", 0);
+    //
+    //
 
-      //
-      //
-      long result = this.clientRegister.get().getNumberOfClients(filter);
-      //
-      //
+    assertThat(list).isNotEmpty();
 
-      if (filter == null) {
-        assertThat(result).isEqualTo(clients.size());
-        continue;
-      }
-      List<String> filterTokens = Arrays.asList(filter.trim().split(" "));
+    clients.sort(Comparator.comparing(ClientDot::getFIO));
+    int startIndex = page * limit;
+    int endIndex = startIndex + limit;
+    endIndex = endIndex >= numberOfClients ? numberOfClients : endIndex;
+    clients = clients.subList(startIndex, endIndex);
 
-      long expected = clients.stream().filter(o -> filterTokens.stream().anyMatch(x -> o.getFIO().toLowerCase().contains(x.toLowerCase()))).count();
-      assertThat(result).isEqualTo(expected);
+    assertThat(list).hasSize(clients.size());
+
+
+    for (int i = 0; i < list.size(); i++) {
+      ClientRecord record = list.get(i);
+      ClientDot expected = clients.get(i);
+
+      assertThat(record.id).isEqualTo(expected.id);
     }
 
   }
+
+
+  @Test
+  void clientRecordListLimitOffsetLastPageWithNotReachingTheLimitTest() throws Exception {
+    this.clientTestDao.get().clear();
+    this.charmTestDao.get().clear();
+
+    int numberOfClients = 10;
+    List<ClientDot> clients = insertNRndClients(numberOfClients);
+
+
+    int limit = 4;
+    int page = 2; //third page  expected [8 : 12) but must return [8:10]
+    //
+    //
+    List<ClientRecord> list = this.clientRegister.get().getClientRecordList(limit, page, null, "fio", 0);
+    //
+    //
+
+    assertThat(list).isNotEmpty();
+
+    clients.sort(Comparator.comparing(ClientDot::getFIO));
+    int startIndex = page * limit;
+    int endIndex = startIndex + limit;
+    endIndex = endIndex >= numberOfClients ? numberOfClients : endIndex;
+
+    clients = clients.subList(startIndex, endIndex);
+
+    assertThat(list).hasSize(clients.size());
+
+    for (int i = 0; i < list.size(); i++) {
+      ClientRecord record = list.get(i);
+      ClientDot expected = clients.get(i);
+
+      assertThat(record.id).isEqualTo(expected.id);
+    }
+
+  }
+
+
+  private List<ClientDot> insertNRndClients(int number) {
+    List<ClientDot> clients = new ArrayList<>();
+    for (int i = 0; i < number; i++) {
+      ClientDot clientDot = rndClientDot();
+      clients.add(clientDot);
+      this.clientTestDao.get().insertClientDot(clientDot);
+    }
+    return clients;
+  }
+
+
+  @Test
+  void NumberOfClientWithoutFilterTest() {
+    this.clientTestDao.get().clear();
+
+    List<ClientDot> clients = insertNRndClients(100);
+
+    //
+    //
+    long result = this.clientRegister.get().getNumberOfClients(null);
+    //
+    //
+
+    assertThat(result).isEqualTo(clients.size());
+  }
+
+  @SuppressWarnings("SpellCheckingInspection")
+  @Test
+  void NumberOfClientWithFilterTest() {
+    this.clientTestDao.get().clear();
+
+    insertNRndClients(100);
+    String rndtext = "asdlkjflalfasdkjfnaВЕЛИКИЙРАНДОМывлафдывтадфыsgfsdfgsdfgdsfgsdfgв";
+    ClientDot clientDot = rndClientDot();
+    ClientDot clientDot2 = rndClientDot();
+    clientDot.name = rndtext;
+    clientDot2.name = rndtext;
+    this.clientTestDao.get().insertClientDot(clientDot);
+    this.clientTestDao.get().insertClientDot(clientDot2);
+
+    //
+    //
+    long result = this.clientRegister.get().getNumberOfClients(clientDot.name);
+    //
+    //
+
+    assertThat(result).isEqualTo(2);
+  }
+
 
   @Test
   void removeClientsTest() {
@@ -264,7 +480,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
 
     ClientPhoneNumberDot number1 = rndPhoneNumber(cd.id, PhoneNumberType.WORK);
-    this.clientTestDao.get().insertPhone(number1); // number directly insterted to db
+    this.clientTestDao.get().insertPhone(number1);
     clientToSave.numbersToDelete.add(number1.toClientPhoneNumber());  // -1 number
 
     //
@@ -439,7 +655,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     c.charm = RND.str(10);
     c.gender = RND.someEnum(GenderType.values());
     c.birthDate = RND.dateYears(-100, 0);
-
     Calendar cal = Calendar.getInstance();
     cal.setTime(c.birthDate);
     cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -473,42 +688,5 @@ public class ClientRegisterImplTest extends ParentTestNg {
     return client;
   }
 
-  private void rndClientsWithAccounts(List<ClientDot> clients, Map<String, List<ClientAccountDot>> accountDotMap) throws Exception {
-    List<CharmDot> charms = this.charmTestDao.get().getAll();
-    if (charms == null || charms.isEmpty())
-      throw new Exception("charms not initialized");
-
-    for (int i = 0; i < 100; i++) {
-      ClientDot cd = this.rndClientDot();
-      cd.charm = charms.get(RND.plusInt(charms.size())).id;
-      cd.birthDate.setTime(-2177474400000L + i * 31536000000L); //1900, 1900 + 1, 1900 + 2 ...
-      this.clientTestDao.get().insertClientDot(cd);
-      List<ClientAccountDot> accList = new ArrayList<>();
-      for (int j = 0; j < 2 + RND.plusInt(5); j++) {
-        ClientAccountDot cad = new ClientAccountDot();
-        cad.money = (float) RND.plusDouble(1000f, 5);
-        cad.id = idGenerator.get().newId();
-        cad.number = idGenerator.get().newId();
-        cad.client = cd.id;
-
-        this.accountTetsDao.get().insertAccount(cad);
-        accList.add(cad);
-      }
-      clients.add(cd);
-      accountDotMap.put(cd.id, accList);
-    }
-  }
-
-  private Map<String, String> insertRndCharms() {
-    Map<String, String> charmIdToName = new HashMap<>();
-    for (int i = 0; i < 10; i++) {
-      CharmDot charmDot = new CharmDot();
-      charmDot.id = idGenerator.get().newId();
-      charmDot.name = RND.str(10);
-      charmIdToName.put(charmDot.id, charmDot.name);
-      this.charmTestDao.get().insertCharmDot(charmDot);
-    }
-    return charmIdToName;
-  }
 
 }

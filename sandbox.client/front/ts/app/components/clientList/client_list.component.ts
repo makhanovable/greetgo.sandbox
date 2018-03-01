@@ -16,7 +16,7 @@ import {saveAs} from "file-saver";
 
 export class ClientListComponent implements OnInit {
 
-  displayedColumns = ['select', 'fio', 'charm', 'age', 'totalAccountBalance', 'maximumBalance', 'minimumBalance'];
+  displayedColumns = ['select', 'fio', 'charm', 'age', 'total', 'max', 'min'];
   dataSource: MatTableDataSource<ClientRecord>;
 
   charmsArray: CharmInfo[] = [];
@@ -25,7 +25,7 @@ export class ClientListComponent implements OnInit {
   selection = new SelectionModel<ClientRecord>(true, []);
 
   filter: string = '';
-  selectedOrder = 'fio';
+  selectedOrder = '';
   desc: number = 0;
 
   format: string = "xlsx";

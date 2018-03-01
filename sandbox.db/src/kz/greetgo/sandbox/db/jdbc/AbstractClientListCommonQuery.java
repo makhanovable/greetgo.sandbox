@@ -58,12 +58,30 @@ public abstract class AbstractClientListCommonQuery extends AbstractClientQuery 
   public void orderBy() {
     boolean orderByIsMatch = orderBy != null && Arrays.stream(ClientUtils.sortableColumns).anyMatch(o -> o.equals(orderBy));
 
-    if (orderByIsMatch)
-      sql.append("order by ").append(orderBy);
-    else
-      sql.append("order by concat(c.surname, c.name, c.patronymic)");
-    if (desc == 1)
-      sql.append(" desc");
-    sql.append("\n");
+    if (orderByIsMatch) {
+      sql.append("order by ");
+
+      switch (orderBy) {
+        case "fio":
+          sql.append("concat(c.surname, c.name, c.patronymic)");
+          break;
+        case "age":
+          sql.append("age");
+          break;
+        case "total":
+          sql.append("totalAccountBalance");
+          break;
+        case "max":
+          sql.append("maximumBalance");
+          break;
+        case "min":
+          sql.append("minimumBalance");
+          break;
+      }
+
+      if (desc == 1)
+        sql.append(" desc");
+      sql.append("\n");
+    }
   }
 }

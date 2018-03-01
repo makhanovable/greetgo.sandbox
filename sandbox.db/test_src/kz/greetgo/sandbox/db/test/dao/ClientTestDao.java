@@ -46,6 +46,6 @@ public interface ClientTestDao {
   ClientAddress getAddres(@Param("client") String client, @Param("type") AddressType type);
 
 
-  @Select("TRUNCATE Client; TRUNCATE ClientPhone; TRUNCATE ClientAddr")
+  @Select("TRUNCATE Client cascade; TRUNCATE ClientPhone cascade; TRUNCATE ClientAddr cascade")
   void clear();
 }

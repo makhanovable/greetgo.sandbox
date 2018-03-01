@@ -35,7 +35,7 @@ public class ReportController implements Controller {
         view = new ClientReportViewXLSX(out);
         break;
       default:
-        throw new Exception("Unsupported File Format");
+        throw new IllegalArgumentException("Unsupported File Format");
     }
 
     String fileName = "client_report_" + new Date() + "." + type;
