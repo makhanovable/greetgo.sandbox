@@ -11,6 +11,7 @@
 # Gradle files #
 ################
 .gradle/
+/out/
 /build/
 
 # OS generated files #
@@ -27,5 +28,3 @@ Thumbs.db
 ######################
 *.log
 *.sqlite
-
-node_modules
