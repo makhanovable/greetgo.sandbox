@@ -7,9 +7,13 @@ import kz.greetgo.conf.hot.Description;
 @Description("Параметры доступа к ssh директории")
 public interface SshConfig {
 
-  @Description("host")
+  @Description("host: address of remote server")
   @DefaultStrValue("127.0.0.1")
   String host();
+
+  @Description("port which ssh daemon listening on remove server")
+  @DefaultStrValue("22")
+  int port();
 
   @Description("user of system")
   @DefaultStrValue("Some_User")
