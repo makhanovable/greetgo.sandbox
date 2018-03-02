@@ -24,7 +24,7 @@ public interface SshConfig {
   String password();
 
   @Description("directory where files for migration located")
-  @DefaultStrValue("/var/metodology/")
+  @DefaultStrValue("var/metodology")
   String migrationDir();
 
 
