@@ -44,8 +44,7 @@ public class ClientReportViewPDF implements ClientReportView {
     table.addCell(String.valueOf(record.maximumBalance));
     table.addCell(String.valueOf(record.minimumBalance));
 
-    count++;
-    if (count % 1000 == 0) {
+    if (count++ % 1000 == 0) {
       document.add(table);
     }
   }
@@ -64,8 +63,8 @@ public class ClientReportViewPDF implements ClientReportView {
     ClientReportViewPDF clientReportPDF = new ClientReportViewPDF(out);
     clientReportPDF.start(headers);
     ClientRecord clientRecord = new ClientRecord();
-    clientRecord.id = "myId";
-    clientRecord.name = "myName";
+    clientRecord.id = "вампвапвып";
+    clientRecord.name = "вфыывавыа";
     clientRecord.surname = "mySurname";
     clientRecord.patronymic = "myPatronymic";
     clientRecord.age = 16;

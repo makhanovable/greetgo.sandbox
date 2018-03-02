@@ -18,4 +18,10 @@ public interface SshConfig {
   @Description("password")
   @DefaultStrValue("Secret")
   String password();
+
+  @Description("directory where files for migration located")
+  @DefaultStrValue("/var/metodology/")
+  String migrationDir();
+
+
 }

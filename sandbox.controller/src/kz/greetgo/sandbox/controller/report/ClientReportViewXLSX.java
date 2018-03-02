@@ -61,8 +61,8 @@ public class ClientReportViewXLSX implements ClientReportView {
   public static void main(String[] args) throws Exception {
     OutputStream out = new FileOutputStream("test.xlsx");
     String[] headers = {"Full Name", "Charm", "Age", "Balance", "max Balance", "min Balance"};
-    ClientReportViewXLSX clientReportPDF = new ClientReportViewXLSX(out);
-    clientReportPDF.start(headers);
+    ClientReportViewXLSX clientReportViewXLSX = new ClientReportViewXLSX(out);
+    clientReportViewXLSX.start(headers);
     ClientRecord clientRecord = new ClientRecord();
     clientRecord.id = "myId";
     clientRecord.name = "myName";
@@ -74,8 +74,8 @@ public class ClientReportViewXLSX implements ClientReportView {
     clientRecord.maximumBalance = 1100f;
     clientRecord.minimumBalance = 11100f;
     for (int i = 0; i < 1000; i++)
-      clientReportPDF.appendRow(clientRecord);
-    clientReportPDF.finish();
+      clientReportViewXLSX.appendRow(clientRecord);
+    clientReportViewXLSX.finish();
     out.close();
   }
 }
