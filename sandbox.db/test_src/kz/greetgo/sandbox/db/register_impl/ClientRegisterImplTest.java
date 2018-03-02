@@ -14,7 +14,6 @@ import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.stand.model.ClientPhoneNumberDot;
-import kz.greetgo.sandbox.db.test.dao.AccountTestDao;
 import kz.greetgo.sandbox.db.test.dao.CharmTestDao;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
@@ -36,8 +35,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public BeanGetter<ClientTestDao> clientTestDao;
   public BeanGetter<CharmTestDao> charmTestDao;
   public BeanGetter<IdGenerator> idGenerator;
-  public BeanGetter<AccountTestDao> accountTetsDao;
-
 
   @Test
   void clientRecordListAndReportFilterByNameTest() throws Exception {
@@ -64,7 +61,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
 
 
-    {//genClientRecordListReport
+    {//Report
 
       ClientReportTestView testView = new ClientReportTestView();
 
