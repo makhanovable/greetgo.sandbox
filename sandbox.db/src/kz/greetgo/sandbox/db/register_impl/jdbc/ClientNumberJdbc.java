@@ -6,9 +6,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-public class ClientNumberQuery extends AbstractClientQuery implements ConnectionCallback<Integer> {
+public class ClientNumberJdbc extends AbstractClientJdbc implements ConnectionCallback<Integer> {
 
-  public ClientNumberQuery(String filter) {
+  public ClientNumberJdbc(String filter) {
     super(filter);
   }
 

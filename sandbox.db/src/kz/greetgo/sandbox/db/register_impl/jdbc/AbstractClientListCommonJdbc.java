@@ -7,7 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 
-public abstract class AbstractClientListCommonJdbc extends AbstractClientQuery {
+public abstract class AbstractClientListCommonJdbc extends AbstractClientJdbc {
 
   AbstractClientListCommonJdbc(String filter, String orderBy, int order) {
     super(filter, orderBy, order);

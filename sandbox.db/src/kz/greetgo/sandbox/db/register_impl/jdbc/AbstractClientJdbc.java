@@ -3,7 +3,7 @@ package kz.greetgo.sandbox.db.register_impl.jdbc;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractClientQuery {
+public abstract class AbstractClientJdbc {
 
   protected StringBuilder sql = new StringBuilder();
   List<Object> params = new ArrayList<>();
@@ -15,17 +15,17 @@ public abstract class AbstractClientQuery {
   int offset;
 
 
-  public AbstractClientQuery(String filter) {
+  public AbstractClientJdbc(String filter) {
     this.filter = getFormattedFilter(filter);
   }
 
-  public AbstractClientQuery(String filter, String orderBy, int desc) {
+  public AbstractClientJdbc(String filter, String orderBy, int desc) {
     this(filter);
     this.orderBy = orderBy;
     this.desc = desc;
   }
 
-  public AbstractClientQuery(String filter, String orderBy, int order, int limit, int offset) {
+  public AbstractClientJdbc(String filter, String orderBy, int order, int limit, int offset) {
     this(filter, orderBy, order);
     this.limit = limit;
     this.offset = offset;
