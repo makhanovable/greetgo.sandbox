@@ -1,13 +1,10 @@
 package kz.greetgo.sandbox.db.register_impl.ssh;
 
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.Session;
-import com.jcraft.jsch.SftpException;
+import com.jcraft.jsch.*;
 import kz.greetgo.sandbox.db.configs.SshConfig;
+import kz.greetgo.util.ServerUtil;
 
-import java.io.Closeable;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 import java.util.Vector;
 import java.util.stream.Collectors;
@@ -41,12 +38,33 @@ public class SSHConnection implements Closeable {
   public List<String> getFileNameList(String path) throws SftpException {
     Vector<ChannelSftp.LsEntry> entries = channel.ls(path);
     return entries.stream().map(o -> o.getFilename()).collect(Collectors.toList());
+//    ((ChannelExec) (Channel) channel).setCommand("ls -lct");
+//    channel.run();
+//    Vector filelist = channel.run().map(o -> o.getFilename()).collect(Collectors.toList());
   }
 
   public void renameFileName(String fileName, String renameTo) throws SftpException {
     channel.rename(fileName, renameTo);
   }
 
+  public boolean isFileExist(String fileName) throws Exception {
+    try {
+      channel.lstat(fileName);
+    } catch (SftpException e) {
+      if (e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
+        return false;
+      } else {
+        throw new Exception();
+      }
+    }
+    return true;
+  }
+
+  public void downloadFile(String fileName, OutputStream out) throws Exception {
+    try (InputStream stream = channel.get(fileName)) {
+      ServerUtil.copyStreamsAndCloseIn(stream, out);
+    }
+  }
 
   @Override
   public void close() throws IOException {

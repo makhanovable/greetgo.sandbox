@@ -15,7 +15,7 @@ public class MigrationCia extends Migration {
   }
 
   @Override
-  protected void loadFileToTempTables() {
+  protected void parseFileAndUploadToTempTables() {
     throw new NotImplementedException();
   }
 
@@ -25,7 +25,7 @@ public class MigrationCia extends Migration {
   }
 
   @Override
-  protected void uploadErrorsAndWrite() {
+  protected void loadErrorsAndWrite() {
     throw new NotImplementedException();
   }
 

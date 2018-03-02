@@ -6,11 +6,10 @@ import java.io.OutputStream;
 
 public abstract class Migration {
 
-  private DbConfig operDb;
+  protected DbConfig operDb;
 
-  public int portionSize;
-  public int uploadMaxBatchSize;
-  public OutputStream errors;
+  public int batchSize = 50_000;
+  public OutputStream errorOS;
 
   protected Migration(DbConfig operDb) {
     this.operDb = operDb;
@@ -18,17 +17,17 @@ public abstract class Migration {
 
   protected abstract void createTempTables();
 
-  protected abstract void loadFileToTempTables();
+  protected abstract void parseFileAndUploadToTempTables();
 
   protected abstract void updateErrorRows();
 
-  protected abstract void uploadErrorsAndWrite();
+  protected abstract void loadErrorsAndWrite();
 
   public void migrate() {
     createTempTables();
-    loadFileToTempTables();
+    parseFileAndUploadToTempTables();
     updateErrorRows();
-    uploadErrorsAndWrite();
+    loadErrorsAndWrite();
   }
 
 }

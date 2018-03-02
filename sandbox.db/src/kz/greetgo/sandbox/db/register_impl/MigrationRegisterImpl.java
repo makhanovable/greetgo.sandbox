@@ -14,6 +14,9 @@ import kz.greetgo.sandbox.db.register_impl.migration.MigrationFrs;
 import kz.greetgo.sandbox.db.register_impl.ssh.SSHConnection;
 import org.apache.log4j.Logger;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -21,6 +24,8 @@ import java.util.regex.Pattern;
 public class MigrationRegisterImpl implements MigrationRegister {
 
   public BeanGetter<AllConfigFactory> allConfigFactory;
+  public BeanGetter<IdGenerator> idGenerator;
+
   private boolean isMigrationGoingOn = false;
 
   final Logger logger = Logger.getLogger(getClass());
@@ -35,10 +40,10 @@ public class MigrationRegisterImpl implements MigrationRegister {
     DbConfig dbConfig = allConfigFactory.get().createPostgresDbConfig();
 
 
-    Pattern cia = Pattern.compile("from_cia_(.*).xml");
-    Pattern frs = Pattern.compile("from_frs_(.*).json_row");
     List<String> files = getFileNameList();
 
+    Pattern cia = Pattern.compile("from_cia_(.*).xml");
+    Pattern frs = Pattern.compile("from_frs_(.*).json_row");
     for (String filename : files) {
       Migration migration = null;
       if (cia.matcher(filename).matches()) {
@@ -46,14 +51,43 @@ public class MigrationRegisterImpl implements MigrationRegister {
       } else if (frs.matcher(filename).matches()) {
         migration = new MigrationFrs(dbConfig);
       }
+
       if (migration != null) {
-        migration.migrate();
+
+        this.doMigration(filename, migration);
       }
 
     }
 
     isMigrationGoingOn = false;
   }
+
+
+  private void doMigration(String fileName, Migration migration) throws Exception {
+    String tempFileName = "random//TODO";
+
+    try (SSHConnection sshConnection = new SSHConnection(allConfigFactory.get().createSshConfig())) {
+      if (sshConnection.isFileExist(fileName)) {
+        String fileNameToRename = fileName + ".migrating" + idGenerator.get().newId();
+        sshConnection.renameFileName(fileName, fileNameToRename);
+
+        File localFileToMigrate = new File(tempFileName);
+        if (localFileToMigrate.mkdirs()) {
+
+          try (OutputStream out = new FileOutputStream(localFileToMigrate)) {
+            sshConnection.downloadFile(fileNameToRename, out);
+          }
+
+          migration.migrate();
+        }
+
+      } else
+        return;
+    }
+
+
+  }
+
 
   private List<String> getFileNameList() throws Exception {
     List<String> files;
@@ -63,45 +97,5 @@ public class MigrationRegisterImpl implements MigrationRegister {
     return files;
   }
 
-
-  public static void main(String[] args) throws Exception {
-    SshConfig sshConfig = new SshConfig() {
-      @Override
-      public String host() {
-        return "127.0.0.1";
-      }
-
-      @Override
-      public int port() {
-        return 22;
-      }
-
-      @Override
-      public String username() {
-        return "damze";
-      }
-
-      @Override
-      public String password() {
-        return "111";
-      }
-
-      @Override
-      public String migrationDir() {
-        return "var/metodology";
-      }
-    };
-
-    try (SSHConnection sshConnection = new SSHConnection(sshConfig)) {
-      List<String> files = sshConnection.getFileNameList(".");
-      for (String filaname : files) {
-        System.out.println(filaname);
-      }
-
-
-    }
-
-
-  }
 
 }
