@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface ClientReportView {
 
-  void start(String[] headers) throws Exception;
+  void start() throws Exception;
 
   void appendRow(ClientRecord record) throws Exception;
 

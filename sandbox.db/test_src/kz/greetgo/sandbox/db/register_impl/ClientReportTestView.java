@@ -11,7 +11,7 @@ public class ClientReportTestView implements ClientReportView {
   public List<ClientRecord> rows = new ArrayList<>();
 
   @Override
-  public void start(String[] headers) throws Exception {
+  public void start() throws Exception {
     this.headers = headers;
   }
 
