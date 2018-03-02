@@ -435,6 +435,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
 
     assertThat(deleted).isEqualTo(toDeleteList.size());
+
     for (String id : toDeleteList) {
       ClientDetail clientDetail = this.clientTestDao.get().detail(id, true);
       assertThat(clientDetail).isNull();
@@ -444,15 +445,12 @@ public class ClientRegisterImplTest extends ParentTestNg {
   @Test
   void removeOneClientTest() {
     this.clientTestDao.get().clear();
-    List<String> ids = new ArrayList<>();
-
 
     ClientDot cd = this.rndClientDot();
     this.clientTestDao.get().insertClientDot(cd);
-    ids.add(cd.id);
+
     List<String> toDeleteList = new ArrayList<>();
-    String id = ids.get(0);
-    toDeleteList.add(id);
+    toDeleteList.add(cd.id);
 
     //
     //
@@ -461,26 +459,24 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
 
     assertThat(deleted).isEqualTo(toDeleteList.size());
-
-    ClientDetail clientDetail = this.clientTestDao.get().detail(id, true);
+    ClientDetail clientDetail = this.clientTestDao.get().detail(cd.id, true);
     assertThat(clientDetail).isNull();
   }
 
+
   @Test
-  public void updateClientTest() {
+  public void updateClientDeleteNumberTest() {
     this.clientTestDao.get().clear();
+
     ClientDot cd = this.rndClientDot();
     this.clientTestDao.get().insertClientDot(cd);
-    ClientAddressDot actualAddress = rndAddress(cd.id, AddressType.FACT);
-    ClientAddressDot registerAddress = rndAddress(cd.id, AddressType.REG);
-    this.clientTestDao.get().insertAddress(actualAddress);
-    this.clientTestDao.get().insertAddress(registerAddress);
-
-    ClientToSave clientToSave = rndClientToSave(cd.id); // +ClientDetail +2addresses +3numbers
-
 
     ClientPhoneNumberDot number1 = rndPhoneNumber(cd.id, PhoneNumberType.WORK);
-    this.clientTestDao.get().insertPhone(number1);
+    this.clientTestDao.get().insertPhone(number1); // +1 number
+
+
+    ClientToSave clientToSave = cd.toClientToSave();
+    clientToSave.numbersToDelete = new ArrayList<>();
     clientToSave.numbersToDelete.add(number1.toClientPhoneNumber());  // -1 number
 
     //
@@ -492,16 +488,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
     ClientDetail clientDetail = this.clientTestDao.get().detail(clientToSave.id, true);
     this.assertClientDetail(clientDetail, new ClientDot(clientToSave));
 
-    ClientAddress regAddress = this.clientTestDao.get().getAddres(clientToSave.id, AddressType.REG);
-    ClientAddress actAddress = this.clientTestDao.get().getAddres(clientToSave.id, AddressType.FACT);
-    this.assertClientAddress(actAddress, new ClientAddressDot(clientToSave.id, clientToSave.actualAddress));
-    this.assertClientAddress(regAddress, new ClientAddressDot(clientToSave.id, clientToSave.registerAddress));
 
     List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(clientToSave.id);
-
-    assertThat(numberList).isNotEmpty();
-    assertThat(numberList).hasSize(clientToSave.numbersToSave.size());
-    assertThat(numberList.stream().anyMatch(o -> o.number.equals(number1.number))).isFalse();
+    assertThat(numberList).isEmpty();
   }
 
   @Test
@@ -510,57 +499,94 @@ public class ClientRegisterImplTest extends ParentTestNg {
     this.clientTestDao.get().clear();
     ClientDot cd = this.rndClientDot();
     this.clientTestDao.get().insertClientDot(cd);
-    ClientAddressDot actualAddress = rndAddress(cd.id, AddressType.FACT);
-    ClientAddressDot registerAddress = rndAddress(cd.id, AddressType.REG);
-    this.clientTestDao.get().insertAddress(actualAddress);
-    this.clientTestDao.get().insertAddress(registerAddress);
 
     ClientPhoneNumberDot numberToInsert = rndPhoneNumber(cd.id, PhoneNumberType.WORK);
     this.clientTestDao.get().insertPhone(numberToInsert);
 
-    ClientToSave test2 = rndClientToSave(cd.id);
+    ClientToSave clientToSave = cd.toClientToSave();
 
     ClientPhoneNumberToSave toEdited = numberToInsert.toClientPhoneNumberToSave();
-
     toEdited.oldNumber = toEdited.number;
     toEdited.number = RND.str(10);
-    test2.numbersToSave.add(toEdited);
+    clientToSave.numbersToSave = new ArrayList<>();
+    clientToSave.numbersToSave.add(toEdited);
 
     //
     //
-    this.clientRegister.get().addOrUpdate(test2);
+    this.clientRegister.get().addOrUpdate(clientToSave);
     //
     //
 
-    List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(test2.id);
+    List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(clientToSave.id);
+
     assertThat(numberList.stream().anyMatch(o -> o.number.equals(toEdited.number))).isTrue();
   }
 
   @Test
+  public void updateClientAddressTest() {
+    this.clientTestDao.get().clear();
+    ClientDot cd = this.rndClientDot();
+    this.clientTestDao.get().insertClientDot(cd);
+
+    ClientAddressDot registerAddress = rndAddress(cd.id, AddressType.REG);
+    this.clientTestDao.get().insertAddress(registerAddress);
+
+    ClientToSave clientToSave = cd.toClientToSave();
+    ClientAddressDot addressToUpdate = new ClientAddressDot();
+    addressToUpdate.client = cd.id;
+    addressToUpdate.type = AddressType.REG;
+    addressToUpdate.street = "черноморская";
+    addressToUpdate.house = "12b";
+    addressToUpdate.flat = "подвал";
+    clientToSave.registerAddress = addressToUpdate.toClientAddress();
+
+    //
+    //
+    this.clientRegister.get().addOrUpdate(clientToSave);
+    //
+    //
+
+    ClientAddress target = this.clientTestDao.get().getAddres(clientToSave.id, AddressType.REG);
+    this.assertClientAddress(target, addressToUpdate);
+  }
+
+
+  @Test
   public void addClientTest() {
     this.clientTestDao.get().clear();
-    ClientToSave client = rndClientToSave(null);
+
+    ClientDot cd = this.rndClientDot();
+    cd.id = null;
+    ClientAddressDot registerAddress = rndAddress(null, AddressType.REG);
+    ClientPhoneNumberDot mobileNumber = rndPhoneNumber(null, PhoneNumberType.MOBILE);
+
+    ClientToSave clientToSave = cd.toClientToSave();
+    clientToSave.registerAddress = registerAddress.toClientAddress();
+    clientToSave.numbersToSave = new ArrayList<>();
+    clientToSave.numbersToSave.add(mobileNumber.toClientPhoneNumberToSave());
 
     //
     //
-    this.clientRegister.get().addOrUpdate(client);
+    this.clientRegister.get().addOrUpdate(clientToSave);
     //
     //
 
-    ClientDetail clientDetail = this.clientTestDao.get().detail(client.id, true);
-    this.assertClientDetail(clientDetail, new ClientDot(client));
-    ClientAddress regAddress = this.clientTestDao.get().getAddres(client.id, AddressType.REG);
-    ClientAddress actAddress = this.clientTestDao.get().getAddres(client.id, AddressType.FACT);
-    this.assertClientAddress(actAddress, new ClientAddressDot(client.id, client.actualAddress));
-    this.assertClientAddress(regAddress, new ClientAddressDot(client.id, client.registerAddress));
 
-    List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(client.id);
-    assertThat(numberList.isEmpty()).isFalse();
-    assertThat(numberList.size()).isEqualTo(client.numbersToSave.size());
+    List<ClientDetail> list = this.clientTestDao.get().getAllByName(cd.name);
+    assertThat(list).hasSize(1);
+    ClientDetail target = list.get(0);
 
-    for (ClientPhoneNumberToSave cpn : client.numbersToSave) {
-      assertThat(numberList.stream().anyMatch(o -> o.number.equals(cpn.number) && o.type.equals(cpn.type) && o.client.equals(cpn.client))).isTrue();
-    }
+    this.assertClientDetail(target, cd);
+
+    ClientAddress regAddress = this.clientTestDao.get().getAddres(target.id, AddressType.REG);
+    this.assertClientAddress(regAddress, registerAddress);
+
+    List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(target.id);
+    assertThat(numberList).isNotEmpty();
+    assertThat(numberList).hasSize(clientToSave.numbersToSave.size());
+
+    assertPhoneNumber(numberList.get(0), mobileNumber);
+
   }
 
 
@@ -568,13 +594,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public void getDetailTest() throws Exception {
 
     this.clientTestDao.get().clear();
+
     ClientDot c = this.rndClientDot();
     this.clientTestDao.get().insertClientDot(c);
+
     ClientPhoneNumberDot number1 = rndPhoneNumber(c.id, PhoneNumberType.WORK);
     this.clientTestDao.get().insertPhone(number1);
-    ClientAddressDot actualAddress = rndAddress(c.id, AddressType.FACT);
+
     ClientAddressDot registerAddress = rndAddress(c.id, AddressType.REG);
-    this.clientTestDao.get().insertAddress(actualAddress);
     this.clientTestDao.get().insertAddress(registerAddress);
 
 
@@ -589,24 +616,20 @@ public class ClientRegisterImplTest extends ParentTestNg {
     assertThat(detail.phoneNumbers).hasSize(1);
     this.assertPhoneNumber(detail.phoneNumbers.get(0), number1);
 
-    assertThat(detail.actualAddress).isNotNull();
+    assertThat(detail.actualAddress).isNull();
     assertThat(detail.registerAddress).isNotNull();
-    this.assertClientAddress(detail.actualAddress, actualAddress);
     this.assertClientAddress(detail.registerAddress, registerAddress);
-
   }
 
 
   private void assertPhoneNumber(ClientPhoneNumber target, ClientPhoneNumberDot assertion) {
     assertThat(target).isNotNull();
-    assertThat(target.client).isEqualTo(assertion.client);
     assertThat(target.number).isEqualTo(assertion.number);
     assertThat(target.type).isEqualTo(assertion.type);
   }
 
   private void assertClientAddress(ClientAddress target, ClientAddressDot assertion) {
     assertThat(target).isNotNull();
-    assertThat(target.client).isEqualTo(assertion.client);
     assertThat(target.street).isEqualTo(assertion.street);
     assertThat(target.house).isEqualTo(assertion.house);
     assertThat(target.flat).isEqualTo(assertion.flat);
@@ -624,7 +647,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
     assertThat(sdf.format(target.birthDate)).isEqualTo(sdf.format(assertion.birthDate));
     assertThat(target.charm).isEqualTo(assertion.charm);
-    assertThat(target.id).isEqualTo(assertion.id);
   }
 
   private ClientAddressDot rndAddress(String id, AddressType type) {
@@ -663,29 +685,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     cal.set(Calendar.MILLISECOND, 0);
     c.birthDate = cal.getTime();
     return c;
-  }
-
-  private ClientToSave rndClientToSave(String id) {
-    ClientToSave client = new ClientToSave();
-    client.id = id;
-    client.name = RND.str(10);
-    client.surname = RND.str(10);
-    client.patronymic = RND.str(10);
-    client.gender = RND.someEnum(GenderType.values());
-    client.birthDate = RND.dateYears(-100, 0);
-    client.charm = RND.str(10);
-
-    client.actualAddress = rndAddress(id, AddressType.FACT).toClientAddress();
-    client.registerAddress = rndAddress(id, AddressType.REG).toClientAddress();
-
-    client.numbersToDelete = new ArrayList<>();
-    client.numbersToSave = new ArrayList<>();
-
-    client.numbersToSave.add(rndPhoneNumber(id, PhoneNumberType.WORK).toClientPhoneNumberToSave());
-    client.numbersToSave.add(rndPhoneNumber(id, PhoneNumberType.MOBILE).toClientPhoneNumberToSave());
-    client.numbersToSave.add(rndPhoneNumber(id, PhoneNumberType.HOME).toClientPhoneNumberToSave());
-
-    return client;
   }
 
 

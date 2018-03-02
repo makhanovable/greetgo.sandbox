@@ -18,6 +18,9 @@ import java.util.List;
 
 public interface ClientTestDao {
 
+  @Select("Select id, name, surname, patronymic, birthDate, gender, charm from client where name=#{name}")
+  List<ClientDetail> getAllByName(@Param("name") String name);
+
   @Insert("insert into Client (id, name, surname, patronymic, gender, birthDate, charm) " +
     "values (#{id}, #{name}, #{surname}, #{patronymic}, #{gender}, #{birthDate}, #{charm})")
   void insertClientDot(ClientDot clientDot);

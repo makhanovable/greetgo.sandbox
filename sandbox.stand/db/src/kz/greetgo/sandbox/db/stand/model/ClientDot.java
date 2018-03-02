@@ -41,6 +41,18 @@ public class ClientDot {
     this.charm = clientToSave.charm;
   }
 
+  public ClientToSave toClientToSave() {
+    ClientToSave clientToSave = new ClientToSave();
+    clientToSave.id = id;
+    clientToSave.name = name;
+    clientToSave.surname = surname;
+    clientToSave.patronymic = patronymic;
+    clientToSave.birthDate = birthDate;
+    clientToSave.charm = charm;
+    clientToSave.gender = gender;
+    return clientToSave;
+  }
+
 
   public ClientRecord toClientRecord() {
     ClientRecord clientRecord = new ClientRecord();
