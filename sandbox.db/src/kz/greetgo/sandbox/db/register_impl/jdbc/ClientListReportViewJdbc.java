@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.db.jdbc;
+package kz.greetgo.sandbox.db.register_impl.jdbc;
 
 import kz.greetgo.db.ConnectionCallback;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
@@ -8,11 +8,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-public class ClientListReportViewQuery extends AbstractClientListCommonQuery implements ConnectionCallback<Void> {
+public class ClientListReportViewJdbc extends AbstractClientListCommonJdbc implements ConnectionCallback<Void> {
 
   private final ClientReportView view;
 
-  public ClientListReportViewQuery(String filter, String orderBy, int order, ClientReportView view) {
+  public ClientListReportViewJdbc(String filter, String orderBy, int order, ClientReportView view) {
     super(filter, orderBy, order);
     this.view = view;
   }

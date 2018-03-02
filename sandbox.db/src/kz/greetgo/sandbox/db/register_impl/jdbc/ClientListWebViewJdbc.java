@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.db.jdbc;
+package kz.greetgo.sandbox.db.register_impl.jdbc;
 
 import kz.greetgo.db.ConnectionCallback;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
@@ -9,9 +9,9 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClientListWebViewQuery extends AbstractClientListCommonQuery implements ConnectionCallback<List<ClientRecord>> {
+public class ClientListWebViewJdbc extends AbstractClientListCommonJdbc implements ConnectionCallback<List<ClientRecord>> {
 
-  public ClientListWebViewQuery(String filter, String orderBy, int desc, int limit, int offset) {
+  public ClientListWebViewJdbc(String filter, String orderBy, int desc, int limit, int offset) {
     super(filter, orderBy, desc, limit, offset);
   }
 

@@ -1,9 +1,9 @@
-package kz.greetgo.sandbox.db.jdbc;
+package kz.greetgo.sandbox.db.register_impl.jdbc;
 
 import java.util.ArrayList;
 import java.util.List;
 
-abstract public class AbstractClientQuery {
+public abstract class AbstractClientQuery {
 
   protected StringBuilder sql = new StringBuilder();
   List<Object> params = new ArrayList<>();
@@ -15,17 +15,17 @@ abstract public class AbstractClientQuery {
   int offset;
 
 
-  AbstractClientQuery(String filter) {
+  public AbstractClientQuery(String filter) {
     this.filter = getFormattedFilter(filter);
   }
 
-  AbstractClientQuery(String filter, String orderBy, int desc) {
+  public AbstractClientQuery(String filter, String orderBy, int desc) {
     this(filter);
     this.orderBy = orderBy;
     this.desc = desc;
   }
 
-  AbstractClientQuery(String filter, String orderBy, int order, int limit, int offset) {
+  public AbstractClientQuery(String filter, String orderBy, int order, int limit, int offset) {
     this(filter, orderBy, order);
     this.limit = limit;
     this.offset = offset;
@@ -65,7 +65,7 @@ abstract public class AbstractClientQuery {
     limit();
   }
 
-  private String getFormattedFilter(String filter) {
+  protected String getFormattedFilter(String filter) {
     if (filter == null || filter.isEmpty())
       return null;
     String[] filters = filter.trim().split(" ");

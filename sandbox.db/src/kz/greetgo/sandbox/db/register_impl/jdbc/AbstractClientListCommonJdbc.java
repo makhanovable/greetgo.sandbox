@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.db.jdbc;
+package kz.greetgo.sandbox.db.register_impl.jdbc;
 
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.util.ClientUtils;
@@ -7,13 +7,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 
-public abstract class AbstractClientListCommonQuery extends AbstractClientQuery {
+public abstract class AbstractClientListCommonJdbc extends AbstractClientQuery {
 
-  AbstractClientListCommonQuery(String filter, String orderBy, int order) {
+  AbstractClientListCommonJdbc(String filter, String orderBy, int order) {
     super(filter, orderBy, order);
   }
 
-  AbstractClientListCommonQuery(String filter, String orderBy, int desc, int limit, int offset) {
+  AbstractClientListCommonJdbc(String filter, String orderBy, int desc, int limit, int offset) {
     super(filter, orderBy, desc, limit, offset);
   }
 

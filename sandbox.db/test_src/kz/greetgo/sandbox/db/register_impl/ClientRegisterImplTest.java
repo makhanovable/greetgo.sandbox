@@ -26,7 +26,6 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.List;
 
-
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class ClientRegisterImplTest extends ParentTestNg {
@@ -45,13 +44,15 @@ public class ClientRegisterImplTest extends ParentTestNg {
     this.clientTestDao.get().insertClientDot(clientDot1);
 
     ClientDot assertion = rndClientDot();
+    String filter = assertion.name;
+    assertion.name += RND.str(10);
     this.clientTestDao.get().insertClientDot(assertion);
 
     {//getClientRecordList
 
       //
       //
-      List<ClientRecord> list = this.clientRegister.get().getClientRecordList(10, 0, assertion.name, null, 0);
+      List<ClientRecord> list = this.clientRegister.get().getClientRecordList(10, 0, filter, null, 0);
       //
       //
 
@@ -517,6 +518,16 @@ public class ClientRegisterImplTest extends ParentTestNg {
     List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(clientToSave.id);
 
     assertThat(numberList.stream().anyMatch(o -> o.number.equals(toEdited.number))).isTrue();
+  }
+
+  @Test
+  public void updateClientTest() throws Exception {
+    throw new RuntimeException("Do it");
+  }
+
+  @Test
+  public void checkFillClientRecord() throws Exception {
+    throw new RuntimeException("Do it");
   }
 
   @Test

@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.db.jdbc;
+package kz.greetgo.sandbox.db.register_impl.jdbc;
 
 import kz.greetgo.db.ConnectionCallback;
 

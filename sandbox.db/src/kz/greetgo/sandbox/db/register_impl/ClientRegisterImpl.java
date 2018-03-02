@@ -12,9 +12,9 @@ import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.report.ClientReportView;
 import kz.greetgo.sandbox.db.dao.ClientDao;
-import kz.greetgo.sandbox.db.jdbc.ClientListReportViewQuery;
-import kz.greetgo.sandbox.db.jdbc.ClientListWebViewQuery;
-import kz.greetgo.sandbox.db.jdbc.ClientNumberQuery;
+import kz.greetgo.sandbox.db.register_impl.jdbc.ClientListReportViewJdbc;
+import kz.greetgo.sandbox.db.register_impl.jdbc.ClientListWebViewJdbc;
+import kz.greetgo.sandbox.db.register_impl.jdbc.ClientNumberQuery;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
 import java.util.List;
@@ -99,7 +99,7 @@ public class ClientRegisterImpl implements ClientRegister {
   @Override
   public List<ClientRecord> getClientRecordList(int limit, int page, String filter, final String orderBy, int desc) {
     int offset = limit * page;
-    ClientListWebViewQuery jdbc = new ClientListWebViewQuery(filter, orderBy, desc, limit, offset);
+    ClientListWebViewJdbc jdbc = new ClientListWebViewJdbc(filter, orderBy, desc, limit, offset);
     return jdbcSandbox.get().execute(jdbc);
   }
 
@@ -110,7 +110,7 @@ public class ClientRegisterImpl implements ClientRegister {
 
   @Override
   public void genClientRecordListReport(String filter, String orderBy, int desc, ClientReportView view) throws Exception {
-    ClientListReportViewQuery jdbc = new ClientListReportViewQuery(filter, orderBy, desc, view);
+    ClientListReportViewJdbc jdbc = new ClientListReportViewJdbc(filter, orderBy, desc, view);
     view.start();
     jdbcSandbox.get().execute(jdbc);
     view.finish();
