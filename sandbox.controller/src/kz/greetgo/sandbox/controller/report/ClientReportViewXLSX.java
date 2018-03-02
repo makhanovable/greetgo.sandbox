@@ -1,6 +1,7 @@
 package kz.greetgo.sandbox.controller.report;
 
 import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.util.ClientUtils;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
@@ -24,7 +25,8 @@ public class ClientReportViewXLSX implements ClientReportView {
   }
 
   @Override
-  public void start(String[] headers) throws Exception {
+  public void start() throws Exception {
+    String[] headers = ClientUtils.reportHeaders;
     this.columnNumber = headers.length;
     int i = 0;
     Row headerRow = sh.createRow(rowNumber++);
@@ -60,9 +62,8 @@ public class ClientReportViewXLSX implements ClientReportView {
 
   public static void main(String[] args) throws Exception {
     OutputStream out = new FileOutputStream("test.xlsx");
-    String[] headers = {"Full Name", "Charm", "Age", "Balance", "max Balance", "min Balance"};
     ClientReportViewXLSX clientReportViewXLSX = new ClientReportViewXLSX(out);
-    clientReportViewXLSX.start(headers);
+    clientReportViewXLSX.start();
     ClientRecord clientRecord = new ClientRecord();
     clientRecord.id = "myId";
     clientRecord.name = "myName";

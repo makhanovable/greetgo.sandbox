@@ -6,6 +6,7 @@ import kz.greetgo.sandbox.controller.model.ClientRecord;
 
 import com.itextpdf.text.Document;
 import com.itextpdf.text.PageSize;
+import kz.greetgo.sandbox.controller.util.ClientUtils;
 
 import java.io.FileOutputStream;
 import java.io.OutputStream;
@@ -22,10 +23,11 @@ public class ClientReportViewPDF implements ClientReportView {
   }
 
   @Override
-  public void start(String[] headers) throws Exception {
+  public void start() throws Exception {
     document = new Document(PageSize.A4, -30, -30, 30, 30);
     PdfWriter.getInstance(document, out);
     document.open();
+    String[] headers = ClientUtils.reportHeaders;
     table = new PdfPTable(headers.length);
     table.setHeaderRows(1);
     table.setSplitRows(false);
@@ -59,9 +61,8 @@ public class ClientReportViewPDF implements ClientReportView {
 
   public static void main(String[] args) throws Exception {
     OutputStream out = new FileOutputStream("test.pdf");
-    String[] headers = {"Full Name", "Charm", "Age", "Balance", "max Balance", "min Balance"};
     ClientReportViewPDF clientReportPDF = new ClientReportViewPDF(out);
-    clientReportPDF.start(headers);
+    clientReportPDF.start();
     ClientRecord clientRecord = new ClientRecord();
     clientRecord.id = "вампвапвып";
     clientRecord.name = "вфыывавыа";

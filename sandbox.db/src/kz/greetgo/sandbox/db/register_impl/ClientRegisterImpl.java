@@ -15,7 +15,6 @@ import kz.greetgo.sandbox.db.dao.ClientDao;
 import kz.greetgo.sandbox.db.jdbc.ClientListReportViewQuery;
 import kz.greetgo.sandbox.db.jdbc.ClientListWebViewQuery;
 import kz.greetgo.sandbox.db.jdbc.ClientNumberQuery;
-import kz.greetgo.sandbox.db.util.ClientUtils;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
 import java.util.List;
@@ -112,7 +111,7 @@ public class ClientRegisterImpl implements ClientRegister {
   @Override
   public void genClientRecordListReport(String filter, String orderBy, int desc, ClientReportView view) throws Exception {
     ClientListReportViewQuery jdbc = new ClientListReportViewQuery(filter, orderBy, desc, view);
-    view.start(ClientUtils.reportHeaders);
+    view.start();
     jdbcSandbox.get().execute(jdbc);
     view.finish();
   }

@@ -11,7 +11,11 @@ import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.report.ClientReportView;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
-import kz.greetgo.sandbox.db.stand.model.*;
+import kz.greetgo.sandbox.db.stand.model.CharmDot;
+import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
+import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
+import kz.greetgo.sandbox.db.stand.model.ClientDot;
+import kz.greetgo.sandbox.db.stand.model.ClientPhoneNumberDot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,10 +35,9 @@ public class ClientRegisterStand implements ClientRegister {
 
   @Override
   public void genClientRecordListReport(String filter, String orderBy, int order, ClientReportView view) throws Exception {
-    String[] headers = {"Full Name", "Charm", "Age", "Balance", "max Balance", "min Balance"};
 
     List<ClientRecord> list = new ArrayList<>();
-    view.start(headers);
+    view.start();
     for (ClientDot clientDot : this.db.get().clientStorage.values()) {
       ClientRecord clientRecord = clientDot.toClientRecord();
       if (this.db.get().clientAccountStorage.get(clientDot.id) != null && !this.db.get().clientAccountStorage.get(clientDot.id).isEmpty()) {

@@ -2,7 +2,6 @@ package kz.greetgo.sandbox.db.jdbc;
 
 import kz.greetgo.db.ConnectionCallback;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.db.util.ClientUtils;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
