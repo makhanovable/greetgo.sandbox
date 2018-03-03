@@ -12,5 +12,7 @@ public class MigrationConfig {
   public DbConfig dbConfig;
   public String originalFileName;
   public String afterRenameFileName;
+  public int batchSize = 50_000;
+
 
 }
