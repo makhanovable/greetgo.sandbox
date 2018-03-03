@@ -14,5 +14,7 @@ dependencies {
   testCompile project(':sandbox.stand:db').sourceSets.main.output
 // https://mvnrepository.com/artifact/com.jcraft/jsch
   compile group: 'com.jcraft', name: 'jsch', version: '0.1.54'
+  // https://mvnrepository.com/artifact/org.apache.commons/commons-compress
+  compile group: 'org.apache.commons', name: 'commons-compress', version: '1.0'
 
 }

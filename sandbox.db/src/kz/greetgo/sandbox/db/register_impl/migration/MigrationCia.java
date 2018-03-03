@@ -1,12 +1,12 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
-import kz.greetgo.sandbox.db.configs.DbConfig;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class MigrationCia extends Migration {
 
-  public MigrationCia(DbConfig operDb) {
-    super(operDb);
+
+  public MigrationCia(MigrationConfig config) {
+    super(config);
   }
 
   @Override

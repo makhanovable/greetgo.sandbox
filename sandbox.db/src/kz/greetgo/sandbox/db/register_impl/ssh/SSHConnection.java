@@ -1,13 +1,21 @@
 package kz.greetgo.sandbox.db.register_impl.ssh;
 
-import com.jcraft.jsch.*;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
 import kz.greetgo.sandbox.db.configs.SshConfig;
 import kz.greetgo.util.ServerUtil;
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Vector;
 import java.util.stream.Collectors;
+
 
 public class SSHConnection implements Closeable {
 
@@ -61,8 +69,10 @@ public class SSHConnection implements Closeable {
   }
 
   public void downloadFile(String fileName, OutputStream out) throws Exception {
-    try (InputStream stream = channel.get(fileName)) {
-      ServerUtil.copyStreamsAndCloseIn(stream, out);
+    try (InputStream in = channel.get(fileName);
+         BZip2CompressorInputStream bzIn = new BZip2CompressorInputStream(in)) {
+
+      ServerUtil.copyStreamsAndCloseIn(bzIn, out);
     }
   }
 
