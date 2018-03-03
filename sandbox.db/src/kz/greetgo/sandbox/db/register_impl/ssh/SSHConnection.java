@@ -5,7 +5,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 import kz.greetgo.sandbox.db.configs.SshConfig;
-import kz.greetgo.util.ServerUtil;
+import org.apache.commons.compress.utils.IOUtils;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -69,8 +69,7 @@ public class SSHConnection implements Closeable {
 
   public void downloadFile(String fileName, OutputStream out) throws Exception {
     try (InputStream in = channel.get(fileName)) {
-
-      ServerUtil.copyStreamsAndCloseIn(in, out);
+      IOUtils.copy(in, out);
     }
   }
 
