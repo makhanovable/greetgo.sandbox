@@ -6,6 +6,8 @@ import kz.greetgo.sandbox.controller.register.MigrationRegister;
 import kz.greetgo.sandbox.controller.util.Modules;
 import kz.greetgo.sandbox.db.beans.all.AllConfigFactory;
 
+import kz.greetgo.sandbox.db.configs.DbConfig;
+import kz.greetgo.sandbox.db.register_impl.migration.Migration;
 import kz.greetgo.sandbox.db.register_impl.migration.MigrationConfig;
 import kz.greetgo.sandbox.db.register_impl.ssh.SSHConnection;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
@@ -20,29 +22,41 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static kz.greetgo.sandbox.db.register_impl.migration.Migration.getCiaFileNamePattern;
+import static kz.greetgo.sandbox.db.register_impl.migration.Migration.getFrsFileNamePattern;
+
+@SuppressWarnings("unused")
 @Bean
 public class MigrationRegisterImpl implements MigrationRegister {
 
+  @SuppressWarnings("WeakerAccess")
   public BeanGetter<AllConfigFactory> allConfigFactory;
+  @SuppressWarnings("WeakerAccess")
   public BeanGetter<IdGenerator> idGenerator;
+  @SuppressWarnings("WeakerAccess")
   public BeanGetter<JdbcSandbox> jdbcSandbox;
 
 
-  private boolean isMigrationGoingOn = false;
+  private AtomicBoolean isMigrationGoingOn = new AtomicBoolean(false);
 
   final Logger logger = Logger.getLogger(getClass());
 
   @Override
   public void migrate() throws Exception {
-    if (isMigrationGoingOn)
-      return;
-    isMigrationGoingOn = true;
 
-    Pattern migrationFilePattern = Pattern.compile("(from_cia_(.*).xml.tar.bz2)|(from_frs_(.*).json_row.txt.tar.bz2)");
+    if (isMigrationGoingOn.get())
+      return;
+    isMigrationGoingOn.set(true);
+
+    @SuppressWarnings("DuplicateAlternationBranch")
+    Pattern migrationFilePattern = Pattern.compile("(" + getCiaFileNamePattern() + ")|(" + getFrsFileNamePattern() + ")");
 
     List<String> files = getFileNameList(migrationFilePattern);
 
@@ -50,9 +64,18 @@ public class MigrationRegisterImpl implements MigrationRegister {
       String fileName = files.get(0);
 
       MigrationConfig config = initConfig(fileName);
+      DbConfig dbConfig = allConfigFactory.get().createPostgresDbConfig();
 
       if (config != null) {
-//        Migration.getMigrationInstance(config).migrate();
+        Class.forName("org.postgresql.Driver");
+
+        try (Connection connection = DriverManager.getConnection(
+          dbConfig.url(),
+          dbConfig.username(),
+          dbConfig.password())) {
+
+          Migration.getMigrationInstance(config).migrate(connection);
+        }
 
       } else {
         System.out.println("somethink went wrong");
@@ -62,7 +85,7 @@ public class MigrationRegisterImpl implements MigrationRegister {
     }
 
 
-    isMigrationGoingOn = false;
+    isMigrationGoingOn.set(false);
   }
 
   private MigrationConfig initConfig(String fileName) throws Exception {
@@ -74,6 +97,7 @@ public class MigrationRegisterImpl implements MigrationRegister {
     config.ready = false;
     String tempFileName = Modules.dbDir() + "/build/migration/" + fileName;
     File copiedFile = new File(tempFileName);
+    //noinspection ResultOfMethodCallIgnored
     copiedFile.getParentFile().mkdirs();
 
     try (SSHConnection sshConnection = new SSHConnection(allConfigFactory.get().createSshConfig())) {
@@ -106,28 +130,31 @@ public class MigrationRegisterImpl implements MigrationRegister {
     if (!untareedFile.exists())
       return null;
 
+    //noinspection ResultOfMethodCallIgnored
     copiedFile.delete();
+    //noinspection ResultOfMethodCallIgnored
     decompressedFile.delete();
     config.toMigrate = untareedFile;
-
-    config.dbConfig = allConfigFactory.get().createPostgresDbConfig();
 
     config.ready = true;
     return config;
   }
 
   private void untarFile(File file, File dest) throws IOException {
+    //noinspection ResultOfMethodCallIgnored
     file.getParentFile().mkdirs();
+    //noinspection ResultOfMethodCallIgnored
     file.mkdir();
 
     try (FileInputStream fis = new FileInputStream(file);
          TarArchiveInputStream tis = new TarArchiveInputStream(fis)) {
 
-      TarArchiveEntry tarEntry = null;
+      TarArchiveEntry tarEntry;
 
       while ((tarEntry = tis.getNextTarEntry()) != null) {
 
         if (!tarEntry.isDirectory()) {
+          //noinspection ResultOfMethodCallIgnored
           dest.getParentFile().mkdirs();
           try (FileOutputStream fos = new FileOutputStream(dest)) {
             IOUtils.copy(tis, fos);
