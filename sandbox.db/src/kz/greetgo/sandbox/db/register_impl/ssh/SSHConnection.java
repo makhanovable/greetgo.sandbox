@@ -6,7 +6,6 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 import kz.greetgo.sandbox.db.configs.SshConfig;
 import kz.greetgo.util.ServerUtil;
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -69,10 +68,9 @@ public class SSHConnection implements Closeable {
   }
 
   public void downloadFile(String fileName, OutputStream out) throws Exception {
-    try (InputStream in = channel.get(fileName);
-         BZip2CompressorInputStream bzIn = new BZip2CompressorInputStream(in)) {
+    try (InputStream in = channel.get(fileName)) {
 
-      ServerUtil.copyStreamsAndCloseIn(bzIn, out);
+      ServerUtil.copyStreamsAndCloseIn(in, out);
     }
   }
 
