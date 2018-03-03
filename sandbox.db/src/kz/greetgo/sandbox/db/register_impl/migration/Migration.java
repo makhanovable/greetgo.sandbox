@@ -1,5 +1,8 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
 import java.sql.Connection;
 
 import java.sql.SQLException;
@@ -20,7 +23,6 @@ public abstract class Migration {
   @SuppressWarnings("WeakerAccess")
   protected Map<String, String> tableNames = new HashMap<>();
 
-
   @SuppressWarnings("WeakerAccess")
   protected Migration(MigrationConfig config) {
     this.config = config;
@@ -28,13 +30,13 @@ public abstract class Migration {
 
   protected abstract void createTempTables() throws SQLException;
 
-  protected abstract void parseFileAndUploadToTempTables();
+  protected abstract void parseFileAndUploadToTempTables() throws IOException, SAXException;
 
   protected abstract void updateErrorRows();
 
   protected abstract void loadErrorsAndWrite();
 
-  public void migrate(Connection connection) throws SQLException {
+  public void migrate(Connection connection) throws Exception {
     this.connection = connection;
     createTempTables();
     parseFileAndUploadToTempTables();
@@ -44,13 +46,13 @@ public abstract class Migration {
 
   @SuppressWarnings("WeakerAccess")
   protected void execSql(StringBuilder sb) throws SQLException {
-    try (Statement s = connection.createStatement()) {
+    try (Statement statement = connection.createStatement()) {
       String sql = sb.toString();
 
       for (String key : tableNames.keySet()) {
         sql = sql.replaceAll(key, tableNames.get(key));
       }
-      s.execute(sql);
+      statement.execute(sql);
     }
   }
 
@@ -77,7 +79,8 @@ public abstract class Migration {
     return "from_frs_(.*).json_row.txt.tar.bz2";
   }
 
-  public static String getCurrentDateString() {
+  @SuppressWarnings("WeakerAccess")
+  protected static String getCurrentDateString() {
     return new SimpleDateFormat("dd_mm_yyyy_hh_mm_ss").format(new Date());
   }
 

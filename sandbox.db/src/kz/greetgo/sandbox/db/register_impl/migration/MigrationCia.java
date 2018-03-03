@@ -1,22 +1,21 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
-import kz.greetgo.util.RND;
+import org.xml.sax.SAXException;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.io.IOException;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class MigrationCia extends Migration {
 
 
+  @SuppressWarnings("WeakerAccess")
   public MigrationCia(MigrationConfig config) {
     super(config);
   }
 
   @Override
   protected void createTempTables() throws SQLException {
-
     String date = getCurrentDateString();
 
     String client = "TMP_CLIENT_" + date + "_" + config.id;
@@ -27,48 +26,47 @@ public class MigrationCia extends Migration {
     tableNames.put("ClientPhone", phoneNumber);
 
     StringBuilder clientTable = new StringBuilder();
-    clientTable.append("create table Client (\n");
-    clientTable.append("id varchar(32),\n");
-    clientTable.append("name varchar(255),\n");
-    clientTable.append("surname varchar(255),\n");
-    clientTable.append("patronymic varchar(255),\n");
-    clientTable.append("gender varchar(10),\n");
-    clientTable.append("birthDate date,\n");
-    clientTable.append("charm varchar(32),\n");
-    clientTable.append("actual boolean default false,\n");
-    clientTable.append("error varchar(100),\n");
-    clientTable.append("cia_id varchar(100),\n");
-    clientTable.append("PRIMARY KEY (id)\n");
-    clientTable.append(")");
+    clientTable.append("create table Client (\n")
+      .append("  id varchar(32),\n")
+      .append("  name varchar(255),\n")
+      .append("  surname varchar(255),\n")
+      .append("  patronymic varchar(255),\n")
+      .append("  gender varchar(10),\n")
+      .append("  birthDate date,\n")
+      .append("  charm varchar(32),\n")
+      .append("  actual boolean default false,\n")
+      .append("  error varchar(100),\n")
+      .append("  cia_id varchar(100),\n")
+      .append("  PRIMARY KEY (id)\n")
+      .append(")");
 
     StringBuilder addrTable = new StringBuilder();
-    addrTable.append("create table ClientAddr (\n");
-    addrTable.append("client character varying(32),\n");
-    addrTable.append("type character varying(100),\n");
-    addrTable.append("street character varying(100),\n");
-    addrTable.append("house character varying(100),\n");
-    addrTable.append("flat character varying(100),\n");
-    addrTable.append("error varchar(100),\n");
-    addrTable.append("PRIMARY KEY (client, type)\n");
-    addrTable.append(")\n");
+    addrTable.append("create table ClientAddr (\n")
+      .append("  client character varying(32),\n")
+      .append("  type character varying(100),\n")
+      .append("  street character varying(100),\n")
+      .append("  house character varying(100),\n")
+      .append("  flat character varying(100),\n")
+      .append("  error varchar(100),\n")
+      .append("  PRIMARY KEY (client, type)\n")
+      .append(")\n");
 
     StringBuilder phoneTable = new StringBuilder();
-    phoneTable.append("create table ClientPhone (\n");
-    phoneTable.append(" client character varying(32),\n");
-    phoneTable.append(" number character varying(100),\n");
-    phoneTable.append(" type character varying(100),\n");
-    phoneTable.append(" error varchar(100),\n");
-    phoneTable.append(" PRIMARY KEY (client, number)\n");
-    phoneTable.append(")\n");
+    phoneTable.append("create table ClientPhone (\n")
+      .append("  client character varying(32),\n")
+      .append("  number character varying(100),\n")
+      .append("  type character varying(100),\n")
+      .append("  error varchar(100),\n")
+      .append("  PRIMARY KEY (client, number)\n")
+      .append(")\n");
 
     execSql(clientTable);
     execSql(addrTable);
     execSql(phoneTable);
-
   }
 
   @Override
-  protected void parseFileAndUploadToTempTables() {
+  protected void parseFileAndUploadToTempTables() throws IOException, SAXException {
     throw new NotImplementedException();
   }
 
