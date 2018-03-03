@@ -1,23 +1,25 @@
 package kz.greetgo.sandbox.db.register_impl;
 
-import kz.greetgo.db.ConnectionCallback;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.register.MigrationRegister;
 import kz.greetgo.sandbox.controller.util.Modules;
 import kz.greetgo.sandbox.db.beans.all.AllConfigFactory;
 
-import kz.greetgo.sandbox.db.configs.DbConfig;
-import kz.greetgo.sandbox.db.register_impl.migration.Migration;
-import kz.greetgo.sandbox.db.register_impl.migration.MigrationCia;
 import kz.greetgo.sandbox.db.register_impl.migration.MigrationConfig;
-import kz.greetgo.sandbox.db.register_impl.migration.MigrationFrs;
 import kz.greetgo.sandbox.db.register_impl.ssh.SSHConnection;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.apache.commons.compress.utils.IOUtils;
 import org.apache.log4j.Logger;
 
-import java.io.*;
-import java.sql.Connection;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -42,21 +44,18 @@ public class MigrationRegisterImpl implements MigrationRegister {
 
     Pattern migrationFilePattern = Pattern.compile("(from_cia_(.*).xml.tar.bz2)|(from_frs_(.*).json_row.txt.tar.bz2)");
 
-
     List<String> files = getFileNameList(migrationFilePattern);
 
     while (!files.isEmpty()) {
       String fileName = files.get(0);
-      String migrationId = idGenerator.get().newId();
-      System.out.println(fileName);
 
-      MigrationConfig config = initMigration(fileName);
+      MigrationConfig config = initConfig(fileName);
 
-      if (config.ready) {
-        //
-        System.out.println("ready");
-        Migration.initMigration(config);
-        //
+      if (config != null) {
+//        Migration.getMigrationInstance(config).migrate();
+
+      } else {
+        System.out.println("somethink went wrong");
       }
 
       files = getFileNameList(migrationFilePattern);
@@ -66,45 +65,91 @@ public class MigrationRegisterImpl implements MigrationRegister {
     isMigrationGoingOn = false;
   }
 
-  public static void main(String[] args) {
-    String tempFileName = Modules.dbDir()+"/build/migration/asdas.txt";
-    File file = new File(tempFileName);
-    file.getParentFile().mkdirs();
-    try (OutputStream out = new FileOutputStream(file)) {
-      out.write("asdasdasd".getBytes());
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-  private MigrationConfig initMigration(String fileName) throws Exception {
+  private MigrationConfig initConfig(String fileName) throws Exception {
+
     MigrationConfig config = new MigrationConfig();
 
     config.id = idGenerator.get().newId();
-    String tempFileName = "build/migration/" + fileName + ".unzipped.migrationId-" + config.id;
+    config.originalFileName = fileName;
+    config.ready = false;
+    String tempFileName = Modules.dbDir() + "/build/migration/" + fileName;
+    File copiedFile = new File(tempFileName);
+    copiedFile.getParentFile().mkdirs();
 
     try (SSHConnection sshConnection = new SSHConnection(allConfigFactory.get().createSshConfig())) {
+
       if (sshConnection.isFileExist(fileName)) {
         config.afterRenameFileName = fileName + ".migrating" + config.id;
         sshConnection.renameFileName(fileName, config.afterRenameFileName);
 
-        config.toMigrate = new File(tempFileName);
-
-        if (config.toMigrate.getParentFile().mkdirs()) {
-          try (OutputStream out = new FileOutputStream(config.toMigrate)) {
+        if (sshConnection.isFileExist(config.afterRenameFileName)) {
+          try (OutputStream out = new FileOutputStream(copiedFile)) {
             sshConnection.downloadFile(config.afterRenameFileName, out);
           }
         } else {
-          return config;
+          return null;
         }
-      } else
-        return config;
+      } else {
+        return null;
+      }
     }
-    DbConfig dbConfig = allConfigFactory.get().createPostgresDbConfig();
-    config.dbConfig = dbConfig;
+
+    String decompressed = copiedFile.getPath().replaceAll(".bz2", "");
+    File decompressedFile = new File(decompressed);
+    decompressFile(copiedFile, decompressedFile);
+    if (!decompressedFile.exists())
+      return null;
+
+    String untareed = decompressed.replaceAll(".tar", "");
+    File untareedFile = new File(untareed);
+    untarFile(decompressedFile, untareedFile);
+    if (!untareedFile.exists())
+      return null;
+
+    copiedFile.delete();
+    decompressedFile.delete();
+    config.toMigrate = untareedFile;
+
+    config.dbConfig = allConfigFactory.get().createPostgresDbConfig();
+
     config.ready = true;
     return config;
+  }
+
+  private void untarFile(File file, File dest) throws IOException {
+    file.getParentFile().mkdirs();
+    file.mkdir();
+
+    try (FileInputStream fis = new FileInputStream(file);
+         TarArchiveInputStream tis = new TarArchiveInputStream(fis)) {
+
+      TarArchiveEntry tarEntry = null;
+
+      while ((tarEntry = tis.getNextTarEntry()) != null) {
+
+        if (!tarEntry.isDirectory()) {
+          dest.getParentFile().mkdirs();
+          try (FileOutputStream fos = new FileOutputStream(dest)) {
+            IOUtils.copy(tis, fos);
+//          ServerUtil.copyStreamsAndCloseIn(tis, fos);
+            break;
+          }
+        }
+      }
+    }
+  }
+
+
+  private void decompressFile(File file, File dest) throws Exception {
+
+    try (
+      FileInputStream in = new FileInputStream(file);
+      BZip2CompressorInputStream bzIn = new BZip2CompressorInputStream(in);
+      OutputStream out = new FileOutputStream(dest)) {
+
+      IOUtils.copy(bzIn, out);
+//      ServerUtil.copyStreamsAndCloseIn(bzIn, out);
+    }
   }
 
   private List<String> getFileNameList(Pattern pattern) throws Exception {
