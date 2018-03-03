@@ -17,7 +17,7 @@ public class MigrationCia extends Migration {
   @Override
   protected void createTempTables() throws SQLException {
 
-    String date = new SimpleDateFormat("dd_mm_yyyy_hh_mm_ss").format(new Date());
+    String date = getCurrentDateString();
 
     String client = "TMP_CLIENT_" + date + "_" + config.id;
     String address = "TMP_CLIENT_ADDRESS_" + date + "_" + config.id;

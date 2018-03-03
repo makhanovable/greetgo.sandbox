@@ -4,6 +4,8 @@ import java.sql.Connection;
 
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -73,6 +75,10 @@ public abstract class Migration {
 
   public static String getFrsFileNamePattern() {
     return "from_frs_(.*).json_row.txt.tar.bz2";
+  }
+
+  public static String getCurrentDateString() {
+    return new SimpleDateFormat("dd_mm_yyyy_hh_mm_ss").format(new Date());
   }
 
 }
