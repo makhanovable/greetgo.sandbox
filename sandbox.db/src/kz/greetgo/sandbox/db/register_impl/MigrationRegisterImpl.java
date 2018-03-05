@@ -46,7 +46,7 @@ public class MigrationRegisterImpl implements MigrationRegister {
 
   private AtomicBoolean isMigrationGoingOn = new AtomicBoolean(false);
 
-  final Logger logger = Logger.getLogger(getClass());
+  private final Logger logger = Logger.getLogger(getClass());
 
   @Override
   public void migrate() throws Exception {
@@ -67,6 +67,7 @@ public class MigrationRegisterImpl implements MigrationRegister {
       DbConfig dbConfig = allConfigFactory.get().createPostgresDbConfig();
 
       if (config != null) {
+        config.idGenerator = idGenerator.get();
         Class.forName("org.postgresql.Driver");
 
         try (Connection connection = DriverManager.getConnection(
@@ -77,8 +78,6 @@ public class MigrationRegisterImpl implements MigrationRegister {
           Migration.getMigrationInstance(config).migrate(connection);
         }
 
-      } else {
-        System.out.println("somethink went wrong");
       }
 
       files = getFileNameList(migrationFilePattern);
@@ -111,9 +110,11 @@ public class MigrationRegisterImpl implements MigrationRegister {
             sshConnection.downloadFile(config.afterRenameFileName, out);
           }
         } else {
+          logger.trace("file " + config.afterRenameFileName + " no longer exist after renamed");
           return null;
         }
       } else {
+        logger.trace("file " + fileName + " not found in ssh directory");
         return null;
       }
     }
@@ -121,14 +122,18 @@ public class MigrationRegisterImpl implements MigrationRegister {
     String decompressed = copiedFile.getPath().replaceAll(".bz2", "");
     File decompressedFile = new File(decompressed);
     decompressFile(copiedFile, decompressedFile);
-    if (!decompressedFile.exists())
+    if (!decompressedFile.exists()) {
+      logger.trace("cant decompress file");
       return null;
+    }
 
     String untareed = decompressed.replaceAll(".tar", "");
     File untareedFile = new File(untareed);
     untarFile(decompressedFile, untareedFile);
-    if (!untareedFile.exists())
+    if (!untareedFile.exists()) {
+      logger.trace("cant untar file");
       return null;
+    }
 
     //noinspection ResultOfMethodCallIgnored
     copiedFile.delete();

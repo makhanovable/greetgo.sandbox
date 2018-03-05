@@ -1,9 +1,10 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
-import org.xml.sax.SAXException;
+import kz.greetgo.sandbox.db.register_impl.migration.handler.CiaHandler;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.io.IOException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import java.sql.SQLException;
 
 public class MigrationCia extends Migration {
@@ -12,6 +13,7 @@ public class MigrationCia extends Migration {
   @SuppressWarnings("WeakerAccess")
   public MigrationCia(MigrationConfig config) {
     super(config);
+
   }
 
   @Override
@@ -28,6 +30,7 @@ public class MigrationCia extends Migration {
     StringBuilder clientTable = new StringBuilder();
     clientTable.append("create table Client (\n")
       .append("  id varchar(32),\n")
+      .append("  cia_id varchar(100),\n")
       .append("  name varchar(255),\n")
       .append("  surname varchar(255),\n")
       .append("  patronymic varchar(255),\n")
@@ -36,13 +39,13 @@ public class MigrationCia extends Migration {
       .append("  charm varchar(32),\n")
       .append("  actual boolean default false,\n")
       .append("  error varchar(100),\n")
-      .append("  cia_id varchar(100),\n")
       .append("  PRIMARY KEY (id)\n")
       .append(")");
 
     StringBuilder addrTable = new StringBuilder();
     addrTable.append("create table ClientAddr (\n")
       .append("  client character varying(32),\n")
+      .append("  cia_id character varying(32),\n")
       .append("  type character varying(100),\n")
       .append("  street character varying(100),\n")
       .append("  house character varying(100),\n")
@@ -54,6 +57,7 @@ public class MigrationCia extends Migration {
     StringBuilder phoneTable = new StringBuilder();
     phoneTable.append("create table ClientPhone (\n")
       .append("  client character varying(32),\n")
+      .append("  cia_id character varying(32),\n")
       .append("  number character varying(100),\n")
       .append("  type character varying(100),\n")
       .append("  error varchar(100),\n")
@@ -66,12 +70,17 @@ public class MigrationCia extends Migration {
   }
 
   @Override
-  protected void parseFileAndUploadToTempTables() throws IOException, SAXException {
-    throw new NotImplementedException();
+  protected void parseFileAndUploadToTempTables() throws Exception {
+    try (CiaHandler handler = new CiaHandler(config.idGenerator, getMaxBatchSize(), connection, tableNames)) {
+      SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
+      parser.parse(config.toMigrate, handler);
+    }
   }
 
   @Override
   protected void updateErrorRows() {
+
+
     throw new NotImplementedException();
   }
 
@@ -79,5 +88,6 @@ public class MigrationCia extends Migration {
   protected void loadErrorsAndWrite() {
     throw new NotImplementedException();
   }
+
 
 }
