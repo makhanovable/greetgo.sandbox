@@ -1,10 +1,6 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
-import org.xml.sax.SAXException;
-
-import java.io.IOException;
 import java.sql.Connection;
-
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
@@ -18,7 +14,7 @@ public abstract class Migration {
   @SuppressWarnings("WeakerAccess")
   protected MigrationConfig config;
 
-  private Connection connection;
+  protected Connection connection;
 
   @SuppressWarnings("WeakerAccess")
   protected Map<String, String> tableNames = new HashMap<>();
@@ -30,7 +26,7 @@ public abstract class Migration {
 
   protected abstract void createTempTables() throws SQLException;
 
-  protected abstract void parseFileAndUploadToTempTables() throws IOException, SAXException;
+  protected abstract void parseFileAndUploadToTempTables() throws Exception;
 
   protected abstract void updateErrorRows();
 
@@ -82,6 +78,10 @@ public abstract class Migration {
   @SuppressWarnings("WeakerAccess")
   protected static String getCurrentDateString() {
     return new SimpleDateFormat("dd_mm_yyyy_hh_mm_ss").format(new Date());
+  }
+
+  public static int getMaxBatchSize() {
+    return 5000;
   }
 
 }
