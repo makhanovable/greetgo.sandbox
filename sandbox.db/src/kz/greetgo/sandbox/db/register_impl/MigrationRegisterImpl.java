@@ -24,7 +24,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -102,11 +104,14 @@ public class MigrationRegisterImpl implements MigrationRegister {
     try (SSHConnection sshConnection = new SSHConnection(allConfigFactory.get().createSshConfig())) {
 
       if (sshConnection.isFileExist(fileName)) {
+        //TODO вернуть rename
         config.afterRenameFileName = fileName + ".migrating" + config.id;
         sshConnection.renameFileName(fileName, config.afterRenameFileName);
 
         if (sshConnection.isFileExist(config.afterRenameFileName)) {
+//        if (sshConnection.isFileExist(fileName)) {
           try (OutputStream out = new FileOutputStream(copiedFile)) {
+//            sshConnection.downloadFile(fileName, out);
             sshConnection.downloadFile(config.afterRenameFileName, out);
           }
         } else {

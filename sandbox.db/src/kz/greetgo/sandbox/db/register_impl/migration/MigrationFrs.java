@@ -22,6 +22,7 @@ public class MigrationFrs extends Migration {
     tableNames.put("ClientAccount", account);
     tableNames.put("ClientAccountTransaction", transaction);
 
+    @SuppressWarnings("StringBufferReplaceableByString")
     StringBuilder accountTable = new StringBuilder();
     accountTable.append("create table ClientAccount (\n")
       .append("  id varchar(32),\n")
@@ -35,6 +36,7 @@ public class MigrationFrs extends Migration {
       .append("  PRIMARY KEY(id)\n")
       .append(")");
 
+    @SuppressWarnings("StringBufferReplaceableByString")
     StringBuilder transactionTable = new StringBuilder();
     transactionTable.append("create table ClientAccountTransaction (\n")
       .append("  id varchar(35),\n")
@@ -45,8 +47,8 @@ public class MigrationFrs extends Migration {
       .append("  PRIMARY KEY (id)\n")
       .append(")");
 
-    execSql(accountTable);
-    execSql(transactionTable);
+    execSql(accountTable.toString());
+    execSql(transactionTable.toString());
 
     throw new NotImplementedException();
   }

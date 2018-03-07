@@ -1,5 +1,6 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
+import javax.swing.plaf.synth.SynthOptionPaneUI;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -28,22 +29,25 @@ public abstract class Migration {
 
   protected abstract void parseFileAndUploadToTempTables() throws Exception;
 
-  protected abstract void updateErrorRows();
+  protected abstract void updateErrorRows() throws SQLException;
 
   protected abstract void loadErrorsAndWrite();
 
   public void migrate(Connection connection) throws Exception {
     this.connection = connection;
+    System.out.println("step1");
     createTempTables();
+    System.out.println("step2");
     parseFileAndUploadToTempTables();
+    System.out.println("step3");
     updateErrorRows();
-    loadErrorsAndWrite();
+    System.out.println("step4");
+//    loadErrorsAndWrite();
   }
 
   @SuppressWarnings("WeakerAccess")
-  protected void execSql(StringBuilder sb) throws SQLException {
+  protected void execSql(String sql) throws SQLException {
     try (Statement statement = connection.createStatement()) {
-      String sql = sb.toString();
 
       for (String key : tableNames.keySet()) {
         sql = sql.replaceAll(key, tableNames.get(key));
@@ -77,7 +81,8 @@ public abstract class Migration {
 
   @SuppressWarnings("WeakerAccess")
   protected static String getCurrentDateString() {
-    return new SimpleDateFormat("dd_mm_yyyy_hh_mm_ss").format(new Date());
+    return new Date().getTime() + "_";
+//    return new SimpleDateFormat("dd_mm_yyyy_hh_mm_ss").format(new Date());
   }
 
   public static int getMaxBatchSize() {

@@ -7,13 +7,15 @@
     <sql endDelimiter=";;"><![CDATA[
       create table Client (
         id varchar(32) NOT NULL,
+        cia_id varchar(32) UNIQUE,
         name varchar(255) NOT NULL,
         surname varchar(255) NOT NULL,
         patronymic varchar(255),
-        gender varchar(10) NOT NULL,
+        gender varchar(10),
         birthDate date NOT NULL,
-        charm varchar(32) NOT NULL,
+        charm varchar(32),
         actual boolean default true,
+        mig_status varchar(100),
         PRIMARY KEY (id)
       )
     ]]></sql>

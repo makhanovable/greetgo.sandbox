@@ -7,6 +7,7 @@
     <sql endDelimiter=";;"><![CDATA[
       create table ClientAddr (
         client character varying(32) NOT NULL,
+        cia_id character varying(32),
         type character varying(100) NOT NULL,
         street character varying(100) NOT NULL,
         house character varying(100) NOT NULL,

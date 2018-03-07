@@ -57,20 +57,20 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
 
   private void initPreparedStatements() throws SQLException {
     @SuppressWarnings("SqlResolve")
-    String insertClient = "INSERT INTO Client (id, cia_id, name, surname, patronymic, gender, birthDate, charm) VALUES " +
+    String insertClient = "INSERT INTO TMP_CLIENT (id, cia_id, name, surname, patronymic, gender, birthDate, charm) VALUES " +
       "(?, ?, ?, ?, ?, ?, ?, ?)";
 
     @SuppressWarnings({"SqlResolve"})
-    String insertAddr = "INSERT INTO ClientAddr (client, cia_id, type, street, house, flat) VALUES " +
-      "(?, ?, ?, ?, ?, ?)";
+    String insertAddr = "INSERT INTO TMP_ADDRESS (cia_id, type, street, house, flat) VALUES " +
+      "(?, ?, ?, ?, ?)";
 
     @SuppressWarnings({"SqlResolve"})
-    String insertPhone = "INSERT INTO ClientPhone (client, cia_id, number, type) VALUES " +
-      "(?, ?, ?, ?)";
+    String insertPhone = "INSERT INTO TMP_PHONE (cia_id, number, type) VALUES " +
+      "(?, ?, ?)";
 
-    insertClient = insertClient.replaceAll("Client", tableNames.get("Client").toLowerCase());
-    insertAddr = insertAddr.replaceAll("ClientAddr", tableNames.get("ClientAddr").toLowerCase());
-    insertPhone = insertPhone.replaceAll("ClientPhone", tableNames.get("ClientPhone").toLowerCase());
+    insertClient = insertClient.replaceAll("TMP_CLIENT", tableNames.get("TMP_CLIENT").toLowerCase());
+    insertAddr = insertAddr.replaceAll("TMP_ADDRESS", tableNames.get("TMP_ADDRESS").toLowerCase());
+    insertPhone = insertPhone.replaceAll("TMP_PHONE", tableNames.get("TMP_PHONE").toLowerCase());
 
     clientPS = connection.prepareStatement(insertClient);
     addrPS = connection.prepareStatement(insertAddr);
@@ -93,7 +93,6 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
 
       if (client.reg != null) {
         index = 1;
-        addrPS.setObject(index++, client.id);
         addrPS.setObject(index++, client.cia_id);
         addrPS.setObject(index++, client.reg.type.toString());
         addrPS.setObject(index++, client.reg.street);
@@ -105,7 +104,6 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
       }
       if (client.fact != null) {
         index = 1;
-        addrPS.setObject(index++, client.id);
         addrPS.setObject(index++, client.cia_id);
         addrPS.setObject(index++, client.fact.type.toString());
         addrPS.setObject(index++, client.fact.street);
@@ -118,7 +116,6 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
 
       for (PhoneCia phoneCia : client.numbers) {
         index = 1;
-        phonePS.setObject(index++, client.id);
         phonePS.setObject(index++, client.cia_id);
         phonePS.setObject(index++, phoneCia.number);
         phonePS.setObject(index, phoneCia.type.toString());
