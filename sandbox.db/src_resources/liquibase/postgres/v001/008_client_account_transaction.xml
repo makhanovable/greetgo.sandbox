@@ -9,8 +9,8 @@
         id varchar(35) NOT NULL,
         account varchar(35) NOT NULL,
         money real NOT NULL,
-        registeredAt timestamp with time zone NOT NULL,
-        type varchar(35) NOT NULL,
+        finishedAt timestamp with time zone NOT NULL,
+        type varchar(35),
         PRIMARY KEY (id)
       )
     ]]></sql>
