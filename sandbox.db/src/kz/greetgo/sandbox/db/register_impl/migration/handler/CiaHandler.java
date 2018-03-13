@@ -37,7 +37,7 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
   private PreparedStatement phonePS;
 
   private int batchCount = 0;
-  private Boolean originalAutoCommit;
+  private final Boolean originalAutoCommit;
 
   private final Logger logger = Logger.getLogger(getClass());
 
