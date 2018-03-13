@@ -27,15 +27,15 @@ public abstract class Migration {
 
   protected abstract void parseFileAndUploadToTempTables() throws Exception;
 
-  protected abstract void UpsertIntoDbValidRowsAndMarkErrors() throws SQLException;
+  protected abstract void MarkErrorsAndUpsertIntoDbValidRows() throws SQLException;
 
-  protected abstract void loadErrorsAndWrite();
+  protected abstract void loadErrorsAndWrite() throws SQLException;
 
   public void migrate(Connection connection) throws Exception {
     this.connection = connection;
     createTempTables();
     parseFileAndUploadToTempTables();
-    UpsertIntoDbValidRowsAndMarkErrors();
+    MarkErrorsAndUpsertIntoDbValidRows();
 //    loadErrorsAndWrite();
   }
 
@@ -75,10 +75,11 @@ public abstract class Migration {
 
   @SuppressWarnings("WeakerAccess")
   protected static String getCurrentDateString() {
-    return new Date().getTime() + "_";
+    return new Date().getTime() + "";
 //    return new SimpleDateFormat("dd_mm_yyyy_hh_mm_ss").format(new Date());
   }
 
+  @SuppressWarnings("WeakerAccess")
   public static int getMaxBatchSize() {
     return 5000;
   }

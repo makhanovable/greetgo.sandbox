@@ -42,7 +42,7 @@ public class MigrationCia extends Migration {
       .append("  charm varchar(32),\n")
       .append("  actual boolean default false,\n")
       .append("  error varchar(100),\n")
-      .append("  mig_status varchar(100) default 'NOT READY',\n")
+      .append("  mig_status varchar(100) default 'NOT_READY',\n")
       .append("  PRIMARY KEY (no)\n")
       .append(")");
 
@@ -55,7 +55,7 @@ public class MigrationCia extends Migration {
       .append("  street character varying(100),\n")
       .append("  house character varying(100),\n")
       .append("  flat character varying(100),\n")
-      .append("  mig_status character varying(100) default 'NOT READY',\n")
+      .append("  mig_status character varying(100) default 'NOT_READY',\n")
       .append("  error varchar(100),\n")
       .append("  PRIMARY KEY (no)\n")
       .append(")\n");
@@ -67,7 +67,7 @@ public class MigrationCia extends Migration {
       .append("  cia_id character varying(32),\n")
       .append("  number character varying(100),\n")
       .append("  type character varying(100),\n")
-      .append("  mig_status character varying(100) default 'NOT READY',\n")
+      .append("  mig_status character varying(100) default 'NOT_READY',\n")
       .append("  error varchar(100),\n")
       .append("  PRIMARY KEY (no)\n")
       .append(")\n");
@@ -86,7 +86,7 @@ public class MigrationCia extends Migration {
   }
 
   @Override
-  protected void UpsertIntoDbValidRowsAndMarkErrors() throws SQLException {
+  protected void MarkErrorsAndUpsertIntoDbValidRows() throws SQLException {
     //required: Записи, у которых нет или пустое поле surname, name, birth_date - ошибочные.
     execSql("update TMP_CLIENT set error = 'cia_id cant be null' where cia_id is null and error is null");
     execSql("update TMP_CLIENT set error = 'name cant be null' where name is null and error is null");
@@ -113,7 +113,7 @@ public class MigrationCia extends Migration {
       "  on CONFLICT (name) do NOTHING;");
 
     //только последний рекорд одинаковых cia_id актуальный
-    execSql("update TMP_CLIENT tmp set mig_status='LAST ACTUAL' FROM\n" +
+    execSql("update TMP_CLIENT tmp set mig_status='LAST_ACTUAL' FROM\n" +
       "  (SELECT id, error, ROW_NUMBER() OVER(PARTITION BY cia_id order by no desc) AS rn\n" +
       "                  from TMP_CLIENT WHERE error is NULL) as rown\n" +
       "WHERE tmp.id = rown.id and rown.rn = 1;");
@@ -121,26 +121,26 @@ public class MigrationCia extends Migration {
     execSql("update TMP_CLIENT as tmp\n" +
       "set client_id = c.id\n" +
       "from client as c\n" +
-      "where c.cia_id=tmp.cia_id AND TMP.mig_status='LAST ACTUAL';");
+      "where c.cia_id=tmp.cia_id AND TMP.mig_status='LAST_ACTUAL';");
 
     execSql("update TMP_CLIENT\n" +
-      "set mig_status = 'TO INSERT'\n" +
-      "WHERE mig_status='LAST ACTUAL' AND client_id IS NULL\n");
+      "set mig_status = 'TO_INSERT'\n" +
+      "WHERE mig_status='LAST_ACTUAL' AND client_id IS NULL\n");
 
     execSql("update TMP_CLIENT\n" +
-      "set mig_status = 'TO UPDATE'\n" +
-      "WHERE mig_status='LAST ACTUAL' AND client_id NOTNULL\n");
+      "set mig_status = 'TO_UPDATE'\n" +
+      "WHERE mig_status='LAST_ACTUAL' AND client_id NOTNULL\n");
 
     execSql("INSERT INTO client (id, cia_id, name, surname, patronymic, gender, birthdate, charm, mig_status)\n" +
-      "  SELECT id, cia_id, name, surname, patronymic, gender, birthdate, charm, 'just migrated'\n" +
+      "  SELECT id, cia_id, name, surname, patronymic, gender, birthdate, charm, 'just_migrated'\n" +
       "  FROM TMP_CLIENT tmp\n" +
-      "WHERE tmp.mig_status='TO INSERT';");
+      "WHERE tmp.mig_status='TO_INSERT';");
 
     execSql("UPDATE client as c\n" +
       "SET  (name, surname, patronymic, gender, birthdate, charm, mig_status)=\n" +
-      "    (tmp.name, tmp.surname, tmp.patronymic, tmp.gender, tmp.birthdate, tmp.charm, 'just migrated')\n" +
+      "    (tmp.name, tmp.surname, tmp.patronymic, tmp.gender, tmp.birthdate, tmp.charm, 'just_updated')\n" +
       "FROM TMP_CLIENT tmp\n" +
-      "WHERE tmp.mig_status='TO UPDATE' AND tmp.client_id=c.id;");
+      "WHERE tmp.mig_status='TO_UPDATE' AND tmp.client_id=c.id;");
 
     //addr// нужно узнать
 //    execSql("update TMP_ADDRESS set error = 'type cant be null' where type is null and error is null");
@@ -148,7 +148,7 @@ public class MigrationCia extends Migration {
 //    execSql("update TMP_ADDRESS set error = 'house cant be null' where house is null and error is null");
 
     //только последний рекорд одинаковых cia_id актуальный
-    execSql("update TMP_ADDRESS tmp set mig_status='LAST ACTUAL' FROM\n" +
+    execSql("update TMP_ADDRESS tmp set mig_status='LAST_ACTUAL' FROM\n" +
       "  (SELECT no, cia_id, ROW_NUMBER() OVER(PARTITION BY type, cia_id order by no desc) AS rn\n" +
       "   from TMP_ADDRESS WHERE error is NULL) as rown\n" +
       "WHERE rown.rn=1 and tmp.no=rown.no;");
@@ -158,17 +158,17 @@ public class MigrationCia extends Migration {
       "    FROM TMP_ADDRESS addr\n" +
       "      INNER JOIN TMP_CLIENT cl\n" +
       "      on addr.cia_id=cl.cia_id\n" +
-      "    WHERE cl.mig_status='TO INSERT' and addr.mig_status='LAST ACTUAL';");
+      "    WHERE cl.mig_status='TO_INSERT' and addr.mig_status='LAST_ACTUAL';");
 
     execSql("UPDATE clientaddr AS addr\n" +
       "  set (street, house, flat)=(tmp.street, tmp.house, tmp.flat)\n" +
       "  from TMP_ADDRESS tmp\n" +
       "  INNER JOIN TMP_CLIENT cl\n" +
       "    on tmp.cia_id=cl.cia_id\n" +
-      "WHERE cl.mig_status='TO UPDATE' AND addr.cia_id=tmp.cia_id AND tmp.mig_status='LAST ACTUAL';");
+      "WHERE cl.mig_status='TO_UPDATE' AND addr.cia_id=tmp.cia_id AND tmp.mig_status='LAST_ACTUAL';");
 
 
-    execSql("update TMP_PHONE tmp set mig_status='LAST ACTUAL' FROM\n" +
+    execSql("update TMP_PHONE tmp set mig_status='LAST_ACTUAL' FROM\n" +
       "(SELECT no, cia_id, ROW_NUMBER() OVER(PARTITION BY type, cia_id order by no desc) AS rn\n" +
       "from TMP_PHONE  WHERE error is NULL) as rown\n" +
       "WHERE rown.rn=1 and tmp.no=rown.no;");
@@ -179,27 +179,41 @@ public class MigrationCia extends Migration {
       "  FROM TMP_PHONE phone\n" +
       "    INNER JOIN TMP_CLIENT cl\n" +
       "      on phone.cia_id=cl.cia_id\n" +
-      "  WHERE cl.mig_status='TO INSERT' and phone.mig_status='LAST ACTUAL';");
+      "  WHERE cl.mig_status='TO_INSERT' and phone.mig_status='LAST_ACTUAL';");
 
     execSql("insert into clientphone (client, number, type)\n" +
       "  SELECT client_id, number, type from TMP_PHONE tmp\n" +
       "    INNER JOIN TMP_CLIENT cl\n" +
       "      ON tmp.cia_id = cl.cia_id\n" +
-      "  WHERE cl.mig_status='TO UPDATE' and tmp.mig_status='LAST ACTUAL'\n" +
+      "  WHERE cl.mig_status='TO_UPDATE' and tmp.mig_status='LAST_ACTUAL'\n" +
       "ON CONFLICT (client, number)\n" +
       "  do UPDATE set type=EXCLUDED.type");
 
+
     //actualize
     execSql("update Client c set mig_status='actualized', actual=true\n" +
-      "where c.mig_status='just inserted' or c.mig_status='just updated';\n");
+      "where c.mig_status='just_migrated' or c.mig_status='just_updated';\n");
 
 //    throw new NotImplementedException();
 
   }
 
   @Override
-  protected void loadErrorsAndWrite() {
+  protected void loadErrorsAndWrite() throws SQLException {
+
+//    try (PreparedStatement ps = connection.prepareStatement("");
+//         ResultSet rs = ps.executeQuery()) {
+//
+//      while (rs.next()) {
+////          ClientRecord cr = rsToClientRecord(rs);
+////          result.add(cr);
+//
+//      }
+//    }
+
+
     throw new NotImplementedException();
+
   }
 
 
