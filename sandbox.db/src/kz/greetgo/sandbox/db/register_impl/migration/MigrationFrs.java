@@ -59,7 +59,7 @@ public class MigrationFrs extends Migration {
   }
 
   @Override
-  protected void updateErrorRows() {
+  protected void UpsertIntoDbValidRowsAndMarkErrors() {
     throw new NotImplementedException();
   }
 

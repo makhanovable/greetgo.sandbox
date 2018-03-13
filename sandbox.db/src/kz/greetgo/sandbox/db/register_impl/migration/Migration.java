@@ -1,10 +1,8 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
-import javax.swing.plaf.synth.SynthOptionPaneUI;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,19 +27,15 @@ public abstract class Migration {
 
   protected abstract void parseFileAndUploadToTempTables() throws Exception;
 
-  protected abstract void updateErrorRows() throws SQLException;
+  protected abstract void UpsertIntoDbValidRowsAndMarkErrors() throws SQLException;
 
   protected abstract void loadErrorsAndWrite();
 
   public void migrate(Connection connection) throws Exception {
     this.connection = connection;
-    System.out.println("step1");
     createTempTables();
-    System.out.println("step2");
     parseFileAndUploadToTempTables();
-    System.out.println("step3");
-    updateErrorRows();
-    System.out.println("step4");
+    UpsertIntoDbValidRowsAndMarkErrors();
 //    loadErrorsAndWrite();
   }
 

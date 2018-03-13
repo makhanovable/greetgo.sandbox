@@ -86,7 +86,7 @@ public class MigrationCia extends Migration {
   }
 
   @Override
-  protected void updateErrorRows() throws SQLException {
+  protected void UpsertIntoDbValidRowsAndMarkErrors() throws SQLException {
     //required: Записи, у которых нет или пустое поле surname, name, birth_date - ошибочные.
     execSql("update TMP_CLIENT set error = 'cia_id cant be null' where cia_id is null and error is null");
     execSql("update TMP_CLIENT set error = 'name cant be null' where name is null and error is null");
@@ -131,14 +131,14 @@ public class MigrationCia extends Migration {
       "set mig_status = 'TO UPDATE'\n" +
       "WHERE mig_status='LAST ACTUAL' AND client_id NOTNULL\n");
 
-    execSql("INSERT INTO client (id, cia_id, name, surname, patronymic, gender, birthdate, charm)\n" +
-      "  SELECT id, cia_id, name, surname, patronymic, gender, birthdate, charm\n" +
+    execSql("INSERT INTO client (id, cia_id, name, surname, patronymic, gender, birthdate, charm, mig_status)\n" +
+      "  SELECT id, cia_id, name, surname, patronymic, gender, birthdate, charm, 'just migrated'\n" +
       "  FROM TMP_CLIENT tmp\n" +
       "WHERE tmp.mig_status='TO INSERT';");
 
     execSql("UPDATE client as c\n" +
-      "SET  (name, surname, patronymic, gender, birthdate, charm)=\n" +
-      "    (tmp.name, tmp.surname, tmp.patronymic, tmp.gender, tmp.birthdate, tmp.charm)\n" +
+      "SET  (name, surname, patronymic, gender, birthdate, charm, mig_status)=\n" +
+      "    (tmp.name, tmp.surname, tmp.patronymic, tmp.gender, tmp.birthdate, tmp.charm, 'just migrated')\n" +
       "FROM TMP_CLIENT tmp\n" +
       "WHERE tmp.mig_status='TO UPDATE' AND tmp.client_id=c.id;");
 
@@ -146,11 +146,6 @@ public class MigrationCia extends Migration {
 //    execSql("update TMP_ADDRESS set error = 'type cant be null' where type is null and error is null");
 //    execSql("update TMP_ADDRESS set error = 'street cant be null' where street is null and error is null");
 //    execSql("update TMP_ADDRESS set error = 'house cant be null' where house is null and error is null");
-
-    //адреса не валидных клиентов сразу отпадает
-    execSql("UPDATE TMP_ADDRESS addr set error='client not valid'\n" +
-      "from TMP_CLIENT cl\n" +
-      "WHERE addr.cia_id = cl.cia_id and cl.error NOTNULL;");
 
     //только последний рекорд одинаковых cia_id актуальный
     execSql("update TMP_ADDRESS tmp set mig_status='LAST ACTUAL' FROM\n" +
@@ -173,19 +168,30 @@ public class MigrationCia extends Migration {
       "WHERE cl.mig_status='TO UPDATE' AND addr.cia_id=tmp.cia_id AND tmp.mig_status='LAST ACTUAL';");
 
 
-//    //phone
-//    execSql("update TMP_PHONE set error = 'number cant be null' where number is null and error is null");
-//
-//    //номеры не валидных клиентов сразу отпадает
-//    execSql("UPDATE TMP_PHONE phone set error='client not valid'\n" +
-//      "from TMP_CLIENT cl\n" +
-//      "WHERE phone.cia_id = cl.cia_id and cl.error NOTNULL;");
+    execSql("update TMP_PHONE tmp set mig_status='LAST ACTUAL' FROM\n" +
+      "(SELECT no, cia_id, ROW_NUMBER() OVER(PARTITION BY type, cia_id order by no desc) AS rn\n" +
+      "from TMP_PHONE  WHERE error is NULL) as rown\n" +
+      "WHERE rown.rn=1 and tmp.no=rown.no;");
 
 
-//    //actualize
-//    execSql("update Client c set mig_status='actualized', actual=true\n" +
-//      "where c.mig_status='just inserted' or c.mig_status='just updated';\n");
+    execSql("insert into clientphone (client, number, type)\n" +
+      "  SELECT cl.id, phone.number, phone.type\n" +
+      "  FROM TMP_PHONE phone\n" +
+      "    INNER JOIN TMP_CLIENT cl\n" +
+      "      on phone.cia_id=cl.cia_id\n" +
+      "  WHERE cl.mig_status='TO INSERT' and phone.mig_status='LAST ACTUAL';");
 
+    execSql("insert into clientphone (client, number, type)\n" +
+      "  SELECT client_id, number, type from TMP_PHONE tmp\n" +
+      "    INNER JOIN TMP_CLIENT cl\n" +
+      "      ON tmp.cia_id = cl.cia_id\n" +
+      "  WHERE cl.mig_status='TO UPDATE' and tmp.mig_status='LAST ACTUAL'\n" +
+      "ON CONFLICT (client, number)\n" +
+      "  do UPDATE set type=EXCLUDED.type");
+
+    //actualize
+    execSql("update Client c set mig_status='actualized', actual=true\n" +
+      "where c.mig_status='just inserted' or c.mig_status='just updated';\n");
 
 //    throw new NotImplementedException();
 
