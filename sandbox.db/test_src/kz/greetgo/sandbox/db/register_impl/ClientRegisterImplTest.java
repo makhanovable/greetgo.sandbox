@@ -17,14 +17,22 @@ import kz.greetgo.sandbox.db.stand.model.ClientPhoneNumberDot;
 import kz.greetgo.sandbox.db.test.dao.CharmTestDao;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
+import kz.greetgo.sandbox.db.stand.model.CharmDot;
+import kz.greetgo.sandbox.db.stand.model.ClientAccountDot;
+import kz.greetgo.sandbox.db.test.dao.AccountTestDao;
 import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -34,16 +42,117 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public BeanGetter<ClientTestDao> clientTestDao;
   public BeanGetter<CharmTestDao> charmTestDao;
   public BeanGetter<IdGenerator> idGenerator;
+  public BeanGetter<AccountTestDao> accountTestDao;
+
+
+  @Test
+  public void checkFillClientRecord() throws Exception {
+    this.clientTestDao.get().clear();
+    this.charmTestDao.get().clear();
+
+    Map<String, List<Float>> clientIdToAccountMoneys = new HashMap<>();
+    Map<String, String> charmsIdToName = new HashMap<>();
+
+    //init charms
+    List<CharmDot> charmList = insertRndCharms();
+    for (CharmDot charmDot : charmList)
+      charmsIdToName.put(charmDot.id, charmDot.name);
+
+    //init clients
+    List<ClientDot> clients = insertNRndClients(10, charmList);
+
+    //init accounts
+    for (ClientDot clientDot : clients) {
+
+      List<Float> moneys = new ArrayList<>();
+      for (int i = 0; i < RND.plusInt(6) + 1; i++) {
+        ClientAccountDot cad = new ClientAccountDot();
+        cad.money = (float) RND.plusDouble(1000f, 5);
+        cad.id = idGenerator.get().newId();
+        cad.number = idGenerator.get().newId();
+        cad.client = clientDot.id;
+        this.accountTestDao.get().insertAccount(cad);
+        moneys.add(cad.money);
+      }
+      clientIdToAccountMoneys.put(clientDot.id, moneys);
+    }
+
+
+    {//getClientRecordList
+
+      //
+      //
+      List<ClientRecord> list = this.clientRegister.get().getClientRecordList(10, 0, null, "fio", 0);
+      //
+      //
+
+      assertThat(list).isNotEmpty();
+      assertThat(list).hasSize(10);
+      clients.sort(Comparator.comparing(ClientDot::getFIO));
+      for (int i = 0; i < list.size(); i++) {
+        ClientRecord target = list.get(i);
+        ClientRecord expected = clients.get(i).toClientRecord();
+        expected.charm = charmsIdToName.get(expected.charm);
+
+        assertClientRecord(target, expected);
+
+        List<Float> moneys = clientIdToAccountMoneys.get(expected.id);
+
+        Float expectedSum = (float) moneys.stream().mapToDouble(o -> o).sum();
+        assertThat(Math.abs(target.totalAccountBalance - expectedSum)).isLessThan(0.001f);
+        Float expectedMax = Collections.max(moneys);
+        assertThat(Math.abs(target.maximumBalance - expectedMax)).isLessThan(0.001f);
+        Float expectedMin = Collections.min(moneys);
+        assertThat(Math.abs(target.minimumBalance - expectedMin)).isLessThan(0.001f);
+      }
+
+    }
+
+
+    {//Report
+
+      ClientReportTestView testView = new ClientReportTestView();
+
+      //
+      //
+      this.clientRegister.get().genClientRecordListReport("", "fio", 0, testView);
+      //
+      //
+
+
+      assertThat(testView.rows).isNotEmpty();
+      assertThat(testView.rows).hasSize(10);
+      clients.sort(Comparator.comparing(ClientDot::getFIO));
+      for (int i = 0; i < testView.rows.size(); i++) {
+        ClientRecord target = testView.rows.get(i);
+        ClientRecord expected = clients.get(i).toClientRecord();
+        expected.charm = charmsIdToName.get(expected.charm);
+
+        assertClientRecord(target, expected);
+
+        List<Float> moneys = clientIdToAccountMoneys.get(expected.id);
+
+        Float expectedSum = (float) moneys.stream().mapToDouble(o -> o).sum();
+        assertThat(Math.abs(target.totalAccountBalance - expectedSum)).isLessThan(0.001f);
+        Float expectedMax = Collections.max(moneys);
+        assertThat(Math.abs(target.maximumBalance - expectedMax)).isLessThan(0.001f);
+        Float expectedMin = Collections.min(moneys);
+        assertThat(Math.abs(target.minimumBalance - expectedMin)).isLessThan(0.001f);
+      }
+    }
+
+  }
+
 
   @Test
   void clientRecordListAndReportFilterByNameTest() throws Exception {
     this.clientTestDao.get().clear();
     this.charmTestDao.get().clear();
 
-    ClientDot clientDot1 = rndClientDot();
+    ClientDot clientDot1 = rndClientDot(null);
     this.clientTestDao.get().insertClientDot(clientDot1);
 
-    ClientDot assertion = rndClientDot();
+    ClientDot assertion = rndClientDot(null);
     String filter = assertion.name;
     assertion.name += RND.str(10);
     this.clientTestDao.get().insertClientDot(assertion);
@@ -83,10 +192,10 @@ public class ClientRegisterImplTest extends ParentTestNg {
     this.clientTestDao.get().clear();
     this.charmTestDao.get().clear();
 
-    ClientDot clientDot1 = rndClientDot();
+    ClientDot clientDot1 = rndClientDot(null);
     this.clientTestDao.get().insertClientDot(clientDot1);
 
-    ClientDot assertion = rndClientDot();
+    ClientDot assertion = rndClientDot(null);
     this.clientTestDao.get().insertClientDot(assertion);
 
     {//getClientRecordList
@@ -124,10 +233,10 @@ public class ClientRegisterImplTest extends ParentTestNg {
     this.clientTestDao.get().clear();
     this.charmTestDao.get().clear();
 
-    ClientDot clientDot1 = rndClientDot();
+    ClientDot clientDot1 = rndClientDot(null);
     this.clientTestDao.get().insertClientDot(clientDot1);
 
-    ClientDot assertion = rndClientDot();
+    ClientDot assertion = rndClientDot(null);
     this.clientTestDao.get().insertClientDot(assertion);
 
     {//Client Record List
@@ -166,7 +275,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     this.clientTestDao.get().clear();
     this.charmTestDao.get().clear();
 
-    insertNRndClients(10);
+    insertNRndClients(10, null);
 
     {//Client Record List
 
@@ -212,7 +321,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     this.clientTestDao.get().clear();
     this.charmTestDao.get().clear();
 
-    insertNRndClients(10);
+    insertNRndClients(10, null);
 
     {//Client Record List
 
@@ -260,7 +369,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     this.charmTestDao.get().clear();
 
     int numberOfClients = 100;
-    List<ClientDot> clients = insertNRndClients(numberOfClients);
+    List<ClientDot> clients = insertNRndClients(numberOfClients, null);
 
 
     int limit = 10, page = 0;
@@ -295,7 +404,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     this.charmTestDao.get().clear();
 
     int numberOfClients = 100;
-    List<ClientDot> clients = insertNRndClients(numberOfClients);
+    List<ClientDot> clients = insertNRndClients(numberOfClients, null);
 
 
     int limit = 10;
@@ -333,7 +442,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     this.charmTestDao.get().clear();
 
     int numberOfClients = 10;
-    List<ClientDot> clients = insertNRndClients(numberOfClients);
+    List<ClientDot> clients = insertNRndClients(numberOfClients, null);
 
 
     int limit = 4;
@@ -365,10 +474,10 @@ public class ClientRegisterImplTest extends ParentTestNg {
   }
 
 
-  private List<ClientDot> insertNRndClients(int number) {
+  private List<ClientDot> insertNRndClients(int number, List<CharmDot> charms) {
     List<ClientDot> clients = new ArrayList<>();
     for (int i = 0; i < number; i++) {
-      ClientDot clientDot = rndClientDot();
+      ClientDot clientDot = rndClientDot(charms);
       clients.add(clientDot);
       this.clientTestDao.get().insertClientDot(clientDot);
     }
@@ -380,7 +489,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   void NumberOfClientWithoutFilterTest() {
     this.clientTestDao.get().clear();
 
-    List<ClientDot> clients = insertNRndClients(100);
+    List<ClientDot> clients = insertNRndClients(100, null);
 
     //
     //
@@ -396,10 +505,10 @@ public class ClientRegisterImplTest extends ParentTestNg {
   void NumberOfClientWithFilterTest() {
     this.clientTestDao.get().clear();
 
-    insertNRndClients(100);
+    insertNRndClients(100, null);
     String rndtext = "asdlkjflalfasdkjfnaВЕЛИКИЙРАНДОМывлафдывтадфыsgfsdfgsdfgdsfgsdfgв";
-    ClientDot clientDot = rndClientDot();
-    ClientDot clientDot2 = rndClientDot();
+    ClientDot clientDot = rndClientDot(null);
+    ClientDot clientDot2 = rndClientDot(null);
     clientDot.name = rndtext;
     clientDot2.name = rndtext;
     this.clientTestDao.get().insertClientDot(clientDot);
@@ -421,7 +530,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     List<String> toDeleteList = new ArrayList<>();
 
     for (int i = 0; i < RND.plusInt(100); i++) {
-      ClientDot cd = this.rndClientDot();
+      ClientDot cd = this.rndClientDot(null);
       this.clientTestDao.get().insertClientDot(cd);
       toDeleteList.add(cd.id);
     }
@@ -444,7 +553,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   void removeOneClientTest() {
     this.clientTestDao.get().clear();
 
-    ClientDot cd = this.rndClientDot();
+    ClientDot cd = this.rndClientDot(null);
     this.clientTestDao.get().insertClientDot(cd);
 
     List<String> toDeleteList = new ArrayList<>();
@@ -466,7 +575,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public void updateClientDeleteNumberTest() {
     this.clientTestDao.get().clear();
 
-    ClientDot cd = this.rndClientDot();
+    ClientDot cd = this.rndClientDot(null);
     this.clientTestDao.get().insertClientDot(cd);
 
     ClientPhoneNumberDot number1 = rndPhoneNumber(cd.id, PhoneNumberType.WORK);
@@ -495,7 +604,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public void updateClientPhoneNumber() {
 
     this.clientTestDao.get().clear();
-    ClientDot cd = this.rndClientDot();
+    ClientDot cd = this.rndClientDot(null);
     this.clientTestDao.get().insertClientDot(cd);
 
     ClientPhoneNumberDot numberToInsert = rndPhoneNumber(cd.id, PhoneNumberType.WORK);
@@ -522,18 +631,36 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
   @Test
   public void updateClientTest() throws Exception {
-    throw new RuntimeException("Do it");
+    this.clientTestDao.get().clear();
+    ClientDot cd = this.rndClientDot(null);
+    this.clientTestDao.get().insertClientDot(cd);
+
+    ClientToSave clientToSave = cd.toClientToSave();
+    clientToSave.name = "Harry";
+    clientToSave.surname = "Potter";
+    clientToSave.patronymic = "James";
+    clientToSave.gender = GenderType.MALE;
+    clientToSave.charm = "id:sdfasgfcs";
+    clientToSave.birthDate = new Date();
+
+    //
+    //
+    this.clientRegister.get().addOrUpdate(clientToSave);
+    //
+    //
+
+
+    ClientDetail target = this.clientTestDao.get().detail(cd.id, true);
+    ClientDot assertion = new ClientDot(clientToSave);
+
+    assertClientDetail(target, assertion);
   }
 
-  @Test
-  public void checkFillClientRecord() throws Exception {
-    throw new RuntimeException("Do it");
-  }
 
   @Test
   public void updateClientAddressTest() {
     this.clientTestDao.get().clear();
-    ClientDot cd = this.rndClientDot();
+    ClientDot cd = this.rndClientDot(null);
     this.clientTestDao.get().insertClientDot(cd);
 
     ClientAddressDot registerAddress = rndAddress(cd.id, AddressType.REG);
@@ -563,7 +690,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
   public void addClientTest() {
     this.clientTestDao.get().clear();
 
-    ClientDot cd = this.rndClientDot();
+    ClientDot cd = this.rndClientDot(null);
     cd.id = null;
     ClientAddressDot registerAddress = rndAddress(null, AddressType.REG);
     ClientPhoneNumberDot mobileNumber = rndPhoneNumber(null, PhoneNumberType.MOBILE);
@@ -603,7 +730,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     this.clientTestDao.get().clear();
 
-    ClientDot c = this.rndClientDot();
+    ClientDot c = this.rndClientDot(null);
     this.clientTestDao.get().insertClientDot(c);
 
     ClientPhoneNumberDot number1 = rndPhoneNumber(c.id, PhoneNumberType.WORK);
@@ -629,6 +756,17 @@ public class ClientRegisterImplTest extends ParentTestNg {
     this.assertClientAddress(detail.registerAddress, registerAddress);
   }
 
+
+  private void assertClientRecord(ClientRecord target, ClientRecord assertion) {
+    assertThat(target.id).isEqualTo(assertion.id);
+    assertThat(target.name).isEqualTo(assertion.name);
+    assertThat(target.surname).isEqualTo(assertion.surname);
+    assertThat(target.patronymic).isEqualTo(assertion.patronymic);
+    assertThat(target.charm).isEqualTo(assertion.charm);
+    assertThat(target.id).isEqualTo(assertion.id);
+    assertThat(target.id).isEqualTo(assertion.id);
+
+  }
 
   private void assertPhoneNumber(ClientPhoneNumber target, ClientPhoneNumberDot assertion) {
     assertThat(target).isNotNull();
@@ -675,14 +813,18 @@ public class ClientRegisterImplTest extends ParentTestNg {
     return number;
   }
 
-  private ClientDot rndClientDot() {
+  private ClientDot rndClientDot(List<CharmDot> charms) {
 
     ClientDot c = new ClientDot();
     c.id = idGenerator.get().newId();
     c.name = idGenerator.get().newId();
     c.surname = idGenerator.get().newId();
     c.patronymic = idGenerator.get().newId();
-    c.charm = RND.str(10);
+    if (charms != null && !charms.isEmpty()) {
+      c.charm = charms.get(RND.plusInt(charms.size())).id;
+    } else
+      c.charm = RND.str(10);
+
     c.gender = RND.someEnum(GenderType.values());
     c.birthDate = RND.dateYears(-100, 0);
     Calendar cal = Calendar.getInstance();
@@ -693,6 +835,21 @@ public class ClientRegisterImplTest extends ParentTestNg {
     cal.set(Calendar.MILLISECOND, 0);
     c.birthDate = cal.getTime();
     return c;
+  }
+
+
+  private List<CharmDot> insertRndCharms() {
+    List<CharmDot> charms = new ArrayList<>();
+
+    for (int i = 0; i < 10; i++) {
+      CharmDot charmDot = new CharmDot();
+      charmDot.id = idGenerator.get().newId();
+      charmDot.name = RND.str(10);
+      charms.add(charmDot);
+
+      this.charmTestDao.get().insertCharmDot(charmDot);
+    }
+    return charms;
   }
 
 

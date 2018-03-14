@@ -66,7 +66,7 @@ public class ClientDot {
     return clientRecord;
   }
 
-  public ClientDetail toClientForm() {
+  public ClientDetail toClientDetail() {
     ClientDetail clientDetail = new ClientDetail();
     clientDetail.id = this.id;
     clientDetail.name = this.name;

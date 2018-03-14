@@ -14,7 +14,7 @@ import kz.greetgo.sandbox.controller.report.ClientReportView;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 import kz.greetgo.sandbox.db.register_impl.jdbc.ClientListReportViewJdbc;
 import kz.greetgo.sandbox.db.register_impl.jdbc.ClientListWebViewJdbc;
-import kz.greetgo.sandbox.db.register_impl.jdbc.ClientNumberQuery;
+import kz.greetgo.sandbox.db.register_impl.jdbc.ClientNumberJdbc;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
 import java.util.List;
@@ -105,7 +105,7 @@ public class ClientRegisterImpl implements ClientRegister {
 
   @Override
   public int getNumberOfClients(String filter) {
-    return jdbcSandbox.get().execute(new ClientNumberQuery(filter));
+    return jdbcSandbox.get().execute(new ClientNumberJdbc(filter));
   }
 
   @Override

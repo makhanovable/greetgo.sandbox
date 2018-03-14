@@ -8,10 +8,11 @@
       create table ClientAccount (
         id varchar(32) NOT NULL,
         client varchar(32) NOT NULL,
-        money real NOT NULL,
+        money real,
         number varchar(100) NOT NULL,
         registeredAt timestamp with time zone default moment(),
         actual boolean default true,
+        mig_status varchar(100) NOT NULL,
         PRIMARY KEY (id)
       )
     ]]></sql>
