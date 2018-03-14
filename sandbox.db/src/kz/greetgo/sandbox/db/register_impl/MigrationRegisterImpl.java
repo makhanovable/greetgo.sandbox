@@ -4,11 +4,11 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.register.MigrationRegister;
 import kz.greetgo.sandbox.controller.util.Modules;
-import kz.greetgo.sandbox.db.beans.all.AllConfigFactory;
-
 import kz.greetgo.sandbox.db.configs.DbConfig;
+import kz.greetgo.sandbox.db.configs.SshConfig;
 import kz.greetgo.sandbox.db.register_impl.migration.Migration;
 import kz.greetgo.sandbox.db.register_impl.migration.MigrationConfig;
+import kz.greetgo.sandbox.db.register_impl.migration.exception.UnsupportedFileExtension;
 import kz.greetgo.sandbox.db.register_impl.ssh.SSHConnection;
 import kz.greetgo.sandbox.db.util.FileUtils;
 import org.apache.log4j.Logger;
@@ -18,23 +18,22 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static kz.greetgo.sandbox.db.register_impl.migration.Migration.getCiaFileNamePattern;
 import static kz.greetgo.sandbox.db.register_impl.migration.Migration.getFrsFileNamePattern;
+import static kz.greetgo.sandbox.db.register_impl.ssh.SshUtil.getFileNameList;
 
 @SuppressWarnings("unused")
 @Bean
 public class MigrationRegisterImpl implements MigrationRegister {
 
   @SuppressWarnings("WeakerAccess")
-  public BeanGetter<AllConfigFactory> allConfigFactory;
-  @SuppressWarnings("WeakerAccess")
   public BeanGetter<IdGenerator> idGenerator;
+  public BeanGetter<DbConfig> dbConfigBeanGetter;
+  public BeanGetter<SshConfig> sshConfigBeanGetter;
 
   private AtomicBoolean isMigrationGoingOn = new AtomicBoolean(false);
   private final Logger logger = Logger.getLogger(getClass());
@@ -48,45 +47,52 @@ public class MigrationRegisterImpl implements MigrationRegister {
 
     @SuppressWarnings("DuplicateAlternationBranch")
     Pattern migrationFilePattern = Pattern.compile("(" + getCiaFileNamePattern() + ")|(" + getFrsFileNamePattern() + ")");
-    List<String> files = getFileNameList(migrationFilePattern);
+    List<String> files = getFileNameList(migrationFilePattern, sshConfigBeanGetter.get());
+
+    DbConfig dbConfig = dbConfigBeanGetter.get();
 
     while (!files.isEmpty()) {
-      String fileName = files.get(0);
 
-      MigrationConfig config = initConfig(fileName);
-      DbConfig dbConfig = allConfigFactory.get().createPostgresDbConfig();
+      for (String fileName : files) {
+        MigrationConfig config = initMigrationConfig(fileName);
 
-      if (config != null) {
-        config.idGenerator = idGenerator.get();
+        String migratedFilePostfix = "migrated-";
 
-//        Class.forName("org.postgresql.Driver");
+        if (config != null) {
+          // FIXME: 3/14/18 Действие должно происходить в теле метода initMigrationConfig
+          config.idGenerator = idGenerator.get();
 
-        try (Connection connection = DriverManager.getConnection(
-          dbConfig.url(),
-          dbConfig.username(),
-          dbConfig.password())) {
+          try (Connection connection = getPostgresConnection(dbConfig.url(), dbConfig.username(), dbConfig.password())) {
+            Migration.getMigrationInstance(config, connection).migrate();
+          } catch (UnsupportedFileExtension e) {
+            logger.fatal("Error with file format", e);
+            migratedFilePostfix = "notMigrated-";
+          }
 
-          Migration.getMigrationInstance(config).migrate(connection);
+          try (SSHConnection sshConnection = new SSHConnection(sshConfigBeanGetter.get())) {
+            String finishedMigrationFileName = config.afterRenameFileName.replace("migrating", migratedFilePostfix);
+            sshConnection.renameFileName(config.afterRenameFileName, finishedMigrationFileName);
+            if (config.error.exists() && config.error.length() != 0)
+              sshConnection.uploadFile(config.error);
+          }
         }
-
-        try (SSHConnection sshConnection = new SSHConnection(allConfigFactory.get().createSshConfig())) {
-          String finishedMigrationFileName = config.afterRenameFileName.replace("migrating", "migrated-");
-          sshConnection.renameFileName(config.afterRenameFileName, finishedMigrationFileName);
-          if (config.error.exists() && config.error.length() != 0)
-            sshConnection.uploadFile(config.error);
-        }
-
       }
 
-      files = getFileNameList(migrationFilePattern);
+      files = getFileNameList(migrationFilePattern, sshConfigBeanGetter.get());
     }
 
 
     isMigrationGoingOn.set(false);
   }
 
+  // FIXME: 3/14/18 Вынести в утил
+  private static Connection getPostgresConnection(String url, String username, String password) throws Exception {
+    Class.forName("org.postgresql.Driver");
 
-  private MigrationConfig initConfig(String fileName) throws Exception {
+    return DriverManager.getConnection(url, username, password);
+  }
+
+  private MigrationConfig initMigrationConfig(String fileName) throws Exception {
 
     MigrationConfig config = new MigrationConfig();
 
@@ -98,7 +104,7 @@ public class MigrationRegisterImpl implements MigrationRegister {
     //noinspection ResultOfMethodCallIgnored
     copiedFile.getParentFile().mkdirs();
 
-    try (SSHConnection sshConnection = new SSHConnection(allConfigFactory.get().createSshConfig())) {
+    try (SSHConnection sshConnection = new SSHConnection(sshConfigBeanGetter.get())) {
 
       if (sshConnection.isFileExist(fileName)) {
 
@@ -119,11 +125,11 @@ public class MigrationRegisterImpl implements MigrationRegister {
       }
     }
 
-    String decompressed = copiedFile.getPath().replaceAll(".bz2", "");
-    File decompressedFile = new File(decompressed);
+    String decompressedFilePath = copiedFile.getPath().replaceAll(".bz2", "");
+    File decompressedFile = new File(decompressedFilePath);
     FileUtils.decompressFile(copiedFile, decompressedFile);
     if (!decompressedFile.exists()) {
-      logger.trace("cant decompress file");
+      logger.trace("cant decompress file " + fileName);
       return null;
     }
 
@@ -132,7 +138,7 @@ public class MigrationRegisterImpl implements MigrationRegister {
     }
 
 
-    String untarred = decompressed.replaceAll(".tar", "");
+    String untarred = decompressedFilePath.replaceAll(".tar", "");
     File untareedFile = new File(untarred);
     FileUtils.untarFile(decompressedFile, untareedFile);
     if (!untareedFile.exists()) {
@@ -145,22 +151,9 @@ public class MigrationRegisterImpl implements MigrationRegister {
     }
 
     config.toMigrate = untareedFile;
+    // FIXME: 3/14/18 в название файла нужно добавить дату и случайную строку (3)
     config.error = new File(Modules.dbDir() + "/build/migration/" + fileName + ".error");
 
     return config;
   }
-
-
-  private List<String> getFileNameList(Pattern pattern) throws Exception {
-    List<String> files;
-    try (SSHConnection sshConnection = new SSHConnection(allConfigFactory.get().createSshConfig())) {
-      files = sshConnection.getFileNameList(".");
-    }
-    if (files == null)
-      return new ArrayList<>();
-
-    return files.stream().filter(o -> pattern.matcher(o).matches()).collect(Collectors.toList());
-  }
-
-
 }

@@ -1,13 +1,11 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
+import kz.greetgo.sandbox.db.register_impl.migration.exception.UnsupportedFileExtension;
+
 import java.io.FileWriter;
 import java.io.IOException;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,23 +22,23 @@ public abstract class Migration {
   protected Map<String, String> tableNames = new HashMap<>();
 
   @SuppressWarnings("WeakerAccess")
-  protected Migration(MigrationConfig config) {
+  protected Migration(MigrationConfig config, Connection connection) {
     this.config = config;
+    this.connection = connection;
   }
 
   protected abstract void createTempTables() throws SQLException;
 
   protected abstract void parseFileAndUploadToTempTables() throws Exception;
 
-  protected abstract void MarkErrorsAndUpsertIntoDbValidRows() throws SQLException;
+  protected abstract void markErrorsAndUpsertIntoDbValidRows() throws SQLException;
 
   protected abstract void loadErrorsAndWrite() throws SQLException, IOException;
 
-  public void migrate(Connection connection) throws Exception {
-    this.connection = connection;
+  public void migrate() throws Exception {
     createTempTables();
     parseFileAndUploadToTempTables();
-    MarkErrorsAndUpsertIntoDbValidRows();
+    markErrorsAndUpsertIntoDbValidRows();
     loadErrorsAndWrite();
   }
 
@@ -48,25 +46,23 @@ public abstract class Migration {
   protected void execSql(String sql) throws SQLException {
     try (Statement statement = connection.createStatement()) {
 
-      for (String key : tableNames.keySet()) {
-        sql = sql.replaceAll(key, tableNames.get(key));
+      for (String tableName : tableNames.keySet()) {
+        sql = sql.replaceAll(tableName, tableNames.get(tableName));
       }
       statement.execute(sql);
     }
   }
 
-  public static Migration getMigrationInstance(MigrationConfig config) throws Exception {
+  public static Migration getMigrationInstance(MigrationConfig config, Connection connection) throws Exception {
     Pattern cia = Pattern.compile(getCiaFileNamePattern());
     Pattern frs = Pattern.compile(getFrsFileNamePattern());
 
     if (cia.matcher(config.originalFileName).matches()) {
-      return new MigrationCia(config);
-
+      return new MigrationCia(config, connection);
     } else if (frs.matcher(config.originalFileName).matches()) {
-      return new MigrationFrs(config);
-
+      return new MigrationFrs(config, connection);
     } else {
-      throw new Exception("unsupported");
+      throw new UnsupportedFileExtension("unsupported file extension " + config.originalFileName);
     }
   }
 
@@ -79,9 +75,8 @@ public abstract class Migration {
   }
 
   @SuppressWarnings("WeakerAccess")
-  protected static String getCurrentDateString() {
-    return new Date().getTime() + "";
-//    return new SimpleDateFormat("dd_mm_yyyy_hh_mm_ss").format(new Date());
+  protected static String getCurrentTimeInMillsString() {
+    return new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss").format(new Date());
   }
 
   @SuppressWarnings("WeakerAccess")

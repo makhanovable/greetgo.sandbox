@@ -82,15 +82,14 @@ public class FrsParser implements AutoCloseable {
         break;
 
       default:
+        // FIXME: 3/14/18 Если первая строка в файле будет неправильной, то весь файл не обработается. - Нужно исправить
         throw new IllegalArgumentException("unsupported frs type: " + type);
     }
 
-    batchCount++;
-    if (batchCount >= maxBatchSize) {
+    if (++batchCount >= maxBatchSize) {
       commitAll();
       batchCount = 0;
     }
-
   }
 
   public void parse(String line) {
@@ -120,7 +119,7 @@ public class FrsParser implements AutoCloseable {
 
     accountPS.close();
     transactionPS.close();
-    this.connection.setAutoCommit(this.originalAutoCommit);
+    connection.setAutoCommit(this.originalAutoCommit);
   }
 
   private void commitAll() throws SQLException {

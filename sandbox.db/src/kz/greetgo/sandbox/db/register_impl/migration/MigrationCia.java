@@ -4,21 +4,22 @@ import kz.greetgo.sandbox.db.register_impl.migration.handler.CiaHandler;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.io.IOException;
-import java.sql.SQLException;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class MigrationCia extends Migration {
 
 
   @SuppressWarnings("WeakerAccess")
-  public MigrationCia(MigrationConfig config) {
-    super(config);
+  public MigrationCia(MigrationConfig config, Connection connection) {
+    super(config, connection);
   }
 
   @Override
   protected void createTempTables() throws SQLException {
-    String date = getCurrentDateString();
+    String date = getCurrentTimeInMillsString();
 
     String client = "TMP_CLIENT_" + date + "_" + config.id;
     String address = "TMP_CLIENT_ADDRESS_" + date + "_" + config.id;
@@ -55,7 +56,7 @@ public class MigrationCia extends Migration {
       .append("  street character varying(100),\n")
       .append("  house character varying(100),\n")
       .append("  flat character varying(100),\n")
-      .append("  mig_status character varying(100) default 'NOT_READY',\n")
+      .append("  mig_status varchar(100) default 'NOT_READY',\n")
       .append("  error varchar(100),\n")
       .append("  PRIMARY KEY (no)\n")
       .append(")\n");
@@ -86,7 +87,7 @@ public class MigrationCia extends Migration {
   }
 
   @Override
-  protected void MarkErrorsAndUpsertIntoDbValidRows() throws SQLException {
+  protected void markErrorsAndUpsertIntoDbValidRows() throws SQLException {
     //required: Записи, у которых нет или пустое поле surname, name, birth_date - ошибочные.
     execSql("update TMP_CLIENT set error = 'cia_id cant be null' where cia_id is null and error is null");
     execSql("update TMP_CLIENT set error = 'name cant be null' where name is null and error is null");
@@ -191,19 +192,16 @@ public class MigrationCia extends Migration {
 
 
     //actualize
+    // FIXME: 3/14/18 mig_status -> mig_id
     execSql("update Client c set mig_status='actualized', actual=true\n" +
       "where c.mig_status='just_migrated' or c.mig_status='just_updated';\n");
-
-//    throw new NotImplementedException();
-
-
   }
 
   @Override
   protected void loadErrorsAndWrite() throws SQLException, IOException {
 
     String[] ciaColumns = {"cia_id", "error"};
-
+// FIXME: 3/14/18 Используй BufferedFileWriter
     try (FileWriter writer = new FileWriter(config.error, true)) {
       writeErrors(ciaColumns, tableNames.get("TMP_CLIENT"), writer);
       writeErrors(ciaColumns, tableNames.get("TMP_ADDRESS"), writer);

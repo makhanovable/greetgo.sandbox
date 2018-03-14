@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.stream.Stream;
 
@@ -13,13 +14,13 @@ public class MigrationFrs extends Migration {
 
 
   @SuppressWarnings("WeakerAccess")
-  public MigrationFrs(MigrationConfig config) {
-    super(config);
+  public MigrationFrs(MigrationConfig config, Connection connection) {
+    super(config, connection);
   }
 
   @Override
   protected void createTempTables() throws SQLException {
-    String date = getCurrentDateString();
+    String date = getCurrentTimeInMillsString();
 
     String account = "TMP_ACCOUNT_" + date + "_" + config.id;
     String transaction = "TMP_TRANSACTION_" + date + "_" + config.id;
@@ -71,12 +72,13 @@ public class MigrationFrs extends Migration {
   }
 
   @Override
-  protected void MarkErrorsAndUpsertIntoDbValidRows() throws SQLException {
+  protected void markErrorsAndUpsertIntoDbValidRows() throws SQLException {
 
     //////ACCOUNTS
     execSql("update TMP_ACCOUNT tmp\n" +
       "set error='account number must to be not null'\n" +
       "WHERE tmp.account_number ISNULL");
+
     execSql("update TMP_ACCOUNT tmp\n" +
       "set error='client must to be not null'\n" +
       "WHERE tmp.client_id ISNULL");
@@ -121,7 +123,7 @@ public class MigrationFrs extends Migration {
       "  SELECT DISTINCT on(type) id, id, type\n" +
       "  from TMP_TRANSACTION tmp\n" +
       "  WHERE tmp.mig_status='TO_CREATE_TR._TYPE'");
-
+// FIXME: 3/14/18 раскомментить
     //???нужно узнать
 //    execSql("UPDATE TMP_TRANSACTION tmp\n" +
 //      "SET error='transaction must have account'\n" +
@@ -132,11 +134,11 @@ public class MigrationFrs extends Migration {
       "set mig_status = 'TO_INSERT'\n" +
       "WHERE tmp.error is null;");
 
-    execSql("insert into clientaccounttransaction (id, account, money, finishedat, type)\n" +
+    execSql("insert into clientaccounttransaction (id, account, money, finishedat, type, actual)\n" +
       "  SELECT tmp.id, tmp.account_number,\n" +
       "    cast(replace(tmp.money,'_','') AS REAL),\n" +
       "    to_timestamp(tmp.finished_at, 'YYYY-MM-dd\"T\"HH24:MI:SS.MS') as finished_at,\n" +
-      "    type.id\n" +
+      "    type.id, false as actual\n" +
       "  from TMP_TRANSACTION tmp\n" +
       "    left JOIN transactiontype type on type.name=tmp.type\n" +
       "  WHERE tmp.mig_status='TO_INSERT'");

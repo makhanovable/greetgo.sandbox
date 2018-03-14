@@ -21,6 +21,8 @@ import java.util.Map;
 
 public class CiaHandler extends DefaultHandler implements AutoCloseable {
 
+  private final Logger logger = Logger.getLogger(getClass());
+
   private Connection connection;
   private Map<String, String> tableNames;
 
@@ -39,7 +41,7 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
   private int batchCount = 0;
   private final Boolean originalAutoCommit;
 
-  private final Logger logger = Logger.getLogger(getClass());
+  private String content;
 
   public CiaHandler(IdGenerator idGenerator, int maxBatchSize, Connection connection, Map<String, String> tableNames) throws SQLException {
     this.idGenerator = idGenerator;
@@ -51,8 +53,11 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
     this.connection.setAutoCommit(false);
 
     initPreparedStatements();
-    client = new ClientCia(idGenerator.newId());
+    client = getClientCiaInstance(idGenerator.newId());
+  }
 
+  private ClientCia getClientCiaInstance(String id) {
+    return new ClientCia(id);
   }
 
   private void initPreparedStatements() throws SQLException {
@@ -133,7 +138,7 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
       logger.trace(e);
     }
 
-    client = new ClientCia(idGenerator.newId());
+    client = getClientCiaInstance(idGenerator.newId());
   }
 
 
@@ -174,38 +179,28 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
       client.fact.flat = attributes.getValue("flat");
       client.fact.type = AddressType.FACT;
     }
-
-
   }
-
-  private String content;
 
   @Override
   public void endElement(String uri, String localName, String qName) throws SAXException {
     if ("client".equals(qName)) {
       addBatch();
-
     } else if ("workPhone".equals(qName)) {
       PhoneCia number = new PhoneCia();
       number.number = content;
       number.type = PhoneNumberType.WORK;
       client.numbers.add(number);
-
     } else if ("homePhone".equals(qName)) {
       PhoneCia number = new PhoneCia();
       number.number = content;
       number.type = PhoneNumberType.HOME;
       client.numbers.add(number);
-
     } else if ("mobilePhone".equals(qName)) {
       PhoneCia number = new PhoneCia();
       number.number = content;
       number.type = PhoneNumberType.MOBILE;
       client.numbers.add(number);
-
     }
-
-
   }
 
 
@@ -216,12 +211,13 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
-    commitAll();
+    if (batchCount != 0)
+      commitAll();
 
     clientPS.close();
     addrPS.close();
     phonePS.close();
-    this.connection.setAutoCommit(this.originalAutoCommit);
+    connection.setAutoCommit(this.originalAutoCommit);
   }
 
   private void commitAll() throws SQLException {
@@ -249,10 +245,9 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
   }
 
   @Override
-  public void startDocument() throws SAXException {
-  }
+  public void startDocument() throws SAXException {}
 
   @Override
-  public void endDocument() throws SAXException {
-  }
+  public void endDocument() throws SAXException {}
+
 }

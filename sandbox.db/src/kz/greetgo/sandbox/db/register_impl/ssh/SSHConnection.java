@@ -63,7 +63,7 @@ public class SSHConnection implements Closeable {
       if (e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
         return false;
       } else {
-        throw new Exception();
+        throw new Exception(e);
       }
     }
     return true;
