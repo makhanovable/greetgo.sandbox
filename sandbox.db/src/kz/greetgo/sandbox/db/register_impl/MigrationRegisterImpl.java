@@ -10,23 +10,16 @@ import kz.greetgo.sandbox.db.configs.DbConfig;
 import kz.greetgo.sandbox.db.register_impl.migration.Migration;
 import kz.greetgo.sandbox.db.register_impl.migration.MigrationConfig;
 import kz.greetgo.sandbox.db.register_impl.ssh.SSHConnection;
-import kz.greetgo.sandbox.db.util.JdbcSandbox;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-import org.apache.commons.compress.utils.IOUtils;
+import kz.greetgo.sandbox.db.util.FileUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -42,12 +35,8 @@ public class MigrationRegisterImpl implements MigrationRegister {
   public BeanGetter<AllConfigFactory> allConfigFactory;
   @SuppressWarnings("WeakerAccess")
   public BeanGetter<IdGenerator> idGenerator;
-  @SuppressWarnings("WeakerAccess")
-  public BeanGetter<JdbcSandbox> jdbcSandbox;
-
 
   private AtomicBoolean isMigrationGoingOn = new AtomicBoolean(false);
-
   private final Logger logger = Logger.getLogger(getClass());
 
   @Override
@@ -59,7 +48,6 @@ public class MigrationRegisterImpl implements MigrationRegister {
 
     @SuppressWarnings("DuplicateAlternationBranch")
     Pattern migrationFilePattern = Pattern.compile("(" + getCiaFileNamePattern() + ")|(" + getFrsFileNamePattern() + ")");
-
     List<String> files = getFileNameList(migrationFilePattern);
 
     while (!files.isEmpty()) {
@@ -70,7 +58,8 @@ public class MigrationRegisterImpl implements MigrationRegister {
 
       if (config != null) {
         config.idGenerator = idGenerator.get();
-        Class.forName("org.postgresql.Driver");
+
+//        Class.forName("org.postgresql.Driver");
 
         try (Connection connection = DriverManager.getConnection(
           dbConfig.url(),
@@ -78,6 +67,13 @@ public class MigrationRegisterImpl implements MigrationRegister {
           dbConfig.password())) {
 
           Migration.getMigrationInstance(config).migrate(connection);
+        }
+
+        try (SSHConnection sshConnection = new SSHConnection(allConfigFactory.get().createSshConfig())) {
+          String finishedMigrationFileName = config.afterRenameFileName.replace("migrating", "migrated-");
+          sshConnection.renameFileName(config.afterRenameFileName, finishedMigrationFileName);
+          if (config.error.exists() && config.error.length() != 0)
+            sshConnection.uploadFile(config.error);
         }
 
       }
@@ -89,14 +85,15 @@ public class MigrationRegisterImpl implements MigrationRegister {
     isMigrationGoingOn.set(false);
   }
 
+
   private MigrationConfig initConfig(String fileName) throws Exception {
 
     MigrationConfig config = new MigrationConfig();
 
     config.id = idGenerator.get().newId();
     config.originalFileName = fileName;
-    config.ready = false;
     String tempFileName = Modules.dbDir() + "/build/migration/" + fileName;
+
     File copiedFile = new File(tempFileName);
     //noinspection ResultOfMethodCallIgnored
     copiedFile.getParentFile().mkdirs();
@@ -104,14 +101,12 @@ public class MigrationRegisterImpl implements MigrationRegister {
     try (SSHConnection sshConnection = new SSHConnection(allConfigFactory.get().createSshConfig())) {
 
       if (sshConnection.isFileExist(fileName)) {
-        //TODO вернуть rename
+
         config.afterRenameFileName = fileName + ".migrating" + config.id;
         sshConnection.renameFileName(fileName, config.afterRenameFileName);
 
         if (sshConnection.isFileExist(config.afterRenameFileName)) {
-//        if (sshConnection.isFileExist(fileName)) {
           try (OutputStream out = new FileOutputStream(copiedFile)) {
-//            sshConnection.downloadFile(fileName, out);
             sshConnection.downloadFile(config.afterRenameFileName, out);
           }
         } else {
@@ -126,74 +121,44 @@ public class MigrationRegisterImpl implements MigrationRegister {
 
     String decompressed = copiedFile.getPath().replaceAll(".bz2", "");
     File decompressedFile = new File(decompressed);
-    decompressFile(copiedFile, decompressedFile);
+    FileUtils.decompressFile(copiedFile, decompressedFile);
     if (!decompressedFile.exists()) {
       logger.trace("cant decompress file");
       return null;
     }
 
-    String untareed = decompressed.replaceAll(".tar", "");
-    File untareedFile = new File(untareed);
-    untarFile(decompressedFile, untareedFile);
+    if (!copiedFile.delete()) {
+      logger.trace("could not delete file " + copiedFile.getPath());
+    }
+
+
+    String untarred = decompressed.replaceAll(".tar", "");
+    File untareedFile = new File(untarred);
+    FileUtils.untarFile(decompressedFile, untareedFile);
     if (!untareedFile.exists()) {
       logger.trace("cant untar file");
       return null;
     }
 
-    //noinspection ResultOfMethodCallIgnored
-    copiedFile.delete();
-    //noinspection ResultOfMethodCallIgnored
-    decompressedFile.delete();
-    config.toMigrate = untareedFile;
+    if (!decompressedFile.delete()) {
+      logger.trace("could not delete file " + decompressedFile.getPath());
+    }
 
-    config.ready = true;
+    config.toMigrate = untareedFile;
+    config.error = new File(Modules.dbDir() + "/build/migration/" + fileName + ".error");
+
     return config;
   }
 
-  private void untarFile(File file, File dest) throws IOException {
-    //noinspection ResultOfMethodCallIgnored
-    file.getParentFile().mkdirs();
-    //noinspection ResultOfMethodCallIgnored
-    file.mkdir();
-
-    try (FileInputStream fis = new FileInputStream(file);
-         TarArchiveInputStream tis = new TarArchiveInputStream(fis)) {
-
-      TarArchiveEntry tarEntry;
-
-      while ((tarEntry = tis.getNextTarEntry()) != null) {
-
-        if (!tarEntry.isDirectory()) {
-          //noinspection ResultOfMethodCallIgnored
-          dest.getParentFile().mkdirs();
-          try (FileOutputStream fos = new FileOutputStream(dest)) {
-            IOUtils.copy(tis, fos);
-//          ServerUtil.copyStreamsAndCloseIn(tis, fos);
-            break;
-          }
-        }
-      }
-    }
-  }
-
-
-  private void decompressFile(File file, File dest) throws Exception {
-
-    try (
-      FileInputStream in = new FileInputStream(file);
-      BZip2CompressorInputStream bzIn = new BZip2CompressorInputStream(in);
-      OutputStream out = new FileOutputStream(dest)) {
-
-      IOUtils.copy(bzIn, out);
-//      ServerUtil.copyStreamsAndCloseIn(bzIn, out);
-    }
-  }
 
   private List<String> getFileNameList(Pattern pattern) throws Exception {
     List<String> files;
     try (SSHConnection sshConnection = new SSHConnection(allConfigFactory.get().createSshConfig())) {
       files = sshConnection.getFileNameList(".");
     }
+    if (files == null)
+      return new ArrayList<>();
+
     return files.stream().filter(o -> pattern.matcher(o).matches()).collect(Collectors.toList());
   }
 

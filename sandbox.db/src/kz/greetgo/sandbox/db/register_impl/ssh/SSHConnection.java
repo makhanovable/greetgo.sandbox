@@ -8,13 +8,14 @@ import kz.greetgo.sandbox.db.configs.SshConfig;
 import org.apache.commons.compress.utils.IOUtils;
 
 import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Vector;
 import java.util.stream.Collectors;
-
 
 public class SSHConnection implements Closeable {
 
@@ -29,7 +30,6 @@ public class SSHConnection implements Closeable {
 
   private void open() throws Exception {
     JSch jsch = new JSch();
-//    sshConfig.port();
     session = jsch.getSession(sshConfig.username(), sshConfig.host(), sshConfig.port());
     session.setPassword(sshConfig.password());
     java.util.Properties config = new java.util.Properties();
@@ -42,9 +42,11 @@ public class SSHConnection implements Closeable {
     channel.cd(sshConfig.migrationDir());
   }
 
+  @SuppressWarnings("SameParameterValue")
   public List<String> getFileNameList(String path) throws SftpException {
+    @SuppressWarnings("unchecked")
     Vector<ChannelSftp.LsEntry> entries = channel.ls(path);
-    return entries.stream().map(o -> o.getFilename()).collect(Collectors.toList());
+    return entries.stream().map(ChannelSftp.LsEntry::getFilename).collect(Collectors.toList());
 //    ((ChannelExec) (Channel) channel).setCommand("ls -lct");
 //    channel.run();
 //    Vector filelist = channel.run().map(o -> o.getFilename()).collect(Collectors.toList());
@@ -72,6 +74,14 @@ public class SSHConnection implements Closeable {
       IOUtils.copy(in, out);
     }
   }
+
+  public void uploadFile(File file) throws Exception {
+
+    try (InputStream is = new FileInputStream(file)) {
+      channel.put(is, file.getName());
+    }
+  }
+
 
   @Override
   public void close() throws IOException {

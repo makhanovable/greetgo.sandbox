@@ -1,11 +1,12 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.sandbox.db.register_impl.migration.handler.CiaHandler;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import java.io.IOException;
 import java.sql.SQLException;
+import java.io.FileWriter;
 
 public class MigrationCia extends Migration {
 
@@ -13,7 +14,6 @@ public class MigrationCia extends Migration {
   @SuppressWarnings("WeakerAccess")
   public MigrationCia(MigrationConfig config) {
     super(config);
-
   }
 
   @Override
@@ -196,25 +196,21 @@ public class MigrationCia extends Migration {
 
 //    throw new NotImplementedException();
 
+
   }
 
   @Override
-  protected void loadErrorsAndWrite() throws SQLException {
+  protected void loadErrorsAndWrite() throws SQLException, IOException {
 
-//    try (PreparedStatement ps = connection.prepareStatement("");
-//         ResultSet rs = ps.executeQuery()) {
-//
-//      while (rs.next()) {
-////          ClientRecord cr = rsToClientRecord(rs);
-////          result.add(cr);
-//
-//      }
-//    }
+    String[] ciaColumns = {"cia_id", "error"};
 
+    try (FileWriter writer = new FileWriter(config.error, true)) {
+      writeErrors(ciaColumns, tableNames.get("TMP_CLIENT"), writer);
+      writeErrors(ciaColumns, tableNames.get("TMP_ADDRESS"), writer);
+      writeErrors(ciaColumns, tableNames.get("TMP_PHONE"), writer);
+    }
 
-    throw new NotImplementedException();
 
   }
-
 
 }

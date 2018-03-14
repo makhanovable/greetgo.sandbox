@@ -1,11 +1,11 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.sandbox.db.register_impl.migration.handler.FrsParser;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.nio.file.Files;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.stream.Stream;
 
@@ -32,9 +32,9 @@ public class MigrationFrs extends Migration {
     accountTable.append("create table TMP_ACCOUNT (\n")
       .append("  no bigserial,\n")
       .append("  id varchar(32),\n")
-      .append("  client varchar(32),\n")
+      .append("  client_id varchar(32),\n")
       .append("  money varchar(100),\n")
-      .append("  number varchar(100),\n")
+      .append("  account_number varchar(100),\n")
       .append("  registeredAt varchar(100),\n")
       .append("  error varchar(100),\n")
       .append("  mig_status varchar(100) default 'NOT_READY',\n")
@@ -46,7 +46,7 @@ public class MigrationFrs extends Migration {
     transactionTable.append("create table TMP_TRANSACTION (\n")
       .append("  no bigserial,\n")
       .append("  id varchar(35),\n")
-      .append("  account varchar(35),\n")
+      .append("  account_number varchar(35),\n")
       .append("  money varchar(100),\n")
       .append("  finished_at varchar(100),\n")
       .append("  type varchar(100),\n")
@@ -62,7 +62,7 @@ public class MigrationFrs extends Migration {
   @Override
   protected void parseFileAndUploadToTempTables() throws Exception {
 
-    try (FrsParser parser = new FrsParser(config.idGenerator, config.batchSize, connection, tableNames);
+    try (FrsParser parser = new FrsParser(config.idGenerator, getMaxBatchSize(), connection, tableNames);
          BufferedReader br = new BufferedReader(new FileReader(config.toMigrate));
          Stream<String> stream = br.lines()) {
 
@@ -75,24 +75,24 @@ public class MigrationFrs extends Migration {
 
     //////ACCOUNTS
     execSql("update TMP_ACCOUNT tmp\n" +
-      "set error='number must to be not null'\n" +
-      "WHERE tmp.number ISNULL");
+      "set error='account number must to be not null'\n" +
+      "WHERE tmp.account_number ISNULL");
     execSql("update TMP_ACCOUNT tmp\n" +
       "set error='client must to be not null'\n" +
-      "WHERE tmp.client ISNULL");
+      "WHERE tmp.client_id ISNULL");
 
     //if client exist and no error then ready to insert
     execSql("update TMP_ACCOUNT tmp\n" +
       "set mig_status = 'TO_INSERT'\n" +
       "FROM client c\n" +
-      "WHERE c.cia_id = tmp.client and tmp.error is null;");
+      "WHERE c.cia_id = tmp.client_id and tmp.error is null;");
 
     execSql("update TMP_ACCOUNT tmp\n" +
       "set mig_status = 'TO_CREATE_CLIENT'\n" +
       "WHERE tmp.mig_status='NOT_READY' and tmp.error is null;");
 
     execSql("insert into client (id, cia_id, actual, mig_status)\n" +
-      "  SELECT DISTINCT on(tmp.client) tmp.id, tmp.client, false as actual, 'created_for_account'\n" +
+      "  SELECT DISTINCT on(tmp.client_id) tmp.id, tmp.client_id, false as actual, 'created_for_account'\n" +
       "  from TMP_ACCOUNT tmp\n" +
       "  WHERE tmp.error is null and tmp.mig_status='TO_CREATE_CLIENT'");
 
@@ -101,7 +101,7 @@ public class MigrationFrs extends Migration {
       "WHERE tmp.mig_status='TO_CREATE_CLIENT' and tmp.error is null;");
 
     execSql("insert into clientaccount (id, client, number, registeredat, actual, mig_status)\n" +
-      "  SELECT tmp.id, tmp.client, tmp.number,\n" +
+      "  SELECT tmp.id, tmp.client_id, tmp.account_number,\n" +
       "    to_timestamp(tmp.registeredat, 'YYYY-MM-dd\"T\"HH24:MI:SS.MS') as registeredat,\n" +
       "    false as actual,\n" +
       "    'just_migrated'\n" +
@@ -133,7 +133,7 @@ public class MigrationFrs extends Migration {
       "WHERE tmp.error is null;");
 
     execSql("insert into clientaccounttransaction (id, account, money, finishedat, type)\n" +
-      "  SELECT tmp.id, tmp.account,\n" +
+      "  SELECT tmp.id, tmp.account_number,\n" +
       "    cast(replace(tmp.money,'_','') AS REAL),\n" +
       "    to_timestamp(tmp.finished_at, 'YYYY-MM-dd\"T\"HH24:MI:SS.MS') as finished_at,\n" +
       "    type.id\n" +
@@ -145,13 +145,16 @@ public class MigrationFrs extends Migration {
     execSql("update clientaccount c set mig_status='actualized', actual=true\n" +
       "where c.mig_status='just_migrated' or c.mig_status='just_updated';\n");
 
-
-//    throw new NotImplementedException();
   }
 
   @Override
-  protected void loadErrorsAndWrite() {
+  protected void loadErrorsAndWrite() throws SQLException, IOException {
+    String[] accountColumns = {"client_id", "account_number", "error"};
+    String[] TrColumns = {"account_number", "error"};
 
-    throw new NotImplementedException();
+    try (FileWriter writer = new FileWriter(config.error, true)) {
+      writeErrors(accountColumns, tableNames.get("TMP_ACCOUNT"), writer);
+      writeErrors(TrColumns, tableNames.get("TMP_TRANSACTION"), writer);
+    }
   }
 }
