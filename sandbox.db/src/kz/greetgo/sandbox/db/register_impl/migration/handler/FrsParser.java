@@ -45,10 +45,10 @@ public class FrsParser implements AutoCloseable {
 
   private void initPreparedStatements() throws SQLException {
     @SuppressWarnings("SqlResolve")
-    String insertAccount = "INSERT INTO TMP_ACCOUNT (id, client, number, registeredAt) VALUES " +
+    String insertAccount = "INSERT INTO TMP_ACCOUNT (id, client_id, account_number, registeredAt) VALUES " +
       "(?, ?, ?, ?)";
     @SuppressWarnings("SqlResolve")
-    String insertTransaction = "INSERT INTO TMP_TRANSACTION (id, account, money, finished_at, type) VALUES " +
+    String insertTransaction = "INSERT INTO TMP_TRANSACTION (id, account_number, money, finished_at, type) VALUES " +
       "(?, ?, ?, ?, ?)";
 
     insertAccount = insertAccount.replaceAll("TMP_ACCOUNT", tableNames.get("TMP_ACCOUNT"));
@@ -58,7 +58,8 @@ public class FrsParser implements AutoCloseable {
     transactionPS = connection.prepareStatement(insertTransaction);
   }
 
-  private void addBatch() throws Exception {
+  private void addBatch() throws SQLException {
+
     int index = 1;
     String type = object.get("type").getAsString();
 
@@ -81,7 +82,7 @@ public class FrsParser implements AutoCloseable {
         break;
 
       default:
-        throw new Exception("unsupported frs type: " + type);
+        throw new IllegalArgumentException("unsupported frs type: " + type);
     }
 
     batchCount++;
@@ -99,8 +100,8 @@ public class FrsParser implements AutoCloseable {
     try {
       addBatch();
     } catch (Exception e) {
-      e.printStackTrace();
-      logger.trace(e.toString());
+      logger.trace("parse and adding to batch", e);
+      throw new RuntimeException("parse and adding to batch", e);
     }
 
   }
