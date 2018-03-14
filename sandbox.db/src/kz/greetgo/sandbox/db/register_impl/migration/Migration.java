@@ -1,6 +1,11 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
+import java.io.FileWriter;
+import java.io.IOException;
+
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
@@ -29,14 +34,14 @@ public abstract class Migration {
 
   protected abstract void MarkErrorsAndUpsertIntoDbValidRows() throws SQLException;
 
-  protected abstract void loadErrorsAndWrite() throws SQLException;
+  protected abstract void loadErrorsAndWrite() throws SQLException, IOException;
 
   public void migrate(Connection connection) throws Exception {
     this.connection = connection;
     createTempTables();
     parseFileAndUploadToTempTables();
     MarkErrorsAndUpsertIntoDbValidRows();
-//    loadErrorsAndWrite();
+    loadErrorsAndWrite();
   }
 
   @SuppressWarnings("WeakerAccess")
@@ -83,5 +88,35 @@ public abstract class Migration {
   public static int getMaxBatchSize() {
     return 5000;
   }
+
+
+  @SuppressWarnings("WeakerAccess")
+  protected void writeErrors(String[] columns, String tableName, FileWriter writer) throws SQLException, IOException {
+    String sql = getErrorSql(columns, tableName);
+    try (PreparedStatement ps = connection.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+      while (rs.next()) {
+        String line = getErrorLine(columns, rs);
+        writer.write(line);
+      }
+    }
+  }
+
+  private String getErrorLine(String[] columns, ResultSet rs) throws SQLException {
+    StringBuilder sb = new StringBuilder();
+    for (String column : columns) {
+      sb.append(column).append(": ").append(rs.getString(column)).append(";");
+    }
+    sb.append("\n");
+    return sb.toString();
+  }
+
+  private String getErrorSql(String[] columns, String tableName) {
+    return "select " +
+      String.join(", ", columns) + "\n" +
+      "from " + tableName + "\n" +
+      "where error notnull";
+  }
+
 
 }
