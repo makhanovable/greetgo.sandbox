@@ -41,7 +41,7 @@ public class MigrationRegisterImpl implements MigrationRegister {
   public BeanGetter<SshConfig> sshConfigBeanGetter;
 
   private AtomicBoolean isMigrationGoingOn = new AtomicBoolean(false);
-  private final Logger logger = Logger.getLogger(getClass());
+  private final Logger logger = Logger.getLogger("MIGRATION");
 
 
   @Override
@@ -50,6 +50,14 @@ public class MigrationRegisterImpl implements MigrationRegister {
     if (isMigrationGoingOn.get())
       return;
     isMigrationGoingOn.set(true);
+
+    Date started = new Date();
+    String date = DateUtils.getDateWithTimeString(started);
+
+    logger.info("##########################################################");
+    logger.info("MIGRATION STARTED ");
+    logger.info("STARTED DATE,TIME: " + date);
+    logger.info("##########################################################");
 
     @SuppressWarnings("DuplicateAlternationBranch")
     Pattern migrationFilePattern = Pattern.compile("(" + getCiaFileNamePattern() + ")|(" + getFrsFileNamePattern() + ")");
@@ -90,6 +98,12 @@ public class MigrationRegisterImpl implements MigrationRegister {
       files = getFileNameList(migrationFilePattern, sshConfigBeanGetter.get());
     }
 
+    String durationDateFormat = DateUtils.getTimeDifferenceStringFormat(new Date().getTime(), started.getTime());
+    logger.info("##########################################################");
+    logger.info("MIGRATION FINISHED ");
+    logger.info("TOTAL MIGRATION DURATION: " + durationDateFormat);
+    logger.info("##########################################################");
+
 
     isMigrationGoingOn.set(false);
   }
@@ -97,10 +111,15 @@ public class MigrationRegisterImpl implements MigrationRegister {
 
   private MigrationConfig initMigrationConfig(String fileName, IdGenerator idGenerator) throws Exception {
 
+
     MigrationConfig config = new MigrationConfig();
     config.idGenerator = idGenerator;
     config.id = idGenerator.newId();
     config.originalFileName = fileName;
+
+    logger.info("FILENAME: " + config.originalFileName);
+    logger.info("ID: " + config.id);
+
     String tempFileName = Modules.dbDir() + "/build/migration/" + fileName;
 
     File copiedFile = new File(tempFileName);
@@ -115,42 +134,45 @@ public class MigrationRegisterImpl implements MigrationRegister {
         sshConnection.renameFileName(fileName, config.afterRenameFileName);
 
         if (sshConnection.isFileExist(config.afterRenameFileName)) {
+          logger.info("copying file");
           try (OutputStream out = new FileOutputStream(copiedFile)) {
             sshConnection.downloadFile(config.afterRenameFileName, out);
           }
         } else {
-          logger.trace("file " + config.afterRenameFileName + " no longer exist after renamed");
+          logger.info("file " + config.afterRenameFileName + " no longer exist after renamed");
           return null;
         }
       } else {
-        logger.trace("file " + fileName + " not found in ssh directory");
+        logger.info("file " + fileName + " not found in ssh directory");
         return null;
       }
     }
 
     String decompressedFilePath = copiedFile.getPath().replaceAll(".bz2", "");
     File decompressedFile = new File(decompressedFilePath);
+    logger.info("decompressing file");
     FileUtils.decompressFile(copiedFile, decompressedFile);
     if (!decompressedFile.exists()) {
-      logger.trace("cant decompress file " + fileName);
+      logger.info("cant decompress file " + fileName);
       return null;
     }
 
     if (!copiedFile.delete()) {
-      logger.trace("could not delete file " + copiedFile.getPath());
+      logger.info("could not delete file " + copiedFile.getPath());
     }
 
 
+    logger.info("untaring file");
     String untarred = decompressedFilePath.replaceAll(".tar", "");
     File untareedFile = new File(untarred);
     FileUtils.untarFile(decompressedFile, untareedFile);
     if (!untareedFile.exists()) {
-      logger.trace("cant untar file");
+      logger.info("cant untar file");
       return null;
     }
 
     if (!decompressedFile.delete()) {
-      logger.trace("could not delete file " + decompressedFile.getPath());
+      logger.info("could not delete file " + decompressedFile.getPath());
     }
 
     config.toMigrate = untareedFile;
