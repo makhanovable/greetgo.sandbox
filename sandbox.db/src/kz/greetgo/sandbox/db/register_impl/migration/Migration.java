@@ -1,17 +1,24 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.sandbox.db.register_impl.migration.exception.UnsupportedFileExtension;
+import kz.greetgo.sandbox.db.util.DateUtils;
+import org.apache.log4j.Logger;
 
-import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.*;
-import java.text.SimpleDateFormat;
+import java.io.Writer;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 public abstract class Migration {
+
+  private final Logger logger = Logger.getLogger("MIGRATION.CIA/FRS");
 
   @SuppressWarnings("WeakerAccess")
   protected MigrationConfig config;
@@ -36,20 +43,51 @@ public abstract class Migration {
   protected abstract void loadErrorsAndWrite() throws SQLException, IOException;
 
   public void migrate() throws Exception {
-    createTempTables();
-    parseFileAndUploadToTempTables();
-    markErrorsAndUpsertIntoDbValidRows();
-    loadErrorsAndWrite();
+    Date started = new Date();
+    String date = DateUtils.getDateWithTimeString(started);
+
+    String MigrationStatus = "STARTED";
+
+    logger.trace("///////////////////////////////////////////////////////////////");
+    logger.trace("MIGRATION STARTED, ID:" + config.id);
+    logger.trace("STARTED DATE,TIME: " + date);
+
+    try {
+      createTempTables();
+      parseFileAndUploadToTempTables();
+      markErrorsAndUpsertIntoDbValidRows();
+      loadErrorsAndWrite();
+
+      MigrationStatus = "FINISHED SUCCESSFULLY.";
+    } catch (Exception e) {
+      MigrationStatus = "FAILED";
+      e.printStackTrace();
+      throw e;
+
+    } finally {
+      Date finished = new Date();
+
+      String durationDateFormat = DateUtils.getTimeDifferenceStringFormat(finished.getTime(), started.getTime());
+
+      logger.trace("FINISHED DATE,TIME: " + DateUtils.getDateWithTimeString(finished));
+      logger.trace("TOTAL MIGRATION DURATION: " + durationDateFormat);
+      logger.trace("MIGRATION " + MigrationStatus);
+      logger.trace("///////////////////////////////////////////////////////////////");
+    }
   }
 
   @SuppressWarnings("WeakerAccess")
   protected void execSql(String sql) throws SQLException {
-    try (Statement statement = connection.createStatement()) {
+    for (String tableName : tableNames.keySet()) {
+      sql = sql.replaceAll(tableName, tableNames.get(tableName));
+    }
 
-      for (String tableName : tableNames.keySet()) {
-        sql = sql.replaceAll(tableName, tableNames.get(tableName));
-      }
+    try (Statement statement = connection.createStatement()) {
+      Long sqlStartedMils = System.currentTimeMillis();
+
       statement.execute(sql);
+      logger.debug("\nexecuted sql query:\n" + sql +
+        "  duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), sqlStartedMils) + "\n");
     }
   }
 
@@ -58,8 +96,10 @@ public abstract class Migration {
     Pattern frs = Pattern.compile(getFrsFileNamePattern());
 
     if (cia.matcher(config.originalFileName).matches()) {
+      config.id += "CIA";
       return new MigrationCia(config, connection);
     } else if (frs.matcher(config.originalFileName).matches()) {
+      config.id += "FRS";
       return new MigrationFrs(config, connection);
     } else {
       throw new UnsupportedFileExtension("unsupported file extension " + config.originalFileName);
@@ -74,10 +114,6 @@ public abstract class Migration {
     return "from_frs_(.*).json_row.txt.tar.bz2";
   }
 
-  @SuppressWarnings("WeakerAccess")
-  protected static String getCurrentTimeInMillsString() {
-    return new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss").format(new Date());
-  }
 
   @SuppressWarnings("WeakerAccess")
   public static int getMaxBatchSize() {
@@ -86,7 +122,7 @@ public abstract class Migration {
 
 
   @SuppressWarnings("WeakerAccess")
-  protected void writeErrors(String[] columns, String tableName, FileWriter writer) throws SQLException, IOException {
+  protected void writeErrors(String[] columns, String tableName, Writer writer) throws SQLException, IOException {
     String sql = getErrorSql(columns, tableName);
     try (PreparedStatement ps = connection.prepareStatement(sql);
          ResultSet rs = ps.executeQuery()) {
