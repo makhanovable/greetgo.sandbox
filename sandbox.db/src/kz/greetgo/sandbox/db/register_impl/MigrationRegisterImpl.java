@@ -10,6 +10,8 @@ import kz.greetgo.sandbox.db.register_impl.migration.Migration;
 import kz.greetgo.sandbox.db.register_impl.migration.MigrationConfig;
 import kz.greetgo.sandbox.db.register_impl.migration.exception.UnsupportedFileExtension;
 import kz.greetgo.sandbox.db.register_impl.ssh.SSHConnection;
+import kz.greetgo.sandbox.db.util.DateUtils;
+import kz.greetgo.sandbox.db.util.DbUtils;
 import kz.greetgo.sandbox.db.util.FileUtils;
 import org.apache.log4j.Logger;
 
@@ -17,7 +19,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
@@ -26,17 +28,21 @@ import static kz.greetgo.sandbox.db.register_impl.migration.Migration.getCiaFile
 import static kz.greetgo.sandbox.db.register_impl.migration.Migration.getFrsFileNamePattern;
 import static kz.greetgo.sandbox.db.register_impl.ssh.SshUtil.getFileNameList;
 
-@SuppressWarnings("unused")
 @Bean
 public class MigrationRegisterImpl implements MigrationRegister {
 
   @SuppressWarnings("WeakerAccess")
   public BeanGetter<IdGenerator> idGenerator;
+
+  @SuppressWarnings("WeakerAccess")
   public BeanGetter<DbConfig> dbConfigBeanGetter;
+
+  @SuppressWarnings("WeakerAccess")
   public BeanGetter<SshConfig> sshConfigBeanGetter;
 
   private AtomicBoolean isMigrationGoingOn = new AtomicBoolean(false);
   private final Logger logger = Logger.getLogger(getClass());
+
 
   @Override
   public void migrate() throws Exception {
@@ -54,19 +60,22 @@ public class MigrationRegisterImpl implements MigrationRegister {
     while (!files.isEmpty()) {
 
       for (String fileName : files) {
-        MigrationConfig config = initMigrationConfig(fileName);
 
+        MigrationConfig config = initMigrationConfig(fileName, idGenerator.get());
         String migratedFilePostfix = "migrated-";
 
         if (config != null) {
-          // FIXME: 3/14/18 Действие должно происходить в теле метода initMigrationConfig
-          config.idGenerator = idGenerator.get();
 
-          try (Connection connection = getPostgresConnection(dbConfig.url(), dbConfig.username(), dbConfig.password())) {
+          try (Connection connection = DbUtils.getPostgresConnection(dbConfig.url(), dbConfig.username(), dbConfig.password())) {
+
             Migration.getMigrationInstance(config, connection).migrate();
+
           } catch (UnsupportedFileExtension e) {
             logger.fatal("Error with file format", e);
             migratedFilePostfix = "notMigrated-";
+          } catch (Exception e) {
+            logger.fatal("unexpected exception:", e);
+            throw e;
           }
 
           try (SSHConnection sshConnection = new SSHConnection(sshConfigBeanGetter.get())) {
@@ -85,18 +94,12 @@ public class MigrationRegisterImpl implements MigrationRegister {
     isMigrationGoingOn.set(false);
   }
 
-  // FIXME: 3/14/18 Вынести в утил
-  private static Connection getPostgresConnection(String url, String username, String password) throws Exception {
-    Class.forName("org.postgresql.Driver");
 
-    return DriverManager.getConnection(url, username, password);
-  }
-
-  private MigrationConfig initMigrationConfig(String fileName) throws Exception {
+  private MigrationConfig initMigrationConfig(String fileName, IdGenerator idGenerator) throws Exception {
 
     MigrationConfig config = new MigrationConfig();
-
-    config.id = idGenerator.get().newId();
+    config.idGenerator = idGenerator;
+    config.id = idGenerator.newId();
     config.originalFileName = fileName;
     String tempFileName = Modules.dbDir() + "/build/migration/" + fileName;
 
@@ -151,8 +154,10 @@ public class MigrationRegisterImpl implements MigrationRegister {
     }
 
     config.toMigrate = untareedFile;
-    // FIXME: 3/14/18 в название файла нужно добавить дату и случайную строку (3)
-    config.error = new File(Modules.dbDir() + "/build/migration/" + fileName + ".error");
+
+    String date = DateUtils.getDateWithTimeString(new Date());
+    config.error = new File(Modules.dbDir() + "/build/migration/" +
+      fileName + date + "migId-" + config.id + ".error");
 
     return config;
   }
