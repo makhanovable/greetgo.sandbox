@@ -63,27 +63,24 @@ public class FrsParser implements AutoCloseable {
     int index = 1;
     String type = object.get("type").getAsString();
 
-    switch (type) {
-      case "new_account":
-        accountPS.setObject(index++, idGenerator.newId());
-        accountPS.setObject(index++, getJsonField("client_id"));
-        accountPS.setObject(index++, getJsonField("account_number"));
-        accountPS.setObject(index, getJsonField("registered_at"));
-        accountPS.addBatch();
-        break;
+    if ("new_account".equals(type)) {
+      accountPS.setObject(index++, idGenerator.newId());
+      accountPS.setObject(index++, getJsonField("client_id"));
+      accountPS.setObject(index++, getJsonField("account_number"));
+      accountPS.setObject(index, getJsonField("registered_at"));
+      accountPS.addBatch();
 
-      case "transaction":
-        transactionPS.setObject(index++, idGenerator.newId());
-        transactionPS.setObject(index++, getJsonField("account_number"));
-        transactionPS.setObject(index++, getJsonField("money"));
-        transactionPS.setObject(index++, getJsonField("finished_at"));
-        transactionPS.setObject(index, getJsonField("transaction_type"));
-        transactionPS.addBatch();
-        break;
+    } else if ("transaction".equals(type)) {
+      transactionPS.setObject(index++, idGenerator.newId());
+      transactionPS.setObject(index++, getJsonField("account_number"));
+      transactionPS.setObject(index++, getJsonField("money"));
+      transactionPS.setObject(index++, getJsonField("finished_at"));
+      transactionPS.setObject(index, getJsonField("transaction_type"));
+      transactionPS.addBatch();
 
-      default:
-        // FIXME: 3/14/18 Если первая строка в файле будет неправильной, то весь файл не обработается. - Нужно исправить
-        throw new IllegalArgumentException("unsupported frs type: " + type);
+    } else {
+      logger.fatal("line with unsupported frs type found: " + type);
+      return;
     }
 
     if (++batchCount >= maxBatchSize) {
@@ -99,8 +96,8 @@ public class FrsParser implements AutoCloseable {
     try {
       addBatch();
     } catch (Exception e) {
-      logger.trace("parse and adding to batch", e);
-      throw new RuntimeException("parse and adding to batch", e);
+      logger.fatal("trying to add batch parsed frs line", e);
+      throw new RuntimeException("trying to add batch parsed frs line", e);
     }
 
   }

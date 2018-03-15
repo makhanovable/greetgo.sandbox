@@ -1,13 +1,16 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.sandbox.db.register_impl.migration.handler.FrsParser;
+import kz.greetgo.sandbox.db.util.DateUtils;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.stream.Stream;
 
 public class MigrationFrs extends Migration {
@@ -19,8 +22,8 @@ public class MigrationFrs extends Migration {
   }
 
   @Override
-  protected void createTempTables() throws SQLException {
-    String date = getCurrentTimeInMillsString();
+  protected void createTempTablesImpl() throws SQLException {
+    String date = DateUtils.getDateWithTimeString(new Date());
 
     String account = "TMP_ACCOUNT_" + date + "_" + config.id;
     String transaction = "TMP_TRANSACTION_" + date + "_" + config.id;
@@ -61,7 +64,7 @@ public class MigrationFrs extends Migration {
   }
 
   @Override
-  protected void parseFileAndUploadToTempTables() throws Exception {
+  protected void parseFileAndUploadToTempTablesImpl() throws Exception {
 
     try (FrsParser parser = new FrsParser(config.idGenerator, getMaxBatchSize(), connection, tableNames);
          BufferedReader br = new BufferedReader(new FileReader(config.toMigrate));
@@ -72,7 +75,7 @@ public class MigrationFrs extends Migration {
   }
 
   @Override
-  protected void markErrorsAndUpsertIntoDbValidRows() throws SQLException {
+  protected void markErrorsAndUpsertIntoDbValidRowsImpl() throws SQLException {
 
     //////ACCOUNTS
     execSql("update TMP_ACCOUNT tmp\n" +
@@ -93,22 +96,22 @@ public class MigrationFrs extends Migration {
       "set mig_status = 'TO_CREATE_CLIENT'\n" +
       "WHERE tmp.mig_status='NOT_READY' and tmp.error is null;");
 
-    execSql("insert into client (id, cia_id, actual, mig_status)\n" +
-      "  SELECT DISTINCT on(tmp.client_id) tmp.id, tmp.client_id, false as actual, 'created_for_account'\n" +
+    execSql(String.format("insert into client (id, cia_id, actual, mig_id)\n" +
+      "  SELECT DISTINCT on(tmp.client_id) tmp.id, tmp.client_id, false as actual, '%s'\n" +
       "  from TMP_ACCOUNT tmp\n" +
-      "  WHERE tmp.error is null and tmp.mig_status='TO_CREATE_CLIENT'");
+      "  WHERE tmp.error is null and tmp.mig_status='TO_CREATE_CLIENT'", config.id));
 
     execSql("update TMP_ACCOUNT tmp\n" +
       "set mig_status = 'TO_INSERT'\n" +
       "WHERE tmp.mig_status='TO_CREATE_CLIENT' and tmp.error is null;");
 
-    execSql("insert into clientaccount (id, client, number, registeredat, actual, mig_status)\n" +
+    execSql(String.format("insert into clientaccount (id, client, number, registeredat, actual, mig_id)\n" +
       "  SELECT tmp.id, tmp.client_id, tmp.account_number,\n" +
       "    to_timestamp(tmp.registeredat, 'YYYY-MM-dd\"T\"HH24:MI:SS.MS') as registeredat,\n" +
       "    false as actual,\n" +
-      "    'just_migrated'\n" +
+      "    '%s'\n" +
       "  from TMP_ACCOUNT tmp\n" +
-      "WHERE tmp.mig_status='TO_INSERT'");
+      "WHERE tmp.mig_status='TO_INSERT'", config.id));
 
     //////TRANSACTIONS
     //transaction types
@@ -123,40 +126,41 @@ public class MigrationFrs extends Migration {
       "  SELECT DISTINCT on(type) id, id, type\n" +
       "  from TMP_TRANSACTION tmp\n" +
       "  WHERE tmp.mig_status='TO_CREATE_TR._TYPE'");
-// FIXME: 3/14/18 раскомментить
-    //???нужно узнать
-//    execSql("UPDATE TMP_TRANSACTION tmp\n" +
-//      "SET error='transaction must have account'\n" +
-//      "FROM clientaccount ca\n" +
-//      "WHERE ca.number=tmp.account\n");
+
+
+    execSql("UPDATE TMP_TRANSACTION tmp\n" +
+      "SET mig_status = 'TO_INSERT'\n" +
+      "FROM clientaccount ca\n" +
+      "WHERE ca.number=tmp.account_number\n");
 
     execSql("update TMP_TRANSACTION tmp\n" +
-      "set mig_status = 'TO_INSERT'\n" +
-      "WHERE tmp.error is null;");
+      "set error='transaction must have account'\n" +
+      "WHERE tmp.error notnull;");
 
-    execSql("insert into clientaccounttransaction (id, account, money, finishedat, type, actual)\n" +
+    execSql("insert into clientaccounttransaction (id, account, money, finishedat, type)\n" +
       "  SELECT tmp.id, tmp.account_number,\n" +
       "    cast(replace(tmp.money,'_','') AS REAL),\n" +
       "    to_timestamp(tmp.finished_at, 'YYYY-MM-dd\"T\"HH24:MI:SS.MS') as finished_at,\n" +
-      "    type.id, false as actual\n" +
+      "    type.id\n" +
       "  from TMP_TRANSACTION tmp\n" +
       "    left JOIN transactiontype type on type.name=tmp.type\n" +
       "  WHERE tmp.mig_status='TO_INSERT'");
 
     //actualize
-    execSql("update clientaccount c set mig_status='actualized', actual=true\n" +
-      "where c.mig_status='just_migrated' or c.mig_status='just_updated';\n");
+    execSql(String.format("update clientaccount c set actual=true\n" +
+      "where c.mig_id='%s' ;\n", config.id));
 
   }
 
   @Override
-  protected void loadErrorsAndWrite() throws SQLException, IOException {
+  protected void loadErrorsAndWriteImpl() throws SQLException, IOException {
     String[] accountColumns = {"client_id", "account_number", "error"};
     String[] TrColumns = {"account_number", "error"};
 
-    try (FileWriter writer = new FileWriter(config.error, true)) {
-      writeErrors(accountColumns, tableNames.get("TMP_ACCOUNT"), writer);
-      writeErrors(TrColumns, tableNames.get("TMP_TRANSACTION"), writer);
+    try (FileWriter writer = new FileWriter(config.error, true);
+         BufferedWriter bufferedWriter = new BufferedWriter(writer)) {
+      writeErrors(accountColumns, tableNames.get("TMP_ACCOUNT"), bufferedWriter);
+      writeErrors(TrColumns, tableNames.get("TMP_TRANSACTION"), bufferedWriter);
     }
   }
 }
