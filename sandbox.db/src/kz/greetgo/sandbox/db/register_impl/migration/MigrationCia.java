@@ -1,13 +1,16 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.sandbox.db.register_impl.migration.handler.CiaHandler;
+import kz.greetgo.sandbox.db.util.DateUtils;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Date;
 
 public class MigrationCia extends Migration {
 
@@ -19,7 +22,7 @@ public class MigrationCia extends Migration {
 
   @Override
   protected void createTempTables() throws SQLException {
-    String date = getCurrentTimeInMillsString();
+    String date = DateUtils.getDateWithTimeString(new Date());
 
     String client = "TMP_CLIENT_" + date + "_" + config.id;
     String address = "TMP_CLIENT_ADDRESS_" + date + "_" + config.id;
@@ -132,16 +135,16 @@ public class MigrationCia extends Migration {
       "set mig_status = 'TO_UPDATE'\n" +
       "WHERE mig_status='LAST_ACTUAL' AND client_id NOTNULL\n");
 
-    execSql("INSERT INTO client (id, cia_id, name, surname, patronymic, gender, birthdate, charm, mig_status)\n" +
-      "  SELECT id, cia_id, name, surname, patronymic, gender, birthdate, charm, 'just_migrated'\n" +
+    execSql(String.format("INSERT INTO client (id, cia_id, name, surname, patronymic, gender, birthdate, charm, mig_id)\n" +
+      "  SELECT id, cia_id, name, surname, patronymic, gender, birthdate, charm, '%s'\n" +
       "  FROM TMP_CLIENT tmp\n" +
-      "WHERE tmp.mig_status='TO_INSERT';");
+      "WHERE tmp.mig_status='TO_INSERT';", config.id));
 
-    execSql("UPDATE client as c\n" +
-      "SET  (name, surname, patronymic, gender, birthdate, charm, mig_status)=\n" +
-      "    (tmp.name, tmp.surname, tmp.patronymic, tmp.gender, tmp.birthdate, tmp.charm, 'just_updated')\n" +
+    execSql(String.format("UPDATE client as c\n" +
+      "SET  (name, surname, patronymic, gender, birthdate, charm, mig_id)=\n" +
+      "    (tmp.name, tmp.surname, tmp.patronymic, tmp.gender, tmp.birthdate, tmp.charm, '%s')\n" +
       "FROM TMP_CLIENT tmp\n" +
-      "WHERE tmp.mig_status='TO_UPDATE' AND tmp.client_id=c.id;");
+      "WHERE tmp.mig_status='TO_UPDATE' AND tmp.client_id=c.id;", config.id));
 
     //addr// нужно узнать
 //    execSql("update TMP_ADDRESS set error = 'type cant be null' where type is null and error is null");
@@ -192,20 +195,20 @@ public class MigrationCia extends Migration {
 
 
     //actualize
-    // FIXME: 3/14/18 mig_status -> mig_id
-    execSql("update Client c set mig_status='actualized', actual=true\n" +
-      "where c.mig_status='just_migrated' or c.mig_status='just_updated';\n");
+    execSql(String.format("update Client c set actual=true\n" +
+      "where c.mig_id='%s';\n", config.id));
   }
 
   @Override
   protected void loadErrorsAndWrite() throws SQLException, IOException {
 
     String[] ciaColumns = {"cia_id", "error"};
-// FIXME: 3/14/18 Используй BufferedFileWriter
-    try (FileWriter writer = new FileWriter(config.error, true)) {
-      writeErrors(ciaColumns, tableNames.get("TMP_CLIENT"), writer);
-      writeErrors(ciaColumns, tableNames.get("TMP_ADDRESS"), writer);
-      writeErrors(ciaColumns, tableNames.get("TMP_PHONE"), writer);
+
+    try (FileWriter writer = new FileWriter(config.error, true);
+         BufferedWriter bufferedWriter = new BufferedWriter(writer)) {
+      writeErrors(ciaColumns, tableNames.get("TMP_CLIENT"), bufferedWriter);
+      writeErrors(ciaColumns, tableNames.get("TMP_ADDRESS"), bufferedWriter);
+      writeErrors(ciaColumns, tableNames.get("TMP_PHONE"), bufferedWriter);
     }
 
 
