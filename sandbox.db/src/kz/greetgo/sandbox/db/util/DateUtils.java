@@ -18,7 +18,7 @@ public class DateUtils {
     long diffHours = diff / (60 * 60 * 1000) % 24;
     long diffDays = diff / (24 * 60 * 60 * 1000);
 
-    return String.format("%d days %d_%d_%d_%d", diffDays, diffHours, diffMinutes, diffSeconds, diffMiliSeconds);
+    return String.format("%d days %d hours %d minutes %d seconds %d milisec", diffDays, diffHours, diffMinutes, diffSeconds, diffMiliSeconds);
   }
 
 }
