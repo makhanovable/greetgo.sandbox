@@ -18,10 +18,11 @@ public class MigrationCia extends Migration {
   @SuppressWarnings("WeakerAccess")
   public MigrationCia(MigrationConfig config, Connection connection) {
     super(config, connection);
+
   }
 
   @Override
-  protected void createTempTables() throws SQLException {
+  protected void createTempTablesImpl() throws SQLException {
     String date = DateUtils.getDateWithTimeString(new Date());
 
     String client = "TMP_CLIENT_" + date + "_" + config.id;
@@ -54,11 +55,12 @@ public class MigrationCia extends Migration {
     StringBuilder addrTable = new StringBuilder();
     addrTable.append("create table TMP_ADDRESS (\n")
       .append("  no bigserial,\n")
-      .append("  cia_id character varying(32),\n")
-      .append("  type character varying(100),\n")
-      .append("  street character varying(100),\n")
-      .append("  house character varying(100),\n")
-      .append("  flat character varying(100),\n")
+      .append("  client_id varchar(32),\n")
+      .append("  cia_id varchar(32),\n")
+      .append("  type varchar(100),\n")
+      .append("  street varchar(100),\n")
+      .append("  house varchar(100),\n")
+      .append("  flat varchar(100),\n")
       .append("  mig_status varchar(100) default 'NOT_READY',\n")
       .append("  error varchar(100),\n")
       .append("  PRIMARY KEY (no)\n")
@@ -68,9 +70,10 @@ public class MigrationCia extends Migration {
     StringBuilder phoneTable = new StringBuilder();
     phoneTable.append("create table TMP_PHONE (\n")
       .append("  no bigserial,\n")
-      .append("  cia_id character varying(32),\n")
-      .append("  number character varying(100),\n")
-      .append("  type character varying(100),\n")
+      .append("  client_id varchar(32),\n")
+      .append("  cia_id varchar(32),\n")
+      .append("  number varchar(100),\n")
+      .append("  type varchar(100),\n")
       .append("  mig_status character varying(100) default 'NOT_READY',\n")
       .append("  error varchar(100),\n")
       .append("  PRIMARY KEY (no)\n")
@@ -79,10 +82,15 @@ public class MigrationCia extends Migration {
     execSql(clientTable.toString());
     execSql(addrTable.toString());
     execSql(phoneTable.toString());
+
+    execSql(String.format("CREATE INDEX client_idx_%s ON TMP_CLIENT (mig_status);", config.id));
+    execSql(String.format("CREATE INDEX address_idx_%s ON TMP_ADDRESS (mig_status);", config.id));
+    execSql(String.format("CREATE INDEX phone_idx_%s ON TMP_PHONE (mig_status);", config.id));
+
   }
 
   @Override
-  protected void parseFileAndUploadToTempTables() throws Exception {
+  protected void parseFileAndUploadToTempTablesImpl() throws Exception {
     try (CiaHandler handler = new CiaHandler(config.idGenerator, getMaxBatchSize(), connection, tableNames)) {
       SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
       parser.parse(config.toMigrate, handler);
@@ -90,7 +98,7 @@ public class MigrationCia extends Migration {
   }
 
   @Override
-  protected void markErrorsAndUpsertIntoDbValidRows() throws SQLException {
+  protected void markErrorsAndUpsertIntoDbValidRowsImpl() throws SQLException {
     //required: Записи, у которых нет или пустое поле surname, name, birth_date - ошибочные.
     execSql("update TMP_CLIENT set error = 'cia_id cant be null' where cia_id is null and error is null");
     execSql("update TMP_CLIENT set error = 'name cant be null' where name is null and error is null");
@@ -145,54 +153,39 @@ public class MigrationCia extends Migration {
       "    (tmp.name, tmp.surname, tmp.patronymic, tmp.gender, tmp.birthdate, tmp.charm, '%s')\n" +
       "FROM TMP_CLIENT tmp\n" +
       "WHERE tmp.mig_status='TO_UPDATE' AND tmp.client_id=c.id;", config.id));
+    
+    execSql("update TMP_ADDRESS tmp\n" +
+      "  SET mig_status=cl.mig_status\n" +
+      "  FROM TMP_CLIENT cl\n" +
+      "  WHERE tmp.cia_id=cl.cia_id"); // and (cl.mig_status='TO_INSERT' OR cl.mig_status='TO_UPDATE')
 
-    //addr// нужно узнать
-//    execSql("update TMP_ADDRESS set error = 'type cant be null' where type is null and error is null");
-//    execSql("update TMP_ADDRESS set error = 'street cant be null' where street is null and error is null");
-//    execSql("update TMP_ADDRESS set error = 'house cant be null' where house is null and error is null");
-
-    //только последний рекорд одинаковых cia_id актуальный
-    execSql("update TMP_ADDRESS tmp set mig_status='LAST_ACTUAL' FROM\n" +
-      "  (SELECT no, cia_id, ROW_NUMBER() OVER(PARTITION BY type, cia_id order by no desc) AS rn\n" +
-      "   from TMP_ADDRESS WHERE error is NULL) as rown\n" +
-      "WHERE rown.rn=1 and tmp.no=rown.no;");
-
-    execSql("insert into clientaddr (client, cia_id, type, street, house, flat)\n" +
-      "    SELECT cl.id, addr.cia_id, addr.type, addr.street, addr.house, addr.flat\n" +
-      "    FROM TMP_ADDRESS addr\n" +
-      "      INNER JOIN TMP_CLIENT cl\n" +
-      "      on addr.cia_id=cl.cia_id\n" +
-      "    WHERE cl.mig_status='TO_INSERT' and addr.mig_status='LAST_ACTUAL';");
+    execSql("INSERT INTO clientaddr (client, cia_id, type, street, house, flat)\n" +
+      "  SELECT addr.client_id, addr.cia_id, addr.type, addr.street, addr.house, addr.flat\n" +
+      "  FROM TMP_ADDRESS addr\n" +
+      "  WHERE addr.mig_status='TO_INSERT';");
 
     execSql("UPDATE clientaddr AS addr\n" +
       "  set (street, house, flat)=(tmp.street, tmp.house, tmp.flat)\n" +
       "  from TMP_ADDRESS tmp\n" +
-      "  INNER JOIN TMP_CLIENT cl\n" +
-      "    on tmp.cia_id=cl.cia_id\n" +
-      "WHERE cl.mig_status='TO_UPDATE' AND addr.cia_id=tmp.cia_id AND tmp.mig_status='LAST_ACTUAL';");
+      "  WHERE addr.cia_id=tmp.cia_id AND tmp.mig_status='TO_UPDATE';");
 
 
-    execSql("update TMP_PHONE tmp set mig_status='LAST_ACTUAL' FROM\n" +
-      "(SELECT no, cia_id, ROW_NUMBER() OVER(PARTITION BY type, cia_id order by no desc) AS rn\n" +
-      "from TMP_PHONE  WHERE error is NULL) as rown\n" +
-      "WHERE rown.rn=1 and tmp.no=rown.no;");
-
+    execSql("update TMP_PHONE tmp\n" +
+      "  SET mig_status=cl.mig_status\n" +
+      "  FROM TMP_CLIENT cl\n" +
+      "  WHERE tmp.cia_id=cl.cia_id");
 
     execSql("insert into clientphone (client, number, type)\n" +
-      "  SELECT cl.id, phone.number, phone.type\n" +
+      "  SELECT phone.client_id, phone.number, phone.type\n" +
       "  FROM TMP_PHONE phone\n" +
-      "    INNER JOIN TMP_CLIENT cl\n" +
-      "      on phone.cia_id=cl.cia_id\n" +
-      "  WHERE cl.mig_status='TO_INSERT' and phone.mig_status='LAST_ACTUAL';");
+      "  WHERE phone.mig_status='TO_INSERT';");
 
     execSql("insert into clientphone (client, number, type)\n" +
-      "  SELECT client_id, number, type from TMP_PHONE tmp\n" +
-      "    INNER JOIN TMP_CLIENT cl\n" +
-      "      ON tmp.cia_id = cl.cia_id\n" +
-      "  WHERE cl.mig_status='TO_UPDATE' and tmp.mig_status='LAST_ACTUAL'\n" +
-      "ON CONFLICT (client, number)\n" +
-      "  do UPDATE set type=EXCLUDED.type");
-
+      "  SELECT client_id, number, type " +
+      "  from TMP_PHONE tmp\n" +
+      "  WHERE tmp.mig_status='TO_UPDATE'\n" +
+      "  ON CONFLICT (client, number)\n" +
+      "    do UPDATE set type=EXCLUDED.type");
 
     //actualize
     execSql(String.format("update Client c set actual=true\n" +
@@ -200,7 +193,7 @@ public class MigrationCia extends Migration {
   }
 
   @Override
-  protected void loadErrorsAndWrite() throws SQLException, IOException {
+  protected void loadErrorsAndWriteImpl() throws SQLException, IOException {
 
     String[] ciaColumns = {"cia_id", "error"};
 
