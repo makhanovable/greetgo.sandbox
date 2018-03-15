@@ -59,8 +59,13 @@ public class MigrationFrs extends Migration {
       .append("  PRIMARY KEY (no)\n")
       .append(")");
 
+
     execSql(accountTable.toString());
     execSql(transactionTable.toString());
+
+    execSql(String.format("CREATE INDEX account_idx_%s ON TMP_ACCOUNT (mig_status);", config.id));
+    execSql(String.format("CREATE INDEX transaction_idx_%s ON TMP_TRANSACTION (mig_status);", config.id));
+
   }
 
   @Override
@@ -79,76 +84,89 @@ public class MigrationFrs extends Migration {
 
     //////ACCOUNTS
     execSql("update TMP_ACCOUNT tmp\n" +
-      "set error='account number must to be not null'\n" +
-      "WHERE tmp.account_number ISNULL");
+      "  SET error='account number must to be not null', " +
+      "      mig_status='INVALID'\n" +
+      "  WHERE tmp.account_number ISNULL");
 
     execSql("update TMP_ACCOUNT tmp\n" +
-      "set error='client must to be not null'\n" +
-      "WHERE tmp.client_id ISNULL");
+      "  SET error='client must to be not null', " +
+      "      mig_status='INVALID'\n" +
+      "  WHERE tmp.client_id ISNULL");
 
     //if client exist and no error then ready to insert
     execSql("update TMP_ACCOUNT tmp\n" +
-      "set mig_status = 'TO_INSERT'\n" +
-      "FROM client c\n" +
-      "WHERE c.cia_id = tmp.client_id and tmp.error is null;");
+      "  SET mig_status = 'TO_INSERT'\n" +
+      "  FROM client c\n" +
+      "  WHERE c.cia_id = tmp.client_id and tmp.error is null;");
 
-    execSql("update TMP_ACCOUNT tmp\n" +
-      "set mig_status = 'TO_CREATE_CLIENT'\n" +
-      "WHERE tmp.mig_status='NOT_READY' and tmp.error is null;");
+//    execSql("update TMP_ACCOUNT tmp\n" +
+//      "  SET mig_status = 'TO_CREATE_CLIENT'\n" +
+//      "  WHERE tmp.mig_status='NOT_READY'");
 
     execSql(String.format("insert into client (id, cia_id, actual, mig_id)\n" +
       "  SELECT DISTINCT on(tmp.client_id) tmp.id, tmp.client_id, false as actual, '%s'\n" +
       "  from TMP_ACCOUNT tmp\n" +
-      "  WHERE tmp.error is null and tmp.mig_status='TO_CREATE_CLIENT'", config.id));
+      "  WHERE tmp.mig_status='NOT_READY'", config.id));
 
     execSql("update TMP_ACCOUNT tmp\n" +
-      "set mig_status = 'TO_INSERT'\n" +
-      "WHERE tmp.mig_status='TO_CREATE_CLIENT' and tmp.error is null;");
+      "  set mig_status = 'TO_INSERT'\n" +
+      "  WHERE tmp.mig_status='NOT_READY'");
 
     execSql(String.format("insert into clientaccount (id, client, number, registeredat, actual, mig_id)\n" +
       "  SELECT tmp.id, tmp.client_id, tmp.account_number,\n" +
       "    to_timestamp(tmp.registeredat, 'YYYY-MM-dd\"T\"HH24:MI:SS.MS') as registeredat,\n" +
       "    false as actual,\n" +
       "    '%s'\n" +
-      "  from TMP_ACCOUNT tmp\n" +
-      "WHERE tmp.mig_status='TO_INSERT'", config.id));
+      "  FROM TMP_ACCOUNT tmp\n" +
+      "  WHERE tmp.mig_status='TO_INSERT'", config.id));
 
     //////TRANSACTIONS
     //transaction types
-    execSql("update TMP_TRANSACTION account\n" +
-      "set mig_status='TO_CREATE_TR._TYPE'\n" +
-      "FROM (\n" +
-      "  SELECT tmp.type from TMP_TRANSACTION tmp\n" +
-      "  EXCEPT SELECT name from transactiontype) types\n" +
-      "WHERE types.type = account.type;");
+//    execSql("update TMP_TRANSACTION\n" +
+//      "  SET mig_status='TO_CREATE_TR._TYPE'\n" +
+//      "  FROM (\n" +
+//      "    SELECT tmp.type FROM TMP_TRANSACTION tmp\n" +
+//      "    EXCEPT SELECT name from transactiontype) types\n" +
+//      "  WHERE types.type = account.type;");
+//
+//    execSql("insert into transactiontype (id, code, name)\n" +
+//      "  SELECT DISTINCT on(type) id, id, type\n" +
+//      "  FROM TMP_TRANSACTION tmp\n" +
+//      "  WHERE tmp.mig_status='TO_CREATE_TR._TYPE'");
 
-    execSql("insert into transactiontype (id, code, name)\n" +
-      "  SELECT DISTINCT on(type) id, id, type\n" +
-      "  from TMP_TRANSACTION tmp\n" +
-      "  WHERE tmp.mig_status='TO_CREATE_TR._TYPE'");
 
+    execSql("insert into transactiontype (id, code, name)" +
+      "  SELECT distinct on(type) id, id, type\n" +
+      "  FROM TMP_TRANSACTION tmp" +
+      "  WHERE tmp.type NOTNULL\n" +
+      "  ON CONFLICT (name) do NOTHING\n");
 
     execSql("UPDATE TMP_TRANSACTION tmp\n" +
-      "SET mig_status = 'TO_INSERT'\n" +
-      "FROM clientaccount ca\n" +
-      "WHERE ca.number=tmp.account_number\n");
+      "  SET mig_status = 'TO_INSERT'\n" +
+      "  FROM clientaccount ca\n" +
+      "  WHERE ca.number=tmp.account_number\n");
 
     execSql("update TMP_TRANSACTION tmp\n" +
-      "set error='transaction must have account'\n" +
-      "WHERE tmp.error notnull;");
+      "  SET error='transaction must have account'\n" +
+      "  WHERE tmp.mig_status='NOT_READY';");
+
 
     execSql("insert into clientaccounttransaction (id, account, money, finishedat, type)\n" +
       "  SELECT tmp.id, tmp.account_number,\n" +
       "    cast(replace(tmp.money,'_','') AS REAL),\n" +
       "    to_timestamp(tmp.finished_at, 'YYYY-MM-dd\"T\"HH24:MI:SS.MS') as finished_at,\n" +
       "    type.id\n" +
-      "  from TMP_TRANSACTION tmp\n" +
+      "  FROM TMP_TRANSACTION tmp\n" +
       "    left JOIN transactiontype type on type.name=tmp.type\n" +
       "  WHERE tmp.mig_status='TO_INSERT'");
 
     //actualize
-    execSql(String.format("update clientaccount c set actual=true\n" +
-      "where c.mig_id='%s' ;\n", config.id));
+    execSql(String.format("UPDATE clientaccount c " +
+      "  SET actual=true\n" +
+      "  WHERE c.mig_id='%s' ;\n", config.id));
+
+    execSql(String.format("DROP INDEX account_idx_%s;", config.id));
+    execSql(String.format("DROP INDEX transaction_idx_%s;", config.id));
 
   }
 
