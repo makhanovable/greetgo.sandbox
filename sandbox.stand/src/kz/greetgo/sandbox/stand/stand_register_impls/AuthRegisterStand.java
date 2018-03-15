@@ -4,13 +4,14 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.errors.AuthError;
 import kz.greetgo.sandbox.controller.model.AuthInfo;
+import kz.greetgo.sandbox.controller.model.PrintedClientInfo;
 import kz.greetgo.sandbox.controller.model.UserInfo;
 import kz.greetgo.sandbox.controller.register.AuthRegister;
 import kz.greetgo.sandbox.controller.register.model.SessionInfo;
 import kz.greetgo.sandbox.controller.register.model.UserParamName;
 import kz.greetgo.sandbox.controller.security.SecurityError;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
-import kz.greetgo.sandbox.db.stand.model.PersonDot;
+import kz.greetgo.sandbox.db.stand.model.*;
 import kz.greetgo.util.ServerUtil;
 
 import java.io.File;
@@ -19,6 +20,10 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+
+import static sun.misc.Version.print;
 
 @Bean
 public class AuthRegisterStand implements AuthRegister {
@@ -124,6 +129,83 @@ public class AuthRegisterStand implements AuthRegister {
 
   @Override
   public UserInfo getUserInfo(String personId) {
-    return db.get().personStorage.get(personId).toUserInfo();
-  }
+        for (PersonDot person : db.get().personStorage.values()) {
+            System.out.println(person.accountName);
+        }
+
+        return db.get().personStorage.get(personId).toUserInfo();
+    }
+
+    public List<UserInfo> getAllUserInfo() {
+
+        List<UserInfo> users = new ArrayList<UserInfo>();
+        for (PersonDot person : db.get().personStorage.values()) {
+            users.add(person.toUserInfo());
+        }
+
+        return users;
+    }
+
+    public List<PrintedClientInfo> getClientsInfo() {
+        List<PrintedClientInfo> clientInfos = new ArrayList<PrintedClientInfo>();
+
+        for (Client client : db.get().clientStorage.values()) {
+            PrintedClientInfo clientInfo = new PrintedClientInfo();
+            clientInfo.fio = client.name + " " + client.patronymic + " " + client.surname;
+            clientInfo.age = client.CountAge();
+            clientInfo.totalCash = getTotalCash(client.id);
+            clientInfo.maxCash = getMaxCash(client.id);
+            clientInfo.minCash = getMinCash(client.id);
+            clientInfo.charm = getCharm(client.charmID);
+
+            clientInfos.add(clientInfo);
+        }
+
+//        System.out.println(clientInfos);
+
+        return clientInfos;
+    }
+    private float getTotalCash(String clientId) {
+      float totalCash = 0;
+
+      for (Account account : db.get().accountStorage.values()) {
+          if (account.clientID.equals(clientId)) {
+              totalCash = account.money;
+          }
+      }
+
+      return totalCash;
+    }
+    private float getMinCash(String clientId) {
+      float totalCash = 0;
+
+      for (Account acc : db.get().accountStorage.values()) {
+        if (acc.clientID.equals(clientId)) {
+          totalCash = acc.getMinCash(db.get().transactionStorage);
+        }
+      }
+
+     return totalCash;
+    }
+    private float getMaxCash(String clientId) {
+      float totalCash = 0;
+
+      for (Account acc : db.get().accountStorage.values()) {
+        if (acc.clientID.equals(clientId)) {
+          totalCash = acc.getMaxCash(db.get().transactionStorage);
+        }
+      }
+
+      return totalCash;
+    }
+    private String getCharm(String charmID) {
+      for (Charm charm : db.get().charmStorage.values()) {
+        if (charm.id.equals(charmID)) {
+          return charm.name;
+        }
+      }
+
+      return null;
+    }
+
 }

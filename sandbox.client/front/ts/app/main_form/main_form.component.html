@@ -1,0 +1,83 @@
+
+<div class="">
+    <h2>Main Form Component</h2>
+
+    <button (click)="exit.emit()">Выход</button>
+
+    <div *ngIf="!clients">
+        <button [disabled]="!loadUserInfoButtonEnabled" (click)="loadUserInfoButtonClicked()">
+            Загрузить данные пользователя
+        </button>
+        <div *ngIf="loadUserInfoError">
+            {{loadUserInfoError}}
+        </div>
+    </div>
+    <div *ngIf="clients">
+        <table>
+            <tbody>
+            <tr>
+                <th>ФИО</th>
+                <th>Характер</th>
+                <th>Возраст</th>
+                <th>Общий остаток</th>
+                <th>Макс. остаток</th>
+                <th>Мин. остаток</th>
+            </tr>
+            <tr *ngFor="let clientInfo of clients">
+                <td><b>{{clientInfo.fio}}</b></td>
+                <td><b>{{clientInfo.charm}}</b></td>
+                <td><b>{{clientInfo.age}}</b></td>
+                <td><b>{{clientInfo.totalCash}}</b></td>
+                <td><b>{{clientInfo.maxCash}}</b></td>
+                <td><b>{{clientInfo.minCash}}</b></td>
+            </tr>
+
+            </tbody>
+        </table>
+        <div class="buttons">
+            <button class="addButton" (click)="addClientClicked()">+</button>
+            <button class="deleteButton">-</button>
+        </div>
+    </div>
+    <div class="modalView" *ngIf="modalViewEnabled">
+        <div class="modalBackdrop"></div>
+        <div class="modalHolder">
+            <div class="modalField">
+                <p>Имя</p>
+                <input type="text" size="40">
+            </div>
+            <div class="modalField">
+                <p>Фамилия</p>
+                <input type="text" size="40">
+            </div>
+            <div class="modalField">
+                <p>Отчество</p>
+                <input type="text" size="40">
+            </div>
+            <div class="modalField">
+                <p>Пол</p>
+                <select name="gender">
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
+            </div>
+            <div class="modalField">
+                <p>Дата рождения</p>
+                <input type="date" size="40">
+            </div>
+            <div class="modalField">
+                <p>Характер</p>
+                <select name="charm">
+                    <option value="melanholik">Меланхолик</option>
+                    <option value="flegmatik">Флегматик</option>
+                    <option value="sangvinik">Сангвиник</option>
+                    <option value="holerik">Холерик</option>
+                </select>
+            </div>
+            <div class="modalField">
+                <p>Адрес (фактический)</p>
+                <input type="date" size="40">
+            </div>
+        </div>
+    </div>
+</div>

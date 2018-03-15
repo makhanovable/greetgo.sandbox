@@ -8,10 +8,13 @@ import kz.greetgo.mvc.annotations.Par;
 import kz.greetgo.mvc.annotations.ParSession;
 import kz.greetgo.mvc.annotations.ToJson;
 import kz.greetgo.sandbox.controller.model.AuthInfo;
+import kz.greetgo.sandbox.controller.model.PrintedClientInfo;
 import kz.greetgo.sandbox.controller.model.UserInfo;
 import kz.greetgo.sandbox.controller.register.AuthRegister;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
+
+import java.util.List;
 
 /**
  * как составлять контроллеры написано
@@ -40,5 +43,17 @@ public class AuthController implements Controller {
   @Mapping("/userInfo")
   public UserInfo userInfo(@ParSession("personId") String personId) {
     return authRegister.get().getUserInfo(personId);
+  }
+
+  @ToJson
+  @Mapping("/allUserInfo")
+  public List<UserInfo> allUserInfo() {
+    return authRegister.get().getAllUserInfo();
+  }
+
+  @ToJson
+  @Mapping("/clientsInfo")
+  public List<PrintedClientInfo> clientsInfo() {
+    return authRegister.get().getClientsInfo();
   }
 }
