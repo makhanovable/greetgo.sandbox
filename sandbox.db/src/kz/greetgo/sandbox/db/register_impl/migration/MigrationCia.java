@@ -153,7 +153,7 @@ public class MigrationCia extends Migration {
       "    (tmp.name, tmp.surname, tmp.patronymic, tmp.gender, tmp.birthdate, tmp.charm, '%s')\n" +
       "FROM TMP_CLIENT tmp\n" +
       "WHERE tmp.mig_status='TO_UPDATE' AND tmp.client_id=c.id;", config.id));
-    
+
     execSql("update TMP_ADDRESS tmp\n" +
       "  SET mig_status=cl.mig_status\n" +
       "  FROM TMP_CLIENT cl\n" +
@@ -190,6 +190,12 @@ public class MigrationCia extends Migration {
     //actualize
     execSql(String.format("update Client c set actual=true\n" +
       "where c.mig_id='%s';\n", config.id));
+
+
+    execSql(String.format("DROP INDEX client_idx_%s;", config.id));
+    execSql(String.format("DROP INDEX address_idx_%s;", config.id));
+    execSql(String.format("DROP INDEX phone_idx_%s;", config.id));
+    
   }
 
   @Override
