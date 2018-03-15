@@ -15,7 +15,7 @@
         birthDate date,
         charm varchar(32),
         actual boolean default true,
-        mig_status varchar(100),
+        mig_id varchar(32),
         PRIMARY KEY (id)
       )
     ]]></sql>
