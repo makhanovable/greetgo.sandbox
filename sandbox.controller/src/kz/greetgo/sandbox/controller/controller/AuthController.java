@@ -56,4 +56,25 @@ public class AuthController implements Controller {
   public List<PrintedClientInfo> clientsInfo() {
     return authRegister.get().getClientsInfo();
   }
+
+  @AsIs
+  @NoSecurity
+  @Mapping("/addNewClient")
+  public String addNewClient(@Par("clientInfo") String clientInfo) {
+        return authRegister.get().addNewClient(clientInfo);
+  }
+
+  @AsIs
+  @NoSecurity
+  @Mapping("/addNewPhone")
+  public String addNewPhone(@Par("phones") String phones) {
+    return authRegister.get().addNewPhone(phones);
+  }
+
+  @AsIs
+  @NoSecurity
+  @Mapping("/addNewAdress")
+  public String addNewAdresses(@Par("adresses") String adresses) {
+    return authRegister.get().addNewAdresses(adresses);
+  }
 }

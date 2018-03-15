@@ -6,10 +6,12 @@ import kz.greetgo.depinject.core.HasAfterInject;
 import kz.greetgo.sandbox.db.stand.model.*;
 
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -94,7 +96,7 @@ public class StandDb implements HasAfterInject {
         e.printStackTrace();
       }
       c.charmID = splitLine[4].trim();
-      if (fio.length > 2) c.patronymic = fio[2];
+      if (fio.length > 2) c.patronymic = fio[2]; else c.patronymic = "";
       clientStorage.put(c.id, c);
     }
   }
@@ -163,6 +165,121 @@ public class StandDb implements HasAfterInject {
       ch.description = splitLine[2].trim();
       ch.energy = Float.parseFloat(splitLine[3].trim());
       charmStorage.put(ch.id, ch);
+    }
+  }
+
+  public void addNewCLient(String clientInfo) {
+    List<String[]> client = new ArrayList<String[]>();
+    String[] splitLine = clientInfo.split(";");
+    client.add(splitLine);
+
+    for (Charm charm : charmStorage.values()) {
+      if (charm.name.equals(splitLine[4].trim())) {
+        splitLine[4] = charm.id;
+      }
+    }
+
+    clientInfo = String.join(";", splitLine);
+    addClientToDb(clientInfo);
+    appendClient(client);
+  }
+  private void addClientToDb(String client) {
+    BufferedWriter bw = null;
+    FileWriter fw = null;
+
+    try {
+      File file = new File("/Users/sanzharburumbay/Documents/Greetgo_Internship/greetgo.sandbox/sandbox.stand/db/src/kz/greetgo/sandbox/db/stand/beans/ClientDb.txt");
+      fw = new FileWriter(file.getAbsoluteFile(), true);
+      bw = new BufferedWriter(fw);
+      bw.write(client);
+      bw.write("\n");
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      try {
+        if (bw != null)
+          bw.close();
+        if (fw != null)
+          fw.close();
+      } catch (IOException ex) {
+        ex.printStackTrace();
+      }
+    }
+  }
+
+  public void addNewPhones(String phones) {
+    String[] phonesArray = phones.split(",");
+
+    for (String phone : phonesArray) {
+      addPhoneToDb(phone);
+
+      List<String[]> phonesList = new ArrayList<String[]>();
+      String[] splitLine = phone.split(";");
+      phonesList.add(splitLine);
+      appendPhone(phonesList);
+    }
+  }
+  private void addPhoneToDb (String phone) {
+    BufferedWriter bw = null;
+    FileWriter fw = null;
+
+    try {
+      File file = new File("/Users/sanzharburumbay/Documents/Greetgo_Internship/greetgo.sandbox/sandbox.stand/db/src/kz/greetgo/sandbox/db/stand/beans/PhoneDb.txt");
+      fw = new FileWriter(file.getAbsoluteFile(), true);
+      bw = new BufferedWriter(fw);
+      bw.write(phone);
+      bw.write("\n");
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      try {
+        if (bw != null)
+          bw.close();
+        if (fw != null)
+          fw.close();
+      } catch (IOException ex) {
+        ex.printStackTrace();
+      }
+    }
+  }
+
+  public void addNewAdresses(String adresses) {
+    System.out.println(adresses);
+    String[] adressesArray = adresses.split(",");
+
+    for (String adress : adressesArray) {
+      addToAdressDb(adress);
+
+      List<String[]> adressesList = new ArrayList<String[]>();
+      String[] splitLine = adress.split(";");
+      adressesList.add(splitLine);
+      appendPhone(adressesList);
+    }
+  }
+  private void addToAdressDb (String adress) {
+    BufferedWriter bw = null;
+    FileWriter fw = null;
+
+    try {
+      File file = new File("/Users/sanzharburumbay/Documents/Greetgo_Internship/greetgo.sandbox/sandbox.stand/db/src/kz/greetgo/sandbox/db/stand/beans/AdressDb.txt");
+      fw = new FileWriter(file.getAbsoluteFile(), true);
+      bw = new BufferedWriter(fw);
+      bw.write(adress);
+      bw.write("\n");
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      try {
+        if (bw != null)
+          bw.close();
+        if (fw != null)
+          fw.close();
+      } catch (IOException ex) {
+        ex.printStackTrace();
+      }
     }
   }
 }

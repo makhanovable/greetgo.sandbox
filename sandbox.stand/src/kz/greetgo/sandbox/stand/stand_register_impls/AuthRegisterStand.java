@@ -146,7 +146,27 @@ public class AuthRegisterStand implements AuthRegister {
         return users;
     }
 
-    public List<PrintedClientInfo> getClientsInfo() {
+    public String addNewClient(String clientInfo) {
+
+//      System.out.println(clientInfo);
+      db.get().addNewCLient(clientInfo);
+
+      return "ok";
+    }
+
+  @Override
+  public String addNewPhone(String phones) {
+    db.get().addNewPhones(phones);
+    return "ok";
+  }
+
+  @Override
+  public String addNewAdresses(String adresses) {
+    db.get().addNewAdresses(adresses);
+    return "ok";
+  }
+
+  public List<PrintedClientInfo> getClientsInfo() {
         List<PrintedClientInfo> clientInfos = new ArrayList<PrintedClientInfo>();
 
         for (Client client : db.get().clientStorage.values()) {
@@ -160,8 +180,6 @@ public class AuthRegisterStand implements AuthRegister {
 
             clientInfos.add(clientInfo);
         }
-
-//        System.out.println(clientInfos);
 
         return clientInfos;
     }
