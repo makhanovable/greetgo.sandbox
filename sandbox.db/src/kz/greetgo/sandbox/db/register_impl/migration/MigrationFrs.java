@@ -22,7 +22,7 @@ public class MigrationFrs extends Migration {
   }
 
   @Override
-  protected void createTempTables() throws SQLException {
+  protected void createTempTablesImpl() throws SQLException {
     String date = DateUtils.getDateWithTimeString(new Date());
 
     String account = "TMP_ACCOUNT_" + date + "_" + config.id;
@@ -64,7 +64,7 @@ public class MigrationFrs extends Migration {
   }
 
   @Override
-  protected void parseFileAndUploadToTempTables() throws Exception {
+  protected void parseFileAndUploadToTempTablesImpl() throws Exception {
 
     try (FrsParser parser = new FrsParser(config.idGenerator, getMaxBatchSize(), connection, tableNames);
          BufferedReader br = new BufferedReader(new FileReader(config.toMigrate));
@@ -75,7 +75,7 @@ public class MigrationFrs extends Migration {
   }
 
   @Override
-  protected void markErrorsAndUpsertIntoDbValidRows() throws SQLException {
+  protected void markErrorsAndUpsertIntoDbValidRowsImpl() throws SQLException {
 
     //////ACCOUNTS
     execSql("update TMP_ACCOUNT tmp\n" +
@@ -153,7 +153,7 @@ public class MigrationFrs extends Migration {
   }
 
   @Override
-  protected void loadErrorsAndWrite() throws SQLException, IOException {
+  protected void loadErrorsAndWriteImpl() throws SQLException, IOException {
     String[] accountColumns = {"client_id", "account_number", "error"};
     String[] TrColumns = {"account_number", "error"};
 

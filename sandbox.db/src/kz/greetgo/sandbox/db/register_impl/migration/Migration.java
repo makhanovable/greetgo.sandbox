@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,7 +19,7 @@ import java.util.regex.Pattern;
 
 public abstract class Migration {
 
-  private final Logger logger = Logger.getLogger("MIGRATION.CIA/FRS");
+  private final Logger logger = Logger.getLogger("MIGRATION");
 
   @SuppressWarnings("WeakerAccess")
   protected MigrationConfig config;
@@ -34,46 +35,72 @@ public abstract class Migration {
     this.connection = connection;
   }
 
-  protected abstract void createTempTables() throws SQLException;
 
-  protected abstract void parseFileAndUploadToTempTables() throws Exception;
+  protected abstract void createTempTablesImpl() throws SQLException;
 
-  protected abstract void markErrorsAndUpsertIntoDbValidRows() throws SQLException;
+  protected abstract void parseFileAndUploadToTempTablesImpl() throws Exception;
 
-  protected abstract void loadErrorsAndWrite() throws SQLException, IOException;
+  protected abstract void markErrorsAndUpsertIntoDbValidRowsImpl() throws SQLException;
+
+  protected abstract void loadErrorsAndWriteImpl() throws SQLException, IOException;
 
   public void migrate() throws Exception {
-    Date started = new Date();
-    String date = DateUtils.getDateWithTimeString(started);
+
+    logger.info("STARTED DATE,TIME: " + DateUtils.getDateWithTimeString(new Date()));
 
     String MigrationStatus = "STARTED";
-
-    logger.trace("///////////////////////////////////////////////////////////////");
-    logger.trace("MIGRATION STARTED, ID:" + config.id);
-    logger.trace("STARTED DATE,TIME: " + date);
-
     try {
       createTempTables();
       parseFileAndUploadToTempTables();
       markErrorsAndUpsertIntoDbValidRows();
       loadErrorsAndWrite();
 
-      MigrationStatus = "FINISHED SUCCESSFULLY.";
+      MigrationStatus = "MIGRATED.";
     } catch (Exception e) {
       MigrationStatus = "FAILED";
-      e.printStackTrace();
       throw e;
-
     } finally {
-      Date finished = new Date();
+      logger.info("FILE FINISHED DATE,TIME: " + DateUtils.getDateWithTimeString(new Date()));
+      logger.info("FILE MIGRATION STATUS: " + MigrationStatus);
+      logger.info("///////////////////////////////////////////////////////////////");
 
-      String durationDateFormat = DateUtils.getTimeDifferenceStringFormat(finished.getTime(), started.getTime());
-
-      logger.trace("FINISHED DATE,TIME: " + DateUtils.getDateWithTimeString(finished));
-      logger.trace("TOTAL MIGRATION DURATION: " + durationDateFormat);
-      logger.trace("MIGRATION " + MigrationStatus);
-      logger.trace("///////////////////////////////////////////////////////////////");
     }
+  }
+
+  private void createTempTables() throws SQLException {
+    logger.info("step1. creating temp table starting");
+    Long start = System.currentTimeMillis();
+    createTempTablesImpl();
+    logger.info("step1. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
+
+  }
+
+  private void parseFileAndUploadToTempTables() throws Exception {
+    logger.info("step2. parsing file and insert to temp tables");
+    try {
+      Long start = System.currentTimeMillis();
+      parseFileAndUploadToTempTablesImpl();
+      logger.info("step2. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
+
+    } catch (BatchUpdateException bux) {
+      logger.fatal(bux.getNextException());
+      throw bux.getNextException();
+    }
+  }
+
+  private void markErrorsAndUpsertIntoDbValidRows() throws Exception {
+    logger.info("step3. mark error and upserting valids to oper db");
+    Long start = System.currentTimeMillis();
+    markErrorsAndUpsertIntoDbValidRowsImpl();
+    logger.info("step3. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
+
+  }
+
+  private void loadErrorsAndWrite() throws Exception {
+    logger.info("step4. getting and uploading errors");
+    Long start = System.currentTimeMillis();
+    loadErrorsAndWriteImpl();
+    logger.info("step4. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
   }
 
   @SuppressWarnings("WeakerAccess")
@@ -84,10 +111,9 @@ public abstract class Migration {
 
     try (Statement statement = connection.createStatement()) {
       Long sqlStartedMils = System.currentTimeMillis();
-
+      logger.debug("\nexecuted sql query:\n" + sql);
       statement.execute(sql);
-      logger.debug("\nexecuted sql query:\n" + sql +
-        "  duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), sqlStartedMils) + "\n");
+      logger.debug("duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), sqlStartedMils) + "\n");
     }
   }
 
@@ -117,7 +143,7 @@ public abstract class Migration {
 
   @SuppressWarnings("WeakerAccess")
   public static int getMaxBatchSize() {
-    return 5000;
+    return 50000;
   }
 
 
