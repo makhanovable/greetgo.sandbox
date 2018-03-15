@@ -33,7 +33,7 @@
 
   <appender name="MIGRATION" class="org.apache.log4j.RollingFileAppender">
     <param name="File" value="${user.home}/sandbox.d/logs/migration.log"/>
-    <param name="Threshold" value="TRACE"/>
+    <param name="Threshold" value="DEBUG"/>
     <param name="Append" value="true"/>
     <param name="MaxFileSize" value="100MB"/>
     <param name="MaxBackupIndex" value="100"/>
