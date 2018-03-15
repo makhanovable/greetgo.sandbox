@@ -27,8 +27,8 @@ import java.util.stream.Collectors;
 
 public class GenerateInputFiles {
 
-  public static final int CIA_LIMIT = 1_000;
-  public static final int FRS_LIMIT = 100_000;
+  public static final int CIA_LIMIT = 1_000_000;
+  public static final int FRS_LIMIT = 10_000_000;
 
   public static void main(String[] args) throws Exception {
     new GenerateInputFiles().execute();
