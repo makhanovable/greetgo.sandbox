@@ -17,8 +17,12 @@ public class Account {
         float minCash = this.money;
         float cash = 0;
         for (Transaction tr : transactions.values()) {
+            //TODO: неверное выражение "tr.accountID.equals(this.id)". 
+            // Подумай почему, если не получится узнать, позже спроси у меня.
             if (tr.accountID.equals(this.id)) {
                 cash += tr.money;
+                //TODO: ты неверно понял схему БД. Разберись, я потом спрошу.
+                // Здесь найдена не тот минимум
                 if (cash < minCash) minCash = cash;
             }
         }
@@ -30,8 +34,10 @@ public class Account {
         float maxCash = 0;
         float cash = 0;
         for (Transaction tr : transactions.values()) {
+            //TODO: аналогично. Исправить.
             if (tr.accountID.equals(this.id)) {
                 cash += tr.money;
+                //TODO: аналогично. Разобраться в БД.
                 if (cash > maxCash) maxCash = cash;
             }
         }
