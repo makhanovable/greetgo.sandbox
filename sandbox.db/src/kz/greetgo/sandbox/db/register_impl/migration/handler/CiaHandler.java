@@ -220,6 +220,7 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
     clientPS.close();
     addrPS.close();
     phonePS.close();
+    clear();
     connection.setAutoCommit(this.originalAutoCommit);
   }
 
@@ -228,6 +229,13 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
     addrPS.executeBatch();
     phonePS.executeBatch();
     connection.commit();
+    clear();
+  }
+
+  private void clear() throws SQLException {
+    clientPS.clearBatch();
+    addrPS.clearBatch();
+    phonePS.clearBatch();
   }
 
   private Date tryParseDate(String date) {
