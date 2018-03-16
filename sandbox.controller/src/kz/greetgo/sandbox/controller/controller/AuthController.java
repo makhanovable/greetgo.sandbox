@@ -57,6 +57,9 @@ public class AuthController implements Controller {
     return authRegister.get().getClientsInfo();
   }
 
+  //TODO: перенеси все методы контроллера, не относящиеся по логике к авторизации, в новый контроллер для клиентов.
+  //TODO: также создай новый регистр для клиентов
+  
   @AsIs
   @NoSecurity
   @Mapping("/addNewClient")
