@@ -2,7 +2,6 @@ package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.sandbox.db.register_impl.migration.handler.FrsParser;
 import kz.greetgo.sandbox.db.util.DateUtils;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -12,6 +11,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.stream.Stream;
+
+import static kz.greetgo.sandbox.db.register_impl.migration.MigrationStatuses.NOT_READY;
+import static kz.greetgo.sandbox.db.register_impl.migration.MigrationStatuses.TO_INSERT;
 
 public class MigrationFrs extends Migration {
 
@@ -41,7 +43,7 @@ public class MigrationFrs extends Migration {
       .append("  account_number varchar(100),\n")
       .append("  registeredAt varchar(100),\n")
       .append("  error varchar(100),\n")
-      .append("  mig_status varchar(100) default 'NOT_READY',\n")
+      .append("  mig_status smallint default " + NOT_READY + ",\n")
       .append("  PRIMARY KEY(no)\n")
       .append(")");
 
@@ -55,7 +57,7 @@ public class MigrationFrs extends Migration {
       .append("  finished_at varchar(100),\n")
       .append("  type varchar(100),\n")
       .append("  error varchar(100),\n")
-      .append("  mig_status varchar(100) default 'NOT_READY',\n")
+      .append("  mig_status varchar(100) default " + NOT_READY + ",\n")
       .append("  PRIMARY KEY (no)\n")
       .append(")");
 
@@ -84,18 +86,16 @@ public class MigrationFrs extends Migration {
 
     //////ACCOUNTS
     execSql("update TMP_ACCOUNT tmp\n" +
-      "  SET error='account number must to be not null', " +
-      "      mig_status='INVALID'\n" +
+      "  SET error='account number must to be not null'\n" +
       "  WHERE tmp.account_number ISNULL");
 
     execSql("update TMP_ACCOUNT tmp\n" +
-      "  SET error='client must to be not null', " +
-      "      mig_status='INVALID'\n" +
+      "  SET error='client must to be not null'\n" +
       "  WHERE tmp.client_id ISNULL");
 
     //if client exist and no error then ready to insert
     execSql("update TMP_ACCOUNT tmp\n" +
-      "  SET mig_status = 'TO_INSERT'\n" +
+      "  SET mig_status =" + TO_INSERT + "\n" +
       "  FROM client c\n" +
       "  WHERE c.cia_id = tmp.client_id and tmp.error is null;");
 
@@ -106,11 +106,11 @@ public class MigrationFrs extends Migration {
     execSql(String.format("insert into client (id, cia_id, actual, mig_id)\n" +
       "  SELECT DISTINCT on(tmp.client_id) tmp.id, tmp.client_id, false as actual, '%s'\n" +
       "  from TMP_ACCOUNT tmp\n" +
-      "  WHERE tmp.mig_status='NOT_READY'", config.id));
+      "  WHERE tmp.mig_status=" + NOT_READY, config.id));
 
     execSql("update TMP_ACCOUNT tmp\n" +
-      "  set mig_status = 'TO_INSERT'\n" +
-      "  WHERE tmp.mig_status='NOT_READY'");
+      "  set mig_status =" + TO_INSERT + "\n" +
+      "  WHERE tmp.mig_status=" + NOT_READY);
 
     execSql(String.format("insert into clientaccount (id, client, number, registeredat, actual, mig_id)\n" +
       "  SELECT tmp.id, tmp.client_id, tmp.account_number,\n" +
@@ -118,7 +118,7 @@ public class MigrationFrs extends Migration {
       "    false as actual,\n" +
       "    '%s'\n" +
       "  FROM TMP_ACCOUNT tmp\n" +
-      "  WHERE tmp.mig_status='TO_INSERT'", config.id));
+      "  WHERE tmp.mig_status=" + TO_INSERT, config.id));
 
     //////TRANSACTIONS
     //transaction types
@@ -142,13 +142,13 @@ public class MigrationFrs extends Migration {
       "  ON CONFLICT (name) do NOTHING\n");
 
     execSql("UPDATE TMP_TRANSACTION tmp\n" +
-      "  SET mig_status = 'TO_INSERT'\n" +
+      "  SET mig_status =" + TO_INSERT + "\n" +
       "  FROM clientaccount ca\n" +
       "  WHERE ca.number=tmp.account_number\n");
 
     execSql("update TMP_TRANSACTION tmp\n" +
       "  SET error='transaction must have account'\n" +
-      "  WHERE tmp.mig_status='NOT_READY';");
+      "  WHERE tmp.mig_status=" + NOT_READY);
 
 
     execSql("insert into clientaccounttransaction (id, account, money, finishedat, type)\n" +
@@ -158,7 +158,7 @@ public class MigrationFrs extends Migration {
       "    type.id\n" +
       "  FROM TMP_TRANSACTION tmp\n" +
       "    left JOIN transactiontype type on type.name=tmp.type\n" +
-      "  WHERE tmp.mig_status='TO_INSERT'");
+      "  WHERE tmp.mig_status=" + TO_INSERT);
 
     //actualize
     execSql(String.format("UPDATE clientaccount c " +
