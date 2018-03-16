@@ -25,6 +25,8 @@ import java.util.List;
 
 import static sun.misc.Version.print;
 
+//TODO: Для методов, не относящихся к авторизации, сделай отдельный новый регистр. И там реализовывай бизнес логику.
+
 @Bean
 public class AuthRegisterStand implements AuthRegister {
 
@@ -145,7 +147,12 @@ public class AuthRegisterStand implements AuthRegister {
 
         return users;
     }
-
+  
+    //TODO: Статусы так не возвращаются. Для этого есть специальные методы.
+    //TODO: Также, при сохранении записи, надо возвращать эту же запись клиенту. 
+    // Подумай почему, тоже спрошу.
+    
+    // @Override?
     public String addNewClient(String clientInfo) {
 
 //      System.out.println(clientInfo);
