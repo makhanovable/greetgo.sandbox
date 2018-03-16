@@ -151,16 +151,22 @@ public class MigrationRegisterImpl implements MigrationRegister {
     String decompressedFilePath = copiedFile.getPath().replaceAll(".bz2", "");
     File decompressedFile = new File(decompressedFilePath);
     logger.info("decompressing file");
+    Long decompresStartTime = System.currentTimeMillis();
     FileUtils.decompressFile(copiedFile, decompressedFile);
     if (!decompressedFile.exists()) {
-      logger.info("cant decompress file " + fileName);
+      if (logger.isInfoEnabled())
+        logger.info("cant decompress file " + fileName);
       return null;
+    }
+    if (logger.isInfoEnabled()) {
+      String duration = DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), decompresStartTime);
+      logger.info("decompress duration: " + duration);
     }
 
     if (!copiedFile.delete()) {
-      logger.info("could not delete file " + copiedFile.getPath());
+      if (logger.isInfoEnabled())
+        logger.info("could not delete file " + copiedFile.getPath());
     }
-
 
     logger.info("untaring file");
     String untarred = decompressedFilePath.replaceAll(".tar", "");
@@ -172,7 +178,7 @@ public class MigrationRegisterImpl implements MigrationRegister {
     }
 
     if (!decompressedFile.delete()) {
-      logger.info("could not delete file " + decompressedFile.getPath());
+      logger.warn("could not delete file " + decompressedFile);
     }
 
     config.toMigrate = untareedFile;
