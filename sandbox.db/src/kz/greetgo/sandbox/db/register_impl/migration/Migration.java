@@ -6,12 +6,7 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.sql.BatchUpdateException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +21,7 @@ public abstract class Migration {
 
   protected Connection connection;
 
+  // FIXME: 3/16/18 Замени коды таблиц на enum, чтобы значение было что-то вроде #{TABLE_NAME}
   @SuppressWarnings("WeakerAccess")
   protected Map<String, String> tableNames = new HashMap<>();
 
@@ -35,7 +31,7 @@ public abstract class Migration {
     this.connection = connection;
   }
 
-
+  // FIXME: 3/16/18 Постфикс Impl некорректный
   protected abstract void createTempTablesImpl() throws SQLException;
 
   protected abstract void parseFileAndUploadToTempTablesImpl() throws Exception;
@@ -48,6 +44,8 @@ public abstract class Migration {
 
     logger.info("STARTED DATE,TIME: " + DateUtils.getDateWithTimeString(new Date()));
 
+    // FIXME: 3/16/18 Статус можно заменить на enum
+    // FIXME: 3/16/18 JavaCodingConvention. БУДЬ ВНИМАТЕЛЬНЕЕ!
     String MigrationStatus = "STARTED";
     try {
       createTempTables();
@@ -72,7 +70,6 @@ public abstract class Migration {
     Long start = System.currentTimeMillis();
     createTempTablesImpl();
     logger.info("step1. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
-
   }
 
   private void parseFileAndUploadToTempTables() throws Exception {
@@ -81,9 +78,9 @@ public abstract class Migration {
       Long start = System.currentTimeMillis();
       parseFileAndUploadToTempTablesImpl();
       logger.info("step2. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
-
     } catch (BatchUpdateException bux) {
       logger.fatal(bux.getNextException());
+      // FIXME: 3/16/18 Из-за этой ошибки весь процесс миграций остановится
       throw bux.getNextException();
     }
   }
@@ -93,7 +90,6 @@ public abstract class Migration {
     Long start = System.currentTimeMillis();
     markErrorsAndUpsertIntoDbValidRowsImpl();
     logger.info("step3. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
-
   }
 
   private void loadErrorsAndWrite() throws Exception {
@@ -154,6 +150,7 @@ public abstract class Migration {
          ResultSet rs = ps.executeQuery()) {
       while (rs.next()) {
         String line = getErrorLine(columns, rs);
+        // FIXME: 3/16/18 write line? проверь тут буфер работает.
         writer.write(line);
       }
     }
@@ -174,6 +171,5 @@ public abstract class Migration {
       "from " + tableName + "\n" +
       "where error notnull";
   }
-
 
 }

@@ -153,7 +153,7 @@ public class MigrationCia extends Migration {
       "    (tmp.name, tmp.surname, tmp.patronymic, tmp.gender, tmp.birthdate, tmp.charm, '%s')\n" +
       "FROM TMP_CLIENT tmp\n" +
       "WHERE tmp.mig_status='TO_UPDATE' AND tmp.client_id=c.id;", config.id));
-    
+
     execSql("update TMP_ADDRESS tmp\n" +
       "  SET mig_status=cl.mig_status\n" +
       "  FROM TMP_CLIENT cl\n" +
@@ -203,7 +203,6 @@ public class MigrationCia extends Migration {
       writeErrors(ciaColumns, tableNames.get("TMP_ADDRESS"), bufferedWriter);
       writeErrors(ciaColumns, tableNames.get("TMP_PHONE"), bufferedWriter);
     }
-
 
   }
 
