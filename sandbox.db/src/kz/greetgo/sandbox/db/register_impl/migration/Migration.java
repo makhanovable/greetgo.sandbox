@@ -80,11 +80,14 @@ public abstract class Migration {
     try {
       Long start = System.currentTimeMillis();
       parseFileAndUploadToTempTablesImpl();
-      logger.info("step2. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
+      if (logger.isInfoEnabled())
+        logger.info("step2. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
 
     } catch (BatchUpdateException bux) {
-      logger.fatal(bux.getNextException());
+      logger.fatal("parseFileAndUploadToTempTables", bux.getNextException());
       throw bux.getNextException();
+    } catch (Exception e) {
+      throw e;
     }
   }
 
@@ -92,7 +95,8 @@ public abstract class Migration {
     logger.info("step3. mark error and upserting valids to oper db");
     Long start = System.currentTimeMillis();
     markErrorsAndUpsertIntoDbValidRowsImpl();
-    logger.info("step3. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
+    if (logger.isInfoEnabled())
+      logger.info("step3. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
 
   }
 
@@ -100,7 +104,8 @@ public abstract class Migration {
     logger.info("step4. getting and uploading errors");
     Long start = System.currentTimeMillis();
     loadErrorsAndWriteImpl();
-    logger.info("step4. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
+    if (logger.isInfoEnabled())
+      logger.info("step4. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
   }
 
   @SuppressWarnings("WeakerAccess")
@@ -110,10 +115,16 @@ public abstract class Migration {
     }
 
     try (Statement statement = connection.createStatement()) {
-      Long sqlStartedMils = System.currentTimeMillis();
-      logger.debug("\nexecuted sql query:\n" + sql);
+      Long sqlStartedMils = 0L;
+
+      if (logger.isDebugEnabled()) {
+        logger.debug("executing sql query:\n" + sql);
+        sqlStartedMils = System.currentTimeMillis();
+      }
       statement.execute(sql);
-      logger.debug("duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), sqlStartedMils) + "\n");
+
+      if (logger.isDebugEnabled())
+        logger.debug("duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), sqlStartedMils) + "\n");
     }
   }
 
@@ -146,6 +157,9 @@ public abstract class Migration {
     return 50000;
   }
 
+  public static int getFileReadBufferSize() {
+    return 32 * 1024;
+  }
 
   @SuppressWarnings("WeakerAccess")
   protected void writeErrors(String[] columns, String tableName, Writer writer) throws SQLException, IOException {
