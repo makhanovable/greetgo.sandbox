@@ -3,6 +3,8 @@ import {UserInfo} from "../../model/UserInfo";
 import {ClientInfo} from "../../model/ClientInfo";
 import {HttpService} from "../HttpService";
 import {PhoneType} from "../../model/PhoneType";
+import {EditableClientInfo} from "../../model/EditableClientInfo";
+import {type} from "os";
 
 @Component({
     selector: 'main-form-component',
@@ -14,29 +16,14 @@ export class MainFormComponent {
   @Output() exit = new EventEmitter<void>();
 
   clients: ClientInfo[] = null;
+  addedClientID: string = "";
   userInfo: UserInfo | null = null;
+  editableClientInfo: EditableClientInfo = new EditableClientInfo();
   loadUserInfoButtonEnabled: boolean = true;
   modalViewEnabled: boolean = false;
   loadUserInfoError: string | null;
-
-  id = "";
-  name = "";
-  surname = "";
-  patronymic = "";
-  gender = "";
-  birth_date = "";
-  charm = "";
-  fAdressStreet = "";
-  fAdressHouse = "";
-  fAdressFlat = "";
-  rAdressStreet = "";
-  rAdressHouse = "";
-  rAdressFlat = "";
-  workPhone = "";
-  homePhone = "";
-  mobilePhone = "";
-
-  selectedID : string;
+  selectedID = "";
+  actionType = "";
 
   constructor(private httpService: HttpService) {}
 
@@ -54,80 +41,124 @@ export class MainFormComponent {
     });
   }
 
+  selectClient(clientId : string) {
+    this.selectedID = clientId;
+  }
+
+  removeClientClicked() {
+    if (this.selectedID != "") {
+      this.httpService.post("/auth/removeClient", {
+        clientID: this.selectedID
+      }).toPromise().then(res => {
+        if (this.actionType == "edit") {
+            this.addNewClient();
+        } else {
+            this.loadUserInfoButtonClicked();
+        }
+      }, error => {
+        console.log(error);
+      })
+    }
+  }
+
+  editClientClicked() {
+    if (this.selectedID != "") {
+        this.actionType = "edit";
+        this.addedClientID = this.selectedID;
+        this.modalViewEnabled = true;
+
+        let url = "/auth/editableClientInfo/" + this.selectedID;
+        this.httpService.get(url).toPromise().then(result => {
+            // console.log(result.json());
+            this.editableClientInfo = EditableClientInfo.from(result.json() as EditableClientInfo);
+            // console.log(this.editableClientInfo);
+        }, error => {
+            console.log(error);
+        });
+    }
+  }
+
   addClientClicked() {
+    this.actionType = "add";
+    this.addedClientID = "c" + (this.clients.length + 1).toString();
     this.modalViewEnabled = true;
   }
 
   closeModal() {
     this.modalViewEnabled = false;
+    this.editableClientInfo.clearPar();
   }
-
   editAddClicked() {
-
     if (this.fieldsFilledCorrectly()) {
-        this.closeModal();
-
-        let clientInfo = this.createClient();
-
-        this.httpService.post("/auth/addNewClient", {
-            clientInfo  : clientInfo,
-        }).toPromise().then(res => {
-            this.addPhones();
-        }, error => {
-            console.log(error);
-        });
+        if (this.actionType == "edit") {
+            this.removeClientClicked();
+        } else {
+            this.addNewClient();
+        }
     } else {
       alert("Заполните все необходимые поля, помеченные звездочкой");
     }
   }
+  addNewClient() {
+      let clientInfo = this.createClient();
+
+      this.httpService.post("/auth/addNewClient", {
+          clientInfo  : clientInfo,
+      }).toPromise().then(res => {
+          this.addPhones();
+      }, error => {
+          console.log(error);
+      });
+  }
   createClient() : string {
     // console.log(this.patronymic)
-    this.id = "c" + (this.clients.length + 1).toString();
-    let str = this.id;
-    str += "; " + this.name + " " + this.patronymic + " " + this.surname;
-    str += "; " + this.gender;
-    str += "; " + this.birth_date;
-    str += "; " + this.charm;
+    let str = this.addedClientID;
+    str += "; " + this.editableClientInfo.name + " " + this.editableClientInfo.patronymic + " " + this.editableClientInfo.surname;
+    str += "; " + this.editableClientInfo.gender;
+    str += "; " + this.editableClientInfo.birth_date;
+    str += "; " + this.editableClientInfo.charm;
 
     console.log(str);
     return str;
   }
   addAdresses() {
-      let str = this.id;
-      str += "; " + "REG; " + this.rAdressStreet + "; " + this.rAdressHouse + "; " + this.rAdressFlat;
+      let str = this.addedClientID;
+      str += "; " + "REG; " + this.editableClientInfo.rAdressStreet + "; " + this.editableClientInfo.rAdressHouse
+             + "; " + this.editableClientInfo.rAdressFlat;
 
-      if (this.fAdressStreet != "" && this.fAdressHouse != "" && this.fAdressFlat != "") {
+      if (this.editableClientInfo.fAdressStreet != "" && this.editableClientInfo.fAdressHouse != "" &&
+          this.editableClientInfo.fAdressFlat != "") {
           str += ", ";
-          str += this.id + "; FACT";
-          str += "; " + this.fAdressStreet;
-          str += "; " + this.fAdressHouse;
-          str += "; " + this.fAdressFlat;
+          str += this.addedClientID + "; FACT";
+          str += "; " + this.editableClientInfo.fAdressStreet;
+          str += "; " + this.editableClientInfo.fAdressHouse;
+          str += "; " + this.editableClientInfo.fAdressFlat;
       }
 
       this.httpService.post("/auth/addNewAdress", {
           adresses  : str,
       }).toPromise().then(res => {
           this.loadUserInfoButtonClicked();
-          this.clearInputs();
+          this.closeModal();
       }, error => {
           console.log(error);
       });
   }
   addPhones() {
-      let str = this.id;
-      str += "; " + this.mobilePhone + "; MOBILE";
+      let str = this.addedClientID;
+      str += "; " + this.editableClientInfo.mobilePhones[0] + "; MOBILE";
 
-      if (this.workPhone != "") {
+      if (this.editableClientInfo.workPhone != "") {
         str += ", ";
-        str += this.id;
-          str += "; " + this.workPhone;
-          str += "; " + "WORK"
+        str += this.addedClientID;
+        str += "; " + this.editableClientInfo.workPhone;
+        str += "; " + "WORK"
       }
 
-      if (this.homePhone != "") {
+      if (this.editableClientInfo.homePhone != "") {
           str += ", ";
-          str += this.id;
-          str += "; " + this.homePhone;
+          str += this.addedClientID;
+          str += "; " + this.editableClientInfo.homePhone;
           str += "; " + "HOME"
       }
 
@@ -140,28 +171,11 @@ export class MainFormComponent {
       });
   }
 
-  clearInputs() {
-      this.name = "";
-      this.surname = "";
-      this.patronymic = "";
-      this.gender = "";
-      this.birth_date = "";
-      this.charm = "";
-      this.fAdressStreet = "";
-      this.fAdressHouse = "";
-      this.fAdressFlat = "";
-      this.rAdressStreet = "";
-      this.rAdressHouse = "";
-      this.rAdressFlat = "";
-      this.workPhone = "";
-      this.homePhone = "";
-      this.mobilePhone = "";
-  }
-
   fieldsFilledCorrectly() : boolean {
-        if (this.name != "" && this.surname != "" && this.gender != "" && this.birth_date != ""
-            && this.charm != "" && this.rAdressStreet != "" && this.rAdressFlat != "" && this.rAdressHouse != ""
-            && this.mobilePhone != "") {
+        if (this.editableClientInfo.name != "" && this.editableClientInfo.surname != "" && this.editableClientInfo.gender != ""
+            && this.editableClientInfo.birth_date != "" && this.editableClientInfo.charm != ""
+            && this.editableClientInfo.rAdressStreet != "" && this.editableClientInfo.rAdressFlat != ""
+            && this.editableClientInfo.rAdressHouse != "" && this.editableClientInfo.mobilePhones[0] != "") {
             return true;
         } else {
             return false;

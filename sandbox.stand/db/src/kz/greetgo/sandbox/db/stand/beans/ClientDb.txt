@@ -1,14 +1,3 @@
 c1; Александр Сергеевич Пушкин; MALE; 1997-09-27; ch1
 c2; Михаил Юрьевич Лермонтов; MALE; 1997-11-02; ch2
-c3; Санжар Ришадулы Бурумбай; MALE; 1997-02-05;ch3
-c4; etqewe  qweqwr; MALE; 2015-03-15;ch4
-c5; wqrqwr  qsdgsd; FEMALE; 2018-02-28;ch3
-c6; qwrqetqwt  nm,bnmkh; MALE; 2012-02-02;ch4
-c7; qerwqwt  qweqw; MALE; 2012-03-10;ch1
-c8; Test  Phone addition; FEMALE; 2018-03-01;ch3
-c9; qtqwe  erywer; MALE; 2014-03-01;ch3
-c10; dsgsdg  sdgsdg; FEMALE; 2018-03-09;ch2
-c11; Test   Adress add; MALE; 2015-02-05;ch1
-c12; qwerqwt  qrqw; MALE; 2018-03-08;ch4
-c13; уйкцуе  цукецуке; FEMALE; 2018-03-01;ch4
-c14; asfas  asfasf; FEMALE; 2018-03-01;ch4
+c4; Санжар Ришадулы Бурумбай; FEMALE; 1990-02-05;ch4

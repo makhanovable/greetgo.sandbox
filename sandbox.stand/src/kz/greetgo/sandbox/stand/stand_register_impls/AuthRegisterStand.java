@@ -4,6 +4,7 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.errors.AuthError;
 import kz.greetgo.sandbox.controller.model.AuthInfo;
+import kz.greetgo.sandbox.controller.model.EditableClientInfo;
 import kz.greetgo.sandbox.controller.model.PrintedClientInfo;
 import kz.greetgo.sandbox.controller.model.UserInfo;
 import kz.greetgo.sandbox.controller.register.AuthRegister;
@@ -173,11 +174,24 @@ public class AuthRegisterStand implements AuthRegister {
     return "ok";
   }
 
+  @Override
+  public String removeClient(String clientID) {
+    db.get().removeClient(clientID);
+    return "ok";
+  }
+
+  @Override
+  public EditableClientInfo getEditableClientInfo(String clientID) {
+    EditableClientInfo clientInfo = db.get().getEditableClientInfo(clientID);
+    return clientInfo;
+  }
+
   public List<PrintedClientInfo> getClientsInfo() {
         List<PrintedClientInfo> clientInfos = new ArrayList<PrintedClientInfo>();
 
         for (Client client : db.get().clientStorage.values()) {
             PrintedClientInfo clientInfo = new PrintedClientInfo();
+            clientInfo.id = client.id;
             clientInfo.fio = client.name + " " + client.patronymic + " " + client.surname;
             clientInfo.age = client.CountAge();
             clientInfo.totalCash = getTotalCash(client.id);

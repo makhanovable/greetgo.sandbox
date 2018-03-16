@@ -1,17 +1,12 @@
 package kz.greetgo.sandbox.db.stand.beans;
 
-import com.sun.org.apache.bcel.internal.generic.FLOAD;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.HasAfterInject;
+import kz.greetgo.sandbox.controller.model.EditableClientInfo;
 import kz.greetgo.sandbox.db.stand.model.*;
 
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -86,8 +81,10 @@ public class StandDb implements HasAfterInject {
       Client c = new Client();
       c.id = splitLine[0].trim();
       String[] fio = splitLine[1].trim().split("\\s+");
-      c.surname = fio[0];
-      c.name = fio[1];
+      c.surname = fio[2];
+      c.name = fio[0];
+//      System.out.println(c.name);
+//      System.out.println(c.surname);
       c.gender = splitLine[2].trim();
       DateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
       try {
@@ -96,7 +93,7 @@ public class StandDb implements HasAfterInject {
         e.printStackTrace();
       }
       c.charmID = splitLine[4].trim();
-      if (fio.length > 2) c.patronymic = fio[2]; else c.patronymic = "";
+      if (fio.length > 2) c.patronymic = fio[1]; else c.patronymic = "";
       clientStorage.put(c.id, c);
     }
   }
@@ -104,12 +101,13 @@ public class StandDb implements HasAfterInject {
   private void appendAdress(List<String[]> data) {
     for (String[] splitLine : data) {
       Adress adr = new Adress();
+      adr.id = String.valueOf(this.adressStorage.values().size() + 1);
       adr.clientID = splitLine[0].trim();
       adr.adressType = splitLine[1].trim();
       adr.street = splitLine[2].trim();
       adr.house = splitLine[3].trim();
       adr.flat = splitLine[4].trim();
-      adressStorage.put(adr.clientID, adr);
+      adressStorage.put(adr.id, adr);
     }
   }
 
@@ -119,7 +117,7 @@ public class StandDb implements HasAfterInject {
       ph.clientID = splitLine[0].trim();
       ph.number = splitLine[1].trim();
       ph.phoneType = splitLine[2].trim();
-      phoneStorage.put(ph.clientID, ph);
+      phoneStorage.put(ph.number, ph);
     }
   }
 
@@ -179,8 +177,8 @@ public class StandDb implements HasAfterInject {
       }
     }
 
-    clientInfo = String.join(";", splitLine);
-    addClientToDb(clientInfo);
+//    clientInfo = String.join(";", splitLine);
+//    addClientToDb(clientInfo);
     appendClient(client);
   }
   private void addClientToDb(String client) {
@@ -212,10 +210,11 @@ public class StandDb implements HasAfterInject {
     String[] phonesArray = phones.split(",");
 
     for (String phone : phonesArray) {
-      addPhoneToDb(phone);
-
+//      addPhoneToDb(phone);
+//      System.out.println(phone);
       List<String[]> phonesList = new ArrayList<String[]>();
       String[] splitLine = phone.split(";");
+//      System.out.println(splitLine[0].trim());
       phonesList.add(splitLine);
       appendPhone(phonesList);
     }
@@ -246,16 +245,18 @@ public class StandDb implements HasAfterInject {
   }
 
   public void addNewAdresses(String adresses) {
-    System.out.println(adresses);
+//    System.out.println(adresses);
     String[] adressesArray = adresses.split(",");
 
     for (String adress : adressesArray) {
-      addToAdressDb(adress);
+//      addToAdressDb(adress);
 
+//      System.out.println(adress);
       List<String[]> adressesList = new ArrayList<String[]>();
       String[] splitLine = adress.split(";");
+//      System.out.println(splitLine[1].trim());
       adressesList.add(splitLine);
-      appendPhone(adressesList);
+      appendAdress(adressesList);
     }
   }
   private void addToAdressDb (String adress) {
@@ -281,5 +282,66 @@ public class StandDb implements HasAfterInject {
         ex.printStackTrace();
       }
     }
+  }
+
+  public void removeClient(String clientID) {
+    clientStorage.remove(clientID);
+
+    for (Adress adr : this.adressStorage.values()) {
+      if (adr.clientID.equals(clientID)) {
+        adressStorage.values().remove(adr);
+        break;
+      }
+    }
+
+    for (Phone phone : phoneStorage.values()) {
+      if (phone.clientID.equals(clientID)) {
+        phoneStorage.values().remove(phone);
+        break;
+      }
+    }
+  }
+
+  public EditableClientInfo getEditableClientInfo(String clientID) {
+    EditableClientInfo editableClientInfo = new EditableClientInfo();
+
+    Client client = this.clientStorage.get(clientID);
+    editableClientInfo.id = client.id;
+    editableClientInfo.name = client.name;
+    editableClientInfo.surname = client.surname;
+    editableClientInfo.patronymic = client.patronymic;
+    DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+    editableClientInfo.birth_date = df.format(client.birth_date);
+    editableClientInfo.charm = charmStorage.get(client.charmID).name;
+    editableClientInfo.gender = client.gender;
+
+    for (Adress adress : adressStorage.values()) {
+
+      if (adress.clientID.equals(clientID) && adress.adressType.equals("FACT")) {
+        editableClientInfo.fAdressStreet = adress.street;
+        editableClientInfo.fAdressHouse = adress.house;
+        editableClientInfo.fAdressFlat = adress.flat;
+      } else
+      if (adress.clientID.equals(clientID) && adress.adressType.equals("REG")) {
+        editableClientInfo.rAdressStreet = adress.street;
+        editableClientInfo.rAdressHouse = adress.house;
+        editableClientInfo.rAdressFlat = adress.flat;
+      }
+    }
+
+    for (Phone phone : phoneStorage.values()) {
+      if (phone.clientID.equals(clientID)) {
+        if (phone.phoneType.equals("HOME")) {
+          editableClientInfo.homePhone = phone.number;
+        } else
+        if (phone.phoneType.equals("WORK")) {
+          editableClientInfo.workPhone = phone.number;
+        } else {
+          editableClientInfo.mobilePhones.add(phone.number);
+        }
+      }
+    }
+
+    return editableClientInfo;
   }
 }

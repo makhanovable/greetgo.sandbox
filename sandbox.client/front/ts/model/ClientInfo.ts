@@ -1,4 +1,5 @@
 export class ClientInfo {
+    public id: string;
     public fio: string | null;
     public charm: string | null;
     public age: string;

@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.db.stand.model;
+package kz.greetgo.sandbox.controller.model;
 
 public class Adress {
     public String id;

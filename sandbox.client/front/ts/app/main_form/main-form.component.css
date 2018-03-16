@@ -24,12 +24,7 @@ td, th {
     /*width: 80px;*/
     width: auto;
 }
-.addButton {
-    display: inline-block;
-    width: 30px;
-    height: 30px;
-}
-.deleteButton {
+.actionButton {
     display: inline-block;
     width: 30px;
     height: 30px;
@@ -84,6 +79,6 @@ select {
     display: inline-block;
     margin-left: 0px;
 }
-/*tr:hover {*/
-    /*background-color: #dddddd;*/
-/*}*/
+.selected {
+    background-color: #dddddd;
+}

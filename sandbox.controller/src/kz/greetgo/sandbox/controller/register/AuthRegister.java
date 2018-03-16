@@ -1,6 +1,7 @@
 package kz.greetgo.sandbox.controller.register;
 
 import kz.greetgo.sandbox.controller.model.AuthInfo;
+import kz.greetgo.sandbox.controller.model.EditableClientInfo;
 import kz.greetgo.sandbox.controller.model.PrintedClientInfo;
 import kz.greetgo.sandbox.controller.model.UserInfo;
 import kz.greetgo.sandbox.controller.register.model.SessionInfo;
@@ -78,4 +79,6 @@ public interface AuthRegister {
   String addNewClient(String clientInfo);
   String addNewPhone(String phones);
   String addNewAdresses(String adresses);
+  String removeClient(String clientID);
+  EditableClientInfo getEditableClientInfo(String clientID);
 }
