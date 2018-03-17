@@ -2,6 +2,7 @@ package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.sandbox.db.register_impl.migration.handler.FrsParser;
 import kz.greetgo.sandbox.db.util.DateUtils;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -10,7 +11,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Date;
-import java.util.stream.Stream;
 
 import static kz.greetgo.sandbox.db.register_impl.migration.MigrationStatuses.NOT_READY;
 import static kz.greetgo.sandbox.db.register_impl.migration.MigrationStatuses.TO_INSERT;
@@ -33,40 +33,39 @@ public class MigrationFrs extends Migration {
     tableNames.put("TMP_ACCOUNT", account);
     tableNames.put("TMP_TRANSACTION", transaction);
 
-    @SuppressWarnings("StringBufferReplaceableByString")
-    StringBuilder accountTable = new StringBuilder();
-    accountTable.append("create table TMP_ACCOUNT (\n")
-      .append("  no bigserial,\n")
-      .append("  id varchar(32),\n")
-      .append("  client_id varchar(32),\n")
-      .append("  money varchar(100),\n")
-      .append("  account_number varchar(100),\n")
-      .append("  registeredAt varchar(100),\n")
-      .append("  error varchar(100),\n")
-      .append("  mig_status smallint default " + NOT_READY + ",\n")
-      .append("  PRIMARY KEY(no)\n")
-      .append(")");
-
-    @SuppressWarnings("StringBufferReplaceableByString")
-    StringBuilder transactionTable = new StringBuilder();
-    transactionTable.append("create table TMP_TRANSACTION (\n")
-      .append("  no bigserial,\n")
-      .append("  id varchar(35),\n")
-      .append("  account_number varchar(35),\n")
-      .append("  money varchar(100),\n")
-      .append("  finished_at varchar(100),\n")
-      .append("  type varchar(100),\n")
-      .append("  error varchar(100),\n")
-      .append("  mig_status varchar(100) default " + NOT_READY + ",\n")
-      .append("  PRIMARY KEY (no)\n")
-      .append(")");
+    String accountTable = "create table TMP_ACCOUNT (\n" +
+      "  no bigserial,\n" +
+      "  id varchar(32),\n" +
+      "  client_id varchar(32),\n" +
+      "  money varchar(100),\n" +
+      "  account_number varchar(100),\n" +
+      "  registeredAt varchar(100),\n" +
+      "  error varchar(100),\n" +
+      "  mig_status smallint default " + NOT_READY + ",\n" +
+      "  PRIMARY KEY(no)\n" +
+      ")";
 
 
-    execSql(accountTable.toString());
-    execSql(transactionTable.toString());
+    String transactionTable = "create table TMP_TRANSACTION (\n" +
+      "  no bigserial,\n" +
+      "  id varchar(35),\n" +
+      "  account_number varchar(35),\n" +
+      "  money varchar(100),\n" +
+      "  finished_at varchar(100),\n" +
+      "  type varchar(100),\n" +
+      "  error varchar(100),\n" +
+      "  mig_status smallint default " + NOT_READY + ",\n" +
+      "  PRIMARY KEY (no)\n" +
+      ")";
 
-    execSql(String.format("CREATE INDEX account_idx_%s ON TMP_ACCOUNT (mig_status);", config.id));
-    execSql(String.format("CREATE INDEX transaction_idx_%s ON TMP_TRANSACTION (mig_status);", config.id));
+
+    execSql(accountTable);
+    execSql(transactionTable);
+
+//    execSql(String.format("CREATE INDEX account_idx_%s ON TMP_ACCOUNT (mig_status);", config.id));
+//    execSql(String.format("CREATE INDEX transaction_idx_%s ON TMP_TRANSACTION (mig_status);", config.id));
+//
+//    execSql(String.format("CREATE INDEX acc_number_idx_%s ON TMP_TRANSACTION (account_number);", config.id));
 
   }
 
@@ -74,67 +73,59 @@ public class MigrationFrs extends Migration {
   protected void parseFileAndUploadToTempTablesImpl() throws Exception {
 
     try (FrsParser parser = new FrsParser(config.idGenerator, getMaxBatchSize(), connection, tableNames);
-         BufferedReader br = new BufferedReader(new FileReader(config.toMigrate));
-         Stream<String> stream = br.lines()) {
-
-      stream.forEach(parser::parse);
+         BufferedReader br = new BufferedReader(new FileReader(config.toMigrate), 102400)) {
+      String line;
+      while ((line = br.readLine()) != null) {
+        parser.parse(line);
+      }
     }
+
+
   }
+
 
   @Override
   protected void markErrorsAndUpsertIntoDbValidRowsImpl() throws SQLException {
 
     //////ACCOUNTS
-    execSql("update TMP_ACCOUNT tmp\n" +
-      "  SET error='account number must to be not null'\n" +
-      "  WHERE tmp.account_number ISNULL");
-
-    execSql("update TMP_ACCOUNT tmp\n" +
-      "  SET error='client must to be not null'\n" +
-      "  WHERE tmp.client_id ISNULL");
+//    execSql("update TMP_ACCOUNT tmp\n" +
+//      "  SET error='account number must to be not null'\n" +
+//      "  WHERE tmp.account_number ISNULL");
+//
+//    execSql("update TMP_ACCOUNT tmp\n" +
+//      "  SET error='client must to be not null'\n" +
+//      "  WHERE tmp.client_id ISNULL");
 
     //if client exist and no error then ready to insert
-    execSql("update TMP_ACCOUNT tmp\n" +
-      "  SET mig_status =" + TO_INSERT + "\n" +
-      "  FROM client c\n" +
-      "  WHERE c.cia_id = tmp.client_id and tmp.error is null;");
+//    execSql("update TMP_ACCOUNT tmp\n" +
+//      "  SET mig_status =" + TO_INSERT + "\n" +
+//      "  FROM client c\n" +
+//      "  WHERE c.cia_id = tmp.client_id");
 
 //    execSql("update TMP_ACCOUNT tmp\n" +
 //      "  SET mig_status = 'TO_CREATE_CLIENT'\n" +
 //      "  WHERE tmp.mig_status='NOT_READY'");
 
-    execSql(String.format("insert into client (id, cia_id, actual, mig_id)\n" +
-      "  SELECT DISTINCT on(tmp.client_id) tmp.id, tmp.client_id, false as actual, '%s'\n" +
-      "  from TMP_ACCOUNT tmp\n" +
-      "  WHERE tmp.mig_status=" + NOT_READY, config.id));
+//    execSql(String.format("insert into client (id, cia_id, actual, mig_id)\n" +
+//      "  SELECT DISTINCT on(tmp.client_id) tmp.id, tmp.client_id, false as actual, '%s'\n" +
+//      "  from TMP_ACCOUNT tmp\n" +
+//      "  WHERE tmp.mig_status=" + NOT_READY, config.id));
 
-    execSql("update TMP_ACCOUNT tmp\n" +
-      "  set mig_status =" + TO_INSERT + "\n" +
-      "  WHERE tmp.mig_status=" + NOT_READY);
+//    execSql("update TMP_ACCOUNT tmp\n" +
+//      "  set mig_status =" + TO_INSERT + "\n" +
+//      "  WHERE tmp.mig_status=" + NOT_READY);
+
 
     execSql(String.format("insert into clientaccount (id, client, number, registeredat, actual, mig_id)\n" +
       "  SELECT tmp.id, tmp.client_id, tmp.account_number,\n" +
       "    to_timestamp(tmp.registeredat, 'YYYY-MM-dd\"T\"HH24:MI:SS.MS') as registeredat,\n" +
       "    false as actual,\n" +
       "    '%s'\n" +
-      "  FROM TMP_ACCOUNT tmp\n" +
-      "  WHERE tmp.mig_status=" + TO_INSERT, config.id));
+      "  FROM TMP_ACCOUNT tmp", config.id));
+
 
     //////TRANSACTIONS
     //transaction types
-//    execSql("update TMP_TRANSACTION\n" +
-//      "  SET mig_status='TO_CREATE_TR._TYPE'\n" +
-//      "  FROM (\n" +
-//      "    SELECT tmp.type FROM TMP_TRANSACTION tmp\n" +
-//      "    EXCEPT SELECT name from transactiontype) types\n" +
-//      "  WHERE types.type = account.type;");
-//
-//    execSql("insert into transactiontype (id, code, name)\n" +
-//      "  SELECT DISTINCT on(type) id, id, type\n" +
-//      "  FROM TMP_TRANSACTION tmp\n" +
-//      "  WHERE tmp.mig_status='TO_CREATE_TR._TYPE'");
-
-
     execSql("insert into transactiontype (id, code, name)" +
       "  SELECT distinct on(type) id, id, type\n" +
       "  FROM TMP_TRANSACTION tmp" +
@@ -165,8 +156,10 @@ public class MigrationFrs extends Migration {
       "  SET actual=true\n" +
       "  WHERE c.mig_id='%s' ;\n", config.id));
 
-    execSql(String.format("DROP INDEX account_idx_%s;", config.id));
-    execSql(String.format("DROP INDEX transaction_idx_%s;", config.id));
+
+//    execSql(String.format("DROP INDEX account_idx_%s;", config.id));
+//    execSql(String.format("DROP INDEX transaction_idx_%s;", config.id));
+//    execSql(String.format("DROP INDEX acc_number_idx_%s;", config.id));
 
   }
 

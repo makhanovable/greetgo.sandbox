@@ -14,8 +14,8 @@ import java.util.Map;
 
 public class FrsParser implements AutoCloseable {
 
-  private final Logger logger = Logger.getLogger(getClass());
 
+  private final Logger logger = Logger.getLogger(getClass());
   private Connection connection;
   private Map<String, String> tableNames;
 
@@ -36,7 +36,6 @@ public class FrsParser implements AutoCloseable {
     this.maxBatchSize = maxBatchSize;
     this.connection = connection;
     this.tableNames = tableNames;
-
     this.originalAutoCommit = this.connection.getAutoCommit();
     this.connection.setAutoCommit(false);
 
@@ -122,7 +121,12 @@ public class FrsParser implements AutoCloseable {
   private void commitAll() throws SQLException {
     accountPS.executeBatch();
     transactionPS.executeBatch();
+//
+//    accountPS.execute();
+//    transactionPS.execute();
+
     connection.commit();
   }
+
 
 }

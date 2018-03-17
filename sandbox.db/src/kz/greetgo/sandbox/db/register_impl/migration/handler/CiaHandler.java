@@ -66,12 +66,12 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
       "(?, ?, ?, ?, ?, ?, ?, ?)";
 
     @SuppressWarnings({"SqlResolve"})
-    String insertAddr = "INSERT INTO TMP_ADDRESS (client_id, cia_id, type, street, house, flat) VALUES " +
-      "(?, ?, ?, ?, ?, ?)";
+    String insertAddr = "INSERT INTO TMP_ADDRESS (client_id, type, street, house, flat) VALUES " +
+      "(?, ?, ?, ?, ?)";
 
     @SuppressWarnings({"SqlResolve"})
-    String insertPhone = "INSERT INTO TMP_PHONE (client_id, cia_id, number, type) VALUES " +
-      "(?, ?, ?, ?)";
+    String insertPhone = "INSERT INTO TMP_PHONE (client_id, number, type) VALUES " +
+      "(?, ?, ?)";
 
     insertClient = insertClient.replaceAll("TMP_CLIENT", tableNames.get("TMP_CLIENT").toLowerCase());
     insertAddr = insertAddr.replaceAll("TMP_ADDRESS", tableNames.get("TMP_ADDRESS").toLowerCase());
@@ -91,7 +91,7 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
       clientPS.setObject(index++, client.surname);
       clientPS.setObject(index++, client.patronymic);
       clientPS.setObject(index++, client.gender);
-      clientPS.setObject(index++, getSqlDate(client.birth));
+      clientPS.setObject(index++, client.birth);
       clientPS.setObject(index, client.charm);
 
       clientPS.addBatch();
@@ -99,7 +99,6 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
       if (client.reg != null) {
         index = 1;
         addrPS.setObject(index++, client.id);
-        addrPS.setObject(index++, client.cia_id);
         addrPS.setObject(index++, client.reg.type.toString());
         addrPS.setObject(index++, client.reg.street);
         addrPS.setObject(index++, client.reg.house);
@@ -111,7 +110,6 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
       if (client.fact != null) {
         index = 1;
         addrPS.setObject(index++, client.id);
-        addrPS.setObject(index++, client.cia_id);
         addrPS.setObject(index++, client.fact.type.toString());
         addrPS.setObject(index++, client.fact.street);
         addrPS.setObject(index++, client.fact.house);
@@ -124,7 +122,6 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
       for (PhoneCia phoneCia : client.numbers) {
         index = 1;
         phonePS.setObject(index++, client.id);
-        phonePS.setObject(index++, client.cia_id);
         phonePS.setObject(index++, phoneCia.number);
         phonePS.setObject(index, phoneCia.type.toString());
 
@@ -166,8 +163,7 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
       client.charm = attributes.getValue("value");
 
     } else if ("birth".equals(qName)) {
-      String birth = attributes.getValue("value");
-      client.birth = tryParseDate(birth);
+      client.birth = attributes.getValue("value");
     } else if ("register".equals(qName)) {
       client.reg = new AddressCia();
       client.reg.street = attributes.getValue("street");
@@ -246,13 +242,6 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
     } catch (ParseException e) {
       return null;
     }
-  }
-
-  private java.sql.Date getSqlDate(Date date) {
-    if (date != null)
-      return new java.sql.Date(client.birth.getTime());
-    else
-      return null;
   }
 
   @Override
