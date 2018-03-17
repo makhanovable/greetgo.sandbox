@@ -510,7 +510,7 @@ public class GenerateInputFiles {
         Date date = null;
 
         if (errorType == ErrorType.BIRTH_DATE_TOO_OLD) {
-          date = RND.dateYears(-10_000, -200);
+          date = RND.dateYears(-1_000, -200);
         } else if (errorType == ErrorType.BIRTH_DATE_TOO_YOUNG) {
           date = RND.dateYears(-10, 0);
         }
@@ -909,4 +909,6 @@ public class GenerateInputFiles {
 
     file.delete();
   }
+
+
 }
