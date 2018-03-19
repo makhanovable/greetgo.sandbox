@@ -83,11 +83,8 @@ public class MigrationFrs extends Migration {
 
   }
 
-
   @Override
-  protected void markErrorsAndUpsertIntoDbValidRows() throws SQLException {
-
-    //////ACCOUNTS
+  protected void markErrorRows() throws SQLException {
     execSql("update " + TMP_ACCOUNT + " tmp\n" +
       "  SET error='account number must to be not null'\n" +
       "  WHERE tmp.account_number ISNULL");
@@ -96,6 +93,23 @@ public class MigrationFrs extends Migration {
       "  SET error='client must to be not null'\n" +
       "  WHERE tmp.client_id ISNULL");
 
+    execSql("UPDATE " + TMP_TRANSACTION + " tmp\n" +
+      "  SET mig_status =" + TO_INSERT + "\n" +
+      "  FROM " + TMP_ACCOUNT + " ca\n" +
+      "  WHERE ca.error ISNULL AND ca.account_number=tmp.account_number\n");
+
+    execSql("UPDATE " + TMP_TRANSACTION + " tmp\n" +
+      "  SET mig_status =" + TO_INSERT + "\n" +
+      "  FROM clientaccount ca\n" +
+      "  WHERE tmp.mig_status=" + NOT_READY + " AND ca.number=tmp.account_number\n");
+
+    execSql("update " + TMP_TRANSACTION + " tmp\n" +
+      "  SET error='transaction must have account'\n" +
+      "  WHERE tmp.mig_status=" + NOT_READY);
+  }
+
+
+  private void insertValidAccountRows() throws SQLException {
     //if client exist and no error then ready to insert
 //    execSql("update TMP_ACCOUNT tmp\n" +
 //      "  SET mig_status =" + TO_INSERT + "\n" +
@@ -116,6 +130,17 @@ public class MigrationFrs extends Migration {
 //      "  WHERE tmp.mig_status=" + NOT_READY);
 
 
+  }
+
+  private void insertValidTransactionRows() throws SQLException {
+
+
+  }
+
+
+  @Override
+  protected void upsertIntoDbValidRows() throws SQLException {
+
     execSql(String.format("insert into clientaccount (id, client, number, registeredat, actual, mig_id)\n" +
       "  SELECT tmp.id, tmp.client_id, tmp.account_number,\n" +
       "    to_timestamp(tmp.registeredat, 'YYYY-MM-dd\"T\"HH24:MI:SS.MS') as registeredat,\n" +
@@ -124,22 +149,11 @@ public class MigrationFrs extends Migration {
       "  FROM " + TMP_ACCOUNT + " tmp", config.id));
 
 
-    //////TRANSACTIONS
-    //transaction types
     execSql("insert into transactiontype (id, code, name)" +
       "  SELECT distinct on(type) id, id, type\n" +
       "  FROM " + TMP_TRANSACTION + " tmp" +
       "  WHERE tmp.type NOTNULL\n" +
       "  ON CONFLICT (name) do NOTHING\n");
-
-    execSql("UPDATE " + TMP_TRANSACTION + " tmp\n" +
-      "  SET mig_status =" + TO_INSERT + "\n" +
-      "  FROM clientaccount ca\n" +
-      "  WHERE ca.number=tmp.account_number\n");
-
-    execSql("update " + TMP_TRANSACTION + " tmp\n" +
-      "  SET error='transaction must have account'\n" +
-      "  WHERE tmp.mig_status=" + NOT_READY);
 
 
     execSql("insert into clientaccounttransaction (id, account, money, finishedat, type)\n" +
@@ -150,6 +164,7 @@ public class MigrationFrs extends Migration {
       "  FROM " + TMP_TRANSACTION + " tmp\n" +
       "    left JOIN transactiontype type on type.name=tmp.type\n" +
       "  WHERE tmp.mig_status=" + TO_INSERT);
+
 
     //actualize
     execSql(String.format("UPDATE clientaccount c " +

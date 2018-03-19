@@ -86,7 +86,7 @@ public class MigrationCia extends Migration {
   }
 
   @Override
-  protected void markErrorsAndUpsertIntoDbValidRows() throws SQLException {
+  protected void markErrorRows() throws SQLException {
 
 //    Записи, у которых нет или пустое поле surname, name, birth_date -ошибочные.
     execSql("UPDATE " + TMP_CLIENT + " set error = 'cia_id cant be null'    where cia_id is null");
@@ -110,7 +110,11 @@ public class MigrationCia extends Migration {
     //birthDate validation [18, 100]
     execSql("UPDATE " + TMP_CLIENT + " set error = 'birthDate must be not more than 100 and not less than 18'\n" +
       " where error is null and date_part('year', age(birthDateParsed)) NOT BETWEEN 18 and 100");
+  }
 
+
+  @Override
+  protected void upsertIntoDbValidRows() throws SQLException {
 
     execSql("UPDATE " + TMP_CLIENT + " set patronymic = null where error is null and patronymic::char(255)='';");
 
