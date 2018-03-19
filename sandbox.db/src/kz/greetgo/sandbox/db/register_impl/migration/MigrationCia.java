@@ -27,9 +27,9 @@ public class MigrationCia extends Migration {
   protected void createTempTables() throws SQLException {
     String date = DateUtils.getDateWithTimeString(new Date());
 
-    String client = TMP_CLIENT + date + "_" + config.id;
-    String address = TMP_ADDRESS + date + "_" + config.id;
-    String phoneNumber = TMP_PHONE + date + "_" + config.id;
+    String client = TMP_CLIENT.name() + date + "_" + config.id;
+    String address = TMP_ADDRESS.name() + date + "_" + config.id;
+    String phoneNumber = TMP_PHONE.name() + date + "_" + config.id;
     tableNames.put(TMP_CLIENT, client);
     tableNames.put(TMP_ADDRESS, address);
     tableNames.put(TMP_PHONE, phoneNumber);
@@ -70,7 +70,7 @@ public class MigrationCia extends Migration {
     execSql(addrTable);
     execSql(phoneTable);
 
-    execSql(String.format("CREATE INDEX client_mig_%s ON TMP_CLIENT (mig_status);", config.id));
+    execSql(String.format("CREATE INDEX client_mig_%s ON " + TMP_CLIENT + " (mig_status);", config.id));
 
 
   }
@@ -202,10 +202,6 @@ public class MigrationCia extends Migration {
 
   }
 
-
-  public static void main(String[] args) {
-    System.out.println("select * from #{{TMP_CLIENT}}".replace("#{{TMP_CLIENT}}", "client"));
-  }
 
 }
 

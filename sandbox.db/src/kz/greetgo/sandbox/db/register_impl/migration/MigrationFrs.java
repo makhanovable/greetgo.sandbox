@@ -29,8 +29,8 @@ public class MigrationFrs extends Migration {
   protected void createTempTables() throws SQLException {
     String date = DateUtils.getDateWithTimeString(new Date());
 
-    String account = TMP_ACCOUNT + date + "_" + config.id;
-    String transaction = TMP_TRANSACTION + date + "_" + config.id;
+    String account = TMP_ACCOUNT.name() + date + "_" + config.id;
+    String transaction = TMP_TRANSACTION.name() + date + "_" + config.id;
 
     tableNames.put(TMP_ACCOUNT, account);
     tableNames.put(TMP_TRANSACTION, transaction);
