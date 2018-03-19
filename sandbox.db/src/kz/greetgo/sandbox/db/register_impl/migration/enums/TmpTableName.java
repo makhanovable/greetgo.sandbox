@@ -9,9 +9,13 @@ public enum TmpTableName {
 
   public String code;
 
-
   private TmpTableName(String code) {
     this.code = code;
+  }
+
+  @Override
+  public String toString() {
+    return code;
   }
 
 }

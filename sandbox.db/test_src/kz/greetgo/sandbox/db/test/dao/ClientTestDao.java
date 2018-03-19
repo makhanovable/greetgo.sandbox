@@ -18,6 +18,7 @@ import java.util.List;
 
 public interface ClientTestDao {
 
+
   @Select("Select id, name, surname, patronymic, birthDate, gender, charm from client where name=#{name}")
   List<ClientDetail> getAllByName(@Param("name") String name);
 
@@ -42,6 +43,7 @@ public interface ClientTestDao {
   })
   ClientDetail detail(@Param("id") String id, @Param("actual") Boolean actual);
 
+
   @Select("select client, number, type from ClientPhone where client=#{client}")
   List<ClientPhoneNumber> getNumbersById(String client);
 
@@ -49,6 +51,21 @@ public interface ClientTestDao {
   ClientAddress getAddres(@Param("client") String client, @Param("type") AddressType type);
 
 
+  @SuppressWarnings("SameParameterValue")
+  @Select("select id, name, surname, patronymic, birthDate, gender, charm from ${clientTableName}")
+  List<ClientDetail> getDetailList(@Param("clientTableName") String clientTableName);
+
+  @Select("select number, type from ${tableName} where client_id=#{id}")
+  List<ClientPhoneNumber> getNumberList(@Param("tableName") String tableName, @Param("id") String client);
+
+  @Select("select type, street, house, flat from ${tableName} where client_id=#{id}")
+  List<ClientAddress> getAddressList(@Param("tableName") String tableName, @Param("id") String client);
+
+
+  @Select("drop table ${tableName}")
+  void dropTable(@Param("tableName") String tableName);
+
   @Select("TRUNCATE Client cascade; TRUNCATE ClientPhone cascade; TRUNCATE ClientAddr cascade")
   void clear();
+
 }
