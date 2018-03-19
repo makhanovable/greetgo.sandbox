@@ -1,5 +1,6 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
+import kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName;
 import kz.greetgo.sandbox.db.register_impl.migration.exception.UnsupportedFileExtension;
 import kz.greetgo.sandbox.db.util.DateUtils;
 import org.apache.log4j.Logger;
@@ -27,7 +28,7 @@ public abstract class Migration {
   protected Connection connection;
 
   @SuppressWarnings("WeakerAccess")
-  protected Map<String, String> tableNames = new HashMap<>();
+  protected Map<TmpTableName, String> tableNames = new HashMap<>();
 
   @SuppressWarnings("WeakerAccess")
   protected Migration(MigrationConfig config, Connection connection) {
@@ -36,13 +37,13 @@ public abstract class Migration {
   }
 
 
-  protected abstract void createTempTablesImpl() throws SQLException;
+  protected abstract void createTempTables() throws SQLException;
 
-  protected abstract void parseFileAndUploadToTempTablesImpl() throws Exception;
+  protected abstract void parseFileAndUploadToTempTables() throws Exception;
 
-  protected abstract void markErrorsAndUpsertIntoDbValidRowsImpl() throws SQLException;
+  protected abstract void markErrorsAndUpsertIntoDbValidRows() throws SQLException;
 
-  protected abstract void loadErrorsAndWriteImpl() throws SQLException, IOException;
+  protected abstract void loadErrorsAndWrite() throws SQLException, IOException;
 
   public void migrate() throws Exception {
 
@@ -50,10 +51,10 @@ public abstract class Migration {
 
     String MigrationStatus = "STARTED";
     try {
-      createTempTables();
-      parseFileAndUploadToTempTables();
-      markErrorsAndUpsertIntoDbValidRows();
-      loadErrorsAndWrite();
+      createTempTablesWithLogging();
+      parseFileAndUploadToTempTablesWithLogging();
+      markErrorsAndUpsertIntoDbValidRowsWithLogging();
+      loadErrorsAndWriteWithLogging();
 
       MigrationStatus = "MIGRATED.";
     } catch (Exception e) {
@@ -67,49 +68,49 @@ public abstract class Migration {
     }
   }
 
-  private void createTempTables() throws SQLException {
+  private void createTempTablesWithLogging() throws SQLException {
     logger.info("step1. creating temp table starting");
     Long start = System.currentTimeMillis();
-    createTempTablesImpl();
+    createTempTables();
     logger.info("step1. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
 
   }
 
-  private void parseFileAndUploadToTempTables() throws Exception {
+  private void parseFileAndUploadToTempTablesWithLogging() throws Exception {
     logger.info("step2. parsing file and insert to temp tables");
     try {
       Long start = System.currentTimeMillis();
-      parseFileAndUploadToTempTablesImpl();
+      parseFileAndUploadToTempTables();
       if (logger.isInfoEnabled())
         logger.info("step2. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
 
     } catch (BatchUpdateException bux) {
-      logger.fatal("parseFileAndUploadToTempTables", bux.getNextException());
+      logger.fatal("parseFileAndUploadToTempTablesWithLogging", bux.getNextException());
       throw bux.getNextException();
     }
   }
 
-  private void markErrorsAndUpsertIntoDbValidRows() throws Exception {
+  private void markErrorsAndUpsertIntoDbValidRowsWithLogging() throws Exception {
     logger.info("step3. mark error and upserting valids to oper db");
     Long start = System.currentTimeMillis();
-    markErrorsAndUpsertIntoDbValidRowsImpl();
+    markErrorsAndUpsertIntoDbValidRows();
     if (logger.isInfoEnabled())
       logger.info("step3. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
 
   }
 
-  private void loadErrorsAndWrite() throws Exception {
+  private void loadErrorsAndWriteWithLogging() throws Exception {
     logger.info("step4. getting and uploading errors");
     Long start = System.currentTimeMillis();
-    loadErrorsAndWriteImpl();
+    loadErrorsAndWrite();
     if (logger.isInfoEnabled())
       logger.info("step4. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
   }
 
   @SuppressWarnings("WeakerAccess")
   protected void execSql(String sql) throws SQLException {
-    for (String tableName : tableNames.keySet()) {
-      sql = sql.replaceAll(tableName, tableNames.get(tableName));
+    for (TmpTableName tmpTableName : tableNames.keySet()) {
+      sql = sql.replaceAll(tmpTableName.name(), tableNames.get(tmpTableName));
     }
 
     try (Statement statement = connection.createStatement()) {
@@ -148,7 +149,7 @@ public abstract class Migration {
   public static String getFrsFileNamePattern() {
     return "from_frs_(.*).json_row.txt.tar.bz2";
   }
-  
+
   @SuppressWarnings("WeakerAccess")
   public static int getMaxBatchSize() {
     return 50000;

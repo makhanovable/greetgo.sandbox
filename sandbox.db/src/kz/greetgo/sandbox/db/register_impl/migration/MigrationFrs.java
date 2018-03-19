@@ -12,8 +12,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Date;
 
-import static kz.greetgo.sandbox.db.register_impl.migration.MigrationStatus.NOT_READY;
-import static kz.greetgo.sandbox.db.register_impl.migration.MigrationStatus.TO_INSERT;
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationStatus.NOT_READY;
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationStatus.TO_INSERT;
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_ACCOUNT;
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_TRANSACTION;
 
 public class MigrationFrs extends Migration {
 
@@ -24,16 +26,16 @@ public class MigrationFrs extends Migration {
   }
 
   @Override
-  protected void createTempTablesImpl() throws SQLException {
+  protected void createTempTables() throws SQLException {
     String date = DateUtils.getDateWithTimeString(new Date());
 
-    String account = "TMP_ACCOUNT_" + date + "_" + config.id;
-    String transaction = "TMP_TRANSACTION_" + date + "_" + config.id;
+    String account = TMP_ACCOUNT + date + "_" + config.id;
+    String transaction = TMP_TRANSACTION + date + "_" + config.id;
 
-    tableNames.put("TMP_ACCOUNT", account);
-    tableNames.put("TMP_TRANSACTION", transaction);
+    tableNames.put(TMP_ACCOUNT, account);
+    tableNames.put(TMP_TRANSACTION, transaction);
 
-    String accountTable = "create table TMP_ACCOUNT (\n" +
+    String accountTable = "create table " + TMP_ACCOUNT + " (\n" +
       "  no bigserial,\n" +
       "  id varchar(32),\n" +
       "  client_id varchar(32),\n" +
@@ -46,7 +48,7 @@ public class MigrationFrs extends Migration {
       ")";
 
 
-    String transactionTable = "create table TMP_TRANSACTION (\n" +
+    String transactionTable = "create table " + TMP_TRANSACTION + " (\n" +
       "  no bigserial,\n" +
       "  id varchar(35),\n" +
       "  account_number varchar(35),\n" +
@@ -61,14 +63,14 @@ public class MigrationFrs extends Migration {
 
     execSql(accountTable);
     execSql(transactionTable);
-    
-    execSql(String.format("CREATE INDEX transaction_idx_%s ON TMP_TRANSACTION (mig_status);", config.id));
+
+    execSql(String.format("CREATE INDEX transaction_idx_%s ON " + TMP_TRANSACTION + " (mig_status);", config.id));
 
 
   }
 
   @Override
-  protected void parseFileAndUploadToTempTablesImpl() throws Exception {
+  protected void parseFileAndUploadToTempTables() throws Exception {
 
     try (FrsParser parser = new FrsParser(config.idGenerator, getMaxBatchSize(), connection, tableNames);
          BufferedReader br = new BufferedReader(new FileReader(config.toMigrate), 102400)) {
@@ -83,14 +85,14 @@ public class MigrationFrs extends Migration {
 
 
   @Override
-  protected void markErrorsAndUpsertIntoDbValidRowsImpl() throws SQLException {
+  protected void markErrorsAndUpsertIntoDbValidRows() throws SQLException {
 
     //////ACCOUNTS
-    execSql("update TMP_ACCOUNT tmp\n" +
+    execSql("update " + TMP_ACCOUNT + " tmp\n" +
       "  SET error='account number must to be not null'\n" +
       "  WHERE tmp.account_number ISNULL");
 
-    execSql("update TMP_ACCOUNT tmp\n" +
+    execSql("update " + TMP_ACCOUNT + " tmp\n" +
       "  SET error='client must to be not null'\n" +
       "  WHERE tmp.client_id ISNULL");
 
@@ -119,23 +121,23 @@ public class MigrationFrs extends Migration {
       "    to_timestamp(tmp.registeredat, 'YYYY-MM-dd\"T\"HH24:MI:SS.MS') as registeredat,\n" +
       "    false as actual,\n" +
       "    '%s'\n" +
-      "  FROM TMP_ACCOUNT tmp", config.id));
+      "  FROM " + TMP_ACCOUNT + " tmp", config.id));
 
 
     //////TRANSACTIONS
     //transaction types
     execSql("insert into transactiontype (id, code, name)" +
       "  SELECT distinct on(type) id, id, type\n" +
-      "  FROM TMP_TRANSACTION tmp" +
+      "  FROM " + TMP_TRANSACTION + " tmp" +
       "  WHERE tmp.type NOTNULL\n" +
       "  ON CONFLICT (name) do NOTHING\n");
 
-    execSql("UPDATE TMP_TRANSACTION tmp\n" +
+    execSql("UPDATE " + TMP_TRANSACTION + " tmp\n" +
       "  SET mig_status =" + TO_INSERT + "\n" +
       "  FROM clientaccount ca\n" +
       "  WHERE ca.number=tmp.account_number\n");
 
-    execSql("update TMP_TRANSACTION tmp\n" +
+    execSql("update " + TMP_TRANSACTION + " tmp\n" +
       "  SET error='transaction must have account'\n" +
       "  WHERE tmp.mig_status=" + NOT_READY);
 
@@ -145,7 +147,7 @@ public class MigrationFrs extends Migration {
       "    cast(replace(tmp.money,'_','') AS REAL),\n" +
       "    to_timestamp(tmp.finished_at, 'YYYY-MM-dd\"T\"HH24:MI:SS.MS') as finished_at,\n" +
       "    type.id\n" +
-      "  FROM TMP_TRANSACTION tmp\n" +
+      "  FROM " + TMP_TRANSACTION + " tmp\n" +
       "    left JOIN transactiontype type on type.name=tmp.type\n" +
       "  WHERE tmp.mig_status=" + TO_INSERT);
 
@@ -161,14 +163,14 @@ public class MigrationFrs extends Migration {
   }
 
   @Override
-  protected void loadErrorsAndWriteImpl() throws SQLException, IOException {
+  protected void loadErrorsAndWrite() throws SQLException, IOException {
     String[] accountColumns = {"client_id", "account_number", "error"};
     String[] TrColumns = {"account_number", "error"};
 
     try (FileWriter writer = new FileWriter(config.error, true);
          BufferedWriter bufferedWriter = new BufferedWriter(writer)) {
-      writeErrors(accountColumns, tableNames.get("TMP_ACCOUNT"), bufferedWriter);
-      writeErrors(TrColumns, tableNames.get("TMP_TRANSACTION"), bufferedWriter);
+      writeErrors(accountColumns, tableNames.get(TMP_ACCOUNT), bufferedWriter);
+      writeErrors(TrColumns, tableNames.get(TMP_TRANSACTION), bufferedWriter);
     }
   }
 }

@@ -43,8 +43,6 @@ public class MigrationRegisterImpl implements MigrationRegister {
   private AtomicBoolean isMigrationGoingOn = new AtomicBoolean(false);
   private final Logger logger = Logger.getLogger("MIGRATION");
 
-  // TODO: 3/16/18 Миграция должна запускаться по ссылке. Нужен контролер MigrationController
-
   @Override
   public void migrate() throws Exception {
 
@@ -52,6 +50,17 @@ public class MigrationRegisterImpl implements MigrationRegister {
       return;
     isMigrationGoingOn.set(true);
 
+    try {
+      doMigration();
+    } finally {
+      isMigrationGoingOn.set(false);
+
+    }
+
+  }
+
+  private void doMigration() throws Exception {
+    
     Date started = new Date();
     if (logger.isInfoEnabled()) {
       String date = DateUtils.getDateWithTimeString(started);
@@ -108,13 +117,6 @@ public class MigrationRegisterImpl implements MigrationRegister {
       logger.info("TOTAL MIGRATION DURATION: " + durationDateFormat);
       logger.info("##########################################################");
     }
-
-
-    /*
-      FIXME: 3/16/18 если в промежутке между isMigrationGoingOn.set(true); и этим местом вылетит exception,
-      FIXME:          то миграцию без перезапуска сервера никак не включишь */
-
-    isMigrationGoingOn.set(false);
   }
 
 

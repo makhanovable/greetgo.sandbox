@@ -17,7 +17,7 @@ public class MigrationController implements Controller {
 
   @ToJson
   @NoSecurity
-  @Mapping("/start")
+  @Mapping("/migrateSSH")
   public void start() throws Exception {
     this.migrationRegister.get().migrate();
   }

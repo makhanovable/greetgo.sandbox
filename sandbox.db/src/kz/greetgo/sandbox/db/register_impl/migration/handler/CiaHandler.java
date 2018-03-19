@@ -3,6 +3,7 @@ package kz.greetgo.sandbox.db.register_impl.migration.handler;
 import kz.greetgo.sandbox.controller.enums.AddressType;
 import kz.greetgo.sandbox.controller.enums.PhoneNumberType;
 import kz.greetgo.sandbox.db.register_impl.IdGenerator;
+import kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName;
 import kz.greetgo.sandbox.db.register_impl.migration.model.AddressCia;
 import kz.greetgo.sandbox.db.register_impl.migration.model.ClientCia;
 import kz.greetgo.sandbox.db.register_impl.migration.model.PhoneCia;
@@ -14,19 +15,20 @@ import org.xml.sax.helpers.DefaultHandler;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Map;
+
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_ADDRESS;
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_CLIENT;
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_PHONE;
 
 public class CiaHandler extends DefaultHandler implements AutoCloseable {
 
   private final Logger logger = Logger.getLogger(getClass());
 
   private Connection connection;
-  private Map<String, String> tableNames;
+  private Map<TmpTableName, String> tableNames;
 
-  private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+  //  private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
   private IdGenerator idGenerator;
 
 
@@ -43,7 +45,7 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
 
   private String content;
 
-  public CiaHandler(IdGenerator idGenerator, int maxBatchSize, Connection connection, Map<String, String> tableNames) throws SQLException {
+  public CiaHandler(IdGenerator idGenerator, int maxBatchSize, Connection connection, Map<TmpTableName, String> tableNames) throws SQLException {
     this.idGenerator = idGenerator;
     this.maxBatchSize = maxBatchSize;
     this.connection = connection;
@@ -73,9 +75,9 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
     String insertPhone = "INSERT INTO TMP_PHONE (client_id, number, type) VALUES " +
       "(?, ?, ?)";
 
-    insertClient = insertClient.replaceAll("TMP_CLIENT", tableNames.get("TMP_CLIENT").toLowerCase());
-    insertAddr = insertAddr.replaceAll("TMP_ADDRESS", tableNames.get("TMP_ADDRESS").toLowerCase());
-    insertPhone = insertPhone.replaceAll("TMP_PHONE", tableNames.get("TMP_PHONE").toLowerCase());
+    insertClient = insertClient.replaceAll(TMP_CLIENT.name(), tableNames.get(TMP_CLIENT));
+    insertAddr = insertAddr.replaceAll(TMP_ADDRESS.name(), tableNames.get(TMP_ADDRESS));
+    insertPhone = insertPhone.replaceAll(TMP_PHONE.name(), tableNames.get(TMP_PHONE));
 
     clientPS = connection.prepareStatement(insertClient);
     addrPS = connection.prepareStatement(insertAddr);
@@ -234,15 +236,15 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
     phonePS.clearBatch();
   }
 
-  private Date tryParseDate(String date) {
-    if (date == null)
-      return null;
-    try {
-      return dateFormatter.parse(date);
-    } catch (ParseException e) {
-      return null;
-    }
-  }
+//  private Date tryParseDate(String date) {
+//    if (date == null)
+//      return null;
+//    try {
+//      return dateFormatter.parse(date);
+//    } catch (ParseException e) {
+//      return null;
+//    }
+//  }
 
   @Override
   public void startDocument() throws SAXException {}

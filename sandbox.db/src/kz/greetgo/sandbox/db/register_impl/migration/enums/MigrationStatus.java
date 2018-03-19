@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.db.register_impl.migration;
+package kz.greetgo.sandbox.db.register_impl.migration.enums;
 
 @SuppressWarnings("WeakerAccess")
 public class MigrationStatus {

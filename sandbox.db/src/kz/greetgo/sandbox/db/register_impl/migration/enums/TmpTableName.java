@@ -1,6 +1,6 @@
 package kz.greetgo.sandbox.db.register_impl.migration.enums;
 
-public enum TableName {
+public enum TmpTableName {
   TMP_CLIENT,
   TMP_ADDRESS,
   TMP_PHONE,
