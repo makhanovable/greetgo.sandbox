@@ -3,6 +3,7 @@ package kz.greetgo.sandbox.db.register_impl.migration.handler;
 import kz.greetgo.sandbox.controller.enums.AddressType;
 import kz.greetgo.sandbox.controller.enums.PhoneNumberType;
 import kz.greetgo.sandbox.db.register_impl.IdGenerator;
+import kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName;
 import kz.greetgo.sandbox.db.register_impl.migration.model.AddressCia;
 import kz.greetgo.sandbox.db.register_impl.migration.model.ClientCia;
 import kz.greetgo.sandbox.db.register_impl.migration.model.PhoneCia;
@@ -14,19 +15,20 @@ import org.xml.sax.helpers.DefaultHandler;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Map;
+
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_ADDRESS;
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_CLIENT;
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_PHONE;
 
 public class CiaHandler extends DefaultHandler implements AutoCloseable {
 
   private final Logger logger = Logger.getLogger(getClass());
 
   private Connection connection;
-  private Map<String, String> tableNames;
+  private Map<TmpTableName, String> tableNames;
 
-  private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+  //  private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
   private IdGenerator idGenerator;
 
 
@@ -43,7 +45,7 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
 
   private String content;
 
-  public CiaHandler(IdGenerator idGenerator, int maxBatchSize, Connection connection, Map<String, String> tableNames) throws SQLException {
+  public CiaHandler(IdGenerator idGenerator, int maxBatchSize, Connection connection, Map<TmpTableName, String> tableNames) throws SQLException {
     this.idGenerator = idGenerator;
     this.maxBatchSize = maxBatchSize;
     this.connection = connection;
@@ -66,16 +68,16 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
       "(?, ?, ?, ?, ?, ?, ?, ?)";
 
     @SuppressWarnings({"SqlResolve"})
-    String insertAddr = "INSERT INTO TMP_ADDRESS (client_id, cia_id, type, street, house, flat) VALUES " +
-      "(?, ?, ?, ?, ?, ?)";
+    String insertAddr = "INSERT INTO TMP_ADDRESS (client_id, type, street, house, flat) VALUES " +
+      "(?, ?, ?, ?, ?)";
 
     @SuppressWarnings({"SqlResolve"})
-    String insertPhone = "INSERT INTO TMP_PHONE (client_id, cia_id, number, type) VALUES " +
-      "(?, ?, ?, ?)";
+    String insertPhone = "INSERT INTO TMP_PHONE (client_id, number, type) VALUES " +
+      "(?, ?, ?)";
 
-    insertClient = insertClient.replaceAll("TMP_CLIENT", tableNames.get("TMP_CLIENT").toLowerCase());
-    insertAddr = insertAddr.replaceAll("TMP_ADDRESS", tableNames.get("TMP_ADDRESS").toLowerCase());
-    insertPhone = insertPhone.replaceAll("TMP_PHONE", tableNames.get("TMP_PHONE").toLowerCase());
+    insertClient = insertClient.replaceAll(TMP_CLIENT.name(), tableNames.get(TMP_CLIENT));
+    insertAddr = insertAddr.replaceAll(TMP_ADDRESS.name(), tableNames.get(TMP_ADDRESS));
+    insertPhone = insertPhone.replaceAll(TMP_PHONE.name(), tableNames.get(TMP_PHONE));
 
     clientPS = connection.prepareStatement(insertClient);
     addrPS = connection.prepareStatement(insertAddr);
@@ -91,7 +93,7 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
       clientPS.setObject(index++, client.surname);
       clientPS.setObject(index++, client.patronymic);
       clientPS.setObject(index++, client.gender);
-      clientPS.setObject(index++, getSqlDate(client.birth));
+      clientPS.setObject(index++, client.birth);
       clientPS.setObject(index, client.charm);
 
       clientPS.addBatch();
@@ -99,7 +101,6 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
       if (client.reg != null) {
         index = 1;
         addrPS.setObject(index++, client.id);
-        addrPS.setObject(index++, client.cia_id);
         addrPS.setObject(index++, client.reg.type.toString());
         addrPS.setObject(index++, client.reg.street);
         addrPS.setObject(index++, client.reg.house);
@@ -111,7 +112,6 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
       if (client.fact != null) {
         index = 1;
         addrPS.setObject(index++, client.id);
-        addrPS.setObject(index++, client.cia_id);
         addrPS.setObject(index++, client.fact.type.toString());
         addrPS.setObject(index++, client.fact.street);
         addrPS.setObject(index++, client.fact.house);
@@ -124,7 +124,6 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
       for (PhoneCia phoneCia : client.numbers) {
         index = 1;
         phonePS.setObject(index++, client.id);
-        phonePS.setObject(index++, client.cia_id);
         phonePS.setObject(index++, phoneCia.number);
         phonePS.setObject(index, phoneCia.type.toString());
 
@@ -166,8 +165,7 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
       client.charm = attributes.getValue("value");
 
     } else if ("birth".equals(qName)) {
-      String birth = attributes.getValue("value");
-      client.birth = tryParseDate(birth);
+      client.birth = attributes.getValue("value");
     } else if ("register".equals(qName)) {
       client.reg = new AddressCia();
       client.reg.street = attributes.getValue("street");
@@ -220,6 +218,7 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
     clientPS.close();
     addrPS.close();
     phonePS.close();
+    clear();
     connection.setAutoCommit(this.originalAutoCommit);
   }
 
@@ -228,24 +227,24 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
     addrPS.executeBatch();
     phonePS.executeBatch();
     connection.commit();
+    clear();
   }
 
-  private Date tryParseDate(String date) {
-    if (date == null)
-      return null;
-    try {
-      return dateFormatter.parse(date);
-    } catch (ParseException e) {
-      return null;
-    }
+  private void clear() throws SQLException {
+    clientPS.clearBatch();
+    addrPS.clearBatch();
+    phonePS.clearBatch();
   }
 
-  private java.sql.Date getSqlDate(Date date) {
-    if (date != null)
-      return new java.sql.Date(client.birth.getTime());
-    else
-      return null;
-  }
+//  private Date tryParseDate(String date) {
+//    if (date == null)
+//      return null;
+//    try {
+//      return dateFormatter.parse(date);
+//    } catch (ParseException e) {
+//      return null;
+//    }
+//  }
 
   @Override
   public void startDocument() throws SAXException {}

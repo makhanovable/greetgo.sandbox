@@ -11,7 +11,7 @@ public class ClientCia {
   public String name;
   public String surname;
   public String patronymic;
-  public Date birth;
+  public String birth;
   public String gender;
   public String charm;
 

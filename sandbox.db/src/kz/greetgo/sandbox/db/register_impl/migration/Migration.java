@@ -1,12 +1,18 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
+import kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName;
 import kz.greetgo.sandbox.db.register_impl.migration.exception.UnsupportedFileExtension;
 import kz.greetgo.sandbox.db.util.DateUtils;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.sql.*;
+import java.sql.BatchUpdateException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,9 +27,8 @@ public abstract class Migration {
 
   protected Connection connection;
 
-  // FIXME: 3/16/18 Замени коды таблиц на enum, чтобы значение было что-то вроде #{TABLE_NAME}
   @SuppressWarnings("WeakerAccess")
-  protected Map<String, String> tableNames = new HashMap<>();
+  protected Map<TmpTableName, String> tableNames = new HashMap<>();
 
   @SuppressWarnings("WeakerAccess")
   protected Migration(MigrationConfig config, Connection connection) {
@@ -31,27 +36,25 @@ public abstract class Migration {
     this.connection = connection;
   }
 
-  // FIXME: 3/16/18 Постфикс Impl некорректный
-  protected abstract void createTempTablesImpl() throws SQLException;
 
-  protected abstract void parseFileAndUploadToTempTablesImpl() throws Exception;
+  protected abstract void createTempTables() throws SQLException;
 
-  protected abstract void markErrorsAndUpsertIntoDbValidRowsImpl() throws SQLException;
+  protected abstract void parseFileAndUploadToTempTables() throws Exception;
 
-  protected abstract void loadErrorsAndWriteImpl() throws SQLException, IOException;
+  protected abstract void markErrorsAndUpsertIntoDbValidRows() throws SQLException;
+
+  protected abstract void loadErrorsAndWrite() throws SQLException, IOException;
 
   public void migrate() throws Exception {
 
     logger.info("STARTED DATE,TIME: " + DateUtils.getDateWithTimeString(new Date()));
 
-    // FIXME: 3/16/18 Статус можно заменить на enum
-    // FIXME: 3/16/18 JavaCodingConvention. БУДЬ ВНИМАТЕЛЬНЕЕ!
     String MigrationStatus = "STARTED";
     try {
-      createTempTables();
-      parseFileAndUploadToTempTables();
-      markErrorsAndUpsertIntoDbValidRows();
-      loadErrorsAndWrite();
+      createTempTablesWithLogging();
+      parseFileAndUploadToTempTablesWithLogging();
+      markErrorsAndUpsertIntoDbValidRowsWithLogging();
+      loadErrorsAndWriteWithLogging();
 
       MigrationStatus = "MIGRATED.";
     } catch (Exception e) {
@@ -65,51 +68,62 @@ public abstract class Migration {
     }
   }
 
-  private void createTempTables() throws SQLException {
+  private void createTempTablesWithLogging() throws SQLException {
     logger.info("step1. creating temp table starting");
     Long start = System.currentTimeMillis();
-    createTempTablesImpl();
+    createTempTables();
     logger.info("step1. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
+
   }
 
-  private void parseFileAndUploadToTempTables() throws Exception {
+  private void parseFileAndUploadToTempTablesWithLogging() throws Exception {
     logger.info("step2. parsing file and insert to temp tables");
     try {
       Long start = System.currentTimeMillis();
-      parseFileAndUploadToTempTablesImpl();
-      logger.info("step2. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
+      parseFileAndUploadToTempTables();
+      if (logger.isInfoEnabled())
+        logger.info("step2. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
+
     } catch (BatchUpdateException bux) {
-      logger.fatal(bux.getNextException());
-      // FIXME: 3/16/18 Из-за этой ошибки весь процесс миграций остановится
+      logger.fatal("parseFileAndUploadToTempTablesWithLogging", bux.getNextException());
       throw bux.getNextException();
     }
   }
 
-  private void markErrorsAndUpsertIntoDbValidRows() throws Exception {
+  private void markErrorsAndUpsertIntoDbValidRowsWithLogging() throws Exception {
     logger.info("step3. mark error and upserting valids to oper db");
     Long start = System.currentTimeMillis();
-    markErrorsAndUpsertIntoDbValidRowsImpl();
-    logger.info("step3. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
+    markErrorsAndUpsertIntoDbValidRows();
+    if (logger.isInfoEnabled())
+      logger.info("step3. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
+
   }
 
-  private void loadErrorsAndWrite() throws Exception {
+  private void loadErrorsAndWriteWithLogging() throws Exception {
     logger.info("step4. getting and uploading errors");
     Long start = System.currentTimeMillis();
-    loadErrorsAndWriteImpl();
-    logger.info("step4. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
+    loadErrorsAndWrite();
+    if (logger.isInfoEnabled())
+      logger.info("step4. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
   }
 
   @SuppressWarnings("WeakerAccess")
   protected void execSql(String sql) throws SQLException {
-    for (String tableName : tableNames.keySet()) {
-      sql = sql.replaceAll(tableName, tableNames.get(tableName));
+    for (TmpTableName tmpTableName : tableNames.keySet()) {
+      sql = sql.replaceAll(tmpTableName.name(), tableNames.get(tmpTableName));
     }
 
     try (Statement statement = connection.createStatement()) {
-      Long sqlStartedMils = System.currentTimeMillis();
-      logger.debug("\nexecuted sql query:\n" + sql);
+      Long sqlStartedMils = 0L;
+
+      if (logger.isDebugEnabled()) {
+        logger.debug("executing sql query:\n" + sql);
+        sqlStartedMils = System.currentTimeMillis();
+      }
       statement.execute(sql);
-      logger.debug("duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), sqlStartedMils) + "\n");
+
+      if (logger.isDebugEnabled())
+        logger.debug("duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), sqlStartedMils) + "\n");
     }
   }
 
@@ -136,12 +150,10 @@ public abstract class Migration {
     return "from_frs_(.*).json_row.txt.tar.bz2";
   }
 
-
   @SuppressWarnings("WeakerAccess")
   public static int getMaxBatchSize() {
     return 50000;
   }
-
 
   @SuppressWarnings("WeakerAccess")
   protected void writeErrors(String[] columns, String tableName, Writer writer) throws SQLException, IOException {
@@ -150,7 +162,6 @@ public abstract class Migration {
          ResultSet rs = ps.executeQuery()) {
       while (rs.next()) {
         String line = getErrorLine(columns, rs);
-        // FIXME: 3/16/18 write line? проверь тут буфер работает.
         writer.write(line);
       }
     }
@@ -171,5 +182,6 @@ public abstract class Migration {
       "from " + tableName + "\n" +
       "where error notnull";
   }
+
 
 }

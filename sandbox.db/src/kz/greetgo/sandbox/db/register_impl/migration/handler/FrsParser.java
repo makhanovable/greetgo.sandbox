@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import kz.greetgo.sandbox.db.register_impl.IdGenerator;
+import kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -11,12 +12,15 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Map;
 
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_ACCOUNT;
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_TRANSACTION;
+
 public class FrsParser implements AutoCloseable {
 
-  private final Logger logger = Logger.getLogger(getClass());
 
+  private final Logger logger = Logger.getLogger(getClass());
   private Connection connection;
-  private Map<String, String> tableNames;
+  private Map<TmpTableName, String> tableNames;
 
   private JsonParser parser = new JsonParser();
   private IdGenerator idGenerator;
@@ -30,12 +34,11 @@ public class FrsParser implements AutoCloseable {
 
   private JsonObject object;
 
-  public FrsParser(IdGenerator idGenerator, int maxBatchSize, Connection connection, Map<String, String> tableNames) throws Exception {
+  public FrsParser(IdGenerator idGenerator, int maxBatchSize, Connection connection, Map<TmpTableName, String> tableNames) throws Exception {
     this.idGenerator = idGenerator;
     this.maxBatchSize = maxBatchSize;
     this.connection = connection;
     this.tableNames = tableNames;
-
     this.originalAutoCommit = this.connection.getAutoCommit();
     this.connection.setAutoCommit(false);
 
@@ -50,8 +53,8 @@ public class FrsParser implements AutoCloseable {
     String insertTransaction = "INSERT INTO TMP_TRANSACTION (id, account_number, money, finished_at, type) VALUES " +
       "(?, ?, ?, ?, ?)";
 
-    insertAccount = insertAccount.replaceAll("TMP_ACCOUNT", tableNames.get("TMP_ACCOUNT"));
-    insertTransaction = insertTransaction.replaceAll("TMP_TRANSACTION", tableNames.get("TMP_TRANSACTION"));
+    insertAccount = insertAccount.replaceAll(TMP_ACCOUNT.name(), tableNames.get(TMP_ACCOUNT));
+    insertTransaction = insertTransaction.replaceAll(TMP_TRANSACTION.name(), tableNames.get(TMP_TRANSACTION));
 
     accountPS = connection.prepareStatement(insertAccount);
     transactionPS = connection.prepareStatement(insertTransaction);
@@ -60,7 +63,7 @@ public class FrsParser implements AutoCloseable {
   private void addBatch() throws SQLException {
 
     int index = 1;
-    // FIXME: 3/16/18 если типа нет? читай javadoc метода get()
+    //JsonObject::get return Null if no such member exists.
     String type = object.get("type").getAsString();
 
     if ("new_account".equals(type)) {
@@ -97,8 +100,7 @@ public class FrsParser implements AutoCloseable {
       addBatch();
     } catch (Exception e) {
       logger.fatal("trying to add batch parsed frs line", e);
-      // FIXME: 3/16/18 если одина строка будет ошибочной, то дальше не запуститься
-      throw new RuntimeException("trying to add batch parsed frs line", e);
+//      throw new RuntimeException("trying to add batch parsed frs line", e);
     }
 
   }
@@ -123,7 +125,12 @@ public class FrsParser implements AutoCloseable {
   private void commitAll() throws SQLException {
     accountPS.executeBatch();
     transactionPS.executeBatch();
+//
+//    accountPS.execute();
+//    transactionPS.execute();
+
     connection.commit();
   }
+
 
 }

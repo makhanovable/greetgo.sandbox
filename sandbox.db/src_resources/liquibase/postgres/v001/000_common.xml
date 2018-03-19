@@ -10,4 +10,19 @@
     ]]></sql>
   </changeSet>
 
+  <changeSet author="pompei" id="create-function-id-date">
+    <sql endDelimiter=";;"><![CDATA[
+      create or replace function is_date(s varchar) returns boolean as $$
+      begin
+      perform s::date;
+      return true;
+      exception when others then
+      return false;
+      end;
+      $$ language plpgsql;
+    ]]></sql>
+  </changeSet>
+
 </databaseChangeLog>
+
+

@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Vector;
 import java.util.stream.Collectors;
@@ -42,14 +43,12 @@ public class SSHConnection implements Closeable {
     channel.cd(sshConfig.migrationDir());
   }
 
-  @SuppressWarnings("SameParameterValue")
+  @SuppressWarnings({"SameParameterValue", "WeakerAccess"})
   public List<String> getFileNameList(String path) throws SftpException {
     @SuppressWarnings("unchecked")
     Vector<ChannelSftp.LsEntry> entries = channel.ls(path);
+    entries.sort(Comparator.comparingInt(o -> o.getAttrs().getMTime()));
     return entries.stream().map(ChannelSftp.LsEntry::getFilename).collect(Collectors.toList());
-//    ((ChannelExec) (Channel) channel).setCommand("ls -lct");
-//    channel.run();
-//    Vector filelist = channel.run().map(o -> o.getFilename()).collect(Collectors.toList());
   }
 
   public void renameFileName(String fileName, String renameTo) throws SftpException {
