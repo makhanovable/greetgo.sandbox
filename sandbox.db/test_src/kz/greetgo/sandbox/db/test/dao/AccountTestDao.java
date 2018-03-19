@@ -24,7 +24,7 @@ public interface AccountTestDao {
   public List<Transaction> getTransactionList(@Param("tableName") String tableName);
 
 
-  @Select(" create table TMP_ACCOUNT (\n" +
+  @Select(" create table ${tableName} (\n" +
     "        no bigserial,\n" +
     "        id varchar(32),\n" +
     "        client_id varchar(32),\n" +
@@ -35,9 +35,9 @@ public interface AccountTestDao {
     "        mig_status smallint default 1,\n" +
     "        PRIMARY KEY(no)\n" +
     "      );")
-  void createTempAccountTable();
+  void createTempAccountTable(@Param("tableName") String tableName);
 
-  @Select("create table TMP_TRANSACTION  (\n" +
+  @Select("create table ${tableName} (\n" +
     "  no bigserial,\n" +
     "  id varchar(35),\n" +
     "  account_number varchar(35),\n" +
@@ -48,7 +48,7 @@ public interface AccountTestDao {
     "  mig_status smallint default 1,\n" +
     "  PRIMARY KEY (no)\n" +
     ")")
-  void createTempTransactionTable();
+  void createTempTransactionTable(@Param("tableName") String tableName);
 
 
 }

@@ -72,7 +72,7 @@ public interface ClientTestDao {
   void clear();
 
 
-  @Select("create table TMP_CLIENT (\n" +
+  @Select("create table ${tableName} (\n" +
     "  no bigserial,\n" +
     "  id varchar(32),\n" +
     "  cia_id varchar(100),\n" +
@@ -89,23 +89,23 @@ public interface ClientTestDao {
     "  mig_status smallint default 1,\n" +
     "  PRIMARY KEY (no)\n" +
     ")")
-  void createTempClientTable();
+  void createTempClientTable(@Param("tableName") String tableName);
 
-  @Select("create table TMP_ADDRESS (\n " +
+  @Select("create table ${tableName} (\n " +
     "  client_id varchar(32),\n" +
     "  type varchar(100),\n" +
     "  street varchar(100),\n" +
     "  house varchar(100),\n" +
     "  flat varchar(100)\n" +
     ")\n")
-  void createTempAddressTable();
+  void createTempAddressTable(@Param("tableName") String tableName);
 
-  @Select("create table TMP_PHONE (\n" +
+  @Select("create table ${tableName} (\n" +
     "  client_id varchar(32),\n" +
     "  number varchar(100),\n" +
     "  type varchar(100)\n" +
     ")\n")
-  void createTempPhoneTable();
+  void createTempPhoneTable(@Param("tableName") String tableName);
 
   @Select("SELECT EXISTS (\n" +
     "   SELECT 1\n" +

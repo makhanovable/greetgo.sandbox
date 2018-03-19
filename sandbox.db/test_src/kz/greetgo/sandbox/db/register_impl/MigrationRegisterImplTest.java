@@ -113,9 +113,9 @@ public class MigrationRegisterImplTest extends ParentTestNg {
   void insertIntoTempTablesCiaTest() throws Exception {
     clientTestDao.get().clear();
 
-    clientTestDao.get().createTempClientTable();
-    clientTestDao.get().createTempPhoneTable();
-    clientTestDao.get().createTempAddressTable();
+    clientTestDao.get().createTempClientTable(TMP_CLIENT.name());
+    clientTestDao.get().createTempAddressTable(TMP_ADDRESS.name());
+    clientTestDao.get().createTempPhoneTable(TMP_PHONE.name());
 
     int numberOfClients = 10;
     List<ClientDetail> list = rndClientDetails(numberOfClients);
@@ -178,8 +178,8 @@ public class MigrationRegisterImplTest extends ParentTestNg {
   @Test
   void insertIntoTempTablesFrsTest() throws Exception {
 
-    accountTestDao.get().createTempAccountTable();
-    accountTestDao.get().createTempTransactionTable();
+    accountTestDao.get().createTempAccountTable(TMP_ACCOUNT.name());
+    accountTestDao.get().createTempTransactionTable(TMP_TRANSACTION.name());
 
     int numberOfAccounts = 10;
     List<Account> accounts = rndAccounts(numberOfAccounts);
