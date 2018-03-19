@@ -47,14 +47,14 @@ public class FrsParser implements AutoCloseable {
 
   private void initPreparedStatements() throws SQLException {
     @SuppressWarnings("SqlResolve")
-    String insertAccount = "INSERT INTO TMP_ACCOUNT (id, client_id, account_number, registeredAt) VALUES " +
+    String insertAccount = "INSERT INTO " + TMP_ACCOUNT + " (id, client_id, account_number, registeredAt) VALUES " +
       "(?, ?, ?, ?)";
     @SuppressWarnings("SqlResolve")
-    String insertTransaction = "INSERT INTO TMP_TRANSACTION (id, account_number, money, finished_at, type) VALUES " +
+    String insertTransaction = "INSERT INTO " + TMP_TRANSACTION + " (id, account_number, money, finished_at, type) VALUES " +
       "(?, ?, ?, ?, ?)";
 
-    insertAccount = insertAccount.replaceAll(TMP_ACCOUNT.name(), tableNames.get(TMP_ACCOUNT));
-    insertTransaction = insertTransaction.replaceAll(TMP_TRANSACTION.name(), tableNames.get(TMP_TRANSACTION));
+    insertAccount = insertAccount.replace(TMP_ACCOUNT.code, tableNames.get(TMP_ACCOUNT));
+    insertTransaction = insertTransaction.replace(TMP_TRANSACTION.code, tableNames.get(TMP_TRANSACTION));
 
     accountPS = connection.prepareStatement(insertAccount);
     transactionPS = connection.prepareStatement(insertTransaction);
@@ -64,9 +64,9 @@ public class FrsParser implements AutoCloseable {
 
     int index = 1;
     //JsonObject::get return Null if no such member exists.
-    // FIXME: 3/19/18 Если вернет нулл, то выкинет NullPointerException
-    String type = object.get("type").getAsString();
+    JsonElement elem = object.get("type");
 
+    String type = elem != null ? elem.getAsString() : null;
     if ("new_account".equals(type)) {
       accountPS.setObject(index++, idGenerator.newId());
       accountPS.setObject(index++, getJsonField("client_id"));
@@ -101,7 +101,6 @@ public class FrsParser implements AutoCloseable {
       addBatch();
     } catch (Exception e) {
       logger.fatal("trying to add batch parsed frs line", e);
-//      throw new RuntimeException("trying to add batch parsed frs line", e);
     }
 
   }
@@ -126,10 +125,6 @@ public class FrsParser implements AutoCloseable {
   private void commitAll() throws SQLException {
     accountPS.executeBatch();
     transactionPS.executeBatch();
-//
-//    accountPS.execute();
-//    transactionPS.execute();
-
     connection.commit();
   }
 
