@@ -7,7 +7,12 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.sql.*;
+import java.sql.BatchUpdateException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +27,6 @@ public abstract class Migration {
 
   protected Connection connection;
 
-  // FIXME: 3/19/18 Закончи с кодом енума
   @SuppressWarnings("WeakerAccess")
   protected Map<TmpTableName, String> tableNames = new HashMap<>();
 
@@ -152,8 +156,6 @@ public abstract class Migration {
     return 50000;
   }
 
-
-  // FIXME: 3/19/18 проверить используется ли буфферед райтер
   @SuppressWarnings("WeakerAccess")
   protected void writeErrors(String[] columns, String tableName, Writer writer) throws SQLException, IOException {
     String sql = getErrorSql(columns, tableName);
