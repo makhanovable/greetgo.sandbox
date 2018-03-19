@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import kz.greetgo.sandbox.db.register_impl.IdGenerator;
-
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -60,6 +59,7 @@ public class FrsParser implements AutoCloseable {
   private void addBatch() throws SQLException {
 
     int index = 1;
+    // FIXME: 3/16/18 если типа нет? читай javadoc метода get()
     String type = object.get("type").getAsString();
 
     if ("new_account".equals(type)) {
@@ -96,6 +96,7 @@ public class FrsParser implements AutoCloseable {
       addBatch();
     } catch (Exception e) {
       logger.fatal("trying to add batch parsed frs line", e);
+      // FIXME: 3/16/18 если одина строка будет ошибочной, то дальше не запуститься
       throw new RuntimeException("trying to add batch parsed frs line", e);
     }
 
