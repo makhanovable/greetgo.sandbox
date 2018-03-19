@@ -16,6 +16,9 @@ import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationStatus.NOT_READY;
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.*;
+
 public interface ClientTestDao {
 
 
@@ -67,5 +70,48 @@ public interface ClientTestDao {
 
   @Select("TRUNCATE Client cascade; TRUNCATE ClientPhone cascade; TRUNCATE ClientAddr cascade")
   void clear();
+
+
+  @Select("create table TMP_CLIENT (\n" +
+    "  no bigserial,\n" +
+    "  id varchar(32),\n" +
+    "  cia_id varchar(100),\n" +
+    "  client_id varchar(100),\n" +
+    "  name varchar(255),\n" +
+    "  surname varchar(255),\n" +
+    "  patronymic varchar(255),\n" +
+    "  gender varchar(10),\n" +
+    "  birthDate varchar(20),\n" +
+    "  birthDateParsed date,\n" +
+    "  charm varchar(32),\n" +
+    "  actual boolean default false,\n" +
+    "  error varchar(100),\n" +
+    "  mig_status smallint default 1,\n" +
+    "  PRIMARY KEY (no)\n" +
+    ")")
+  void createTempClientTable();
+
+  @Select("create table TMP_ADDRESS (\n " +
+    "  client_id varchar(32),\n" +
+    "  type varchar(100),\n" +
+    "  street varchar(100),\n" +
+    "  house varchar(100),\n" +
+    "  flat varchar(100)\n" +
+    ")\n")
+  void createTempAddressTable();
+
+  @Select("create table TMP_PHONE (\n" +
+    "  client_id varchar(32),\n" +
+    "  number varchar(100),\n" +
+    "  type varchar(100)\n" +
+    ")\n")
+  void createTempPhoneTable();
+
+  @Select("SELECT EXISTS (\n" +
+    "   SELECT 1\n" +
+    "   FROM   information_schema.tables \n" +
+    "   WHERE    table_name = #{tableName}\n" +
+    "   );")
+  boolean isTableExist(@Param("tableName") String tableName);
 
 }
