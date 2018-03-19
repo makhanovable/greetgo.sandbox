@@ -6,6 +6,7 @@ public class Account {
   public String client_id;
   public String account_number;
   public String registered_at;
+  public String error;
 
   @Override
   public boolean equals(Object o) {

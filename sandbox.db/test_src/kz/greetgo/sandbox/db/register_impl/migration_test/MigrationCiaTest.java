@@ -41,4 +41,7 @@ public class MigrationCiaTest extends MigrationCia {
   }
 
 
+  public void upsertIntoTempTables() throws SQLException {
+    super.upsertIntoDbValidRows();
+  }
 }

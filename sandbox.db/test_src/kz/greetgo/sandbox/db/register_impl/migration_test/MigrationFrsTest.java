@@ -31,4 +31,8 @@ public class MigrationFrsTest extends MigrationFrs {
   public Map<TmpTableName, String> getTableNames() {
     return tableNames;
   }
+
+  public void markErrors() throws SQLException {
+    super.markErrorRows();
+  }
 }

@@ -15,14 +15,13 @@ public interface AccountTestDao {
 
   @Insert("insert into ClientAccount (id, client, money, number, registeredAt) " +
     "values (#{id}, #{client}, #{money}, #{number}, #{registeredAt})")
-  public void insertAccount(ClientAccountDot accountDot);
+  void insertAccount(ClientAccountDot accountDot);
 
-  @Select("select client_id, account_number, registeredAt as registered_at from ${tableName}")
-  public List<Account> getAccountList(@Param("tableName") String tableName);
+  @Select("select client_id, account_number, registeredAt as registered_at, error from ${tableName}")
+  List<Account> getAccountList(@Param("tableName") String tableName);
 
-  @Select("select finished_at, type as transaction_type, account_number from ${tableName}")
-  public List<Transaction> getTransactionList(@Param("tableName") String tableName);
-
+  @Select("select finished_at, type as transaction_type, account_number, error from ${tableName}")
+  List<Transaction> getTransactionList(@Param("tableName") String tableName);
 
   @Select(" create table ${tableName} (\n" +
     "        no bigserial,\n" +

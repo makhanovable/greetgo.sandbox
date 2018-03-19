@@ -5,6 +5,7 @@ public class Transaction {
   public String finished_at;
   public String transaction_type;
   public String account_number;
+  public String error;
 
   @Override
   public boolean equals(Object o) {

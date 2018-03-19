@@ -71,8 +71,6 @@ public class MigrationCia extends Migration {
     execSql(phoneTable);
 
     execSql(String.format("CREATE INDEX client_mig_%s ON " + TMP_CLIENT + " (mig_status);", config.id));
-
-
   }
 
   @Override
@@ -190,7 +188,7 @@ public class MigrationCia extends Migration {
         "  SET actual=true\n" +
         "  WHERE c.mig_id='%s';\n", config.id));
 
-    execSql(String.format("DROP INDEX client_mig_%s;", config.id));
+    execSql(String.format("DROP INDEX IF EXISTS client_mig_%s;", config.id));
   }
 
   @Override

@@ -65,7 +65,7 @@ public interface ClientTestDao {
   List<ClientAddress> getAddressList(@Param("tableName") String tableName, @Param("id") String client);
 
 
-  @Select("drop table ${tableName}")
+  @Select("drop table if exists ${tableName}")
   void dropTable(@Param("tableName") String tableName);
 
   @Select("TRUNCATE Client cascade; TRUNCATE ClientPhone cascade; TRUNCATE ClientAddr cascade")
@@ -113,5 +113,9 @@ public interface ClientTestDao {
     "   WHERE    table_name = #{tableName}\n" +
     "   );")
   boolean isTableExist(@Param("tableName") String tableName);
+
+  @Insert( "INSERT INTO ${tableName} (id, cia_id, name, surname, patronymic, gender, birthDate, charm) VALUES " +
+    "(#{detail.id}, #{detail.id}, #{detail.name}, #{detail.surname}, #{detail.patronymic}, #{detail.gender}, #{detail.birthDate}, #{detail.charm})")
+  void insertClientDetail(@Param("detail")ClientDetail detail, @Param("tableName")String tableName);
 
 }

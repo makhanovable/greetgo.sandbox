@@ -172,9 +172,7 @@ public class MigrationFrs extends Migration {
       "  WHERE c.mig_id='%s' ;\n", config.id));
 
 
-    execSql(String.format("DROP INDEX transaction_idx_%s;", config.id));
-
-
+    execSql(String.format("DROP INDEX IF EXISTS transaction_idx_%s;", config.id));
   }
 
   @Override

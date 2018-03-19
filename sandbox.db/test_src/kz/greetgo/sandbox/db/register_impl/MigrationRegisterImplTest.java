@@ -55,6 +55,7 @@ public class MigrationRegisterImplTest extends ParentTestNg {
 
   @SuppressWarnings("WeakerAccess")
   public BeanGetter<IdGenerator> idGenerator;
+  @SuppressWarnings({"WeakerAccess", "unused"})
   public BeanGetter<MigrationRegister> migrationRegister;
 
   @SuppressWarnings("WeakerAccess")
@@ -70,12 +71,13 @@ public class MigrationRegisterImplTest extends ParentTestNg {
   @Test
   void test() throws Exception {
     //TODO delete
-    this.migrationRegister.get().migrate();
+//    this.migrationRegister.get().migrate();
+
   }
 
   @Test
   void createTempTableCiaFrsTest() throws Exception {
-
+    dropTempTables();
     Map<TmpTableName, String> ciaTableNames;
     Map<TmpTableName, String> frsTableNames;
 
@@ -106,20 +108,20 @@ public class MigrationRegisterImplTest extends ParentTestNg {
       boolean exist = clientTestDao.get().isTableExist(tableName.toLowerCase());
       assertThat(exist).isTrue();
     }
-  }
 
+  }
 
   @Test
   void insertIntoTempTablesCiaTest() throws Exception {
+    dropTempTables();
     clientTestDao.get().clear();
-
     clientTestDao.get().createTempClientTable(TMP_CLIENT.name());
     clientTestDao.get().createTempAddressTable(TMP_ADDRESS.name());
     clientTestDao.get().createTempPhoneTable(TMP_PHONE.name());
 
     int numberOfClients = 10;
     List<ClientDetail> list = rndClientDetails(numberOfClients);
-    File testData = genereateCia(list);
+    File testData = genereteCia(list);
 
     MigrationConfig config = new MigrationConfig();
     config.toMigrate = testData;
@@ -167,17 +169,14 @@ public class MigrationRegisterImplTest extends ParentTestNg {
 
     }
 
-    for (String tableName : tableNames.values())
-      clientTestDao.get().dropTable(tableName);
     if (!testData.delete()) {
       logger.warn("test tmp file not deleted:" + testData.getAbsoluteFile());
     }
-
   }
 
   @Test
   void insertIntoTempTablesFrsTest() throws Exception {
-
+    dropTempTables();
     accountTestDao.get().createTempAccountTable(TMP_ACCOUNT.name());
     accountTestDao.get().createTempTransactionTable(TMP_TRANSACTION.name());
 
@@ -225,9 +224,128 @@ public class MigrationRegisterImplTest extends ParentTestNg {
   }
 
   @Test
-  void markErrorsCiaTest() {
+  void markErrorsCiaTest() throws Exception {
+    dropTempTables();
+    clientTestDao.get().createTempClientTable(TMP_CLIENT.name());
+    clientTestDao.get().createTempPhoneTable(TMP_PHONE.name());
+    clientTestDao.get().createTempAddressTable(TMP_ADDRESS.name());
+
+    final int validRows = 60;
+    final int errorRows = 30;
+    List<ClientDetail> clientDetails = rndClientDetails(validRows + errorRows);
+    for(int i = 0; i < errorRows; i++) {
+      ClientDetail detail = clientDetails.get(RND.plusInt(clientDetails.size()));
+      int rnd = RND.plusInt(5);
+      switch (rnd) {
+        case 0:
+          detail.name = null;
+          break;
+        case 1:
+          detail.surname = null;
+          break;
+        case 3:
+          detail.birthDate = null;
+          break;
+        case 4:
+          detail.birthDate = RND.dateYears(-1000, -200);
+          break;
+      }
+      clientTestDao.get().insertClientDetail(detail, TMP_CLIENT.name());
+      //TODO finish
+    }
+
+    MigrationConfig config = new MigrationConfig();
+
+    Map<TmpTableName, String> tableNames;
+    try (Connection connection = DbUtils.getPostgresConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password())) {
+
+      MigrationCiaTest migration = new MigrationCiaTest(config, connection);
+      tableNames = migration.getTableNames();
+      tableNames.put(TMP_CLIENT, TMP_CLIENT.name());
+      tableNames.put(TMP_ADDRESS, TMP_ADDRESS.name());
+      tableNames.put(TMP_PHONE, TMP_PHONE.name());
+
+      //
+      //
+      migration.upsertIntoTempTables();
+      //
+      //
+    }
+
+    List<ClientDetail> result = clientTestDao.get().getDetailList(TMP_CLIENT.name());
+    assertThat(result).hasSize(validRows);
+
+
     throw new NotImplementedException();
   }
+
+  @Test
+  void markErrorsFrsTest() throws Exception {
+    //TODO переделать
+    accountTestDao.get().createTempAccountTable(TMP_ACCOUNT.name());
+    accountTestDao.get().createTempTransactionTable(TMP_TRANSACTION.name());
+
+    final int numberOfAccounts = 10;
+    List<Account> accounts = rndAccounts(numberOfAccounts);
+    List<Transaction> transactions = rndTransactions(accounts);
+
+    Map<TmpTableName, String> tableNames;
+    MigrationConfig config = new MigrationConfig();
+
+    for(int i = 0; i < 3; i++){
+      accounts.get(RND.plusInt(accounts.size())).account_number = null;
+      transactions.get(RND.plusInt(transactions.size())).account_number = null;
+    }
+    for(int i = 0; i < 3; i++){
+      accounts.get(RND.plusInt(accounts.size())).client_id = null;
+    }
+
+    config.toMigrate = generateFrs(accounts, transactions);
+
+
+    try (Connection connection = DbUtils.getPostgresConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password())) {
+
+      MigrationFrsTest migration = new MigrationFrsTest(config, connection);
+      tableNames = migration.getTableNames();
+      tableNames.put(TMP_ACCOUNT, TMP_ACCOUNT.name());
+      tableNames.put(TMP_TRANSACTION, TMP_TRANSACTION.name());
+
+      //
+      //
+      migration.markErrors();
+      //
+      //
+    }
+    List<Account> accountList = accountTestDao.get().getAccountList(tableNames.get(TMP_ACCOUNT));
+    List<Transaction> transactionList = accountTestDao.get().getTransactionList(tableNames.get(TMP_TRANSACTION));
+
+    assertThat(accountList).hasSize(accounts.size());
+    assertThat(transactionList).hasSize(transactions.size());
+
+    for(int i = 0; i < accountList.size(); i++) {
+      Account target = accountList.get(i);
+      Account assertion = accounts.get(i);
+
+      if(assertion.client_id == null || assertion.account_number == null)
+        assertThat(target.error).isNotNull();
+      else
+        assertThat(target.error).isNull();
+    }
+
+    for(int i = 0; i < transactionList.size(); i++) {
+      Transaction target = transactionList.get(i);
+      Transaction assertion = transactions.get(i);
+
+      if(assertion.account_number == null)
+        assertThat(target.error).isNotNull();
+      else
+        assertThat(target.error).isNull();
+    }
+
+    for(String tableName: tableNames.values())
+      clientTestDao.get().dropTable(tableName);
+  }
+
 
   @Test
   void upsertIntoDbValidRowsCiaTest() {
@@ -240,10 +358,6 @@ public class MigrationRegisterImplTest extends ParentTestNg {
   }
 
 
-  @Test
-  void markErrorsFrsTest() {
-    throw new NotImplementedException();
-  }
 
   @Test
   void upsertIntoDbValidRowsFrsTest() {
@@ -256,18 +370,20 @@ public class MigrationRegisterImplTest extends ParentTestNg {
   }
 
 
-  @SuppressWarnings("unused")
-  void makeInvalidRows(List<ClientDetail> list, int invalidRows) {
-    if (invalidRows > list.size())
-      throw new IllegalArgumentException();
 
-    //TODO make invalid
-    throw new NotImplementedException();
-  }
 
+//////////////////////////////////////////////////////////////
+
+@SuppressWarnings("unused")
+void makeInvalidRows(List<ClientDetail> list, int invalidRows) {
+  if (invalidRows > list.size())
+    throw new IllegalArgumentException();
+
+  //TODO make invalid
+  throw new NotImplementedException();
+}
 
   private static SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
-
 
   private File generateFrs(List<Account> accounts, List<Transaction> transactions) throws IOException {
     File file = new File(Modules.dbDir() + "/build/temp/file.json.txt");
@@ -292,7 +408,7 @@ public class MigrationRegisterImplTest extends ParentTestNg {
     return file;
   }
 
-  private File genereateCia(List<ClientDetail> list) throws Exception {
+  private File genereteCia(List<ClientDetail> list) throws Exception {
 
     DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
     DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -314,7 +430,8 @@ public class MigrationRegisterImplTest extends ParentTestNg {
       client.appendChild(createElement(doc, "name", detail.name));
       client.appendChild(createElement(doc, "surname", detail.surname));
       client.appendChild(createElement(doc, "patronymic", detail.patronymic));
-      client.appendChild(createElement(doc, "birth", dateFormatter.format(detail.birthDate)));
+      if(detail.birthDate != null)
+        client.appendChild(createElement(doc, "birth", dateFormatter.format(detail.birthDate)));
       client.appendChild(createElement(doc, "gender", detail.gender.toString()));
       client.appendChild(createElement(doc, "charm", detail.charm));
 
@@ -471,4 +588,12 @@ public class MigrationRegisterImplTest extends ParentTestNg {
     return dateFormat.format(date) + "T" + timeFormat.format(date);
   }
 
+
+  private void dropTempTables(){
+    clientTestDao.get().dropTable(TMP_CLIENT.name());
+    clientTestDao.get().dropTable(TMP_ADDRESS.name());
+    clientTestDao.get().dropTable(TMP_PHONE.name());
+    clientTestDao.get().dropTable(TMP_ACCOUNT.name());
+    clientTestDao.get().dropTable(TMP_TRANSACTION.name());
+  }
 }
