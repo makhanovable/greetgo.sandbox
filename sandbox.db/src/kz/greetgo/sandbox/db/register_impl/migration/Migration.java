@@ -7,12 +7,7 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.sql.BatchUpdateException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +22,7 @@ public abstract class Migration {
 
   protected Connection connection;
 
+  // FIXME: 3/19/18 Закончи с кодом енума
   @SuppressWarnings("WeakerAccess")
   protected Map<TmpTableName, String> tableNames = new HashMap<>();
 
@@ -49,20 +45,20 @@ public abstract class Migration {
 
     logger.info("STARTED DATE,TIME: " + DateUtils.getDateWithTimeString(new Date()));
 
-    String MigrationStatus = "STARTED";
+    String migrationStatus = "STARTED";
     try {
       createTempTablesWithLogging();
       parseFileAndUploadToTempTablesWithLogging();
       markErrorsAndUpsertIntoDbValidRowsWithLogging();
       loadErrorsAndWriteWithLogging();
 
-      MigrationStatus = "MIGRATED.";
+      migrationStatus = "MIGRATED";
     } catch (Exception e) {
-      MigrationStatus = "FAILED";
+      migrationStatus = "FAILED";
       throw e;
     } finally {
       logger.info("FILE FINISHED DATE,TIME: " + DateUtils.getDateWithTimeString(new Date()));
-      logger.info("FILE MIGRATION STATUS: " + MigrationStatus);
+      logger.info("FILE MIGRATION STATUS: " + migrationStatus);
       logger.info("///////////////////////////////////////////////////////////////");
 
     }
@@ -109,8 +105,9 @@ public abstract class Migration {
 
   @SuppressWarnings("WeakerAccess")
   protected void execSql(String sql) throws SQLException {
-    for (TmpTableName tmpTableName : tableNames.keySet()) {
-      sql = sql.replaceAll(tmpTableName.name(), tableNames.get(tmpTableName));
+
+    for (Map.Entry<TmpTableName, String> tmpTableName : tableNames.entrySet()) {
+      sql = sql.replace(tmpTableName.getKey().code, tmpTableName.getValue());
     }
 
     try (Statement statement = connection.createStatement()) {
@@ -155,6 +152,8 @@ public abstract class Migration {
     return 50000;
   }
 
+
+  // FIXME: 3/19/18 проверить используется ли буфферед райтер
   @SuppressWarnings("WeakerAccess")
   protected void writeErrors(String[] columns, String tableName, Writer writer) throws SQLException, IOException {
     String sql = getErrorSql(columns, tableName);

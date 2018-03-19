@@ -64,6 +64,7 @@ public class FrsParser implements AutoCloseable {
 
     int index = 1;
     //JsonObject::get return Null if no such member exists.
+    // FIXME: 3/19/18 Если вернет нулл, то выкинет NullPointerException
     String type = object.get("type").getAsString();
 
     if ("new_account".equals(type)) {

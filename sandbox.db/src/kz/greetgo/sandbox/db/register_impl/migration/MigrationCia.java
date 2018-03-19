@@ -5,20 +5,13 @@ import kz.greetgo.sandbox.db.util.DateUtils;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.io.BufferedWriter;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Date;
 
-
 import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationStatus.*;
-import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_ADDRESS;
-import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_CLIENT;
-import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_PHONE;
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.*;
 
 
 public class MigrationCia extends Migration {
@@ -209,6 +202,10 @@ public class MigrationCia extends Migration {
 
   }
 
+
+  public static void main(String[] args) {
+    System.out.println("select * from #{{TMP_CLIENT}}".replace("#{{TMP_CLIENT}}", "client"));
+  }
 
 }
 

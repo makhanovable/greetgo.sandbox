@@ -54,7 +54,6 @@ public class MigrationRegisterImpl implements MigrationRegister {
       doMigration();
     } finally {
       isMigrationGoingOn.set(false);
-
     }
 
   }
