@@ -148,8 +148,7 @@ public abstract class Migration {
   public static String getFrsFileNamePattern() {
     return "from_frs_(.*).json_row.txt.tar.bz2";
   }
-
-
+  
   @SuppressWarnings("WeakerAccess")
   public static int getMaxBatchSize() {
     return 50000;
