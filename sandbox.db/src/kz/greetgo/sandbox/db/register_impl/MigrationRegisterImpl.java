@@ -59,7 +59,7 @@ public class MigrationRegisterImpl implements MigrationRegister {
   }
 
   private void doMigration() throws Exception {
-    
+
     Date started = new Date();
     if (logger.isInfoEnabled()) {
       String date = DateUtils.getDateWithTimeString(started);
@@ -70,7 +70,7 @@ public class MigrationRegisterImpl implements MigrationRegister {
     }
 
     @SuppressWarnings("DuplicateAlternationBranch")
-    Pattern migrationFilePattern = Pattern.compile("(" + getCiaFileNamePattern() + ")|(" + getFrsFileNamePattern() + ")");
+    Pattern migrationFilePattern = getOrPattern(getCiaFileNamePattern(), getFrsFileNamePattern());
     List<String> files = getFileNameList(migrationFilePattern, sshConfigBeanGetter.get());
 
     DbConfig dbConfig = dbConfigBeanGetter.get();
@@ -205,4 +205,9 @@ public class MigrationRegisterImpl implements MigrationRegister {
 
     return config;
   }
+
+  private Pattern getOrPattern(String... args) {
+    return Pattern.compile("(" + String.join(")|(", args) + ")");
+  }
+
 }
