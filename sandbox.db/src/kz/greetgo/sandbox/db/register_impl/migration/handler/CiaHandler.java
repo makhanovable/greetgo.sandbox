@@ -28,7 +28,6 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
   private Connection connection;
   private Map<TmpTableName, String> tableNames;
 
-  //  private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
   private IdGenerator idGenerator;
 
 
@@ -64,20 +63,20 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
 
   private void initPreparedStatements() throws SQLException {
     @SuppressWarnings("SqlResolve")
-    String insertClient = "INSERT INTO TMP_CLIENT (id, cia_id, name, surname, patronymic, gender, birthDate, charm) VALUES " +
+    String insertClient = "INSERT INTO " + TMP_CLIENT + " (id, cia_id, name, surname, patronymic, gender, birthDate, charm) VALUES " +
       "(?, ?, ?, ?, ?, ?, ?, ?)";
 
     @SuppressWarnings({"SqlResolve"})
-    String insertAddr = "INSERT INTO TMP_ADDRESS (client_id, type, street, house, flat) VALUES " +
+    String insertAddr = "INSERT INTO " + TMP_ADDRESS + " (client_id, type, street, house, flat) VALUES " +
       "(?, ?, ?, ?, ?)";
 
     @SuppressWarnings({"SqlResolve"})
-    String insertPhone = "INSERT INTO TMP_PHONE (client_id, number, type) VALUES " +
+    String insertPhone = "INSERT INTO " + TMP_PHONE + " (client_id, number, type) VALUES " +
       "(?, ?, ?)";
 
-    insertClient = insertClient.replaceAll(TMP_CLIENT.name(), tableNames.get(TMP_CLIENT));
-    insertAddr = insertAddr.replaceAll(TMP_ADDRESS.name(), tableNames.get(TMP_ADDRESS));
-    insertPhone = insertPhone.replaceAll(TMP_PHONE.name(), tableNames.get(TMP_PHONE));
+    insertClient = insertClient.replace(TMP_CLIENT.code, tableNames.get(TMP_CLIENT));
+    insertAddr = insertAddr.replace(TMP_ADDRESS.code, tableNames.get(TMP_ADDRESS));
+    insertPhone = insertPhone.replace(TMP_PHONE.code, tableNames.get(TMP_PHONE));
 
     clientPS = connection.prepareStatement(insertClient);
     addrPS = connection.prepareStatement(insertAddr);
@@ -236,15 +235,6 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
     phonePS.clearBatch();
   }
 
-//  private Date tryParseDate(String date) {
-//    if (date == null)
-//      return null;
-//    try {
-//      return dateFormatter.parse(date);
-//    } catch (ParseException e) {
-//      return null;
-//    }
-//  }
 
   @Override
   public void startDocument() throws SAXException {}
