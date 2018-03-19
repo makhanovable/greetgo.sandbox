@@ -12,8 +12,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Date;
 
-import static kz.greetgo.sandbox.db.register_impl.migration.MigrationStatuses.NOT_READY;
-import static kz.greetgo.sandbox.db.register_impl.migration.MigrationStatuses.TO_INSERT;
+import static kz.greetgo.sandbox.db.register_impl.migration.MigrationStatus.NOT_READY;
+import static kz.greetgo.sandbox.db.register_impl.migration.MigrationStatus.TO_INSERT;
 
 public class MigrationFrs extends Migration {
 
@@ -61,11 +61,9 @@ public class MigrationFrs extends Migration {
 
     execSql(accountTable);
     execSql(transactionTable);
+    
+    execSql(String.format("CREATE INDEX transaction_idx_%s ON TMP_TRANSACTION (mig_status);", config.id));
 
-//    execSql(String.format("CREATE INDEX account_idx_%s ON TMP_ACCOUNT (mig_status);", config.id));
-//    execSql(String.format("CREATE INDEX transaction_idx_%s ON TMP_TRANSACTION (mig_status);", config.id));
-//
-//    execSql(String.format("CREATE INDEX acc_number_idx_%s ON TMP_TRANSACTION (account_number);", config.id));
 
   }
 
@@ -88,13 +86,13 @@ public class MigrationFrs extends Migration {
   protected void markErrorsAndUpsertIntoDbValidRowsImpl() throws SQLException {
 
     //////ACCOUNTS
-//    execSql("update TMP_ACCOUNT tmp\n" +
-//      "  SET error='account number must to be not null'\n" +
-//      "  WHERE tmp.account_number ISNULL");
-//
-//    execSql("update TMP_ACCOUNT tmp\n" +
-//      "  SET error='client must to be not null'\n" +
-//      "  WHERE tmp.client_id ISNULL");
+    execSql("update TMP_ACCOUNT tmp\n" +
+      "  SET error='account number must to be not null'\n" +
+      "  WHERE tmp.account_number ISNULL");
+
+    execSql("update TMP_ACCOUNT tmp\n" +
+      "  SET error='client must to be not null'\n" +
+      "  WHERE tmp.client_id ISNULL");
 
     //if client exist and no error then ready to insert
 //    execSql("update TMP_ACCOUNT tmp\n" +
@@ -157,9 +155,8 @@ public class MigrationFrs extends Migration {
       "  WHERE c.mig_id='%s' ;\n", config.id));
 
 
-//    execSql(String.format("DROP INDEX account_idx_%s;", config.id));
-//    execSql(String.format("DROP INDEX transaction_idx_%s;", config.id));
-//    execSql(String.format("DROP INDEX acc_number_idx_%s;", config.id));
+    execSql(String.format("DROP INDEX transaction_idx_%s;", config.id));
+
 
   }
 

@@ -15,7 +15,7 @@ import java.sql.SQLException;
 import java.util.Date;
 
 
-import static kz.greetgo.sandbox.db.register_impl.migration.MigrationStatuses.*;
+import static kz.greetgo.sandbox.db.register_impl.migration.MigrationStatus.*;
 
 
 public class MigrationCia extends Migration {
@@ -75,9 +75,7 @@ public class MigrationCia extends Migration {
     execSql(phoneTable);
 
     execSql(String.format("CREATE INDEX client_mig_%s ON TMP_CLIENT (mig_status);", config.id));
-//    execSql(String.format("CREATE INDEX client_id_%s ON TMP_CLIENT (id);", config.id));
-//    execSql(String.format("CREATE INDEX addr_%s ON TMP_ADDRESS (client_id);", config.id));
-//    execSql(String.format("CREATE INDEX phone_id_%s ON TMP_PHONE (client_id);", config.id));
+
 
   }
 
@@ -192,7 +190,7 @@ public class MigrationCia extends Migration {
         "  SET actual=true\n" +
         "  WHERE c.mig_id='%s';\n", config.id));
 
-//    execSql(String.format("DROP INDEX client_idx_%s;", config.id));
+    execSql(String.format("DROP INDEX client_mig_%s;", config.id));
   }
 
   @Override

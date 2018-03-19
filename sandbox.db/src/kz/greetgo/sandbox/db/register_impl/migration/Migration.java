@@ -86,8 +86,6 @@ public abstract class Migration {
     } catch (BatchUpdateException bux) {
       logger.fatal("parseFileAndUploadToTempTables", bux.getNextException());
       throw bux.getNextException();
-    } catch (Exception e) {
-      throw e;
     }
   }
 
@@ -155,10 +153,6 @@ public abstract class Migration {
   @SuppressWarnings("WeakerAccess")
   public static int getMaxBatchSize() {
     return 50000;
-  }
-
-  public static int getFileReadBufferSize() {
-    return 32 * 1024;
   }
 
   @SuppressWarnings("WeakerAccess")

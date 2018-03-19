@@ -52,12 +52,13 @@ public class MigrationRegisterImpl implements MigrationRegister {
     isMigrationGoingOn.set(true);
 
     Date started = new Date();
-    String date = DateUtils.getDateWithTimeString(started);
-
-    logger.info("##########################################################");
-    logger.info("MIGRATION STARTED ");
-    logger.info("STARTED DATE,TIME: " + date);
-    logger.info("##########################################################");
+    if (logger.isInfoEnabled()) {
+      String date = DateUtils.getDateWithTimeString(started);
+      logger.info("##########################################################");
+      logger.info("MIGRATION STARTED ");
+      logger.info("STARTED DATE,TIME: " + date);
+      logger.info("##########################################################");
+    }
 
     @SuppressWarnings("DuplicateAlternationBranch")
     Pattern migrationFilePattern = Pattern.compile("(" + getCiaFileNamePattern() + ")|(" + getFrsFileNamePattern() + ")");
@@ -98,11 +99,14 @@ public class MigrationRegisterImpl implements MigrationRegister {
       files = getFileNameList(migrationFilePattern, sshConfigBeanGetter.get());
     }
 
-    String durationDateFormat = DateUtils.getTimeDifferenceStringFormat(new Date().getTime(), started.getTime());
-    logger.info("##########################################################");
-    logger.info("MIGRATION FINISHED ");
-    logger.info("TOTAL MIGRATION DURATION: " + durationDateFormat);
-    logger.info("##########################################################");
+    if (logger.isInfoEnabled()) {
+
+      String durationDateFormat = DateUtils.getTimeDifferenceStringFormat(new Date().getTime(), started.getTime());
+      logger.info("##########################################################");
+      logger.info("MIGRATION FINISHED ");
+      logger.info("TOTAL MIGRATION DURATION: " + durationDateFormat);
+      logger.info("##########################################################");
+    }
 
 
     isMigrationGoingOn.set(false);
@@ -117,8 +121,10 @@ public class MigrationRegisterImpl implements MigrationRegister {
     config.id = idGenerator.newId();
     config.originalFileName = fileName;
 
-    logger.info("FILENAME: " + config.originalFileName);
-    logger.info("ID: " + config.id);
+    if (logger.isInfoEnabled()) {
+      logger.info("FILENAME: " + config.originalFileName);
+      logger.info("ID: " + config.id);
+    }
 
     String tempFileName = Modules.dbDir() + "/build/migration/" + fileName;
 
@@ -126,6 +132,7 @@ public class MigrationRegisterImpl implements MigrationRegister {
     //noinspection ResultOfMethodCallIgnored
     copiedFile.getParentFile().mkdirs();
 
+    Long copyStartTime = System.currentTimeMillis();
     try (SSHConnection sshConnection = new SSHConnection(sshConfigBeanGetter.get())) {
 
       if (sshConnection.isFileExist(fileName)) {
@@ -134,12 +141,14 @@ public class MigrationRegisterImpl implements MigrationRegister {
         sshConnection.renameFileName(fileName, config.afterRenameFileName);
 
         if (sshConnection.isFileExist(config.afterRenameFileName)) {
-          logger.info("copying file");
+          if (logger.isInfoEnabled())
+            logger.info("copying file");
           try (OutputStream out = new FileOutputStream(copiedFile)) {
             sshConnection.downloadFile(config.afterRenameFileName, out);
           }
         } else {
-          logger.info("file " + config.afterRenameFileName + " no longer exist after renamed");
+          if (logger.isInfoEnabled())
+            logger.info("file " + config.afterRenameFileName + " no longer exist after renamed");
           return null;
         }
       } else {
@@ -150,8 +159,8 @@ public class MigrationRegisterImpl implements MigrationRegister {
 
     String decompressedFilePath = copiedFile.getPath().replaceAll(".bz2", "");
     File decompressedFile = new File(decompressedFilePath);
-    logger.info("decompressing file");
-    Long decompresStartTime = System.currentTimeMillis();
+    if (logger.isInfoEnabled())
+      logger.info("decompressing file");
     FileUtils.decompressFile(copiedFile, decompressedFile);
     if (!decompressedFile.exists()) {
       if (logger.isInfoEnabled())
@@ -159,21 +168,22 @@ public class MigrationRegisterImpl implements MigrationRegister {
       return null;
     }
     if (logger.isInfoEnabled()) {
-      String duration = DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), decompresStartTime);
-      logger.info("decompress duration: " + duration);
+      String duration = DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), copyStartTime);
+      logger.info("copy, decompress, untar duration: " + duration);
     }
 
     if (!copiedFile.delete()) {
-      if (logger.isInfoEnabled())
-        logger.info("could not delete file " + copiedFile.getPath());
+      logger.warn("could not delete file " + copiedFile.getPath());
     }
 
-    logger.info("untaring file");
+    if (logger.isInfoEnabled())
+      logger.info("untaring file");
     String untarred = decompressedFilePath.replaceAll(".tar", "");
     File untareedFile = new File(untarred);
     FileUtils.untarFile(decompressedFile, untareedFile);
     if (!untareedFile.exists()) {
-      logger.info("cant untar file");
+      if (logger.isInfoEnabled())
+        logger.info("cant untar file");
       return null;
     }
 
