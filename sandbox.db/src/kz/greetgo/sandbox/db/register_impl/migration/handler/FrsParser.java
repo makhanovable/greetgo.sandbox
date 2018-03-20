@@ -47,10 +47,10 @@ public class FrsParser implements AutoCloseable {
 
   private void initPreparedStatements() throws SQLException {
     @SuppressWarnings("SqlResolve")
-    String insertAccount = "INSERT INTO " + TMP_ACCOUNT + " (id, client_id, account_number, registeredAt) VALUES " +
+    String insertAccount = "INSERT INTO " + TMP_ACCOUNT.code + " (id, client_id, account_number, registeredAt) VALUES " +
       "(?, ?, ?, ?)";
     @SuppressWarnings("SqlResolve")
-    String insertTransaction = "INSERT INTO " + TMP_TRANSACTION + " (id, account_number, money, finished_at, type) VALUES " +
+    String insertTransaction = "INSERT INTO " + TMP_TRANSACTION.code + " (id, account_number, money, finished_at, type) VALUES " +
       "(?, ?, ?, ?, ?)";
 
     insertAccount = insertAccount.replace(TMP_ACCOUNT.code, tableNames.get(TMP_ACCOUNT));

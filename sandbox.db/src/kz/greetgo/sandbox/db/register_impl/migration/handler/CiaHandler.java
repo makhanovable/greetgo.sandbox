@@ -63,15 +63,15 @@ public class CiaHandler extends DefaultHandler implements AutoCloseable {
 
   private void initPreparedStatements() throws SQLException {
     @SuppressWarnings("SqlResolve")
-    String insertClient = "INSERT INTO " + TMP_CLIENT + " (id, cia_id, name, surname, patronymic, gender, birthDate, charm) VALUES " +
+    String insertClient = "INSERT INTO " + TMP_CLIENT.code + " (id, cia_id, name, surname, patronymic, gender, birthDate, charm) VALUES " +
       "(?, ?, ?, ?, ?, ?, ?, ?)";
 
     @SuppressWarnings({"SqlResolve"})
-    String insertAddr = "INSERT INTO " + TMP_ADDRESS + " (client_id, type, street, house, flat) VALUES " +
+    String insertAddr = "INSERT INTO " + TMP_ADDRESS.code + " (client_id, type, street, house, flat) VALUES " +
       "(?, ?, ?, ?, ?)";
 
     @SuppressWarnings({"SqlResolve"})
-    String insertPhone = "INSERT INTO " + TMP_PHONE + " (client_id, number, type) VALUES " +
+    String insertPhone = "INSERT INTO " + TMP_PHONE.code + " (client_id, number, type) VALUES " +
       "(?, ?, ?)";
 
     insertClient = insertClient.replace(TMP_CLIENT.code, tableNames.get(TMP_CLIENT));
