@@ -1,8 +1,10 @@
 package kz.greetgo.sandbox.db.test.model;
 
 public class Transaction {
+  public String id;
   public String type;
   public String finished_at;
+  public String money;
   public String transaction_type;
   public String account_number;
   public String error;

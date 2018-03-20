@@ -12,10 +12,5 @@ public enum TmpTableName {
   private TmpTableName(String code) {
     this.code = code;
   }
-
-  @Override
-  public String toString() {
-    return code;
-  }
-
+  
 }

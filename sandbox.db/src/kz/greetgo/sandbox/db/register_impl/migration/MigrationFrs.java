@@ -12,6 +12,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Date;
 
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationError.*;
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationStatus.HAS_ACCOUNT;
 import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationStatus.NOT_READY;
 import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationStatus.TO_INSERT;
 import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_ACCOUNT;
@@ -35,7 +37,7 @@ public class MigrationFrs extends Migration {
     tableNames.put(TMP_ACCOUNT, account);
     tableNames.put(TMP_TRANSACTION, transaction);
 
-    String accountTable = "create table " + TMP_ACCOUNT + " (\n" +
+    String accountTable = "create table " + TMP_ACCOUNT.code + " (\n" +
       "  no bigserial,\n" +
       "  id varchar(32),\n" +
       "  client_id varchar(32),\n" +
@@ -48,7 +50,7 @@ public class MigrationFrs extends Migration {
       ")";
 
 
-    String transactionTable = "create table " + TMP_TRANSACTION + " (\n" +
+    String transactionTable = "create table " + TMP_TRANSACTION.code + " (\n" +
       "  no bigserial,\n" +
       "  id varchar(35),\n" +
       "  account_number varchar(35),\n" +
@@ -64,7 +66,7 @@ public class MigrationFrs extends Migration {
     execSql(accountTable);
     execSql(transactionTable);
 
-    execSql(String.format("CREATE INDEX transaction_idx_%s ON " + TMP_TRANSACTION + " (mig_status);", config.id));
+    execSql(String.format("CREATE INDEX transaction_idx_%s ON " + TMP_TRANSACTION.code + " (mig_status);", config.id));
 
 
   }
@@ -83,33 +85,40 @@ public class MigrationFrs extends Migration {
 
   }
 
+
   @Override
   protected void markErrorRows() throws SQLException {
-    execSql("update " + TMP_ACCOUNT + " tmp\n" +
-      "  SET error='account number must to be not null'\n" +
+    execSql("update " + TMP_ACCOUNT.code + " tmp\n" +
+      "  SET error='" + ACCOUNT_NULL_ERROR.message + "'\n" +
       "  WHERE tmp.account_number ISNULL");
 
-    execSql("update " + TMP_ACCOUNT + " tmp\n" +
-      "  SET error='client must to be not null'\n" +
+    execSql("update " + TMP_ACCOUNT.code + " tmp\n" +
+      "  SET error='" + CLIENT_ID_NULL_ERROR.message + "'\n" +
       "  WHERE tmp.client_id ISNULL");
 
-    execSql("UPDATE " + TMP_TRANSACTION + " tmp\n" +
-      "  SET mig_status =" + TO_INSERT + "\n" +
-      "  FROM " + TMP_ACCOUNT + " ca\n" +
+    execSql("UPDATE " + TMP_TRANSACTION.code + " tmp\n" +
+      "  SET mig_status =" + HAS_ACCOUNT + "\n" +
+      "  FROM " + TMP_ACCOUNT.code + " ca\n" +
       "  WHERE ca.error ISNULL AND ca.account_number=tmp.account_number\n");
 
-    execSql("UPDATE " + TMP_TRANSACTION + " tmp\n" +
-      "  SET mig_status =" + TO_INSERT + "\n" +
+    execSql("UPDATE " + TMP_TRANSACTION.code + " tmp\n" +
+      "  SET mig_status =" + HAS_ACCOUNT + "\n" +
       "  FROM clientaccount ca\n" +
       "  WHERE tmp.mig_status=" + NOT_READY + " AND ca.number=tmp.account_number\n");
 
-    execSql("update " + TMP_TRANSACTION + " tmp\n" +
-      "  SET error='transaction must have account'\n" +
+    execSql("update " + TMP_TRANSACTION.code + " tmp\n" +
+      "  SET error='" + TRANSACTION_ACCOUNT_NOT_EXIST_ERROR.message + "'\n" +
       "  WHERE tmp.mig_status=" + NOT_READY);
   }
 
 
-  private void insertValidAccountRows() throws SQLException {
+  @Override
+  protected void upsertIntoDbValidRows() throws SQLException {
+
+    execSql("UPDATE " + TMP_TRANSACTION.code + " tmp\n" +
+      "  SET mig_status =" + TO_INSERT + "\n" +
+      "  WHERE tmp.error ISNULL\n");
+
     //if client exist and no error then ready to insert
 //    execSql("update TMP_ACCOUNT tmp\n" +
 //      "  SET mig_status =" + TO_INSERT + "\n" +
@@ -129,29 +138,17 @@ public class MigrationFrs extends Migration {
 //      "  set mig_status =" + TO_INSERT + "\n" +
 //      "  WHERE tmp.mig_status=" + NOT_READY);
 
-
-  }
-
-  private void insertValidTransactionRows() throws SQLException {
-
-
-  }
-
-
-  @Override
-  protected void upsertIntoDbValidRows() throws SQLException {
-
     execSql(String.format("insert into clientaccount (id, client, number, registeredat, actual, mig_id)\n" +
       "  SELECT tmp.id, tmp.client_id, tmp.account_number,\n" +
       "    to_timestamp(tmp.registeredat, 'YYYY-MM-dd\"T\"HH24:MI:SS.MS') as registeredat,\n" +
       "    false as actual,\n" +
       "    '%s'\n" +
-      "  FROM " + TMP_ACCOUNT + " tmp", config.id));
+      "  FROM " + TMP_ACCOUNT.code + " tmp where error ISNULL", config.id));
 
 
     execSql("insert into transactiontype (id, code, name)" +
       "  SELECT distinct on(type) id, id, type\n" +
-      "  FROM " + TMP_TRANSACTION + " tmp" +
+      "  FROM " + TMP_TRANSACTION.code + " tmp" +
       "  WHERE tmp.type NOTNULL\n" +
       "  ON CONFLICT (name) do NOTHING\n");
 
@@ -161,7 +158,7 @@ public class MigrationFrs extends Migration {
       "    cast(replace(tmp.money,'_','') AS REAL),\n" +
       "    to_timestamp(tmp.finished_at, 'YYYY-MM-dd\"T\"HH24:MI:SS.MS') as finished_at,\n" +
       "    type.id\n" +
-      "  FROM " + TMP_TRANSACTION + " tmp\n" +
+      "  FROM " + TMP_TRANSACTION.code + " tmp\n" +
       "    left JOIN transactiontype type on type.name=tmp.type\n" +
       "  WHERE tmp.mig_status=" + TO_INSERT);
 

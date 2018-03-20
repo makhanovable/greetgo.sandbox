@@ -7,6 +7,7 @@ import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
 import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.stand.model.ClientPhoneNumberDot;
+import kz.greetgo.sandbox.db.test.model.Client;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Many;
 import org.apache.ibatis.annotations.Param;
@@ -55,8 +56,12 @@ public interface ClientTestDao {
 
 
   @SuppressWarnings("SameParameterValue")
-  @Select("select id, name, surname, patronymic, birthDate, gender, charm from ${clientTableName}")
-  List<ClientDetail> getDetailList(@Param("clientTableName") String clientTableName);
+  @Select("select cia_id as id, name, surname, patronymic, birthDate, gender, charm from ${clientTableName}")
+  List<ClientDetail> getClientTestList(@Param("clientTableName") String clientTableName);
+
+  @SuppressWarnings("SameParameterValue")
+  @Select("select id, cia_id, name, surname, patronymic, birthDate, gender, charm, error from ${clientTableName}")
+  List<Client> getTempClientList(@Param("clientTableName") String clientTableName);
 
   @Select("select number, type from ${tableName} where client_id=#{id}")
   List<ClientPhoneNumber> getNumberList(@Param("tableName") String tableName, @Param("id") String client);
@@ -114,8 +119,16 @@ public interface ClientTestDao {
     "   );")
   boolean isTableExist(@Param("tableName") String tableName);
 
-  @Insert( "INSERT INTO ${tableName} (id, cia_id, name, surname, patronymic, gender, birthDate, charm) VALUES " +
-    "(#{detail.id}, #{detail.id}, #{detail.name}, #{detail.surname}, #{detail.patronymic}, #{detail.gender}, #{detail.birthDate}, #{detail.charm})")
-  void insertClientDetail(@Param("detail")ClientDetail detail, @Param("tableName")String tableName);
+  @Insert("INSERT INTO ${tableName} (id, cia_id, name, surname, patronymic, gender, birthDate, charm, error) VALUES " +
+    "(#{detail.id}, #{detail.cia_id}, #{detail.name}, #{detail.surname}, #{detail.patronymic}, #{detail.gender}, #{detail.birthDate}, #{detail.charm}, #{detail.error})")
+  void insertClientDetail(@Param("detail") Client detail, @Param("tableName") String tableName);
 
+  @Insert("insert into ${tableName} (client_id, number, type) " +
+    "values (#{phone.client}, #{phone.number}, #{phone.type})")
+  void insertPhoneIntoTemp(@Param("phone") ClientPhoneNumber phone, @Param("tableName") String tableName);
+
+
+  @Insert("insert into ${tableName} (client_id, type, street, house, flat) " +
+    "values (#{addr.client}, #{addr.type}, #{addr.street}, #{addr.house}, #{addr.flat})")
+  void insertAddressIntoTemp(@Param("addr") ClientAddress addr, @Param("tableName") String tableName);
 }

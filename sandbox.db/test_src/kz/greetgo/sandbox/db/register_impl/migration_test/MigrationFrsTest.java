@@ -35,4 +35,8 @@ public class MigrationFrsTest extends MigrationFrs {
   public void markErrors() throws SQLException {
     super.markErrorRows();
   }
+
+  public void upsertIntoTempTables() throws SQLException {
+    super.upsertIntoDbValidRows();
+  }
 }

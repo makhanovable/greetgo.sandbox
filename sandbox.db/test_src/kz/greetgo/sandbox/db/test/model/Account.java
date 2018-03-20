@@ -2,6 +2,7 @@ package kz.greetgo.sandbox.db.test.model;
 
 
 public class Account {
+  public String id;
   public String type;
   public String client_id;
   public String account_number;

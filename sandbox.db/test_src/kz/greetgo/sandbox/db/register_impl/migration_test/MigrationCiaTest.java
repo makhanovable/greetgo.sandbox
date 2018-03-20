@@ -24,8 +24,8 @@ public class MigrationCiaTest extends MigrationCia {
     super.createTempTables();
   }
 
-  public void validateRows() {
-    throw new NotImplementedException();
+  public void validateRows() throws SQLException {
+    super.markErrorRows();
   }
 
   public Map<TmpTableName, String> getTableNames() {

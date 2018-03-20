@@ -17,11 +17,6 @@ public interface AccountTestDao {
     "values (#{id}, #{client}, #{money}, #{number}, #{registeredAt})")
   void insertAccount(ClientAccountDot accountDot);
 
-  @Select("select client_id, account_number, registeredAt as registered_at, error from ${tableName}")
-  List<Account> getAccountList(@Param("tableName") String tableName);
-
-  @Select("select finished_at, type as transaction_type, account_number, error from ${tableName}")
-  List<Transaction> getTransactionList(@Param("tableName") String tableName);
 
   @Select(" create table ${tableName} (\n" +
     "        no bigserial,\n" +
@@ -49,5 +44,24 @@ public interface AccountTestDao {
     ")")
   void createTempTransactionTable(@Param("tableName") String tableName);
 
+  @Insert("insert into ${tableName} (id, client_id, account_number, registeredAt, error) " +
+    "values (#{acc.id}, #{acc.client_id}, #{acc.account_number}, #{acc.registered_at}, #{acc.error})")
+  void insertIntoTempAccount(@Param("acc") Account account, @Param("tableName") String tableName);
 
+  @Insert("insert into ${tableName} (id, account_number, money, finished_at, type, error) " +
+    "values (#{tra.id}, #{tra.account_number}, #{tra.money}, #{tra.finished_at}, #{tra.transaction_type}, #{tra.error} )")
+  void insertIntoTempTransaction(@Param("tra") Transaction transaction, @Param("tableName") String tableName);
+
+  @Select("select id, client_id, account_number, registeredAt as registered_at, error from ${tableName}")
+  List<Account> getTempAccountList(@Param("tableName") String tableName);
+
+  @Select("select finished_at, type as transaction_type, account_number, error from ${tableName}")
+  List<Transaction> getTempTransactionList(@Param("tableName") String tableName);
+
+  @Select("select ${column} from ${tableName}")
+  List<String> getList(@Param("tableName") String tableName, @Param("column") String column);
+
+
+  @Select("TRUNCATE clientaccount cascade; TRUNCATE clientaccounttransaction cascade")
+  void clear();
 }
