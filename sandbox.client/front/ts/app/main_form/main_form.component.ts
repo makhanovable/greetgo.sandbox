@@ -153,8 +153,6 @@ export class MainFormComponent {
 
       // TODO: название переменной. Не забывай называть переменные как я объяснял. *ToSave, *Details, *Record. 
       // Если забыл, спроси.
-      // TODO: при создании записи пользователя на стороне клиента Идентификатор не должен генерироваться. 
-      // Это запрещено! Генерация должна быть на стороне сервера.
       this.httpService.post("/client/addNewClient", {
           clientInfo  : clientInfo,
           clientID : this.addedClientID
