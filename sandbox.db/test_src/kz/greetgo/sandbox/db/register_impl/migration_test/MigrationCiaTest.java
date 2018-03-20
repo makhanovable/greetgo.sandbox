@@ -15,10 +15,6 @@ public class MigrationCiaTest extends MigrationCia {
     super(config, connection);
   }
 
-  @Override
-  public void migrate() {
-    //do nothing
-  }
 
   public void createTempTables() throws SQLException {
     super.createTempTables();

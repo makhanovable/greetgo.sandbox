@@ -4,6 +4,7 @@ import kz.greetgo.sandbox.db.register_impl.migration.MigrationConfig;
 import kz.greetgo.sandbox.db.register_impl.migration.MigrationFrs;
 import kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
@@ -13,11 +14,6 @@ public class MigrationFrsTest extends MigrationFrs {
     super(config, connection);
   }
 
-
-  @Override
-  public void migrate() {
-    //do nothing
-  }
 
   public void ParseAndInsertIntoTempTables() throws Exception {
     super.parseFileAndUploadToTempTables();
@@ -38,5 +34,9 @@ public class MigrationFrsTest extends MigrationFrs {
 
   public void upsertIntoTempTables() throws SQLException {
     super.upsertIntoDbValidRows();
+  }
+
+  public void uploadErrors() throws IOException, SQLException {
+    super.loadErrorsAndWrite();
   }
 }

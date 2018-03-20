@@ -55,7 +55,7 @@ public interface AccountTestDao {
   @Select("select id, client_id, account_number, registeredAt as registered_at, error from ${tableName}")
   List<Account> getTempAccountList(@Param("tableName") String tableName);
 
-  @Select("select finished_at, type as transaction_type, account_number, error from ${tableName}")
+  @Select("select id, finished_at, type as transaction_type, account_number, error from ${tableName}")
   List<Transaction> getTempTransactionList(@Param("tableName") String tableName);
 
   @Select("select ${column} from ${tableName}")

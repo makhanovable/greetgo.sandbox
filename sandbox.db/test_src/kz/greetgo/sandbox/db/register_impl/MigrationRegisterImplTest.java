@@ -29,7 +29,6 @@ import org.testng.annotations.Test;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -37,19 +36,28 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationError.*;
 import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public class MigrationRegisterImplTest extends ParentTestNg {
 
   @SuppressWarnings("WeakerAccess")
@@ -66,12 +74,6 @@ public class MigrationRegisterImplTest extends ParentTestNg {
 
   @SuppressWarnings("WeakerAccess")
   public final Logger logger = Logger.getLogger("MIGRATION.TEST");
-
-  @Test
-  void test() throws Exception {
-    //TODO delete
-//    this.migrationRegister.get().migrate();
-  }
 
   @Test
   void createTempTableCiaFrsTest() throws Exception {
@@ -119,7 +121,7 @@ public class MigrationRegisterImplTest extends ParentTestNg {
 
     int numberOfClients = 10;
     List<Client> list = rndClients(numberOfClients);
-    File testData = genereteCia(list);
+    File testData = generateCia(list);
 
     MigrationConfig config = new MigrationConfig();
     config.toMigrate = testData;
@@ -180,7 +182,7 @@ public class MigrationRegisterImplTest extends ParentTestNg {
 
     int numberOfAccounts = 10;
     List<Account> accounts = rndAccounts(numberOfAccounts);
-    List<Transaction> transactions = rndTransactions(accounts);
+    List<Transaction> transactions = rndTransactions(accounts, 2);
 
     File testData = generateFrs(accounts, transactions);
 
@@ -224,67 +226,48 @@ public class MigrationRegisterImplTest extends ParentTestNg {
   @Test
   void markErrorsCiaTest() throws Exception {
     dropTempTables();
+    clientTestDao.get().clear();
     clientTestDao.get().createTempClientTable(TMP_CLIENT.name());
     clientTestDao.get().createTempPhoneTable(TMP_PHONE.name());
     clientTestDao.get().createTempAddressTable(TMP_ADDRESS.name());
 
     final int numberOfClients = 100;
     List<Client> clients = rndClients(numberOfClients);
-    Map<String, List<MigrationError>> clientToError = new HashMap<>();
 
-    final int errorRows = 30;
-    for (int i = 0; i < errorRows; i++) {
-      Client detail = clients.get(RND.plusInt(clients.size()));
+    Map<String, MigrationError> clientToError = new HashMap<>();
 
-      MigrationError err = RND.someEnum(MigrationError.values());
-      switch (err) {
-        case NAME_ERROR:
-          detail.name = null;
-          break;
-        case SURNAME_ERROR:
-          detail.surname = null;
-          break;
-        case BIRTH_NULL_ERROR:
-          detail.birthDate = null;
-          break;
-        case AGE_ERROR:
-          detail.birthDate = dateFormat.format(RND.dateYears(-1000, -200));
-          break;
-        case NAME_EMPTY_ERROR:
-          detail.name = "   ";
-          break;
-        case SURNAME_EMPTY_ERROR:
-          detail.surname = "      ";
-          break;
-        case DATE_INVALID_ERROR:
-          detail.birthDate = "sdczsdcsd";
-          break;
-        case CHARM_ERROR:
-          detail.charm = null;
-          break;
-        case CIA_ID_ERROR:
-          detail.cia_id = null;
-          break;
-        default:
-          err = null;
-          break;
-      }
-      //noinspection ConstantConditions
-      if (err != null) {
-        if (clientToError.containsKey(detail.id)) {
-          clientToError.get(detail.id).add(err);
-        } else {
-          List<MigrationError> list = new ArrayList<>();
-          list.add(err);
-          clientToError.put(detail.id, list);
-        }
-      }
-    }
+    Client errorRow1 = clients.get(1);
+    Client errorRow2 = clients.get(2);
+    Client errorRow3 = clients.get(3);
+    Client errorRow4 = clients.get(4);
+    Client errorRow5 = clients.get(5);
+    Client errorRow6 = clients.get(6);
+    Client errorRow7 = clients.get(7);
+    Client errorRow8 = clients.get(8);
+    Client errorRow9 = clients.get(9);
+
+    errorRow1.name = null;
+    clientToError.put(errorRow1.id, NAME_ERROR);
+    errorRow2.surname = null;
+    clientToError.put(errorRow2.id, SURNAME_ERROR);
+    errorRow3.birthDate = null;
+    clientToError.put(errorRow3.id, BIRTH_NULL_ERROR);
+    errorRow4.birthDate = dateFormat.format(RND.dateYears(-1000, -200));
+    clientToError.put(errorRow4.id, AGE_ERROR);
+    errorRow5.name = "   ";
+    clientToError.put(errorRow5.id, NAME_EMPTY_ERROR);
+    errorRow6.surname = "      ";
+    clientToError.put(errorRow6.id, SURNAME_EMPTY_ERROR);
+    errorRow7.birthDate = "sdczsdcsd";
+    clientToError.put(errorRow7.id, DATE_INVALID_ERROR);
+    errorRow8.charm = null;
+    clientToError.put(errorRow8.id, CHARM_ERROR);
+    errorRow9.cia_id = null;
+    clientToError.put(errorRow9.id, CIA_ID_ERROR);
 
     insertClients(clients);
 
     MigrationConfig config = new MigrationConfig();
-
     Map<TmpTableName, String> tableNames;
     try (Connection connection = DbUtils.getPostgresConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password())) {
 
@@ -305,11 +288,8 @@ public class MigrationRegisterImplTest extends ParentTestNg {
     assertThat(result).hasSize(numberOfClients);
     for (Client client : result) {
       if (clientToError.containsKey(client.id)) {
-        List<MigrationError> errs = clientToError.get(client.id);
-        boolean match = false;
-        for (MigrationError err : errs)
-          match = match || err.message.equals(client.error);
-        assertThat(match).isTrue();
+        MigrationError err = clientToError.get(client.id);
+        assertThat(client.error).isEqualTo(err.message);
       } else {
         assertThat(client.error).isNull();
       }
@@ -323,29 +303,26 @@ public class MigrationRegisterImplTest extends ParentTestNg {
     accountTestDao.get().createTempAccountTable(TMP_ACCOUNT.name());
     accountTestDao.get().createTempTransactionTable(TMP_TRANSACTION.name());
 
-    final int numberOfAccounts = 100;
+    final int numberOfAccounts = 10;
     List<Account> accounts = rndAccounts(numberOfAccounts);
-    List<Transaction> transactions = rndTransactions(accounts);
+    List<Transaction> transactions = rndTransactions(accounts, 1);
 
     Map<String, MigrationError> accountToError = new HashMap<>();
     Map<String, MigrationError> transactToError = new HashMap<>();
 
+    Account account1 = accounts.get(1);
+    account1.client_id = null;
+    accountToError.put(account1.id, CLIENT_ID_NULL_ERROR);
+    for (Transaction transaction : account1.transactionList) {
+      transactToError.put(transaction.id, TRANSACTION_ACCOUNT_NOT_EXIST_ERROR);
+    }
 
-    Account account1 = accounts.get(RND.plusInt(accounts.size()));
-    Account account2 = accounts.get(RND.plusInt(accounts.size()));
+    Account account2 = accounts.get(2);
+    account2.account_number = "brokenString";
 
-    transactToError.put(account1.account_number, TRANSACTION_ACCOUNT_NOT_EXIST_ERROR);
-    transactToError.put(account2.account_number, TRANSACTION_ACCOUNT_NOT_EXIST_ERROR);
-
-    account1.account_number = null;
-    account2.client_id = null;
-    accountToError.put(account1.id, ACCOUNT_NULL_ERROR);
-    accountToError.put(account2.id, CLIENT_ID_NULL_ERROR);
-
-    Transaction tr = transactions.get(RND.plusInt(transactions.size()));
-    tr.account_number = RND.str(10);
-    transactToError.put(tr.account_number, TRANSACTION_ACCOUNT_NOT_EXIST_ERROR);
-
+    for (Transaction transaction : account2.transactionList) {
+      transactToError.put(transaction.id, TRANSACTION_ACCOUNT_NOT_EXIST_ERROR);
+    }
 
     for (Account account : accounts)
       accountTestDao.get().insertIntoTempAccount(account, TMP_ACCOUNT.name());
@@ -384,16 +361,16 @@ public class MigrationRegisterImplTest extends ParentTestNg {
       }
     }
 
-    for (Transaction transaction : transactionList) {
-      if (transactToError.containsKey(transaction.account_number)) {
-        assertThat(transaction.error).isEqualTo(TRANSACTION_ACCOUNT_NOT_EXIST_ERROR.message);
+    for (Transaction target : transactionList) {
+      if (transactToError.containsKey(target.id)) {
+        assertThat(target.error).isEqualTo(TRANSACTION_ACCOUNT_NOT_EXIST_ERROR.message);
       } else {
-        assertThat(transaction.error).isNull();
+        assertThat(target.error).isNull();
       }
 
     }
 
-
+    dropTempTables();
   }
 
   @Test
@@ -458,7 +435,7 @@ public class MigrationRegisterImplTest extends ParentTestNg {
 
     final int numberOfAccounts = 10;
     List<Account> accounts = rndAccounts(numberOfAccounts);
-    List<Transaction> transactions = rndTransactions(accounts);
+    List<Transaction> transactions = rndTransactions(accounts, 2);
     Set<String> invalidRows = new HashSet<>();
 
     Account errorRow1 = accounts.get(2);
@@ -505,16 +482,227 @@ public class MigrationRegisterImplTest extends ParentTestNg {
     assertThat(foundErrorTransaction).isFalse();
   }
 
+  @SuppressWarnings("Duplicates")
   @Test
-  void uploadErrorsCiaTest() {
-    throw new NotImplementedException();
+  void uploadErrorsCiaTest() throws Exception {
+
+    dropTempTables();
+    clientTestDao.get().clear();
+    clientTestDao.get().createTempClientTable(TMP_CLIENT.name());
+    clientTestDao.get().createTempPhoneTable(TMP_PHONE.name());
+    clientTestDao.get().createTempAddressTable(TMP_ADDRESS.name());
+
+    final int numberOfClients = 100;
+    List<Client> clients = rndClients(numberOfClients);
+    Set<String> invalidRows = new HashSet<>();
+
+    Client errorRow = clients.get(0);
+    Client errorRow2 = clients.get(10);
+    Client errorRow3 = clients.get(50);
+    Client errorRow4 = clients.get(51);
+    errorRow.error = "error";
+    errorRow2.error = "error";
+    errorRow3.error = "error";
+    errorRow4.error = "error";
+    invalidRows.add(errorRow.cia_id);
+    invalidRows.add(errorRow2.cia_id);
+    invalidRows.add(errorRow3.cia_id);
+    invalidRows.add(errorRow4.cia_id);
+
+    insertClients(clients);
+
+    MigrationConfig config = new MigrationConfig();
+    config.error = new File(Modules.dbDir() + "/build/temp/file" + idGenerator.get().newId());
+    config.error.getParentFile().mkdirs();
+    try (Connection connection = DbUtils.getPostgresConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password())) {
+      MigrationCiaTest migration = new MigrationCiaTest(config, connection);
+      Map<TmpTableName, String> tableNames;
+      tableNames = migration.getTableNames();
+      tableNames.put(TMP_CLIENT, TMP_CLIENT.name());
+      tableNames.put(TMP_ADDRESS, TMP_ADDRESS.name());
+      tableNames.put(TMP_PHONE, TMP_PHONE.name());
+      //
+      //
+      migration.uploadErrors();
+      //
+      //
+    }
+
+    try (FileReader reader = new FileReader(config.error);
+         BufferedReader br = new BufferedReader(reader)) {
+      String line;
+      while ((line = br.readLine()) != null) {
+        String cia_id = line.split(":")[1].split(";")[0].trim(); // any exception means file generator working wrong
+        assertThat(invalidRows.contains(cia_id)).isTrue();
+      }
+    }
+
+    if (!config.error.delete()) {
+      logger.warn("temp file not deleted" + config.error.getAbsolutePath());
+    }
+  }
+
+  @SuppressWarnings("Duplicates")
+  @Test
+  void uploadErrorsFrsTest() throws Exception {
+
+    dropTempTables();
+    accountTestDao.get().clear();
+    accountTestDao.get().createTempAccountTable(TMP_ACCOUNT.name());
+    accountTestDao.get().createTempTransactionTable(TMP_TRANSACTION.name());
+
+    final int numberOfAccounts = 10;
+    List<Account> accounts = rndAccounts(numberOfAccounts);
+    List<Transaction> transactions = rndTransactions(accounts, 2);
+    Set<String> invalidRows = new HashSet<>();
+
+    Account errorRow1 = accounts.get(2);
+    Account errorRow2 = accounts.get(5);
+    errorRow1.error = "error";
+    errorRow2.error = "error";
+
+    invalidRows.add(errorRow1.client_id);
+    invalidRows.add(errorRow2.client_id);
+
+    for (Transaction transaction : transactions) {
+      if (invalidRows.contains(transaction.account_number)) {
+        transaction.error = "error";
+      }
+    }
+
+    for (Account account : accounts)
+      accountTestDao.get().insertIntoTempAccount(account, TMP_ACCOUNT.name());
+    for (Transaction transaction : transactions)
+      accountTestDao.get().insertIntoTempTransaction(transaction, TMP_TRANSACTION.name());
+
+
+    MigrationConfig config = new MigrationConfig();
+    config.error = new File(Modules.dbDir() + "/build/temp/file" + idGenerator.get().newId());
+    config.error.getParentFile().mkdirs();
+    try (Connection connection = DbUtils.getPostgresConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password())) {
+      MigrationFrsTest migration = new MigrationFrsTest(config, connection);
+      Map<TmpTableName, String> tableNames = migration.getTableNames();
+      tableNames.put(TMP_ACCOUNT, TMP_ACCOUNT.name());
+      tableNames.put(TMP_TRANSACTION, TMP_TRANSACTION.name());
+      //
+      //
+      migration.uploadErrors();
+      //
+      //
+    }
+
+    try (FileReader reader = new FileReader(config.error);
+         BufferedReader br = new BufferedReader(reader)) {
+      String line;
+      while ((line = br.readLine()) != null) {
+        String cia_id = line.split(":")[1].split(";")[0].trim(); // any exception means file generator working wrong
+        assertThat(invalidRows.contains(cia_id)).isTrue();
+      }
+    }
+
+    if (!config.error.delete()) {
+      logger.warn("temp file not deleted" + config.error.getAbsolutePath());
+    }
+
+  }
+
+
+  @Test
+  void ciaFullMigrateTest() throws Exception {
+    dropTempTables();
+    clientTestDao.get().clear();
+    clientTestDao.get().createTempClientTable(TMP_CLIENT.name());
+    clientTestDao.get().createTempAddressTable(TMP_ADDRESS.name());
+    clientTestDao.get().createTempPhoneTable(TMP_PHONE.name());
+
+    int numberOfClients = 10;
+    List<Client> list = rndClients(numberOfClients);
+
+    Client errorRow = list.get(0);
+    errorRow.name = null;
+
+    File testData = generateCia(list);
+    MigrationConfig config = new MigrationConfig();
+    config.toMigrate = testData;
+    config.idGenerator = idGenerator.get();
+    config.id = idGenerator.get().newId();
+    config.error = new File(Modules.dbDir() + "/build/temp/file" + idGenerator.get().newId());
+    config.error.getParentFile().mkdirs();
+
+    Map<TmpTableName, String> tableNames;
+    try (Connection connection = DbUtils.getPostgresConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password())) {
+
+      MigrationCiaTest migration = new MigrationCiaTest(config, connection);
+      tableNames = migration.getTableNames();
+      tableNames.put(TMP_CLIENT, TMP_CLIENT.name());
+      tableNames.put(TMP_ADDRESS, TMP_ADDRESS.name());
+      tableNames.put(TMP_PHONE, TMP_PHONE.name());
+
+      //
+      //
+      migration.migrate();
+      //
+      //
+    }
+
+    List<Client> result = clientTestDao.get().getTempClientListWithErrors(tableNames.get(TMP_CLIENT));
+    assertThat(result).hasSize(1);
+    List<ClientDetail> clientList = clientTestDao.get().getClientTestList("client");
+    assertThat(clientList).hasSize(9);
+    assertThat(config.error).exists();
+
+    config.error.delete();
   }
 
   @Test
-  void uploadErrorsFrsTest() {
-    throw new NotImplementedException();
-  }
+  void frsFullMigrateTest() throws Exception {
+    dropTempTables();
+    accountTestDao.get().clear();
+    accountTestDao.get().createTempAccountTable(TMP_ACCOUNT.name());
+    accountTestDao.get().createTempTransactionTable(TMP_TRANSACTION.name());
 
+    final int numberOfAccounts = 10;
+    final int numberOfTransactionPerAccount = 2;
+
+    List<Account> accounts = rndAccounts(numberOfAccounts);
+    List<Transaction> transactions = rndTransactions(accounts, numberOfTransactionPerAccount);
+
+    File testData = generateFrs(accounts, transactions);
+
+    MigrationConfig config = new MigrationConfig();
+    config.toMigrate = testData;
+    config.idGenerator = idGenerator.get();
+    config.id = idGenerator.get().newId();
+    config.error = new File(Modules.dbDir() + "/build/temp/file" + idGenerator.get().newId());
+    config.error.getParentFile().mkdirs();
+
+    Map<TmpTableName, String> tableNames;
+    try (Connection connection = DbUtils.getPostgresConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password())) {
+
+      MigrationFrsTest migration = new MigrationFrsTest(config, connection);
+      tableNames = migration.getTableNames();
+      tableNames.put(TMP_ACCOUNT, TMP_ACCOUNT.name());
+      tableNames.put(TMP_TRANSACTION, TMP_TRANSACTION.name());
+      //
+      //
+      migration.migrate();
+      //
+      //
+    }
+    {
+      List<Account> accountList = accountTestDao.get().getTempAccountList(tableNames.get(TMP_ACCOUNT));
+      List<Transaction> transactionList = accountTestDao.get().getTempTransactionList(tableNames.get(TMP_TRANSACTION));
+      assertThat(accountList).hasSize(numberOfAccounts);
+      assertThat(transactionList).hasSize(numberOfAccounts * numberOfTransactionPerAccount);
+    }
+
+    List<String> accountList = accountTestDao.get().getList("clientaccount", "number");
+    List<String> transactionList = accountTestDao.get().getList("clientaccounttransaction", "account");
+    assertThat(accountList).hasSize(numberOfAccounts);
+    assertThat(transactionList).hasSize(numberOfAccounts * numberOfTransactionPerAccount);
+
+
+  }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -554,7 +742,7 @@ public class MigrationRegisterImplTest extends ParentTestNg {
     return file;
   }
 
-  private File genereteCia(List<Client> list) throws Exception {
+  private File generateCia(List<Client> list) throws Exception {
 
     DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
     DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -627,18 +815,19 @@ public class MigrationRegisterImplTest extends ParentTestNg {
     return list;
   }
 
-  private List<Transaction> rndTransactions(List<Account> accounts) {
+  private List<Transaction> rndTransactions(List<Account> accounts, int n) {
     List<Transaction> list = new ArrayList<>();
     for (Account account : accounts) {
-      for (int i = 0; i < RND.plusInt(5); i++) {
+      for (int i = 0; i < n; i++) {
         Transaction transaction = new Transaction();
         transaction.id = idGenerator.get().newId();
         transaction.type = "transaction";
         transaction.money = String.valueOf(RND.plusDouble(100, 2));
         transaction.transaction_type = RND.str(10);
-        transaction.account_number = account.account_number;
+        transaction.account_number = String.valueOf(account.account_number);
         transaction.finished_at = getTimeStampFormat(new Date());
         list.add(transaction);
+        account.transactionList.add(transaction);
       }
     }
     return list;
@@ -657,7 +846,7 @@ public class MigrationRegisterImplTest extends ParentTestNg {
       c.patronymic = idGenerator.get().newId();
       c.charm = RND.str(10);
       c.gender = RND.someEnum(GenderType.values());
-      c.birthDate = dateFormat.format(RND.dateYears(-100, -18));
+      c.birthDate = dateFormat.format(RND.dateYears(-50, -20));
 
       c.registerAddress = new ClientAddress();
       c.registerAddress.client = c.id;

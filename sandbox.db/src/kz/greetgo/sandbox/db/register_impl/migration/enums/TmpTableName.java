@@ -9,8 +9,9 @@ public enum TmpTableName {
 
   public String code;
 
+  @SuppressWarnings("UnnecessaryEnumModifier")
   private TmpTableName(String code) {
     this.code = code;
   }
-  
+
 }

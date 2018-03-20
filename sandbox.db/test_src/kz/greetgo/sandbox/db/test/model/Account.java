@@ -1,6 +1,9 @@
 package kz.greetgo.sandbox.db.test.model;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Account {
   public String id;
   public String type;
@@ -8,7 +11,10 @@ public class Account {
   public String account_number;
   public String registered_at;
   public String error;
+  public List<Transaction> transactionList = new ArrayList<>();
 
+
+  @SuppressWarnings("SimplifiableIfStatement")
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

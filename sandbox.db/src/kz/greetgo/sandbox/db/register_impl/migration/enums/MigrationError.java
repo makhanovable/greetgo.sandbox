@@ -13,10 +13,11 @@ public enum MigrationError {
 
   ACCOUNT_NULL_ERROR("account number must to be not null"),
   CLIENT_ID_NULL_ERROR("client must to be not null"),
-  TRANSACTION_ACCOUNT_NOT_EXIST_ERROR("transaction account unknown");
+  TRANSACTION_ACCOUNT_NOT_EXIST_ERROR("transaction account not exist");
 
   public String message;
 
+  @SuppressWarnings("UnnecessaryEnumModifier")
   private MigrationError(String message) {
     this.message = message;
   }

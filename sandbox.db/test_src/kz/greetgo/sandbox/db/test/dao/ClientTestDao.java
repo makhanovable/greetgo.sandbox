@@ -131,4 +131,9 @@ public interface ClientTestDao {
   @Insert("insert into ${tableName} (client_id, type, street, house, flat) " +
     "values (#{addr.client}, #{addr.type}, #{addr.street}, #{addr.house}, #{addr.flat})")
   void insertAddressIntoTemp(@Param("addr") ClientAddress addr, @Param("tableName") String tableName);
+
+  @SuppressWarnings("SameParameterValue")
+  @Select("select id, cia_id, name, surname, patronymic, birthDate, gender, charm, error from ${clientTableName} where error NOTNULL")
+  List<Client> getTempClientListWithErrors(@Param("clientTableName") String clientTableName);
+
 }
