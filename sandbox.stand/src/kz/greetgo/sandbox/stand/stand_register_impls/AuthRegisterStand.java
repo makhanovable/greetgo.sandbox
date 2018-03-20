@@ -27,6 +27,7 @@ import java.util.List;
 import static sun.misc.Version.print;
 
 //TODO: Для методов, не относящихся к авторизации, сделай отдельный новый регистр. И там реализовывай бизнес логику.
+//(Done)
 
 @Bean
 public class AuthRegisterStand implements AuthRegister {
@@ -147,104 +148,6 @@ public class AuthRegisterStand implements AuthRegister {
         }
 
         return users;
-    }
-  
-    //TODO: Статусы так не возвращаются. Для этого есть специальные методы.
-    //TODO: Также, при сохранении записи, надо возвращать эту же запись клиенту. 
-    // Подумай почему, тоже спрошу.
-    
-    // @Override?
-    public String addNewClient(String clientInfo) {
-
-//      System.out.println(clientInfo);
-      db.get().addNewCLient(clientInfo);
-
-      return "ok";
-    }
-
-  @Override
-  public String addNewPhone(String phones) {
-    db.get().addNewPhones(phones);
-    return "ok";
-  }
-
-  @Override
-  public String addNewAdresses(String adresses) {
-    db.get().addNewAdresses(adresses);
-    return "ok";
-  }
-
-  @Override
-  public String removeClient(String clientID) {
-    db.get().removeClient(clientID);
-    return "ok";
-  }
-
-  @Override
-  public EditableClientInfo getEditableClientInfo(String clientID) {
-    EditableClientInfo clientInfo = db.get().getEditableClientInfo(clientID);
-    return clientInfo;
-  }
-
-  public List<PrintedClientInfo> getClientsInfo() {
-        List<PrintedClientInfo> clientInfos = new ArrayList<PrintedClientInfo>();
-
-        for (Client client : db.get().clientStorage.values()) {
-            PrintedClientInfo clientInfo = new PrintedClientInfo();
-            clientInfo.id = client.id;
-            clientInfo.fio = client.name + " " + client.patronymic + " " + client.surname;
-            clientInfo.age = client.CountAge();
-            clientInfo.totalCash = getTotalCash(client.id);
-            clientInfo.maxCash = getMaxCash(client.id);
-            clientInfo.minCash = getMinCash(client.id);
-            clientInfo.charm = getCharm(client.charmID);
-
-            clientInfos.add(clientInfo);
-        }
-
-        return clientInfos;
-    }
-    private float getTotalCash(String clientId) {
-      float totalCash = 0;
-
-      for (Account account : db.get().accountStorage.values()) {
-          if (account.clientID.equals(clientId)) {
-              totalCash = account.money;
-          }
-      }
-
-      return totalCash;
-    }
-    private float getMinCash(String clientId) {
-      float totalCash = 0;
-
-      for (Account acc : db.get().accountStorage.values()) {
-        if (acc.clientID.equals(clientId)) {
-          totalCash = acc.getMinCash(db.get().transactionStorage);
-        }
-      }
-
-     return totalCash;
-    }
-    private float getMaxCash(String clientId) {
-      float totalCash = 0;
-
-      for (Account acc : db.get().accountStorage.values()) {
-        if (acc.clientID.equals(clientId)) {
-          totalCash = acc.getMaxCash(db.get().transactionStorage);
-        }
-      }
-
-      return totalCash;
-    }
-    private String getCharm(String charmID) {
-      for (Charm charm : db.get().charmStorage.values()) {
-        if (charm.id.equals(charmID)) {
-          return charm.name;
-        }
-      }
-
-      return null;
     }
 
 }

@@ -14,13 +14,6 @@
     </div>
     <div *ngIf="clients">
         <table>
-            //TODO: Реши что сделать с этим тегом (<tbody>).
-            // Он используется для группировки строк таблицы.
-            // То есть тем самым придавая независимость в таблице.
-            // Делается обычно для того, чтобы body можно было скролить, а заголовок и футор оставить статичным.
-            // Если ты группируешь <th>, то логично будет использовать <thead> вместо <tbody>.
-            // Почитай подробнее про разницу.
-            <tbody>
             <tr>
                 <th>ФИО</th>
                 <th>Характер</th>
@@ -29,8 +22,6 @@
                 <th>Макс. остаток</th>
                 <th>Мин. остаток</th>
             </tr>
-
-            //TODO: почему selectedID === clientInfo.age? Если это идентификатор клиента, то логика неверна.
             <tr *ngFor="let clientInfo of clients" [ngClass]="{'selected': selectedID === clientInfo.id}"
                 (click)="selectClient(clientInfo.id)">
                 <td><b>{{clientInfo.fio}}</b></td>
@@ -41,12 +32,25 @@
                 <td><b>{{clientInfo.minCash}}</b></td>
             </tr>
 
-            </tbody>
         </table>
         <div class="buttons">
             <button class="actionButton" (click)=editClientClicked()>...</button>
             <button class="actionButton" (click)="addClientClicked()">+</button>
             <button class="actionButton" (click)="removeClientClicked()">-</button>
+        </div>
+        <div class="btn-toolbar">
+            <div class="btn-group">
+                <label style="margin-top:10px">Page {{currentIndex}}/{{pageNumber}}</label>
+            </div>
+            <div class="btn-group pull-right">
+                <ul class="pagination" >
+                    <li [ngClass]="{'disabled': (currentIndex == 1 || pageNumber == 0)}" ><a  (click)="prevPage()" href="#">Prev</a></li>
+                    <li *ngFor="let page of pagesIndex"  [ngClass]="{'active': (currentIndex == page)}">
+                        <a (click)="setPage(page)" href="#" >{{page}}</a>
+                    </li>
+                    <li [ngClass]="{'disabled': (currentIndex == pageNumber || pageNumber == 0)}" ><a   (click)="nextPage()" href="#">Next</a></li>
+                </ul>
+            </div>
         </div>
     </div>
     <div class="modalView" *ngIf="modalViewEnabled">

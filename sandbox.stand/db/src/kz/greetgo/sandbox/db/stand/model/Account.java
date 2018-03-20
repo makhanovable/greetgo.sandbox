@@ -1,10 +1,7 @@
 package kz.greetgo.sandbox.db.stand.model;
 
 import java.sql.Timestamp;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Account {
     public String id;
@@ -19,10 +16,11 @@ public class Account {
         for (Transaction tr : transactions.values()) {
             //TODO: неверное выражение "tr.accountID.equals(this.id)". 
             // Подумай почему, если не получится узнать, позже спроси у меня.
-            if (tr.accountID.equals(this.id)) {
+            if (Objects.equals(tr.accountID, this.id)) {
                 cash += tr.money;
                 //TODO: ты неверно понял схему БД. Разберись, я потом спрошу.
                 // Здесь найдена не тот минимум
+                // (Done) Перенес операцию в ClientRegisterStand
                 if (cash < minCash) minCash = cash;
             }
         }

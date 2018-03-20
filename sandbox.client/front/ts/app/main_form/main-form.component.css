@@ -82,3 +82,12 @@ select {
 .selected {
     background-color: #dddddd;
 }
+
+.btn-toolbar {
+    width: 80%;
+    margin-left: 10%;
+    margin-right: 10%;
+    /*background-color: black;*/
+    height: auto;
+    margin-top: 40px;
+}

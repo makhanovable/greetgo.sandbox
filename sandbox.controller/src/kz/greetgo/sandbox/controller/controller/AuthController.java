@@ -48,46 +48,8 @@ public class AuthController implements Controller {
     return authRegister.get().getAllUserInfo();
   }
 
-  @ToJson
-  @Mapping("/clientsInfo")
-  public List<PrintedClientInfo> clientsInfo() {
-    return authRegister.get().getClientsInfo();
-  }
-
   //TODO: перенеси все методы контроллера, не относящиеся по логике к авторизации, в новый контроллер для клиентов.
   //TODO: также создай новый регистр для клиентов
-  
-  @AsIs
-  @NoSecurity
-  @Mapping("/addNewClient")
-  public String addNewClient(@Par("clientInfo") String clientInfo) {
-        return authRegister.get().addNewClient(clientInfo);
-  }
+  //  Done
 
-  @AsIs
-  @NoSecurity
-  @Mapping("/addNewPhone")
-  public String addNewPhone(@Par("phones") String phones) {
-    return authRegister.get().addNewPhone(phones);
-  }
-
-  @AsIs
-  @NoSecurity
-  @Mapping("/addNewAdress")
-  public String addNewAdresses(@Par("adresses") String adresses) {
-    return authRegister.get().addNewAdresses(adresses);
-  }
-
-  @AsIs
-  @NoSecurity
-  @Mapping("/removeClient")
-  public String removeClient(@Par("clientID") String clientID) {
-    return authRegister.get().removeClient(clientID);
-  }
-
-  @ToJson
-  @Mapping("/editableClientInfo/{clientID}")
-  public EditableClientInfo getEditableClientInfo(@ParPath("clientID") String clientID) {
-    return authRegister.get().getEditableClientInfo(clientID);
-  }
 }

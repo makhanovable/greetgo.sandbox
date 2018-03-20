@@ -75,10 +75,4 @@ public interface AuthRegister {
    */
   UserInfo getUserInfo(String personId);
   List<UserInfo> getAllUserInfo();
-  List<PrintedClientInfo> getClientsInfo();
-  String addNewClient(String clientInfo);
-  String addNewPhone(String phones);
-  String addNewAdresses(String adresses);
-  String removeClient(String clientID);
-  EditableClientInfo getEditableClientInfo(String clientID);
 }

@@ -24,6 +24,9 @@ public class StandDb implements HasAfterInject {
   public final Map<String, Phone> phoneStorage = new HashMap<>();
   public final Map<String, Account> accountStorage = new HashMap<>();
 
+  private int clientsNum;
+  private String clientID;
+
   @Override
   public void afterInject() throws Exception {
     appendPerson(getData("StandDbInitData.txt"));
@@ -34,6 +37,8 @@ public class StandDb implements HasAfterInject {
     appendAccount(getData("AccountDb.txt"));
     appendTransaction(getData("TransactionsDb.txt"));
     appendTransactiontype(getData("TransactionTypeDb.txt"));
+
+    clientsNum = clientStorage.values().size();
   }
 
   private List<String[]> getData(String file) {
@@ -81,10 +86,8 @@ public class StandDb implements HasAfterInject {
       Client c = new Client();
       c.id = splitLine[0].trim();
       String[] fio = splitLine[1].trim().split("\\s+");
-      c.surname = fio[2];
+      c.surname = fio[1];
       c.name = fio[0];
-//      System.out.println(c.name);
-//      System.out.println(c.surname);
       c.gender = splitLine[2].trim();
       DateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
       try {
@@ -93,7 +96,7 @@ public class StandDb implements HasAfterInject {
         e.printStackTrace();
       }
       c.charmID = splitLine[4].trim();
-      if (fio.length > 2) c.patronymic = fio[1]; else c.patronymic = "";
+      if (fio.length > 2) c.patronymic = fio[2]; else c.patronymic = "";
       clientStorage.put(c.id, c);
     }
   }
@@ -166,7 +169,15 @@ public class StandDb implements HasAfterInject {
     }
   }
 
-  public void addNewCLient(String clientInfo) {
+  public void addNewCLient(String clientInfo, String clientID) {
+
+    if (clientID == null) {
+      clientsNum++;
+      this.clientID = "c" + String.valueOf(clientsNum);
+      clientInfo = this.clientID + "; " + clientInfo;
+    } else {
+      clientInfo = clientID + "; " + clientInfo;
+    }
     List<String[]> client = new ArrayList<String[]>();
     String[] splitLine = clientInfo.split(";");
     client.add(splitLine);
@@ -206,15 +217,18 @@ public class StandDb implements HasAfterInject {
     }
   }
 
-  public void addNewPhones(String phones) {
+  public void addNewPhones(String phones, String clientID) {
     String[] phonesArray = phones.split(",");
 
     for (String phone : phonesArray) {
-//      addPhoneToDb(phone);
-//      System.out.println(phone);
+      if (clientID == null) {
+        phone = this.clientID + "; " + phone;
+      } else {
+        phone = clientID + "; " + phone;
+      }
       List<String[]> phonesList = new ArrayList<String[]>();
       String[] splitLine = phone.split(";");
-//      System.out.println(splitLine[0].trim());
+
       phonesList.add(splitLine);
       appendPhone(phonesList);
     }
@@ -244,17 +258,18 @@ public class StandDb implements HasAfterInject {
     }
   }
 
-  public void addNewAdresses(String adresses) {
-//    System.out.println(adresses);
+  public void addNewAdresses(String adresses, String clientID) {
     String[] adressesArray = adresses.split(",");
 
     for (String adress : adressesArray) {
-//      addToAdressDb(adress);
-
-//      System.out.println(adress);
+      if (clientID == null) {
+        adress = this.clientID + "; " + adress;
+      } else {
+        adress = clientID + "; " + adress;
+      }
       List<String[]> adressesList = new ArrayList<String[]>();
       String[] splitLine = adress.split(";");
-//      System.out.println(splitLine[1].trim());
+
       adressesList.add(splitLine);
       appendAdress(adressesList);
     }

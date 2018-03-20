@@ -16,6 +16,7 @@ export class MainFormComponent {
   @Output() exit = new EventEmitter<void>();
 
   clients: ClientInfo[] = null;
+  filteredClients: ClientInfo[] = null;
   addedClientID: string = "";
   userInfo: UserInfo | null = null;
   editableClientInfo: EditableClientInfo = new EditableClientInfo();
@@ -24,6 +25,9 @@ export class MainFormComponent {
   loadUserInfoError: string | null;
   selectedID = "";
   actionType = "";
+  currentIndex = "1";
+  pageNumber = 0;
+  pagesIndex = [];
 
   constructor(private httpService: HttpService) {}
 
@@ -31,14 +35,33 @@ export class MainFormComponent {
     this.loadUserInfoButtonEnabled = false;
     this.loadUserInfoError = null;
 
-    this.httpService.get("/auth/clientsInfo").toPromise().then(result => {
-      this.clients = result.json();
-    }, error => {
-      console.log(error);
-      this.loadUserInfoButtonEnabled = true;
-      this.loadUserInfoError = error;
-      this.userInfo = null;
-    });
+      this.httpService.get("/client/clientsInfo/getPagesNum").toPromise().then(result => {
+          this.pageNumber = result.json();
+          this.addPages();
+          this.loadClients();
+      }, error => {
+          console.log(error);
+      });
+  }
+
+  addPages() {
+      this.pagesIndex = [];
+      for (var i = 1; i <= this.pageNumber; i++) {
+          this.pagesIndex.push(i);
+      }
+  }
+
+  loadClients() {
+      let url = "/client/clientsInfoPerPage/" + this.currentIndex;
+      console.log(url);
+      this.httpService.get(url).toPromise().then(result => {
+          this.clients = result.json();
+      }, error => {
+          console.log(error);
+          this.loadUserInfoButtonEnabled = true;
+          this.loadUserInfoError = error;
+          this.userInfo = null;
+      });
   }
 
   selectClient(clientId : string) {
@@ -47,7 +70,7 @@ export class MainFormComponent {
 
   removeClientClicked() {
     if (this.selectedID != "") {
-      this.httpService.post("/auth/removeClient", {
+      this.httpService.post("/client/removeClient", {
         clientID: this.selectedID
       }).toPromise().then(res => {
         if (this.actionType == "edit") {
@@ -67,7 +90,7 @@ export class MainFormComponent {
         this.addedClientID = this.selectedID;
         this.modalViewEnabled = true;
 
-        let url = "/auth/editableClientInfo/" + this.selectedID;
+        let url = "/client/editableClientInfo/" + this.selectedID;
         this.httpService.get(url).toPromise().then(result => {
             // console.log(result.json());
             this.editableClientInfo = EditableClientInfo.from(result.json() as EditableClientInfo);
@@ -78,9 +101,33 @@ export class MainFormComponent {
     }
   }
 
+  setPage(page: string) {
+      this.currentIndex = page;
+      this.loadUserInfoButtonClicked();
+  }
+
+  nextPage() {
+      var x = +this.currentIndex;
+      if (x < this.pageNumber) {
+          x++;
+          this.currentIndex = x.toString();
+          this.loadUserInfoButtonClicked();
+      }
+  }
+
+  prevPage() {
+      var x = +this.currentIndex;
+      console.log(x);
+      if (x > 1) {
+          x--;
+          this.currentIndex = x.toString();
+          this.loadUserInfoButtonClicked();
+      }
+    }
+
   addClientClicked() {
     this.actionType = "add";
-    this.addedClientID = "c" + (this.clients.length + 1).toString();
+    this.addedClientID = "";
     this.modalViewEnabled = true;
   }
 
@@ -89,6 +136,7 @@ export class MainFormComponent {
     this.editableClientInfo.clearPar();
   }
   editAddClicked() {
+    console.log(this.addedClientID);
     if (this.fieldsFilledCorrectly()) {
         if (this.actionType == "edit") {
             this.removeClientClicked();
@@ -102,8 +150,9 @@ export class MainFormComponent {
   addNewClient() {
       let clientInfo = this.createClient();
 
-      this.httpService.post("/auth/addNewClient", {
+      this.httpService.post("/client/addNewClient", {
           clientInfo  : clientInfo,
+          clientID : this.addedClientID
       }).toPromise().then(res => {
           this.addPhones();
       }, error => {
@@ -112,8 +161,8 @@ export class MainFormComponent {
   }
   createClient() : string {
     // console.log(this.patronymic)
-    let str = this.addedClientID;
-    str += "; " + this.editableClientInfo.name + " " + this.editableClientInfo.patronymic + " " + this.editableClientInfo.surname;
+    let str = "";
+    str += this.editableClientInfo.name + " " + this.editableClientInfo.surname + " " + this.editableClientInfo.patronymic;
     str += "; " + this.editableClientInfo.gender;
     str += "; " + this.editableClientInfo.birth_date;
     str += "; " + this.editableClientInfo.charm;
@@ -122,21 +171,22 @@ export class MainFormComponent {
     return str;
   }
   addAdresses() {
-      let str = this.addedClientID;
-      str += "; " + "REG; " + this.editableClientInfo.rAdressStreet + "; " + this.editableClientInfo.rAdressHouse
+      let str = "";
+      str += "REG; " + this.editableClientInfo.rAdressStreet + "; " + this.editableClientInfo.rAdressHouse
              + "; " + this.editableClientInfo.rAdressFlat;
 
       if (this.editableClientInfo.fAdressStreet != "" && this.editableClientInfo.fAdressHouse != "" &&
           this.editableClientInfo.fAdressFlat != "") {
           str += ", ";
-          str += this.addedClientID + "; FACT";
+          str += "FACT";
           str += "; " + this.editableClientInfo.fAdressStreet;
           str += "; " + this.editableClientInfo.fAdressHouse;
           str += "; " + this.editableClientInfo.fAdressFlat;
       }
 
-      this.httpService.post("/auth/addNewAdress", {
+      this.httpService.post("/client/addNewAdress", {
           adresses  : str,
+          clientID : this.addedClientID
       }).toPromise().then(res => {
           this.loadUserInfoButtonClicked();
           this.closeModal();
@@ -145,25 +195,24 @@ export class MainFormComponent {
       });
   }
   addPhones() {
-      let str = this.addedClientID;
-      str += "; " + this.editableClientInfo.mobilePhones[0] + "; MOBILE";
+      let str = "";
+      str += this.editableClientInfo.mobilePhones[0] + "; MOBILE";
 
       if (this.editableClientInfo.workPhone != "") {
         str += ", ";
-        str += this.addedClientID;
-        str += "; " + this.editableClientInfo.workPhone;
+        str += this.editableClientInfo.workPhone;
         str += "; " + "WORK"
       }
 
       if (this.editableClientInfo.homePhone != "") {
           str += ", ";
-          str += this.addedClientID;
-          str += "; " + this.editableClientInfo.homePhone;
+          str += this.editableClientInfo.homePhone;
           str += "; " + "HOME"
       }
 
-      this.httpService.post("/auth/addNewPhone", {
+      this.httpService.post("/client/addNewPhone", {
           phones  : str,
+          clientID : this.addedClientID
       }).toPromise().then(res => {
           this.addAdresses();
       }, error => {
