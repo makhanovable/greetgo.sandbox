@@ -112,7 +112,6 @@ public abstract class Migration {
 
   @SuppressWarnings("WeakerAccess")
   protected void execSql(String sql) throws SQLException {
-
     for (Map.Entry<TmpTableName, String> tmpTableName : tableNames.entrySet()) {
       sql = sql.replace(tmpTableName.getKey().code, tmpTableName.getValue());
     }

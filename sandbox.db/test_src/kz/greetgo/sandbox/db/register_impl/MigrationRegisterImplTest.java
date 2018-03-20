@@ -8,7 +8,6 @@ import kz.greetgo.sandbox.controller.enums.PhoneNumberType;
 import kz.greetgo.sandbox.controller.model.ClientAddress;
 import kz.greetgo.sandbox.controller.model.ClientDetail;
 import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
-import kz.greetgo.sandbox.controller.register.MigrationRegister;
 import kz.greetgo.sandbox.controller.util.Modules;
 import kz.greetgo.sandbox.db.configs.DbConfig;
 import kz.greetgo.sandbox.db.register_impl.migration.MigrationConfig;
@@ -53,7 +52,11 @@ import java.util.Map;
 import java.util.Set;
 
 import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationError.*;
-import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.*;
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_ACCOUNT;
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_ADDRESS;
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_CLIENT;
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_PHONE;
+import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_TRANSACTION;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 
@@ -62,8 +65,6 @@ public class MigrationRegisterImplTest extends ParentTestNg {
 
   @SuppressWarnings("WeakerAccess")
   public BeanGetter<IdGenerator> idGenerator;
-  @SuppressWarnings({"WeakerAccess", "unused"})
-  public BeanGetter<MigrationRegister> migrationRegister;
 
   @SuppressWarnings("WeakerAccess")
   public BeanGetter<DbConfig> dbConfig;
