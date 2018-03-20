@@ -6,6 +6,8 @@ import kz.greetgo.sandbox.controller.model.PrintedClientInfo;
 import java.util.List;
 
 public interface ClientRegister {
+    
+    // TODO: для методов добавления сделать один общий метод. Не должно быть разделение зависимой информации.
     String addNewClient(String clientInfo, String clientID);
     String addNewPhone(String phones, String clientID);
     String addNewAdresses(String adresses, String clientID);
