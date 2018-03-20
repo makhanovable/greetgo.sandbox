@@ -68,6 +68,7 @@ export class MainFormComponent {
     this.selectedID = clientId;
   }
 
+  // TODO: изменить логику редактирования. Создать новую независимую функцию для редактирования
   removeClientClicked() {
     if (this.selectedID != "") {
       this.httpService.post("/client/removeClient", {
@@ -150,6 +151,10 @@ export class MainFormComponent {
   addNewClient() {
       let clientInfo = this.createClient();
 
+      // TODO: название переменной. Не забывай называть переменные как я объяснял. *ToSave, *Details, *Record. 
+      // Если забыл, спроси.
+      // TODO: при создании записи пользователя на стороне клиента Идентификатор не должен генерироваться. 
+      // Это запрещено! Генерация должна быть на стороне сервера.
       this.httpService.post("/client/addNewClient", {
           clientInfo  : clientInfo,
           clientID : this.addedClientID
@@ -159,6 +164,11 @@ export class MainFormComponent {
           console.log(error);
       });
   }
+                                    
+  // TODO: эту функцию надо переделать. Здесь создавать только сам объект. 
+  // Эта строка, если ты хочешь так сохранять в stand ДБ, должна генерироваться в stand ДБ.
+  // Иначе смысл в разделении stand и real теряется.
+  // Всё тоже самое и для других объектов, как address и т.д.
   createClient() : string {
     // console.log(this.patronymic)
     let str = "";
