@@ -2,6 +2,7 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.sandbox.controller.model.ClientToReturn;
 import kz.greetgo.sandbox.controller.model.EditableClientInfo;
 import kz.greetgo.sandbox.controller.model.PrintedClientInfo;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
@@ -53,33 +54,32 @@ public class ClientRegisterStand  implements ClientRegister{
         return clientInfo;
     }
 
-    public List<PrintedClientInfo> getClientsInfo() {
-        List<PrintedClientInfo> clientInfos = new ArrayList<PrintedClientInfo>();
+    @Override
+    public ClientToReturn getFilteredClientsInfo(String pageID, String filterStr) {
+        ClientToReturn clientToReturn = new ClientToReturn();
 
-        for (Client client : db.get().clientStorage.values()) {
-                PrintedClientInfo clientInfo = new PrintedClientInfo();
-                clientInfo.id = client.id;
-                clientInfo.fio = client.name + " " + client.patronymic + " " + client.surname;
-                clientInfo.age = client.CountAge();
-                clientInfo.totalCash = getTotalCash(client.id);
-                clientInfo.maxCash = getMaxCash(client.id);
-                clientInfo.minCash = getMinCash(client.id);
-                clientInfo.charm = getCharm(client.charmID);
+        List<Client> clients = new ArrayList<Client>();
 
-                clientInfos.add(clientInfo);
+        if (filterStr != null) {
+            for (Client client : db.get().clientStorage.values()) {
+                if (client.name.toLowerCase().contains(filterStr.toLowerCase()) ||
+                    client.surname.toLowerCase().contains(filterStr.toLowerCase()) ||
+                    client.patronymic.toLowerCase().contains(filterStr.toLowerCase())) {
+                        clients.add(client);
+                }
+            }
+        } else {
+            clients.addAll(db.get().clientStorage.values());
         }
 
-        return clientInfos;
-    }
+        clientToReturn.pageCount = getPageNum(clients.size());
 
-    @Override
-    public List<PrintedClientInfo> getClientsInfoPerPage(String pageID) {
         List<PrintedClientInfo> clientInfos = new ArrayList<PrintedClientInfo>();
 
         int l = (Integer.parseInt(pageID) - 1) * pageMax;
         int r = l + pageMax;
         int cnt = 0;
-        for (Client client : db.get().clientStorage.values()) {
+        for (Client client : clients) {
             if (cnt >= l && cnt < r) {
                 PrintedClientInfo clientInfo = new PrintedClientInfo();
                 clientInfo.id = client.id;
@@ -95,20 +95,19 @@ public class ClientRegisterStand  implements ClientRegister{
             cnt++;
         }
 
-        return clientInfos;
-    }
+        clientToReturn.clientInfos = clientInfos;
 
-    @Override
-    public String getPagesNum() {
+        return clientToReturn;
+    }
+    private int getPageNum(int cnt) {
         int pageNum;
-        if (db.get().clientStorage.values().size() % pageMax == 0) {
-            pageNum = db.get().clientStorage.values().size() / pageMax;
+        if (cnt % pageMax == 0) {
+            pageNum = cnt / pageMax;
         } else {
-            pageNum = db.get().clientStorage.values().size() / pageMax + 1;
+            pageNum = cnt / pageMax + 1;
         }
-//        System.out.println(pageNum);
-        String pnum = String.valueOf(pageNum);
-        return pnum;
+
+        return pageNum;
     }
 
     private float getTotalCash(String clientId) {

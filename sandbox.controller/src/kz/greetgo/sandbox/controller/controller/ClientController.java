@@ -3,6 +3,7 @@ package kz.greetgo.sandbox.controller.controller;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
+import kz.greetgo.sandbox.controller.model.ClientToReturn;
 import kz.greetgo.sandbox.controller.model.EditableClientInfo;
 import kz.greetgo.sandbox.controller.model.PrintedClientInfo;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
@@ -18,15 +19,9 @@ public class ClientController implements Controller {
     public BeanGetter<ClientRegister> clientRegister;
 
     @ToJson
-    @Mapping("/clientsInfo")
-    public List<PrintedClientInfo> clientsInfo() {
-        return clientRegister.get().getClientsInfo();
-    }
-
-    @ToJson
-    @Mapping("/clientsInfoPerPage/{pageID}")
-    public List<PrintedClientInfo> clientsInfoPerPage(@ParPath("pageID") String pageID) {
-        return clientRegister.get().getClientsInfoPerPage(pageID);
+    @Mapping("/clientsInfo/{pageID}/{filterStr}")
+    public ClientToReturn filteredClients(@ParPath("pageID") String pageID, @ParPath("filterStr") String filterStr) {
+        return clientRegister.get().getFilteredClientsInfo(pageID, filterStr);
     }
 
     @AsIs
@@ -61,11 +56,5 @@ public class ClientController implements Controller {
     @Mapping("/editableClientInfo/{clientID}")
     public EditableClientInfo getEditableClientInfo(@ParPath("clientID") String clientID) {
         return clientRegister.get().getEditableClientInfo(clientID);
-    }
-
-    @AsIs
-    @Mapping("/clientsInfo/getPagesNum")
-    public String getPagesNum() {
-        return clientRegister.get().getPagesNum();
     }
 }

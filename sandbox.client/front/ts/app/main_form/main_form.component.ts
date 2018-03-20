@@ -5,6 +5,7 @@ import {HttpService} from "../HttpService";
 import {PhoneType} from "../../model/PhoneType";
 import {EditableClientInfo} from "../../model/EditableClientInfo";
 import {type} from "os";
+import {ClientRecord} from "../../model/ClientRecord";
 
 @Component({
     selector: 'main-form-component',
@@ -15,14 +16,14 @@ import {type} from "os";
 export class MainFormComponent {
   @Output() exit = new EventEmitter<void>();
 
-  clients: ClientInfo[] = null;
-  filteredClients: ClientInfo[] = null;
+  clientRecords: ClientRecord[] = null;
   addedClientID: string = "";
   userInfo: UserInfo | null = null;
   editableClientInfo: EditableClientInfo = new EditableClientInfo();
   loadUserInfoButtonEnabled: boolean = true;
   modalViewEnabled: boolean = false;
   loadUserInfoError: string | null;
+  filterText = "";
   selectedID = "";
   actionType = "";
   currentIndex = "1";
@@ -35,27 +36,28 @@ export class MainFormComponent {
     this.loadUserInfoButtonEnabled = false;
     this.loadUserInfoError = null;
 
-      this.httpService.get("/client/clientsInfo/getPagesNum").toPromise().then(result => {
-          this.pageNumber = result.json();
+    let url = "/client/clientsInfo/" + this.currentIndex + "/" + this.filterText;
+      this.httpService.get(url).toPromise().then(result => {
+          this.pageNumber = result.json().pageCount;
           this.addPages();
-          this.loadClients();
+          this.clientRecords = result.json().clientInfos;
+
+          console.log(this.clientRecords);
       }, error => {
           console.log(error);
       });
   }
-
   addPages() {
       this.pagesIndex = [];
       for (var i = 1; i <= this.pageNumber; i++) {
           this.pagesIndex.push(i);
       }
   }
-
   loadClients() {
       let url = "/client/clientsInfoPerPage/" + this.currentIndex;
       console.log(url);
       this.httpService.get(url).toPromise().then(result => {
-          this.clients = result.json();
+          this.clientRecords = result.json();
       }, error => {
           console.log(error);
           this.loadUserInfoButtonEnabled = true;

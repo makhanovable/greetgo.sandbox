@@ -4,7 +4,7 @@
 
     <button (click)="exit.emit()">Выход</button>
 
-    <div *ngIf="!clients">
+    <div *ngIf="!clientRecords">
         <button [disabled]="!loadUserInfoButtonEnabled" (click)="loadUserInfoButtonClicked()">
             Загрузить данные пользователя
         </button>
@@ -12,7 +12,11 @@
             {{loadUserInfoError}}
         </div>
     </div>
-    <div *ngIf="clients">
+    <div *ngIf="clientRecords">
+        <div class="search">
+            <input type="text" size ="40" [(ngModel)]="filterText">
+            <button (click)="loadUserInfoButtonClicked()">Поиск</button>
+        </div>
         <table>
             <tr>
                 <th>ФИО</th>
@@ -22,7 +26,7 @@
                 <th>Макс. остаток</th>
                 <th>Мин. остаток</th>
             </tr>
-            <tr *ngFor="let clientInfo of clients" [ngClass]="{'selected': selectedID === clientInfo.id}"
+            <tr *ngFor="let clientInfo of clientRecords" [ngClass]="{'selected': selectedID === clientInfo.id}"
                 (click)="selectClient(clientInfo.id)">
                 <td><b>{{clientInfo.fio}}</b></td>
                 <td><b>{{clientInfo.charm}}</b></td>
