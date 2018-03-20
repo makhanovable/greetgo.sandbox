@@ -41,7 +41,9 @@ public abstract class Migration {
 
   protected abstract void parseFileAndUploadToTempTables() throws Exception;
 
-  protected abstract void markErrorsAndUpsertIntoDbValidRows() throws SQLException;
+  protected abstract void markErrorRows() throws SQLException;
+
+  protected abstract void upsertIntoDbValidRows() throws SQLException;
 
   protected abstract void loadErrorsAndWrite() throws SQLException, IOException;
 
@@ -93,7 +95,8 @@ public abstract class Migration {
   private void markErrorsAndUpsertIntoDbValidRowsWithLogging() throws Exception {
     logger.info("step3. mark error and upserting valids to oper db");
     Long start = System.currentTimeMillis();
-    markErrorsAndUpsertIntoDbValidRows();
+    markErrorRows();
+    upsertIntoDbValidRows();
     if (logger.isInfoEnabled())
       logger.info("step3. duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), start));
 

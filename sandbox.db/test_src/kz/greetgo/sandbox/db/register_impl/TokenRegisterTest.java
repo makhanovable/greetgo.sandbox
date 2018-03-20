@@ -58,12 +58,12 @@ public class TokenRegisterTest {
     BREAK_BOTH_KEY_FILES(true, true);
 
     /**
-     * Если <code>true</code>, то необходимо создасть состояние, в котором приватный файл ключа будет сломан
+     * Если <message>true</message>, то необходимо создасть состояние, в котором приватный файл ключа будет сломан
      */
     final boolean breakPrivateKeyFile;
 
     /**
-     * Если <code>true</code>, то необходимо создасть состояние, в котором публичный файл ключа будет сломан
+     * Если <message>true</message>, то необходимо создасть состояние, в котором публичный файл ключа будет сломан
      */
     final boolean breakPublicKeyFile;
 
