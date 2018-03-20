@@ -21,9 +21,9 @@ public class ClientRegisterStand  implements ClientRegister{
     public BeanGetter<StandDb> db;
     private int pageMax = 6;
 
-    //TODO: Статусы так не возвращаются. Для этого есть специальные методы.
     //TODO: Также, при сохранении записи, надо возвращать эту же запись клиенту.
     // Подумай почему, тоже спрошу.
+    //TODO: объект *ToSave учавствует в сохранение, а нужно вернуть объект *Record
     @Override
     public String addNewClient(String clientInfo, String clientID) {
         db.get().addNewCLient(clientInfo , clientID);
