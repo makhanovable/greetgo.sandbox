@@ -29,6 +29,7 @@ public class ClientController implements Controller {
         return clientRegister.get().getClientsInfoPerPage(pageID);
     }
 
+    // TODO: для методов добавления сделать один общий метод. Не должно быть разделение зависимой информации.
     @AsIs
     @NoSecurity
     @Mapping("/addNewClient")
