@@ -23,7 +23,7 @@ public class MigrationFrs extends Migration {
 
 
   @SuppressWarnings("WeakerAccess")
-  public MigrationFrs(MigrationConfig config, Connection connection) {
+  public MigrationFrs(MigrationConfig config, Connection connection) throws SQLException {
     super(config, connection);
   }
 
@@ -72,7 +72,7 @@ public class MigrationFrs extends Migration {
   }
 
   @Override
-  protected void parseFileAndUploadToTempTables() throws Exception {
+  void parseFileAndUploadToTempTables() throws Exception {
 
     try (FrsParser parser = new FrsParser(config.idGenerator, getMaxBatchSize(), connection, tableNames);
          BufferedReader br = new BufferedReader(new FileReader(config.toMigrate), 102400)) {
@@ -87,7 +87,7 @@ public class MigrationFrs extends Migration {
 
 
   @Override
-  protected void markErrorRows() throws SQLException {
+  void markErrorRows() throws SQLException {
     execSql("update " + TMP_ACCOUNT.code + " tmp\n" +
       "  SET error='" + ACCOUNT_NULL_ERROR.message + "'\n" +
       "  WHERE tmp.account_number ISNULL");
@@ -113,7 +113,7 @@ public class MigrationFrs extends Migration {
 
 
   @Override
-  protected void upsertIntoDbValidRows() throws SQLException {
+  void upsertIntoDbValidRows() throws SQLException {
 
     execSql("UPDATE " + TMP_TRANSACTION.code + " tmp\n" +
       "  SET mig_status =" + TO_INSERT + "\n" +
@@ -138,12 +138,13 @@ public class MigrationFrs extends Migration {
 //      "  set mig_status =" + TO_INSERT + "\n" +
 //      "  WHERE tmp.mig_status=" + NOT_READY);
 
-    execSql(String.format("insert into clientaccount (id, client, number, registeredat, actual, mig_id)\n" +
+    params.add(config.id);
+    execSql("insert into clientaccount (id, client, number, registeredat, actual, mig_id)\n" +
       "  SELECT tmp.id, tmp.client_id, tmp.account_number,\n" +
       "    to_timestamp(tmp.registeredat, 'YYYY-MM-dd\"T\"HH24:MI:SS.MS') as registeredat,\n" +
       "    false as actual,\n" +
-      "    '%s'\n" +
-      "  FROM " + TMP_ACCOUNT.code + " tmp where error ISNULL", config.id));
+      "    ?\n" +
+      "  FROM " + TMP_ACCOUNT.code + " tmp where error ISNULL");
 
 
     execSql("insert into transactiontype (id, code, name)" +
@@ -163,17 +164,16 @@ public class MigrationFrs extends Migration {
       "  WHERE tmp.mig_status=" + TO_INSERT);
 
 
+    params.add(config.id);
     //actualize
-    execSql(String.format("UPDATE clientaccount c " +
+    execSql("UPDATE clientaccount c " +
       "  SET actual=true\n" +
-      "  WHERE c.mig_id='%s' ;\n", config.id));
+      "  WHERE c.mig_id=? ;\n");
 
-
-    execSql(String.format("DROP INDEX IF EXISTS transaction_idx_%s;", config.id));
   }
 
   @Override
-  protected void loadErrorsAndWrite() throws SQLException, IOException {
+  void loadErrorsAndWrite() throws SQLException, IOException {
     String[] accountColumns = {"client_id", "account_number", "error"};
     String[] TrColumns = {"account_number", "error"};
 

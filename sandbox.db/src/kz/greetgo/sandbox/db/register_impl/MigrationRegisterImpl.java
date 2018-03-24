@@ -69,7 +69,6 @@ public class MigrationRegisterImpl implements MigrationRegister {
       logger.info("##########################################################");
     }
 
-    @SuppressWarnings("DuplicateAlternationBranch")
     Pattern migrationFilePattern = getOrPattern(getCiaFileNamePattern(), getFrsFileNamePattern());
     List<String> files = getFileNameList(migrationFilePattern, sshConfigBeanGetter.get());
 

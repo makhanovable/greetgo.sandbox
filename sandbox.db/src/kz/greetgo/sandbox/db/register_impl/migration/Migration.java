@@ -12,9 +12,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -22,30 +23,32 @@ public abstract class Migration {
 
   private final Logger logger = Logger.getLogger("MIGRATION");
 
-  @SuppressWarnings("WeakerAccess")
-  protected MigrationConfig config;
+  MigrationConfig config;
 
   protected Connection connection;
 
-  @SuppressWarnings("WeakerAccess")
-  protected Map<TmpTableName, String> tableNames = new HashMap<>();
+  Map<TmpTableName, String> tableNames = new HashMap<>();
+
+  List<Object> params = new ArrayList<>();
 
   @SuppressWarnings("WeakerAccess")
-  protected Migration(MigrationConfig config, Connection connection) {
+  protected Migration(MigrationConfig config, Connection connection) throws SQLException {
     this.config = config;
     this.connection = connection;
+    createTempTablesWithLogging();
   }
 
 
-  protected abstract void createTempTables() throws SQLException;
+  abstract void createTempTables() throws SQLException;
 
-  protected abstract void parseFileAndUploadToTempTables() throws Exception;
+  abstract void parseFileAndUploadToTempTables() throws Exception;
 
-  protected abstract void markErrorRows() throws SQLException;
+  abstract void markErrorRows() throws SQLException;
 
-  protected abstract void upsertIntoDbValidRows() throws SQLException;
+  abstract void upsertIntoDbValidRows() throws SQLException;
 
-  protected abstract void loadErrorsAndWrite() throws SQLException, IOException;
+  abstract void loadErrorsAndWrite() throws SQLException, IOException;
+
 
   public void migrate() throws Exception {
 
@@ -53,12 +56,13 @@ public abstract class Migration {
 
     String migrationStatus = "STARTED";
     try {
-      createTempTablesWithLogging();
+
       parseFileAndUploadToTempTablesWithLogging();
       markErrorsAndUpsertIntoDbValidRowsWithLogging();
       loadErrorsAndWriteWithLogging();
 
       migrationStatus = "MIGRATED";
+
     } catch (Exception e) {
       migrationStatus = "FAILED";
       throw e;
@@ -117,14 +121,19 @@ public abstract class Migration {
       sql = sql.replace(tmpTableName.getKey().code, tmpTableName.getValue());
     }
 
-    try (Statement statement = connection.createStatement()) {
-      Long sqlStartedMils = 0L;
+    try (PreparedStatement statement = connection.prepareStatement(sql)) {
 
+      int argIndex = 1;
+      for (Object arg : params)
+        statement.setObject(argIndex++, arg);
+      params.clear();
+
+      Long sqlStartedMils = 0L;
       if (logger.isDebugEnabled()) {
         logger.debug("executing sql query:\n" + sql);
         sqlStartedMils = System.currentTimeMillis();
       }
-      statement.execute(sql);
+      statement.execute();
 
       if (logger.isDebugEnabled())
         logger.debug("duration: " + DateUtils.getTimeDifferenceStringFormat(System.currentTimeMillis(), sqlStartedMils) + "\n");
