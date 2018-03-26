@@ -4,7 +4,7 @@ package kz.greetgo.sandbox.db.test.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Account {
+public class AccountFrs {
   public String id;
   public String type;
   public String client_id;
@@ -18,9 +18,9 @@ public class Account {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof Account)) return false;
+    if (!(o instanceof AccountFrs)) return false;
 
-    Account account = (Account) o;
+    AccountFrs account = (AccountFrs) o;
 
     if (client_id != null ? !client_id.equals(account.client_id) : account.client_id != null) return false;
     if (account_number != null ? !account_number.equals(account.account_number) : account.account_number != null)

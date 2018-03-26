@@ -12,12 +12,16 @@ import kz.greetgo.sandbox.db.configs.DbConfig;
 import kz.greetgo.sandbox.db.register_impl.IdGenerator;
 import kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationError;
 import kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName;
+import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
+import kz.greetgo.sandbox.db.stand.model.ClientDot;
+import kz.greetgo.sandbox.db.stand.model.ClientPhoneNumberDot;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.model.ClientCia;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.sandbox.db.util.DbUtils;
 import kz.greetgo.util.RND;
 import org.apache.log4j.Logger;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -37,6 +41,8 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -61,12 +67,26 @@ public class MigrationCiaTest extends ParentTestNg {
   @SuppressWarnings("WeakerAccess")
   public BeanGetter<ClientTestDao> clientTestDao;
 
-
   @SuppressWarnings("WeakerAccess")
   public final Logger logger = Logger.getLogger("MIGRATION.TEST");
 
   private static SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-dd");
 
+  private List<File> tempFileList = Collections.synchronizedList(new ArrayList<>());
+
+  @AfterMethod
+  void afterMethod() throws Exception {
+
+    if (!tempFileList.isEmpty()) {
+      for (File file : tempFileList) {
+        if (file.exists())
+          if (!file.delete()) {
+            logger.warn("temp file not deleted " + file.getAbsolutePath());
+          }
+      }
+      tempFileList.clear();
+    }
+  }
 
   @Test
   void insertIntoTempTablesCiaTest() throws Exception {
@@ -75,6 +95,7 @@ public class MigrationCiaTest extends ParentTestNg {
     int numberOfClients = 10;
     List<ClientCia> list = rndClients(numberOfClients);
     File testData = generateCia(list);
+    tempFileList.add(testData);
 
     MigrationConfig config = new MigrationConfig();
     config.toMigrate = testData;
@@ -102,7 +123,7 @@ public class MigrationCiaTest extends ParentTestNg {
       ClientCia assertion = list.get(i);
 
       assertClient(target, assertion);
-      target.phoneNumbers = clientTestDao.get().getNumberList(tableNames.get(TMP_PHONE), target.id);
+      target.phoneNumbers = clientTestDao.get().getNumberTempTableList(tableNames.get(TMP_PHONE), target.id);
 
       assertThat(target.phoneNumbers).hasSize(assertion.phoneNumbers.size());
 
@@ -110,16 +131,13 @@ public class MigrationCiaTest extends ParentTestNg {
         assertThat(target.phoneNumbers.get(j)).isEqualTo(target.phoneNumbers.get(j));
       }
 
-      List<ClientAddress> addresses = clientTestDao.get().getAddressList(tableNames.get(TMP_ADDRESS), target.id);
+      List<ClientAddress> addresses = clientTestDao.get().getTempAddressList(tableNames.get(TMP_ADDRESS), target.id);
       assertThat(addresses).hasSize(2);
       assertThat(addresses.get(0)).isEqualTo(assertion.registerAddress);
       assertThat(addresses.get(1)).isEqualTo(assertion.actualAddress);
 
     }
 
-    if (!testData.delete()) {
-      logger.warn("test tmp file not deleted:" + testData.getAbsoluteFile());
-    }
     dropTempTables(tableNames);
   }
 
@@ -172,7 +190,7 @@ public class MigrationCiaTest extends ParentTestNg {
 
       MigrationCia migration = new MigrationCia(config, connection);
       tableNames = migration.tableNames;
-      insertClients(clients, tableNames);
+      insertClientsToTempTable(clients, tableNames);
 
       //
       //
@@ -195,21 +213,455 @@ public class MigrationCiaTest extends ParentTestNg {
     dropTempTables(tableNames);
   }
 
+  @Test
+  void insertClientCiaToRealTableTest() throws Exception {
+    clientTestDao.get().clear();
+
+    ClientCia toInsert = rndCleintCia();
+
+    Map<TmpTableName, String> tableNames;
+    MigrationConfig config = new MigrationConfig();
+    config.id = idGenerator.get().newId();
+    config.idGenerator = idGenerator.get();
+
+    try (Connection connection = DbUtils.getPostgresConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password())) {
+      MigrationCia migration = new MigrationCia(config, connection);
+      tableNames = migration.tableNames;
+
+      insertClientToTempTable(toInsert, tableNames);
+
+      //
+      //
+      migration.upsertIntoDbValidRows();
+      //
+      //
+    }
+
+    ClientDetail clientDetail = clientTestDao.get().getClientByCiaId("client", toInsert.cia_id);
+    assertThat(clientDetail).isNotNull();
+    assertThat(clientDetail.name).isEqualTo(toInsert.name);
+    assertThat(clientDetail.surname).isEqualTo(toInsert.surname);
+    assertThat(clientDetail.patronymic).isEqualTo(toInsert.patronymic);
+    assertThat(clientDetail.birthDate).isEqualTo(toInsert.birthDate);
+    assertThat(clientDetail.gender).isEqualTo(toInsert.gender);
+    String charm = clientTestDao.get().getCharmNameById(clientDetail.charm);
+    assertThat(charm).isEqualTo(toInsert.charm);
+    ClientAddress factAddr = clientTestDao.get().getRealAddressByType("clientaddr", toInsert.cia_id, AddressType.FACT.name());
+    ClientAddress regAddr = clientTestDao.get().getRealAddressByType("clientaddr", toInsert.cia_id, AddressType.REG.name());
+    assertThat(factAddr).isEqualTo(toInsert.actualAddress);
+    assertThat(regAddr).isEqualTo(toInsert.registerAddress);
+
+    dropTempTables(tableNames);
+  }
+
 
   @Test
-  void upsertIntoDbValidRowsCiaTest() throws Exception {
+  void insertClientCiaWithDuplicatesCiaToRealTableTest() throws Exception {
+    clientTestDao.get().clear();
+
+    final int numberOfClients = 3;
+    List<ClientCia> clients = rndClients(numberOfClients);
+
+    ClientCia notActualRow1 = clients.get(0);
+    ClientCia notActualRow2 = clients.get(1);
+    ClientCia actualRow = clients.get(2);
+
+    String cia_id = idGenerator.get().newId();
+    notActualRow1.cia_id = cia_id;
+    notActualRow2.cia_id = cia_id;
+    actualRow.cia_id = cia_id;
+
+    Map<TmpTableName, String> tableNames;
+    MigrationConfig config = new MigrationConfig();
+    config.id = idGenerator.get().newId();
+    config.idGenerator = idGenerator.get();
+
+    try (Connection connection = DbUtils.getPostgresConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password())) {
+      MigrationCia migration = new MigrationCia(config, connection);
+      tableNames = migration.tableNames;
+
+      insertClientsToTempTable(clients, tableNames);
+
+      //
+      //
+      migration.upsertIntoDbValidRows();
+      //
+      //
+    }
+
+    ClientDetail clientDetail = clientTestDao.get().getClientByCiaId("client", actualRow.cia_id);
+    assertThat(clientDetail).isNotNull();
+    assertThat(clientDetail.name).isEqualTo(actualRow.name);
+    assertThat(clientDetail.surname).isEqualTo(actualRow.surname);
+    assertThat(clientDetail.patronymic).isEqualTo(actualRow.patronymic);
+    assertThat(clientDetail.birthDate).isEqualTo(actualRow.birthDate);
+    assertThat(clientDetail.gender).isEqualTo(actualRow.gender);
+    String charm = clientTestDao.get().getCharmNameById(clientDetail.charm);
+    assertThat(charm).isEqualTo(actualRow.charm);
+    ClientAddress factAddr = clientTestDao.get().getRealAddressByType("clientaddr", actualRow.cia_id, AddressType.FACT.name());
+    ClientAddress regAddr = clientTestDao.get().getRealAddressByType("clientaddr", actualRow.cia_id, AddressType.REG.name());
+    assertThat(factAddr).isEqualTo(actualRow.actualAddress);
+    assertThat(regAddr).isEqualTo(actualRow.registerAddress);
+
+    dropTempTables(tableNames);
+  }
+
+  @Test
+  void updateClientCiaDetailsInRealTableTest() throws Exception {
+    clientTestDao.get().clear();
+    final String cia_id = idGenerator.get().newId();
+
+    ClientDot clientInDb = new ClientDot();
+    clientInDb.id = idGenerator.get().newId();
+    clientInDb.cia_id = cia_id;
+    clientInDb.name = "asdcdfsvds";
+    clientInDb.surname = "sdc";
+    clientInDb.patronymic = "yjf";
+    clientInDb.charm = "xcvxcvxcv";
+    clientInDb.gender = GenderType.MALE;
+    clientTestDao.get().insertClientDot(clientInDb);
+
+
+    ClientCia updatingRow = rndCleintCia();
+    updatingRow.cia_id = cia_id;
+
+    Map<TmpTableName, String> tableNames;
+    MigrationConfig config = new MigrationConfig();
+    config.id = idGenerator.get().newId();
+    config.idGenerator = idGenerator.get();
+
+    try (Connection connection = DbUtils.getPostgresConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password())) {
+      MigrationCia migration = new MigrationCia(config, connection);
+      tableNames = migration.tableNames;
+
+      insertClientToTempTable(updatingRow, tableNames);
+
+      //
+      //
+      migration.upsertIntoDbValidRows();
+      //
+      //
+    }
+
+    ClientDetail clientDetail = clientTestDao.get().getClientByCiaId("client", updatingRow.cia_id);
+    assertThat(clientDetail).isNotNull();
+    assertThat(clientDetail.name).isEqualTo(updatingRow.name);
+    assertThat(clientDetail.surname).isEqualTo(updatingRow.surname);
+    assertThat(clientDetail.patronymic).isEqualTo(updatingRow.patronymic);
+    assertThat(clientDetail.birthDate).isEqualTo(updatingRow.birthDate);
+    assertThat(clientDetail.gender).isEqualTo(updatingRow.gender);
+
+    String charm = clientTestDao.get().getCharmNameById(clientDetail.charm);
+    assertThat(charm).isEqualTo(updatingRow.charm);
+
+    dropTempTables(tableNames);
+  }
+
+  @Test
+  void insertAddressesOnExistingClientInRealTableTest() throws Exception {
+    clientTestDao.get().clear();
+    final String cia_id = idGenerator.get().newId();
+
+    ClientDot clientInDb = new ClientDot();
+    clientInDb.id = idGenerator.get().newId();
+    clientInDb.cia_id = cia_id;
+    clientInDb.name = "asdcdfsvds";
+    clientInDb.surname = "sdc";
+    clientInDb.patronymic = "yjf";
+    clientInDb.charm = "xcvxcvxcv";
+    clientInDb.gender = GenderType.MALE;
+    clientTestDao.get().insertClientDot(clientInDb);
+
+
+    ClientCia updatingRow = rndCleintCia();
+    updatingRow.cia_id = cia_id;
+
+    Map<TmpTableName, String> tableNames;
+    MigrationConfig config = new MigrationConfig();
+    config.id = idGenerator.get().newId();
+    config.idGenerator = idGenerator.get();
+
+    try (Connection connection = DbUtils.getPostgresConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password())) {
+      MigrationCia migration = new MigrationCia(config, connection);
+      tableNames = migration.tableNames;
+
+      insertClientToTempTable(updatingRow, tableNames);
+
+      //
+      //
+      migration.upsertIntoDbValidRows();
+      //
+      //
+    }
+
+    ClientAddress factAddr = clientTestDao.get().getRealAddressByType("clientaddr", updatingRow.cia_id, AddressType.FACT.name());
+    ClientAddress regAddr = clientTestDao.get().getRealAddressByType("clientaddr", updatingRow.cia_id, AddressType.REG.name());
+    assertThat(factAddr).isEqualTo(updatingRow.actualAddress);
+    assertThat(regAddr).isEqualTo(updatingRow.registerAddress);
+
+    dropTempTables(tableNames);
+  }
+
+  @Test
+  void updateAddressesOnExistingClientInRealTableTest() throws Exception {
+    clientTestDao.get().clear();
+    final String cia_id = idGenerator.get().newId();
+
+    ClientDot clientInDb = new ClientDot();
+    clientInDb.id = idGenerator.get().newId();
+    clientInDb.cia_id = cia_id;
+    clientInDb.name = "asdcdfsvds";
+    clientInDb.surname = "sdc";
+    clientInDb.patronymic = "yjf";
+    clientInDb.charm = "xcvxcvxcv";
+    clientInDb.gender = GenderType.MALE;
+    clientTestDao.get().insertClientDot(clientInDb);
+
+    ClientAddressDot addrInDbFact = new ClientAddressDot();
+    addrInDbFact.cia_id = cia_id;
+    addrInDbFact.client = clientInDb.id;
+    addrInDbFact.type = AddressType.FACT;
+    addrInDbFact.house = "qwerty";
+    addrInDbFact.street = "sdvxsv";
+    addrInDbFact.flat = "123";
+    clientTestDao.get().insertAddress(addrInDbFact);
+
+    ClientAddressDot addrInDbReg = new ClientAddressDot();
+    addrInDbReg.cia_id = cia_id;
+    addrInDbReg.client = clientInDb.id;
+    addrInDbReg.type = AddressType.REG;
+    addrInDbReg.house = "qwerty";
+    addrInDbReg.street = "sdvxsv";
+    addrInDbReg.flat = "123";
+    clientTestDao.get().insertAddress(addrInDbReg);
+
+    ClientCia updatingRow = rndCleintCia();
+    updatingRow.cia_id = cia_id;
+
+    Map<TmpTableName, String> tableNames;
+    MigrationConfig config = new MigrationConfig();
+    config.id = idGenerator.get().newId();
+    config.idGenerator = idGenerator.get();
+
+    try (Connection connection = DbUtils.getPostgresConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password())) {
+      MigrationCia migration = new MigrationCia(config, connection);
+      tableNames = migration.tableNames;
+
+      insertClientToTempTable(updatingRow, tableNames);
+
+      //
+      //
+      migration.upsertIntoDbValidRows();
+      //
+      //
+    }
+
+    ClientAddress factAddr = clientTestDao.get().getRealAddressByType("clientaddr", updatingRow.cia_id, AddressType.FACT.name());
+    ClientAddress regAddr = clientTestDao.get().getRealAddressByType("clientaddr", updatingRow.cia_id, AddressType.REG.name());
+    assertThat(factAddr).isEqualTo(updatingRow.actualAddress);
+    assertThat(regAddr).isEqualTo(updatingRow.registerAddress);
+
+    dropTempTables(tableNames);
+  }
+
+  @Test
+  void insertPhoneNumbersOnExistingClientInRealTableTest() throws Exception {
+    clientTestDao.get().clear();
+    final String cia_id = idGenerator.get().newId();
+
+    ClientDot clientInDb = new ClientDot();
+    clientInDb.id = idGenerator.get().newId();
+    clientInDb.cia_id = cia_id;
+    clientInDb.name = "asdcdfsvds";
+    clientInDb.surname = "sdc";
+    clientInDb.patronymic = "yjf";
+    clientInDb.charm = "xcvxcvxcv";
+    clientInDb.gender = GenderType.MALE;
+    clientTestDao.get().insertClientDot(clientInDb);
+
+    ClientCia updatingRow = rndCleintCia();
+    updatingRow.cia_id = cia_id;
+
+    Map<TmpTableName, String> tableNames;
+    MigrationConfig config = new MigrationConfig();
+    config.id = idGenerator.get().newId();
+    config.idGenerator = idGenerator.get();
+
+    try (Connection connection = DbUtils.getPostgresConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password())) {
+      MigrationCia migration = new MigrationCia(config, connection);
+      tableNames = migration.tableNames;
+
+      insertClientToTempTable(updatingRow, tableNames);
+
+      //
+      //
+      migration.upsertIntoDbValidRows();
+      //
+      //
+    }
+
+    List<ClientPhoneNumber> numbers = clientTestDao.get().getNumbersByIdOrderByNumber(clientInDb.id);
+
+    assertThat(numbers).hasSize(updatingRow.phoneNumbers.size());
+
+    updatingRow.phoneNumbers.sort(Comparator.comparing(phoneNumber -> phoneNumber.number));
+
+    for (int i = 0; i < numbers.size(); i++) {
+      ClientPhoneNumber target = numbers.get(i);
+      ClientPhoneNumber assertion = updatingRow.phoneNumbers.get(i);
+
+      assertThat(target.number).isEqualTo(assertion.number);
+      assertThat(target.type).isEqualTo(assertion.type);
+
+
+    }
+
+    dropTempTables(tableNames);
+  }
+
+  @Test
+  void updatePhoneNumbersOnExistingClientInRealTableTest() throws Exception {
+    clientTestDao.get().clear();
+    final String cia_id = idGenerator.get().newId();
+
+    ClientDot clientInDb = new ClientDot();
+    clientInDb.id = idGenerator.get().newId();
+    clientInDb.cia_id = cia_id;
+    clientInDb.name = "asdcdfsvds";
+    clientInDb.surname = "sdc";
+    clientInDb.patronymic = "yjf";
+    clientInDb.charm = "xcvxcvxcv";
+    clientInDb.gender = GenderType.MALE;
+    clientTestDao.get().insertClientDot(clientInDb);
+
+    ClientPhoneNumber numberInDb = new ClientPhoneNumber();
+    numberInDb.type = PhoneNumberType.WORK;
+    numberInDb.number = "123456789";
+    clientTestDao.get().insertPhone(new ClientPhoneNumberDot(clientInDb.id, numberInDb));
+
+    ClientCia updatingRow = rndCleintCia();
+    updatingRow.cia_id = cia_id;
+
+    Map<TmpTableName, String> tableNames;
+    MigrationConfig config = new MigrationConfig();
+    config.id = idGenerator.get().newId();
+    config.idGenerator = idGenerator.get();
+
+    try (Connection connection = DbUtils.getPostgresConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password())) {
+      MigrationCia migration = new MigrationCia(config, connection);
+      tableNames = migration.tableNames;
+
+      insertClientToTempTable(updatingRow, tableNames);
+
+      //
+      //
+      migration.upsertIntoDbValidRows();
+      //
+      //
+    }
+
+    List<ClientPhoneNumber> expectedList = new ArrayList<>();
+    expectedList.add(numberInDb);
+    expectedList.addAll(updatingRow.phoneNumbers);
+
+    List<ClientPhoneNumber> numbers = clientTestDao.get().getNumbersByIdOrderByNumber(clientInDb.id);
+
+    assertThat(numbers).hasSize(expectedList.size());
+
+    expectedList.sort(Comparator.comparing(phoneNumber -> phoneNumber.number));
+
+    for (int i = 0; i < numbers.size(); i++) {
+      ClientPhoneNumber target = numbers.get(i);
+      ClientPhoneNumber assertion = expectedList.get(i);
+
+      assertThat(target).isEqualTo(assertion);
+    }
+
+    dropTempTables(tableNames);
+  }
+
+
+  @Test
+  void updateClientCiaWithDuplicatesInRealTableCiaTest() throws Exception {
+    clientTestDao.get().clear();
+    String cia_id = idGenerator.get().newId();
+
+    ClientDot clientInDb = new ClientDot();
+    clientInDb.cia_id = cia_id;
+    clientInDb.id = idGenerator.get().newId();
+    clientInDb.name = "asdcdfsvds";
+    clientInDb.surname = "sdc";
+    clientInDb.patronymic = "yjf";
+    clientInDb.charm = null;
+    clientInDb.gender = GenderType.MALE;
+    clientTestDao.get().insertClientDot(clientInDb);
+
+    ClientAddressDot addrInDbFact = new ClientAddressDot();
+    addrInDbFact.cia_id = clientInDb.cia_id;
+    addrInDbFact.client = clientInDb.id;
+    addrInDbFact.type = AddressType.FACT;
+    addrInDbFact.house = "qwerty";
+    addrInDbFact.street = "sdvxsv";
+    addrInDbFact.flat = "123";
+    clientTestDao.get().insertAddress(addrInDbFact);
+
+    final int numberOfClients = 3;
+    List<ClientCia> clients = rndClients(numberOfClients);
+
+    ClientCia notActualRow1 = clients.get(0);
+    ClientCia notActualRow2 = clients.get(1);
+    ClientCia actualRow = clients.get(2);
+
+    notActualRow1.cia_id = cia_id;
+    notActualRow2.cia_id = cia_id;
+    actualRow.cia_id = cia_id;
+
+    Map<TmpTableName, String> tableNames;
+    MigrationConfig config = new MigrationConfig();
+    config.id = idGenerator.get().newId();
+    config.idGenerator = idGenerator.get();
+
+    try (Connection connection = DbUtils.getPostgresConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password())) {
+      MigrationCia migration = new MigrationCia(config, connection);
+      tableNames = migration.tableNames;
+
+      insertClientsToTempTable(clients, tableNames);
+
+      //
+      //
+      migration.upsertIntoDbValidRows();
+      //
+      //
+    }
+
+    ClientDetail clientDetail = clientTestDao.get().getClientByCiaId("client", actualRow.cia_id);
+    assertThat(clientDetail).isNotNull();
+    assertThat(clientDetail.name).isEqualTo(actualRow.name);
+    assertThat(clientDetail.surname).isEqualTo(actualRow.surname);
+    assertThat(clientDetail.patronymic).isEqualTo(actualRow.patronymic);
+    assertThat(clientDetail.birthDate).isEqualTo(actualRow.birthDate);
+    assertThat(clientDetail.gender).isEqualTo(actualRow.gender);
+    String charm = clientTestDao.get().getCharmNameById(clientDetail.charm);
+    assertThat(charm).isEqualTo(actualRow.charm);
+
+    dropTempTables(tableNames);
+  }
+
+
+  @Test
+  void errorCiaRowsNotUpsertedTest() throws Exception {
 
     clientTestDao.get().clear();
 
-    final int numberOfClients = 100;
+    final int numberOfClients = 10;
     List<ClientCia> clients = rndClients(numberOfClients);
     Set<String> invalidRows = new HashSet<>();
 
 
     ClientCia errorRow = clients.get(0);
-    ClientCia errorRow2 = clients.get(10);
-    ClientCia errorRow3 = clients.get(50);
-    ClientCia errorRow4 = clients.get(51);
+    ClientCia errorRow2 = clients.get(1);
+    ClientCia errorRow3 = clients.get(2);
+    ClientCia errorRow4 = clients.get(3);
     errorRow.error = "error";
     errorRow2.error = "error";
     errorRow3.error = "error";
@@ -228,7 +680,7 @@ public class MigrationCiaTest extends ParentTestNg {
     try (Connection connection = DbUtils.getPostgresConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password())) {
       MigrationCia migration = new MigrationCia(config, connection);
       tableNames = migration.tableNames;
-      insertClients(clients, tableNames);
+      insertClientsToTempTable(clients, tableNames);
 
       //
       //
@@ -280,14 +732,14 @@ public class MigrationCiaTest extends ParentTestNg {
     config.error = new File(Modules.dbDir() + "/build/temp/file" + idGenerator.get().newId());
     //noinspection ResultOfMethodCallIgnored
     config.error.getParentFile().mkdirs();
+    tempFileList.add(config.error);
 
     Map<TmpTableName, String> tableNames;
-
     try (Connection connection = DbUtils.getPostgresConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password())) {
       MigrationCia migration = new MigrationCia(config, connection);
       tableNames = migration.tableNames;
 
-      insertClients(clients, tableNames);
+      insertClientsToTempTable(clients, tableNames);
       //
       //
       migration.loadErrorsAndWrite();
@@ -312,16 +764,12 @@ public class MigrationCiaTest extends ParentTestNg {
 
     assertThat(errorCount).isEqualTo(invalidRows.size());
 
-    if (!config.error.delete()) {
-      logger.warn("temp file not deleted" + config.error.getAbsolutePath());
-    }
-
     dropTempTables(tableNames);
   }
 
 
   @Test
-  void ciaFullMigrateTest() throws Exception {
+  void ciaFullMigrateAndAllRowsActualTrueTest() throws Exception {
 
     clientTestDao.get().clear();
     int numberOfClients = 10;
@@ -331,6 +779,7 @@ public class MigrationCiaTest extends ParentTestNg {
     errorRow.name = null;
 
     File testData = generateCia(list);
+    tempFileList.add(testData);
     MigrationConfig config = new MigrationConfig();
     config.toMigrate = testData;
     config.idGenerator = idGenerator.get();
@@ -338,6 +787,7 @@ public class MigrationCiaTest extends ParentTestNg {
     config.error = new File(Modules.dbDir() + "/build/temp/file" + idGenerator.get().newId());
     //noinspection ResultOfMethodCallIgnored
     config.error.getParentFile().mkdirs();
+    tempFileList.add(config.error);
 
     Map<TmpTableName, String> tableNames;
     try (Connection connection = DbUtils.getPostgresConnection(dbConfig.get().url(), dbConfig.get().username(), dbConfig.get().password())) {
@@ -355,6 +805,7 @@ public class MigrationCiaTest extends ParentTestNg {
     List<ClientCia> result = clientTestDao.get().getTempClientListWithErrors(tableNames.get(TMP_CLIENT));
     assertThat(result).hasSize(1);
     assertThat(config.error).exists();
+
     try (Stream<String> stream = Files.lines(Paths.get(config.error.getAbsolutePath()))) {
       long lineCount = stream.count();
       assertThat(lineCount).isEqualTo(1);
@@ -363,31 +814,30 @@ public class MigrationCiaTest extends ParentTestNg {
     List<ClientDetail> clientList = clientTestDao.get().getClientTestList("client");
     assertThat(clientList).hasSize(9);
 
-    if (!config.error.delete()) {
-      logger.warn("temp file not deleted" + config.error.getAbsolutePath());
-    }
+    boolean allRowsActual = clientTestDao.get().isAllRowsActualTrueWhereMigId(config.id);
+    assertThat(allRowsActual).isTrue();
 
     dropTempTables(tableNames);
-
   }
 
   ////////////////////////////////////////////////////////////////////////////
 
 
-  private void insertClients(List<ClientCia> clients, Map<TmpTableName, String> tableNames) {
-    for (ClientCia detail : clients) {
-
-      clientTestDao.get().insertClientDetail(detail, tableNames.get(TMP_CLIENT));
-
-      for (ClientPhoneNumber number : detail.phoneNumbers) {
-        clientTestDao.get().insertPhoneIntoTemp(number, tableNames.get(TMP_PHONE));
-      }
-      clientTestDao.get().insertAddressIntoTemp(detail.registerAddress, tableNames.get(TMP_ADDRESS));
-      clientTestDao.get().insertAddressIntoTemp(detail.actualAddress, tableNames.get(TMP_ADDRESS));
-
+  private void insertClientsToTempTable(List<ClientCia> clients, Map<TmpTableName, String> tableNames) {
+    for (ClientCia client : clients) {
+      insertClientToTempTable(client, tableNames);
     }
   }
 
+  private void insertClientToTempTable(ClientCia client, Map<TmpTableName, String> tableNames) {
+    clientTestDao.get().insertClientDetail(client, tableNames.get(TMP_CLIENT));
+
+    for (ClientPhoneNumber number : client.phoneNumbers) {
+      clientTestDao.get().insertPhoneIntoTemp(number, tableNames.get(TMP_PHONE));
+    }
+    clientTestDao.get().insertAddressIntoTemp(client.registerAddress, tableNames.get(TMP_ADDRESS));
+    clientTestDao.get().insertAddressIntoTemp(client.actualAddress, tableNames.get(TMP_ADDRESS));
+  }
 
   @SuppressWarnings("Duplicates")
   private void dropTempTables(Map<TmpTableName, String> tableNames) {
@@ -411,44 +861,47 @@ public class MigrationCiaTest extends ParentTestNg {
   private List<ClientCia> rndClients(int n) {
     List<ClientCia> list = new ArrayList<>();
     for (int i = 0; i < n; i++) {
-      ClientCia c = new ClientCia();
-      //cia_id
-      c.id = idGenerator.get().newId();
-      c.cia_id = idGenerator.get().newId();
-      c.name = idGenerator.get().newId();
-      c.surname = idGenerator.get().newId();
-      c.patronymic = idGenerator.get().newId();
-      c.charm = RND.str(10);
-      c.gender = RND.someEnum(GenderType.values());
-      c.birthDate = dateFormat.format(RND.dateYears(-50, -20));
-
-      c.registerAddress = new ClientAddress();
-      c.registerAddress.client = c.id;
-      c.registerAddress.type = AddressType.REG;
-      c.registerAddress.house = RND.str(10);
-      c.registerAddress.flat = RND.str(10);
-      c.registerAddress.street = RND.str(10);
-
-      c.actualAddress = new ClientAddress();
-      c.actualAddress.client = c.id;
-      c.actualAddress.type = AddressType.FACT;
-      c.actualAddress.house = RND.str(10);
-      c.actualAddress.flat = RND.str(10);
-      c.actualAddress.street = RND.str(10);
-
-      c.phoneNumbers = new ArrayList<>();
-      for (int j = 0; j < 3; j++) {
-        ClientPhoneNumber number = new ClientPhoneNumber();
-        number.client = c.id;
-        number.number = RND.str(10);
-        number.type = RND.someEnum(PhoneNumberType.values());
-        c.phoneNumbers.add(number);
-      }
-
+      ClientCia c = rndCleintCia();
       list.add(c);
     }
-
     return list;
+  }
+
+  private ClientCia rndCleintCia() {
+    ClientCia c = new ClientCia();
+    //cia_id
+    c.id = idGenerator.get().newId();
+    c.cia_id = idGenerator.get().newId();
+    c.name = idGenerator.get().newId();
+    c.surname = idGenerator.get().newId();
+    c.patronymic = idGenerator.get().newId();
+    c.charm = RND.str(10);
+    c.gender = RND.someEnum(GenderType.values());
+    c.birthDate = dateFormat.format(RND.dateYears(-50, -20));
+
+    c.registerAddress = new ClientAddress();
+    c.registerAddress.client = c.id;
+    c.registerAddress.type = AddressType.REG;
+    c.registerAddress.house = RND.str(10);
+    c.registerAddress.flat = RND.str(10);
+    c.registerAddress.street = RND.str(10);
+
+    c.actualAddress = new ClientAddress();
+    c.actualAddress.client = c.id;
+    c.actualAddress.type = AddressType.FACT;
+    c.actualAddress.house = RND.str(10);
+    c.actualAddress.flat = RND.str(10);
+    c.actualAddress.street = RND.str(10);
+
+    c.phoneNumbers = new ArrayList<>();
+    for (int j = 0; j < 3; j++) {
+      ClientPhoneNumber number = new ClientPhoneNumber();
+      number.client = c.id;
+      number.number = idGenerator.get().newId();
+      number.type = RND.someEnum(PhoneNumberType.values());
+      c.phoneNumbers.add(number);
+    }
+    return c;
   }
 
   private File generateCia(List<ClientCia> list) throws Exception {

@@ -12,9 +12,8 @@ import java.util.Date;
 
 public class ClientDot {
 
-  private BeanGetter<StandDb> db;
-
   public String id;
+  public String cia_id;
   public String surname;
   public String name;
   public String patronymic;
