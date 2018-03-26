@@ -11,6 +11,7 @@ import kz.greetgo.sandbox.controller.model.ClientPhoneNumberToSave;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.db.register_impl.report.ClientReportTestView;
 import kz.greetgo.sandbox.db.stand.model.ClientAddressDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.stand.model.ClientPhoneNumberDot;
@@ -596,7 +597,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     this.assertClientDetail(clientDetail, new ClientDot(clientToSave));
 
 
-    List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(clientToSave.id);
+    List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersByIdOrderByNumber(clientToSave.id);
     assertThat(numberList).isEmpty();
   }
 
@@ -624,7 +625,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     //
     //
 
-    List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(clientToSave.id);
+    List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersByIdOrderByNumber(clientToSave.id);
 
     assertThat(numberList.stream().anyMatch(o -> o.number.equals(toEdited.number))).isTrue();
   }
@@ -716,7 +717,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     ClientAddress regAddress = this.clientTestDao.get().getAddres(target.id, AddressType.REG);
     this.assertClientAddress(regAddress, registerAddress);
 
-    List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersById(target.id);
+    List<ClientPhoneNumber> numberList = this.clientTestDao.get().getNumbersByIdOrderByNumber(target.id);
     assertThat(numberList).isNotEmpty();
     assertThat(numberList).hasSize(clientToSave.numbersToSave.size());
 

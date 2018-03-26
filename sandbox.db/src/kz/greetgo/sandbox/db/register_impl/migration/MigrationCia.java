@@ -99,11 +99,8 @@ public class MigrationCia extends Migration {
 
     execSql("UPDATE " + TMP_CLIENT.code + " set error = '" + BIRTH_NULL_ERROR.message + "' where error  is null and birthDate is null");
 
-    execSql("UPDATE " + TMP_CLIENT.code + "\n" +
-      "  set birthDateParsed = birthDate::date" +
-      "  where error is null and is_date(birthDate)");
 
-    execSql("UPDATE " + TMP_CLIENT.code + " set error='" + DATE_INVALID_ERROR.message + "' where error is null and birthDateParsed is null");
+    execSql("UPDATE " + TMP_CLIENT.code + " set error='" + DATE_INVALID_ERROR.message + "' where error is null and not is_date(birthDate)");
 
     //пустые строки, то есть пробелы
     //name, surname
@@ -112,12 +109,16 @@ public class MigrationCia extends Migration {
 
     //birthDate validation [18, 100]
     execSql("UPDATE " + TMP_CLIENT.code + " set error = '" + AGE_ERROR.message + "'\n" +
-      " where error is null and date_part('year', age(birthDateParsed)) NOT BETWEEN 18 and 100");
+      " where error is null and date_part('year', age(birthDate::date)) NOT BETWEEN 18 and 100");
   }
 
 
   @Override
   void upsertIntoDbValidRows() throws SQLException {
+
+    execSql("UPDATE " + TMP_CLIENT.code + "\n" +
+      "  set birthDateParsed = birthDate::date" +
+      "  where error is null");
 
     execSql("UPDATE " + TMP_CLIENT.code + " set patronymic = null where error is null and patronymic::char(255)='';");
 
@@ -141,16 +142,18 @@ public class MigrationCia extends Migration {
 
     params.add(config.id);
     execSql("INSERT INTO client (id, cia_id, name, surname, patronymic, gender, birthdate, charm, mig_id)\n" +
-      "  SELECT id, cia_id, name, surname, patronymic, gender, birthDateParsed, charm, ?\n" +
+      "  SELECT tmp.id, tmp.cia_id, tmp.name, surname, patronymic, gender, birthDateParsed, ch.id, ?\n" +
       "  FROM " + TMP_CLIENT.code + " tmp\n" +
+      "  LEFT JOIN charm ch on tmp.charm=ch.name\n" +
       "  WHERE tmp.mig_status='LAST_ACTUAL'");
 
     params.add(config.id);
     execSql(
       "UPDATE client AS c\n" +
         "  SET  (name, surname, patronymic, gender, birthdate, charm, mig_id)=\n" +
-        "    (tmp.name, tmp.surname, tmp.patronymic, tmp.gender, tmp.birthDateParsed, tmp.charm, ?)\n" +
+        "    (tmp.name, tmp.surname, tmp.patronymic, tmp.gender, tmp.birthDateParsed, ch.id, ?)\n" +
         "  FROM " + TMP_CLIENT.code + " tmp\n" +
+        "  LEFT JOIN charm ch on tmp.charm=ch.name\n" +
         "  WHERE tmp.mig_status='TO_UPDATE' AND tmp.client_id=c.id;");
 
     execSql("INSERT INTO clientaddr (client, cia_id, type, street, house, flat)\n" +
@@ -159,11 +162,21 @@ public class MigrationCia extends Migration {
       "  JOIN " + TMP_CLIENT.code + " cl ON cl.id=addr.client_id\n" +
       "  WHERE cl.mig_status='LAST_ACTUAL'");
 
-    execSql("UPDATE clientaddr AS addr\n" +
-      "  SET (street, house, flat)=(tmp.street, tmp.house, tmp.flat)\n" +
+//    execSql("UPDATE clientaddr AS addr\n" +
+//      "  SET (street, house, flat)=(tmp.street, tmp.house, tmp.flat)\n" +
+//      "  FROM " + TMP_ADDRESS.code + " tmp\n" +
+//      "  JOIN " + TMP_CLIENT.code + " cl ON cl.id=tmp.client_id\n" +
+//      "  WHERE cl.mig_status='TO_UPDATE' AND addr.client=cl.client_id");
+
+
+    execSql("insert into clientaddr (client, cia_id, type, street, house, flat)\n" +
+      "  select cl.client_id, cl.cia_id, tmp.type, tmp.street, tmp.house, tmp.flat\n" +
       "  FROM " + TMP_ADDRESS.code + " tmp\n" +
       "  JOIN " + TMP_CLIENT.code + " cl ON cl.id=tmp.client_id\n" +
-      "  WHERE cl.mig_status='TO_UPDATE' AND addr.client=cl.client_id");
+      "  WHERE cl.mig_status='TO_UPDATE'\n" +
+      "  ON CONFLICT (client, type)\n" +
+      "    DO UPDATE SET (street, house, flat) = (EXCLUDED.street, EXCLUDED.house, EXCLUDED.flat)");
+
 
     execSql("insert into clientphone (client, number, type)\n" +
       "  SELECT cl.id, phone.number, phone.type\n" +
