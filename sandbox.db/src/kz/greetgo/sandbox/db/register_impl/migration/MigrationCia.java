@@ -15,7 +15,6 @@ import java.sql.SQLException;
 import java.util.Date;
 
 import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationError.*;
-import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationStatus.*;
 import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.*;
 
 
@@ -53,7 +52,7 @@ public class MigrationCia extends Migration {
       "  charm varchar(32),\n" +
       "  actual boolean default false,\n" +
       "  error varchar(100),\n" +
-      "  mig_status smallint default " + NOT_READY + ",\n" +
+      "  mig_status varchar(30) default 'NOT_READY',\n" +
       "  PRIMARY KEY (no)\n" +
       ")";
 
@@ -130,13 +129,13 @@ public class MigrationCia extends Migration {
 
 //    только последний рекорд одинаковых cia_id актуальный
     execSql("UPDATE " + TMP_CLIENT.code + " cl\n" +
-      "  SET mig_status=" + LAST_ACTUAL + "\n" +
+      "  SET mig_status='LAST_ACTUAL'\n" +
       "  FROM (SELECT MAX(no) AS no FROM " + TMP_CLIENT.code + " WHERE error IS NULL GROUP BY cia_id) AS tmp\n" +
       "  WHERE cl.no = tmp.no");
 
     execSql("UPDATE " + TMP_CLIENT.code + " as tmp\n" +
       "  SET client_id = c.id,\n" +
-      "    mig_status = " + TO_UPDATE + "\n" +
+      "    mig_status = 'TO_UPDATE'\n" +
       "  FROM client as c\n" +
       "  WHERE tmp.mig_status = 'LAST_ACTUAL' and c.cia_id = tmp.cia_id");
 
@@ -144,7 +143,7 @@ public class MigrationCia extends Migration {
     execSql("INSERT INTO client (id, cia_id, name, surname, patronymic, gender, birthdate, charm, mig_id)\n" +
       "  SELECT id, cia_id, name, surname, patronymic, gender, birthDateParsed, charm, ?\n" +
       "  FROM " + TMP_CLIENT.code + " tmp\n" +
-      "  WHERE tmp.mig_status=" + LAST_ACTUAL);
+      "  WHERE tmp.mig_status='LAST_ACTUAL'");
 
     params.add(config.id);
     execSql(
@@ -152,31 +151,31 @@ public class MigrationCia extends Migration {
         "  SET  (name, surname, patronymic, gender, birthdate, charm, mig_id)=\n" +
         "    (tmp.name, tmp.surname, tmp.patronymic, tmp.gender, tmp.birthDateParsed, tmp.charm, ?)\n" +
         "  FROM " + TMP_CLIENT.code + " tmp\n" +
-        "  WHERE tmp.mig_status=" + TO_UPDATE + " AND tmp.client_id=c.id;");
+        "  WHERE tmp.mig_status='TO_UPDATE' AND tmp.client_id=c.id;");
 
     execSql("INSERT INTO clientaddr (client, cia_id, type, street, house, flat)\n" +
       "  SELECT cl.id, cl.cia_id, addr.type, addr.street, addr.house, addr.flat\n" +
       "  FROM " + TMP_ADDRESS.code + " addr\n" +
       "  JOIN " + TMP_CLIENT.code + " cl ON cl.id=addr.client_id\n" +
-      "  WHERE cl.mig_status=" + LAST_ACTUAL);
+      "  WHERE cl.mig_status='LAST_ACTUAL'");
 
     execSql("UPDATE clientaddr AS addr\n" +
       "  SET (street, house, flat)=(tmp.street, tmp.house, tmp.flat)\n" +
       "  FROM " + TMP_ADDRESS.code + " tmp\n" +
       "  JOIN " + TMP_CLIENT.code + " cl ON cl.id=tmp.client_id\n" +
-      "  WHERE cl.mig_status=" + TO_UPDATE + " AND addr.client=cl.client_id");
+      "  WHERE cl.mig_status='TO_UPDATE' AND addr.client=cl.client_id");
 
     execSql("insert into clientphone (client, number, type)\n" +
       "  SELECT cl.id, phone.number, phone.type\n" +
       "  FROM " + TMP_PHONE.code + " phone\n" +
       "  JOIN " + TMP_CLIENT.code + " cl ON cl.id=phone.client_id\n" +
-      "  WHERE cl.mig_status=" + LAST_ACTUAL);
+      "  WHERE cl.mig_status='LAST_ACTUAL'");
 
     execSql("INSERT INTO clientphone (client, number, type)\n" +
       "  SELECT cl.client_id, phone.number, phone.type " +
       "  FROM " + TMP_PHONE.code + " phone\n" +
       "  JOIN " + TMP_CLIENT.code + " cl ON cl.id=phone.client_id\n" +
-      "  WHERE cl.mig_status=" + TO_UPDATE + "\n" +
+      "  WHERE cl.mig_status='TO_UPDATE'\n" +
       "  ON CONFLICT (client, number)\n" +
       "    DO UPDATE SET type=EXCLUDED.type");
 

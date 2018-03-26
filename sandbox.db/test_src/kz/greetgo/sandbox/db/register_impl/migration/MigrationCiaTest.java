@@ -7,7 +7,6 @@ import kz.greetgo.sandbox.controller.enums.PhoneNumberType;
 import kz.greetgo.sandbox.controller.model.ClientAddress;
 import kz.greetgo.sandbox.controller.model.ClientDetail;
 import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
-import kz.greetgo.sandbox.controller.register.MigrationRegister;
 import kz.greetgo.sandbox.controller.util.Modules;
 import kz.greetgo.sandbox.db.configs.DbConfig;
 import kz.greetgo.sandbox.db.register_impl.IdGenerator;
@@ -61,8 +60,6 @@ public class MigrationCiaTest extends ParentTestNg {
 
   @SuppressWarnings("WeakerAccess")
   public BeanGetter<ClientTestDao> clientTestDao;
-  @SuppressWarnings("WeakerAccess")
-  public BeanGetter<MigrationRegister> migrationRegister;
 
 
   @SuppressWarnings("WeakerAccess")

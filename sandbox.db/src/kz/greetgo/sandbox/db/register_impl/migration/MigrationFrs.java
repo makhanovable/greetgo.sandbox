@@ -13,9 +13,6 @@ import java.sql.SQLException;
 import java.util.Date;
 
 import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationError.*;
-import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationStatus.HAS_ACCOUNT;
-import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationStatus.NOT_READY;
-import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationStatus.TO_INSERT;
 import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_ACCOUNT;
 import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_TRANSACTION;
 
@@ -45,7 +42,7 @@ public class MigrationFrs extends Migration {
       "  account_number varchar(100),\n" +
       "  registeredAt varchar(100),\n" +
       "  error varchar(100),\n" +
-      "  mig_status smallint default " + NOT_READY + ",\n" +
+      "  mig_status varchar(30) default 'NOT_READY',\n" +
       "  PRIMARY KEY(no)\n" +
       ")";
 
@@ -58,7 +55,7 @@ public class MigrationFrs extends Migration {
       "  finished_at varchar(100),\n" +
       "  type varchar(100),\n" +
       "  error varchar(100),\n" +
-      "  mig_status smallint default " + NOT_READY + ",\n" +
+      "  mig_status varchar(30) default 'NOT_READY',\n" +
       "  PRIMARY KEY (no)\n" +
       ")";
 
@@ -97,18 +94,18 @@ public class MigrationFrs extends Migration {
       "  WHERE tmp.client_id ISNULL");
 
     execSql("UPDATE " + TMP_TRANSACTION.code + " tmp\n" +
-      "  SET mig_status =" + HAS_ACCOUNT + "\n" +
+      "  SET mig_status ='HAS_ACCOUNT'\n" +
       "  FROM " + TMP_ACCOUNT.code + " ca\n" +
       "  WHERE ca.error ISNULL AND ca.account_number=tmp.account_number\n");
 
     execSql("UPDATE " + TMP_TRANSACTION.code + " tmp\n" +
-      "  SET mig_status =" + HAS_ACCOUNT + "\n" +
+      "  SET mig_status ='HAS_ACCOUNT'\n" +
       "  FROM clientaccount ca\n" +
-      "  WHERE tmp.mig_status=" + NOT_READY + " AND ca.number=tmp.account_number\n");
+      "  WHERE tmp.mig_status='NOT_READY' AND ca.number=tmp.account_number\n");
 
     execSql("update " + TMP_TRANSACTION.code + " tmp\n" +
       "  SET error='" + TRANSACTION_ACCOUNT_NOT_EXIST_ERROR.message + "'\n" +
-      "  WHERE tmp.mig_status=" + NOT_READY);
+      "  WHERE tmp.mig_status='NOT_READY'");
   }
 
 
@@ -116,7 +113,7 @@ public class MigrationFrs extends Migration {
   void upsertIntoDbValidRows() throws SQLException {
 
     execSql("UPDATE " + TMP_TRANSACTION.code + " tmp\n" +
-      "  SET mig_status =" + TO_INSERT + "\n" +
+      "  SET mig_status ='TO_INSERT'\n" +
       "  WHERE tmp.error ISNULL\n");
 
     //if client exist and no error then ready to insert
@@ -161,7 +158,7 @@ public class MigrationFrs extends Migration {
       "    type.id\n" +
       "  FROM " + TMP_TRANSACTION.code + " tmp\n" +
       "    left JOIN transactiontype type on type.name=tmp.type\n" +
-      "  WHERE tmp.mig_status=" + TO_INSERT);
+      "  WHERE tmp.mig_status='TO_INSERT'");
 
 
     params.add(config.id);
