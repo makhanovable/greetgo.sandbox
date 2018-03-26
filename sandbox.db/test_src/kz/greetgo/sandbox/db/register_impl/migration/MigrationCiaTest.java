@@ -70,10 +70,6 @@ public class MigrationCiaTest extends ParentTestNg {
 
   private static SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-dd");
 
-  @Test
-  void main() throws Exception {
-    migrationRegister.get().migrate();
-  }
 
   @Test
   void insertIntoTempTablesCiaTest() throws Exception {

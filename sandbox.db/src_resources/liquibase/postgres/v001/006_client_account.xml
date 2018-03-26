@@ -12,7 +12,7 @@
         number varchar(100) NOT NULL,
         registeredAt timestamp with time zone default moment(),
         actual boolean default true,
-        mig_id varchar(32) NOT NULL,
+        mig_id varchar(32),
         PRIMARY KEY (id)
       )
     ]]></sql>
