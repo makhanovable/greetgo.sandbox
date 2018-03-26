@@ -16,6 +16,6 @@ public class SshUtil {
     if (files == null)
       return new ArrayList<>();
 
-    return files.stream().filter(o -> pattern.matcher(o).matches()).collect(Collectors.toList());
+    return files.stream().filter(filename -> pattern.matcher(filename).matches()).collect(Collectors.toList());
   }
 }
