@@ -93,7 +93,7 @@ public class MigrationCia extends Migration {
   void markErrorRows() throws SQLException {
 
 //    Записи, у которых нет или пустое поле surname, name, birth_date -ошибочные.
-    execSql("UPDATE " + TMP_CLIENT.code + " set error = '" + CIA_ID_ERROR.message + "' where cia_id is null");
+    execSql("UPDATE #{{TMP_CLIENT}} set error = '" + CIA_ID_ERROR.message + "' where cia_id is null");
     execSql("UPDATE " + TMP_CLIENT.code + " set error = '" + NAME_ERROR.message + "' where error  is null and name is null");
     execSql("UPDATE " + TMP_CLIENT.code + " set error = '" + SURNAME_ERROR.message + "' where error  is null and surname is null");
     execSql("update " + TMP_CLIENT.code + " set error = '" + CHARM_ERROR.message + "' where error  is null and charm is null");
@@ -138,7 +138,7 @@ public class MigrationCia extends Migration {
       "  SET client_id = c.id,\n" +
       "    mig_status = " + TO_UPDATE + "\n" +
       "  FROM client as c\n" +
-      "  WHERE tmp.mig_status=" + LAST_ACTUAL + " and c.cia_id=tmp.cia_id");
+      "  WHERE tmp.mig_status = 'LAST_ACTUAL' and c.cia_id = tmp.cia_id");
 
     params.add(config.id);
     execSql("INSERT INTO client (id, cia_id, name, surname, patronymic, gender, birthdate, charm, mig_id)\n" +

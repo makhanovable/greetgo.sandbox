@@ -15,7 +15,7 @@ public enum MigrationError {
   CLIENT_ID_NULL_ERROR("client must to be not null"),
   TRANSACTION_ACCOUNT_NOT_EXIST_ERROR("transaction account not exist");
 
-  public String message;
+  public final String message;
 
   @SuppressWarnings("UnnecessaryEnumModifier")
   private MigrationError(String message) {
