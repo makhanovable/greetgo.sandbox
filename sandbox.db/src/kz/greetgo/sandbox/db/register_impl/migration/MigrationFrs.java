@@ -13,9 +13,6 @@ import java.sql.SQLException;
 import java.util.Date;
 
 import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationError.*;
-import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationStatus.HAS_ACCOUNT;
-import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationStatus.NOT_READY;
-import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationStatus.TO_INSERT;
 import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_ACCOUNT;
 import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.TMP_TRANSACTION;
 
@@ -23,7 +20,7 @@ public class MigrationFrs extends Migration {
 
 
   @SuppressWarnings("WeakerAccess")
-  public MigrationFrs(MigrationConfig config, Connection connection) {
+  public MigrationFrs(MigrationConfig config, Connection connection) throws SQLException {
     super(config, connection);
   }
 
@@ -45,7 +42,7 @@ public class MigrationFrs extends Migration {
       "  account_number varchar(100),\n" +
       "  registeredAt varchar(100),\n" +
       "  error varchar(100),\n" +
-      "  mig_status smallint default " + NOT_READY + ",\n" +
+      "  mig_status varchar(30) default 'NOT_READY',\n" +
       "  PRIMARY KEY(no)\n" +
       ")";
 
@@ -58,7 +55,7 @@ public class MigrationFrs extends Migration {
       "  finished_at varchar(100),\n" +
       "  type varchar(100),\n" +
       "  error varchar(100),\n" +
-      "  mig_status smallint default " + NOT_READY + ",\n" +
+      "  mig_status varchar(30) default 'NOT_READY',\n" +
       "  PRIMARY KEY (no)\n" +
       ")";
 
@@ -72,7 +69,7 @@ public class MigrationFrs extends Migration {
   }
 
   @Override
-  protected void parseFileAndUploadToTempTables() throws Exception {
+  void parseFileAndUploadToTempTables() throws Exception {
 
     try (FrsParser parser = new FrsParser(config.idGenerator, getMaxBatchSize(), connection, tableNames);
          BufferedReader br = new BufferedReader(new FileReader(config.toMigrate), 102400)) {
@@ -87,7 +84,7 @@ public class MigrationFrs extends Migration {
 
 
   @Override
-  protected void markErrorRows() throws SQLException {
+  void markErrorRows() throws SQLException {
     execSql("update " + TMP_ACCOUNT.code + " tmp\n" +
       "  SET error='" + ACCOUNT_NULL_ERROR.message + "'\n" +
       "  WHERE tmp.account_number ISNULL");
@@ -97,26 +94,26 @@ public class MigrationFrs extends Migration {
       "  WHERE tmp.client_id ISNULL");
 
     execSql("UPDATE " + TMP_TRANSACTION.code + " tmp\n" +
-      "  SET mig_status =" + HAS_ACCOUNT + "\n" +
+      "  SET mig_status ='HAS_ACCOUNT'\n" +
       "  FROM " + TMP_ACCOUNT.code + " ca\n" +
       "  WHERE ca.error ISNULL AND ca.account_number=tmp.account_number\n");
 
     execSql("UPDATE " + TMP_TRANSACTION.code + " tmp\n" +
-      "  SET mig_status =" + HAS_ACCOUNT + "\n" +
+      "  SET mig_status ='HAS_ACCOUNT'\n" +
       "  FROM clientaccount ca\n" +
-      "  WHERE tmp.mig_status=" + NOT_READY + " AND ca.number=tmp.account_number\n");
+      "  WHERE tmp.mig_status='NOT_READY' AND ca.number=tmp.account_number\n");
 
     execSql("update " + TMP_TRANSACTION.code + " tmp\n" +
       "  SET error='" + TRANSACTION_ACCOUNT_NOT_EXIST_ERROR.message + "'\n" +
-      "  WHERE tmp.mig_status=" + NOT_READY);
+      "  WHERE tmp.mig_status='NOT_READY'");
   }
 
 
   @Override
-  protected void upsertIntoDbValidRows() throws SQLException {
+  void upsertIntoDbValidRows() throws SQLException {
 
     execSql("UPDATE " + TMP_TRANSACTION.code + " tmp\n" +
-      "  SET mig_status =" + TO_INSERT + "\n" +
+      "  SET mig_status ='TO_INSERT'\n" +
       "  WHERE tmp.error ISNULL\n");
 
     //if client exist and no error then ready to insert
@@ -138,12 +135,13 @@ public class MigrationFrs extends Migration {
 //      "  set mig_status =" + TO_INSERT + "\n" +
 //      "  WHERE tmp.mig_status=" + NOT_READY);
 
-    execSql(String.format("insert into clientaccount (id, client, number, registeredat, actual, mig_id)\n" +
+    params.add(config.id);
+    execSql("insert into clientaccount (id, client, number, registeredat, actual, mig_id)\n" +
       "  SELECT tmp.id, tmp.client_id, tmp.account_number,\n" +
       "    to_timestamp(tmp.registeredat, 'YYYY-MM-dd\"T\"HH24:MI:SS.MS') as registeredat,\n" +
       "    false as actual,\n" +
-      "    '%s'\n" +
-      "  FROM " + TMP_ACCOUNT.code + " tmp where error ISNULL", config.id));
+      "    ?\n" +
+      "  FROM " + TMP_ACCOUNT.code + " tmp where error ISNULL");
 
 
     execSql("insert into transactiontype (id, code, name)" +
@@ -160,20 +158,19 @@ public class MigrationFrs extends Migration {
       "    type.id\n" +
       "  FROM " + TMP_TRANSACTION.code + " tmp\n" +
       "    left JOIN transactiontype type on type.name=tmp.type\n" +
-      "  WHERE tmp.mig_status=" + TO_INSERT);
+      "  WHERE tmp.mig_status='TO_INSERT'");
 
 
+    params.add(config.id);
     //actualize
-    execSql(String.format("UPDATE clientaccount c " +
+    execSql("UPDATE clientaccount c " +
       "  SET actual=true\n" +
-      "  WHERE c.mig_id='%s' ;\n", config.id));
+      "  WHERE c.mig_id=? ;\n");
 
-
-    execSql(String.format("DROP INDEX IF EXISTS transaction_idx_%s;", config.id));
   }
 
   @Override
-  protected void loadErrorsAndWrite() throws SQLException, IOException {
+  void loadErrorsAndWrite() throws SQLException, IOException {
     String[] accountColumns = {"client_id", "account_number", "error"};
     String[] TrColumns = {"account_number", "error"};
 

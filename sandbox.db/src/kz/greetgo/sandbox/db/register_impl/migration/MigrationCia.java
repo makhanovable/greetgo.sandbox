@@ -5,13 +5,16 @@ import kz.greetgo.sandbox.db.util.DateUtils;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Date;
 
 import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationError.*;
-import static kz.greetgo.sandbox.db.register_impl.migration.enums.MigrationStatus.*;
 import static kz.greetgo.sandbox.db.register_impl.migration.enums.TmpTableName.*;
 
 
@@ -19,7 +22,7 @@ public class MigrationCia extends Migration {
 
 
   @SuppressWarnings("WeakerAccess")
-  public MigrationCia(MigrationConfig config, Connection connection) {
+  public MigrationCia(MigrationConfig config, Connection connection) throws SQLException {
     super(config, connection);
 
   }
@@ -49,7 +52,7 @@ public class MigrationCia extends Migration {
       "  charm varchar(32),\n" +
       "  actual boolean default false,\n" +
       "  error varchar(100),\n" +
-      "  mig_status smallint default " + NOT_READY + ",\n" +
+      "  mig_status varchar(30) default 'NOT_READY',\n" +
       "  PRIMARY KEY (no)\n" +
       ")";
 
@@ -86,7 +89,7 @@ public class MigrationCia extends Migration {
 
 
   @Override
-  protected void markErrorRows() throws SQLException {
+  void markErrorRows() throws SQLException {
 
 //    Записи, у которых нет или пустое поле surname, name, birth_date -ошибочные.
     execSql("UPDATE #{{TMP_CLIENT}} set error = '" + CIA_ID_ERROR.message + "' where cia_id is null");
@@ -97,7 +100,7 @@ public class MigrationCia extends Migration {
     execSql("UPDATE " + TMP_CLIENT.code + " set error = '" + BIRTH_NULL_ERROR.message + "' where error  is null and birthDate is null");
 
     execSql("UPDATE " + TMP_CLIENT.code + "\n" +
-      "  set birthDateParsed =birthDate::date" +
+      "  set birthDateParsed = birthDate::date" +
       "  where error is null and is_date(birthDate)");
 
     execSql("UPDATE " + TMP_CLIENT.code + " set error='" + DATE_INVALID_ERROR.message + "' where error is null and birthDateParsed is null");
@@ -114,7 +117,7 @@ public class MigrationCia extends Migration {
 
 
   @Override
-  protected void upsertIntoDbValidRows() throws SQLException {
+  void upsertIntoDbValidRows() throws SQLException {
 
     execSql("UPDATE " + TMP_CLIENT.code + " set patronymic = null where error is null and patronymic::char(255)='';");
 
@@ -126,75 +129,66 @@ public class MigrationCia extends Migration {
 
 //    только последний рекорд одинаковых cia_id актуальный
     execSql("UPDATE " + TMP_CLIENT.code + " cl\n" +
-      "  SET mig_status=" + LAST_ACTUAL + "\n" +
+      "  SET mig_status='LAST_ACTUAL'\n" +
       "  FROM (SELECT MAX(no) AS no FROM " + TMP_CLIENT.code + " WHERE error IS NULL GROUP BY cia_id) AS tmp\n" +
       "  WHERE cl.no = tmp.no");
 
     execSql("UPDATE " + TMP_CLIENT.code + " as tmp\n" +
       "  SET client_id = c.id,\n" +
-      "    mig_status = " + TO_UPDATE + "\n" +
+      "    mig_status = 'TO_UPDATE'\n" +
       "  FROM client as c\n" +
       "  WHERE tmp.mig_status = 'LAST_ACTUAL' and c.cia_id = tmp.cia_id");
 
-//    execSql("UPDATE TMP_CLIENT\n" +
-//      "  SET mig_status =" + TO_INSERT + "\n" +
-//      "  WHERE mig_status=" + LAST_ACTUAL + " AND client_id IS NULL\n");
-//
-//    execSql("UPDATE TMP_CLIENT\n" +
-//      "  SET mig_status =" + TO_UPDATE + "\n" +
-//      "  WHERE mig_status=" + LAST_ACTUAL + " AND client_id NOTNULL\n");
+    params.add(config.id);
+    execSql("INSERT INTO client (id, cia_id, name, surname, patronymic, gender, birthdate, charm, mig_id)\n" +
+      "  SELECT id, cia_id, name, surname, patronymic, gender, birthDateParsed, charm, ?\n" +
+      "  FROM " + TMP_CLIENT.code + " tmp\n" +
+      "  WHERE tmp.mig_status='LAST_ACTUAL'");
 
-    execSql(String.format(
-      "INSERT INTO client (id, cia_id, name, surname, patronymic, gender, birthdate, charm, mig_id)\n" +
-        "  SELECT id, cia_id, name, surname, patronymic, gender, birthDateParsed, charm, '%s'\n" +
-        "  FROM " + TMP_CLIENT.code + " tmp\n" +
-        "  WHERE tmp.mig_status=" + LAST_ACTUAL, config.id));
-
-    execSql(String.format(
+    params.add(config.id);
+    execSql(
       "UPDATE client AS c\n" +
         "  SET  (name, surname, patronymic, gender, birthdate, charm, mig_id)=\n" +
-        "    (tmp.name, tmp.surname, tmp.patronymic, tmp.gender, tmp.birthDateParsed, tmp.charm, '%s')\n" +
+        "    (tmp.name, tmp.surname, tmp.patronymic, tmp.gender, tmp.birthDateParsed, tmp.charm, ?)\n" +
         "  FROM " + TMP_CLIENT.code + " tmp\n" +
-        "  WHERE tmp.mig_status=" + TO_UPDATE + " AND tmp.client_id=c.id;", config.id));
-
+        "  WHERE tmp.mig_status='TO_UPDATE' AND tmp.client_id=c.id;");
 
     execSql("INSERT INTO clientaddr (client, cia_id, type, street, house, flat)\n" +
       "  SELECT cl.id, cl.cia_id, addr.type, addr.street, addr.house, addr.flat\n" +
       "  FROM " + TMP_ADDRESS.code + " addr\n" +
       "  JOIN " + TMP_CLIENT.code + " cl ON cl.id=addr.client_id\n" +
-      "  WHERE cl.mig_status=" + LAST_ACTUAL);
+      "  WHERE cl.mig_status='LAST_ACTUAL'");
 
     execSql("UPDATE clientaddr AS addr\n" +
       "  SET (street, house, flat)=(tmp.street, tmp.house, tmp.flat)\n" +
       "  FROM " + TMP_ADDRESS.code + " tmp\n" +
       "  JOIN " + TMP_CLIENT.code + " cl ON cl.id=tmp.client_id\n" +
-      "  WHERE cl.mig_status=" + TO_UPDATE + " AND addr.client=cl.client_id");
+      "  WHERE cl.mig_status='TO_UPDATE' AND addr.client=cl.client_id");
 
     execSql("insert into clientphone (client, number, type)\n" +
       "  SELECT cl.id, phone.number, phone.type\n" +
       "  FROM " + TMP_PHONE.code + " phone\n" +
       "  JOIN " + TMP_CLIENT.code + " cl ON cl.id=phone.client_id\n" +
-      "  WHERE cl.mig_status=" + LAST_ACTUAL);
+      "  WHERE cl.mig_status='LAST_ACTUAL'");
 
     execSql("INSERT INTO clientphone (client, number, type)\n" +
       "  SELECT cl.client_id, phone.number, phone.type " +
       "  FROM " + TMP_PHONE.code + " phone\n" +
       "  JOIN " + TMP_CLIENT.code + " cl ON cl.id=phone.client_id\n" +
-      "  WHERE cl.mig_status=" + TO_UPDATE + "\n" +
+      "  WHERE cl.mig_status='TO_UPDATE'\n" +
       "  ON CONFLICT (client, number)\n" +
       "    DO UPDATE SET type=EXCLUDED.type");
 
+    params.add(config.id);
     //actualize
-    execSql(String.format(
-      "UPDATE Client c " +
-        "  SET actual=true\n" +
-        "  WHERE c.mig_id='%s';\n", config.id));
+    execSql("UPDATE Client c " +
+      "  SET actual=true\n" +
+      "  WHERE c.mig_id=?;\n");
 
-    execSql(String.format("DROP INDEX IF EXISTS client_mig_%s;", config.id));
   }
 
   @Override
-  protected void loadErrorsAndWrite() throws SQLException, IOException {
+  void loadErrorsAndWrite() throws SQLException, IOException {
 
     String[] ciaColumns = {"cia_id", "error"};
 

@@ -6,7 +6,7 @@ import kz.greetgo.sandbox.controller.model.ClientPhoneNumber;
 
 import java.util.List;
 
-public class Client {
+public class ClientCia {
   public String id;
   public String cia_id;
   public String name;
