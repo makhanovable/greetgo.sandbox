@@ -2,7 +2,8 @@ package kz.greetgo.sandbox.db.stand.beans;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.HasAfterInject;
-import kz.greetgo.sandbox.controller.model.EditableClientInfo;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.db.stand.model.*;
 
 
@@ -169,134 +170,109 @@ public class StandDb implements HasAfterInject {
     }
   }
 
-  public void addNewCLient(String clientInfo, String clientID) {
+  public String addNewCLient(ClientToSave clientToSave, String clientID) {
 
     if (clientID == null) {
       clientsNum++;
       this.clientID = "c" + String.valueOf(clientsNum);
-      clientInfo = this.clientID + "; " + clientInfo;
+      clientToSave.id = this.clientID;
     } else {
-      clientInfo = clientID + "; " + clientInfo;
+      clientToSave.id = clientID;
     }
-    List<String[]> client = new ArrayList<String[]>();
-    String[] splitLine = clientInfo.split(";");
-    client.add(splitLine);
 
+    Client c = new Client();
+    c.id = clientToSave.id;
+    c.surname = clientToSave.surname;
+    c.name = clientToSave.name;
+    c.patronymic = clientToSave.patronymic;
+    c.gender = clientToSave.gender;
+    DateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+    try {
+      c.birth_date = format.parse(clientToSave.birth_date);
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
     for (Charm charm : charmStorage.values()) {
-      if (charm.name.equals(splitLine[4].trim())) {
-        splitLine[4] = charm.id;
+      if (charm.name.equals(clientToSave.charm)) {
+        c.charmID = charm.id;
       }
     }
 
-//    clientInfo = String.join(";", splitLine);
-//    addClientToDb(clientInfo);
-    appendClient(client);
-  }
-  private void addClientToDb(String client) {
-    BufferedWriter bw = null;
-    FileWriter fw = null;
+    clientStorage.put(c.id, c);
 
+    addNewPhones(clientToSave);
+    addNewAdresses(clientToSave);
+
+    return clientToSave.id;
+  }
+  public void addNewPhones(ClientToSave clientToSave) {
+      Phone ph = new Phone();
+      ph.clientID = clientToSave.id;
+      ph.number = clientToSave.homePhone;
+      ph.phoneType = "HOME";
+      phoneStorage.put(ph.number, ph);
+
+      ph = new Phone();
+      ph.clientID = clientToSave.id;
+      ph.number = clientToSave.workPhone;
+      ph.phoneType = "WORK";
+      phoneStorage.put(ph.number, ph);
+
+      for(String phone : clientToSave.mobilePhones) {
+        ph = new Phone();
+        ph.clientID = clientToSave.id;
+        ph.number = phone;
+        ph.phoneType = "MOBILE";
+        phoneStorage.put(ph.number, ph);
+      }
+  }
+  public void addNewAdresses(ClientToSave clientToSave) {
+    Adress adr = new Adress();
+    adr.id = String.valueOf(this.adressStorage.values().size() + 1);
+    adr.clientID = clientToSave.id;
+    adr.adressType = "REG";
+    adr.street = clientToSave.rAdressStreet;
+    adr.house = clientToSave.rAdressHouse;
+    adr.flat = clientToSave.rAdressFlat;
+    adressStorage.put(adr.id, adr);
+
+    adr = new Adress();
+    adr.id = String.valueOf(this.adressStorage.values().size() + 1);
+    adr.clientID = clientToSave.id;
+    adr.adressType = "FACT";
+    adr.street = clientToSave.fAdressStreet;
+    adr.house = clientToSave.fAdressHouse;
+    adr.flat = clientToSave.fAdressFlat;
+    adressStorage.put(adr.id, adr);
+  }
+
+  public String updateClient(ClientToSave clientToSave) {
+    System.out.println(clientToSave.id);
+
+    Client c = this.clientStorage.get(clientToSave.id);
+    c.id = clientToSave.id;
+    c.surname = clientToSave.surname;
+    c.name = clientToSave.name;
+    c.patronymic = clientToSave.patronymic;
+    c.gender = clientToSave.gender;
+    DateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
     try {
-      File file = new File("/Users/sanzharburumbay/Documents/Greetgo_Internship/greetgo.sandbox/sandbox.stand/db/src/kz/greetgo/sandbox/db/stand/beans/ClientDb.txt");
-      fw = new FileWriter(file.getAbsoluteFile(), true);
-      bw = new BufferedWriter(fw);
-      bw.write(client);
-      bw.write("\n");
-
-    } catch (IOException e) {
+      c.birth_date = format.parse(clientToSave.birth_date);
+    } catch (ParseException e) {
       e.printStackTrace();
-    } finally {
-      try {
-        if (bw != null)
-          bw.close();
-        if (fw != null)
-          fw.close();
-      } catch (IOException ex) {
-        ex.printStackTrace();
+    }
+    for (Charm charm : charmStorage.values()) {
+      if (charm.name.equals(clientToSave.charm)) {
+        c.charmID = charm.id;
       }
     }
-  }
 
-  public void addNewPhones(String phones, String clientID) {
-    String[] phonesArray = phones.split(",");
+    clientStorage.put(c.id, c);
 
-    for (String phone : phonesArray) {
-      if (clientID == null) {
-        phone = this.clientID + "; " + phone;
-      } else {
-        phone = clientID + "; " + phone;
-      }
-      List<String[]> phonesList = new ArrayList<String[]>();
-      String[] splitLine = phone.split(";");
+    addNewPhones(clientToSave);
+    addNewAdresses(clientToSave);
 
-      phonesList.add(splitLine);
-      appendPhone(phonesList);
-    }
-  }
-  private void addPhoneToDb (String phone) {
-    BufferedWriter bw = null;
-    FileWriter fw = null;
-
-    try {
-      File file = new File("/Users/sanzharburumbay/Documents/Greetgo_Internship/greetgo.sandbox/sandbox.stand/db/src/kz/greetgo/sandbox/db/stand/beans/PhoneDb.txt");
-      fw = new FileWriter(file.getAbsoluteFile(), true);
-      bw = new BufferedWriter(fw);
-      bw.write(phone);
-      bw.write("\n");
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    } finally {
-      try {
-        if (bw != null)
-          bw.close();
-        if (fw != null)
-          fw.close();
-      } catch (IOException ex) {
-        ex.printStackTrace();
-      }
-    }
-  }
-
-  public void addNewAdresses(String adresses, String clientID) {
-    String[] adressesArray = adresses.split(",");
-
-    for (String adress : adressesArray) {
-      if (clientID == null) {
-        adress = this.clientID + "; " + adress;
-      } else {
-        adress = clientID + "; " + adress;
-      }
-      List<String[]> adressesList = new ArrayList<String[]>();
-      String[] splitLine = adress.split(";");
-
-      adressesList.add(splitLine);
-      appendAdress(adressesList);
-    }
-  }
-  private void addToAdressDb (String adress) {
-    BufferedWriter bw = null;
-    FileWriter fw = null;
-
-    try {
-      File file = new File("/Users/sanzharburumbay/Documents/Greetgo_Internship/greetgo.sandbox/sandbox.stand/db/src/kz/greetgo/sandbox/db/stand/beans/AdressDb.txt");
-      fw = new FileWriter(file.getAbsoluteFile(), true);
-      bw = new BufferedWriter(fw);
-      bw.write(adress);
-      bw.write("\n");
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    } finally {
-      try {
-        if (bw != null)
-          bw.close();
-        if (fw != null)
-          fw.close();
-      } catch (IOException ex) {
-        ex.printStackTrace();
-      }
-    }
+    return clientToSave.id;
   }
 
   public void removeClient(String clientID) {
@@ -317,46 +293,46 @@ public class StandDb implements HasAfterInject {
     }
   }
 
-  public EditableClientInfo getEditableClientInfo(String clientID) {
-    EditableClientInfo editableClientInfo = new EditableClientInfo();
+  public ClientDetails getEditableClientInfo(String clientID) {
+    ClientDetails clientDetails = new ClientDetails();
 
     Client client = this.clientStorage.get(clientID);
-    editableClientInfo.id = client.id;
-    editableClientInfo.name = client.name;
-    editableClientInfo.surname = client.surname;
-    editableClientInfo.patronymic = client.patronymic;
+    clientDetails.id = client.id;
+    clientDetails.name = client.name;
+    clientDetails.surname = client.surname;
+    clientDetails.patronymic = client.patronymic;
     DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-    editableClientInfo.birth_date = df.format(client.birth_date);
-    editableClientInfo.charm = charmStorage.get(client.charmID).name;
-    editableClientInfo.gender = client.gender;
+    clientDetails.birth_date = df.format(client.birth_date);
+    clientDetails.charm = charmStorage.get(client.charmID).name;
+    clientDetails.gender = client.gender;
 
     for (Adress adress : adressStorage.values()) {
 
       if (adress.clientID.equals(clientID) && adress.adressType.equals("FACT")) {
-        editableClientInfo.fAdressStreet = adress.street;
-        editableClientInfo.fAdressHouse = adress.house;
-        editableClientInfo.fAdressFlat = adress.flat;
+        clientDetails.fAdressStreet = adress.street;
+        clientDetails.fAdressHouse = adress.house;
+        clientDetails.fAdressFlat = adress.flat;
       } else
       if (adress.clientID.equals(clientID) && adress.adressType.equals("REG")) {
-        editableClientInfo.rAdressStreet = adress.street;
-        editableClientInfo.rAdressHouse = adress.house;
-        editableClientInfo.rAdressFlat = adress.flat;
+        clientDetails.rAdressStreet = adress.street;
+        clientDetails.rAdressHouse = adress.house;
+        clientDetails.rAdressFlat = adress.flat;
       }
     }
 
     for (Phone phone : phoneStorage.values()) {
       if (phone.clientID.equals(clientID)) {
         if (phone.phoneType.equals("HOME")) {
-          editableClientInfo.homePhone = phone.number;
+          clientDetails.homePhone = phone.number;
         } else
         if (phone.phoneType.equals("WORK")) {
-          editableClientInfo.workPhone = phone.number;
+          clientDetails.workPhone = phone.number;
         } else {
-          editableClientInfo.mobilePhones.add(phone.number);
+          clientDetails.mobilePhones.add(phone.number);
         }
       }
     }
 
-    return editableClientInfo;
+    return clientDetails;
   }
 }

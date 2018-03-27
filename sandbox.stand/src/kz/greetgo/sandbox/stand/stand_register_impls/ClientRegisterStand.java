@@ -2,9 +2,10 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
 import kz.greetgo.sandbox.controller.model.ClientToReturn;
-import kz.greetgo.sandbox.controller.model.EditableClientInfo;
-import kz.greetgo.sandbox.controller.model.PrintedClientInfo;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.Account;
@@ -25,21 +26,17 @@ public class ClientRegisterStand  implements ClientRegister{
     // Подумай почему, тоже спрошу.
     //TODO: объект *ToSave учавствует в сохранение, а нужно вернуть объект *Record
     @Override
-    public String addNewClient(String clientInfo, String clientID) {
-        db.get().addNewCLient(clientInfo , clientID);
-        return clientInfo;
+    public ClientRecord addNewClient(ClientToSave clientInfo, String clientID) {
+        clientID = db.get().addNewCLient(clientInfo, clientID);
+
+        return getClientRecord(clientID);
     }
 
     @Override
-    public String addNewPhone(String phones, String clientID) {
-        db.get().addNewPhones(phones, clientID);
-        return phones;
-    }
+    public ClientRecord updateClient(ClientToSave clientInfo) {
+        String clientID = db.get().updateClient(clientInfo);
 
-    @Override
-    public String addNewAdresses(String adresses, String clientID) {
-        db.get().addNewAdresses(adresses, clientID);
-        return adresses;
+        return getClientRecord(clientID);
     }
 
     @Override
@@ -49,8 +46,8 @@ public class ClientRegisterStand  implements ClientRegister{
     }
 
     @Override
-    public EditableClientInfo getEditableClientInfo(String clientID) {
-        EditableClientInfo clientInfo = db.get().getEditableClientInfo(clientID);
+    public ClientDetails getEditableClientInfo(String clientID) {
+        ClientDetails clientInfo = db.get().getEditableClientInfo(clientID);
         return clientInfo;
     }
 
@@ -74,14 +71,14 @@ public class ClientRegisterStand  implements ClientRegister{
 
         clientToReturn.pageCount = getPageNum(clients.size());
 
-        List<PrintedClientInfo> clientInfos = new ArrayList<PrintedClientInfo>();
+        List<ClientRecord> clientInfos = new ArrayList<ClientRecord>();
 
         int l = (Integer.parseInt(pageID) - 1) * pageMax;
         int r = l + pageMax;
         int cnt = 0;
         for (Client client : clients) {
             if (cnt >= l && cnt < r) {
-                PrintedClientInfo clientInfo = new PrintedClientInfo();
+                ClientRecord clientInfo = new ClientRecord();
                 clientInfo.id = client.id;
                 clientInfo.fio = client.name + " " + client.patronymic + " " + client.surname;
                 clientInfo.age = client.CountAge();
@@ -99,6 +96,18 @@ public class ClientRegisterStand  implements ClientRegister{
 
         return clientToReturn;
     }
+
+    @Override
+    public List<String> getCharms() {
+        List<String> charms = new ArrayList<String>();
+
+        for (Charm charm : db.get().charmStorage.values()) {
+            charms.add(charm.name);
+        }
+
+        return charms;
+    }
+
     private int getPageNum(int cnt) {
         int pageNum;
         if (cnt % pageMax == 0) {
@@ -144,6 +153,7 @@ public class ClientRegisterStand  implements ClientRegister{
 
         return maxCash;
     }
+
     private String getCharm(String charmID) {
         for (Charm charm : db.get().charmStorage.values()) {
             if (Objects.equals(charm.id, charmID)) {
@@ -152,5 +162,20 @@ public class ClientRegisterStand  implements ClientRegister{
         }
 
         return null;
+    }
+
+    public ClientRecord getClientRecord(String clientID) {
+        Client client = db.get().clientStorage.get(clientID);
+
+        ClientRecord clientInfo = new ClientRecord();
+        clientInfo.id = client.id;
+        clientInfo.fio = client.name + " " + client.patronymic + " " + client.surname;
+        clientInfo.age = client.CountAge();
+        clientInfo.totalCash = getTotalCash(client.id);
+        clientInfo.maxCash = getMaxCash(client.id);
+        clientInfo.minCash = getMinCash(client.id);
+        clientInfo.charm = getCharm(client.charmID);
+
+        return clientInfo;
     }
 }

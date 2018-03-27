@@ -5,10 +5,10 @@ import java.util.List;
 
 public class ClientToReturn {
     public int pageCount;
-    public List<PrintedClientInfo> clientInfos;
+    public List<ClientRecord> clientInfos;
 
     public ClientToReturn() {
-        clientInfos = new ArrayList<PrintedClientInfo>();
+        clientInfos = new ArrayList<ClientRecord>();
     }
 
 }

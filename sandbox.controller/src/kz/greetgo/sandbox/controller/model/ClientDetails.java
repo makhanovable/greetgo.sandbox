@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class EditableClientInfo {
+public class ClientDetails {
     public String id;
     public String name;
     public String surname;
@@ -22,7 +22,7 @@ public class EditableClientInfo {
     public String homePhone = "";
     public List<String> mobilePhones;
 
-    public EditableClientInfo() {
+    public ClientDetails() {
         this.mobilePhones = new ArrayList<String>();
     }
 }

@@ -1,18 +1,19 @@
 package kz.greetgo.sandbox.controller.register;
 
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientToReturn;
-import kz.greetgo.sandbox.controller.model.EditableClientInfo;
-import kz.greetgo.sandbox.controller.model.PrintedClientInfo;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
 
 import java.util.List;
 
 public interface ClientRegister {
     
     // TODO: для методов добавления сделать один общий метод. Не должно быть разделение зависимой информации.
-    String addNewClient(String clientInfo, String clientID);
-    String addNewPhone(String phones, String clientID);
-    String addNewAdresses(String adresses, String clientID);
+    ClientRecord addNewClient(ClientToSave clientInfo, String clientID);
+    ClientRecord updateClient(ClientToSave clientInfo);
     String removeClient(String clientID);
-    EditableClientInfo getEditableClientInfo(String clientID);
+    ClientDetails getEditableClientInfo(String clientID);
     ClientToReturn getFilteredClientsInfo(String pageID, String filterStr);
+    List<String> getCharms();
 }

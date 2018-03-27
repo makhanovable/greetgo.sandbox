@@ -4,8 +4,9 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
 import kz.greetgo.sandbox.controller.model.ClientToReturn;
-import kz.greetgo.sandbox.controller.model.EditableClientInfo;
-import kz.greetgo.sandbox.controller.model.PrintedClientInfo;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientToSave;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
@@ -25,25 +26,16 @@ public class ClientController implements Controller {
     }
 
     // TODO: для методов добавления сделать один общий метод. Не должно быть разделение зависимой информации.
-    @AsIs
-    @NoSecurity
+    @ToJson
     @Mapping("/addNewClient")
-    public String addNewClient(@Par("clientInfo") String clientInfo, @Par("clientID") String clientID) {
-        return clientRegister.get().addNewClient(clientInfo, clientID);
+    public ClientRecord addNewClient(@Par("clientToSave") @Json ClientToSave clientToSave, @Par("clientID") String clientID) {
+        return clientRegister.get().addNewClient(clientToSave, clientID);
     }
 
-    @AsIs
-    @NoSecurity
-    @Mapping("/addNewPhone")
-    public String addNewPhone(@Par("phones") String phones, @Par("clientID") String clientID) {
-        return clientRegister.get().addNewPhone(phones, clientID);
-    }
-
-    @AsIs
-    @NoSecurity
-    @Mapping("/addNewAdress")
-    public String addNewAdresses(@Par("adresses") String adresses, @Par("clientID") String clientID) {
-        return clientRegister.get().addNewAdresses(adresses, clientID);
+    @ToJson
+    @Mapping("/updateClient")
+    public ClientRecord updateClient(@Par("clientToSave") @Json ClientToSave clientToSave) {
+        return clientRegister.get().updateClient(clientToSave);
     }
 
     @AsIs
@@ -54,8 +46,14 @@ public class ClientController implements Controller {
     }
 
     @ToJson
-    @Mapping("/editableClientInfo/{clientID}")
-    public EditableClientInfo getEditableClientInfo(@ParPath("clientID") String clientID) {
+    @Mapping("/clientDetails/{clientID}")
+    public ClientDetails getEditableClientInfo(@ParPath("clientID") String clientID) {
         return clientRegister.get().getEditableClientInfo(clientID);
+    }
+
+    @ToJson
+    @Mapping("/charms")
+    public List<String> getCharms() {
+        return clientRegister.get().getCharms();
     }
 }

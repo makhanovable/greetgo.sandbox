@@ -4,7 +4,7 @@ import com.sun.deploy.util.SessionState;
 
 import java.util.List;
 
-public class PrintedClientInfo {
+public class ClientRecord {
     public String id;
     public String fio;
     public String charm;

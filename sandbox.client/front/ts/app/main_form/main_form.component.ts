@@ -3,9 +3,11 @@ import {UserInfo} from "../../model/UserInfo";
 import {ClientInfo} from "../../model/ClientInfo";
 import {HttpService} from "../HttpService";
 import {PhoneType} from "../../model/PhoneType";
-import {EditableClientInfo} from "../../model/EditableClientInfo";
+import {ClientDetails} from "../../model/ClientDetails";
 import {type} from "os";
 import {ClientRecord} from "../../model/ClientRecord";
+import {Charm} from "../../model/Charm";
+import {ClientToSave} from "../../model/ClientToSave";
 
 @Component({
     selector: 'main-form-component',
@@ -17,9 +19,10 @@ export class MainFormComponent {
   @Output() exit = new EventEmitter<void>();
 
   clientRecords: ClientRecord[] = null;
+  charmRecords: String[] = null;
   addedClientID: string = "";
-  userInfo: UserInfo | null = null;
-  editableClientInfo: EditableClientInfo = new EditableClientInfo();
+  clientDetails: ClientDetails = new ClientDetails();
+  clientToSave: ClientToSave;
   loadUserInfoButtonEnabled: boolean = true;
   modalViewEnabled: boolean = false;
   loadUserInfoError: string | null;
@@ -53,18 +56,6 @@ export class MainFormComponent {
           this.pagesIndex.push(i);
       }
   }
-  loadClients() {
-      let url = "/client/clientsInfoPerPage/" + this.currentIndex;
-      console.log(url);
-      this.httpService.get(url).toPromise().then(result => {
-          this.clientRecords = result.json();
-      }, error => {
-          console.log(error);
-          this.loadUserInfoButtonEnabled = true;
-          this.loadUserInfoError = error;
-          this.userInfo = null;
-      });
-  }
 
   selectClient(clientId : string) {
     this.selectedID = clientId;
@@ -76,11 +67,7 @@ export class MainFormComponent {
       this.httpService.post("/client/removeClient", {
         clientID: this.selectedID
       }).toPromise().then(res => {
-        if (this.actionType == "edit") {
-            this.addNewClient();
-        } else {
-            this.loadUserInfoButtonClicked();
-        }
+
       }, error => {
         console.log(error);
       })
@@ -93,11 +80,10 @@ export class MainFormComponent {
         this.addedClientID = this.selectedID;
         this.modalViewEnabled = true;
 
-        let url = "/client/editableClientInfo/" + this.selectedID;
+        let url = "/client/clientDetails/" + this.selectedID;
         this.httpService.get(url).toPromise().then(result => {
-            // console.log(result.json());
-            this.editableClientInfo = EditableClientInfo.from(result.json() as EditableClientInfo);
-            // console.log(this.editableClientInfo);
+            this.clientDetails = ClientDetails.from(result.json() as ClientDetails);
+            this.loadCharms()
         }, error => {
             console.log(error);
         });
@@ -132,17 +118,27 @@ export class MainFormComponent {
     this.actionType = "add";
     this.addedClientID = "";
     this.modalViewEnabled = true;
+    this.loadCharms()
   }
 
   closeModal() {
     this.modalViewEnabled = false;
-    this.editableClientInfo.clearPar();
+    this.clientDetails.clearPar();
   }
+
+  loadCharms() {
+      this.httpService.get("/client/charms").toPromise().then(result => {
+          console.log(result.json());
+          this.charmRecords = result.json();
+      }, error => {
+          console.log(error);
+      });
+  }
+
   editAddClicked() {
-    console.log(this.addedClientID);
     if (this.fieldsFilledCorrectly()) {
         if (this.actionType == "edit") {
-            this.removeClientClicked();
+            this.updateClientInfo();
         } else {
             this.addNewClient();
         }
@@ -151,15 +147,39 @@ export class MainFormComponent {
     }
   }
   addNewClient() {
-      let clientInfo = this.createClient();
+      this.clientToSave = ClientToSave.from(this.clientDetails as ClientToSave);
 
       // TODO: название переменной. Не забывай называть переменные как я объяснял. *ToSave, *Details, *Record. 
       // Если забыл, спроси.
       this.httpService.post("/client/addNewClient", {
-          clientInfo  : clientInfo,
+          clientToSave  : JSON.stringify(this.clientToSave),
           clientID : this.addedClientID
       }).toPromise().then(res => {
-          this.addPhones();
+          console.log(res.json());
+          let clientRecord = new ClientRecord();
+          clientRecord = res.json();
+          this.clientRecords.push(clientRecord);
+          this.selectedID = clientRecord.id;
+          this.closeModal();
+      }, error => {
+          console.log(error);
+      });
+  }
+  updateClientInfo() {
+      this.clientToSave = ClientToSave.from(this.clientDetails as ClientToSave);
+
+      this.httpService.post("/client/updateClient", {
+          clientToSave  : JSON.stringify(this.clientToSave)
+      }).toPromise().then(res => {
+          console.log(res.json());
+          let clientRecord = new ClientRecord();
+          clientRecord = res.json();
+          for (var i = 0; i < this.clientRecords.length; i++){
+              if(this.clientRecords[i].id == clientRecord.id){
+                  this.clientRecords[i] == clientRecord;
+              }
+          }
+          this.closeModal();
       }, error => {
           console.log(error);
       });
@@ -169,72 +189,12 @@ export class MainFormComponent {
   // Эта строка, если ты хочешь так сохранять в stand ДБ, должна генерироваться в stand ДБ.
   // Иначе смысл в разделении stand и real теряется.
   // Всё тоже самое и для других объектов, как address и т.д.
-  createClient() : string {
-    // console.log(this.patronymic)
-    let str = "";
-    str += this.editableClientInfo.name + " " + this.editableClientInfo.surname + " " + this.editableClientInfo.patronymic;
-    str += "; " + this.editableClientInfo.gender;
-    str += "; " + this.editableClientInfo.birth_date;
-    str += "; " + this.editableClientInfo.charm;
-
-    console.log(str);
-    return str;
-  }
-  addAdresses() {
-      let str = "";
-      str += "REG; " + this.editableClientInfo.rAdressStreet + "; " + this.editableClientInfo.rAdressHouse
-             + "; " + this.editableClientInfo.rAdressFlat;
-
-      if (this.editableClientInfo.fAdressStreet != "" && this.editableClientInfo.fAdressHouse != "" &&
-          this.editableClientInfo.fAdressFlat != "") {
-          str += ", ";
-          str += "FACT";
-          str += "; " + this.editableClientInfo.fAdressStreet;
-          str += "; " + this.editableClientInfo.fAdressHouse;
-          str += "; " + this.editableClientInfo.fAdressFlat;
-      }
-
-      this.httpService.post("/client/addNewAdress", {
-          adresses  : str,
-          clientID : this.addedClientID
-      }).toPromise().then(res => {
-          this.loadUserInfoButtonClicked();
-          this.closeModal();
-      }, error => {
-          console.log(error);
-      });
-  }
-  addPhones() {
-      let str = "";
-      str += this.editableClientInfo.mobilePhones[0] + "; MOBILE";
-
-      if (this.editableClientInfo.workPhone != "") {
-        str += ", ";
-        str += this.editableClientInfo.workPhone;
-        str += "; " + "WORK"
-      }
-
-      if (this.editableClientInfo.homePhone != "") {
-          str += ", ";
-          str += this.editableClientInfo.homePhone;
-          str += "; " + "HOME"
-      }
-
-      this.httpService.post("/client/addNewPhone", {
-          phones  : str,
-          clientID : this.addedClientID
-      }).toPromise().then(res => {
-          this.addAdresses();
-      }, error => {
-          console.log(error);
-      });
-  }
 
   fieldsFilledCorrectly() : boolean {
-        if (this.editableClientInfo.name != "" && this.editableClientInfo.surname != "" && this.editableClientInfo.gender != ""
-            && this.editableClientInfo.birth_date != "" && this.editableClientInfo.charm != ""
-            && this.editableClientInfo.rAdressStreet != "" && this.editableClientInfo.rAdressFlat != ""
-            && this.editableClientInfo.rAdressHouse != "" && this.editableClientInfo.mobilePhones[0] != "") {
+        if (this.clientDetails.name != "" && this.clientDetails.surname != "" && this.clientDetails.gender != ""
+            && this.clientDetails.birth_date != "" && this.clientDetails.charm != ""
+            && this.clientDetails.rAdressStreet != "" && this.clientDetails.rAdressFlat != ""
+            && this.clientDetails.rAdressHouse != "" && this.clientDetails.mobilePhones[0] != "") {
             return true;
         } else {
             return false;

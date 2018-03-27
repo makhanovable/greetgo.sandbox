@@ -1,4 +1,4 @@
-export class EditableClientInfo {
+export class ClientDetails {
     public id = "";
     public name = "";
     public surname = "";
@@ -16,10 +16,11 @@ export class EditableClientInfo {
     public homePhone = "";
     public mobilePhones = [""];
 
-    public static from(a: EditableClientInfo) : EditableClientInfo {
+    public static from(a: ClientDetails) : ClientDetails {
 
-        let ret: EditableClientInfo = new EditableClientInfo;
+        let ret: ClientDetails = new ClientDetails;
 
+        ret.id = a.id;
         ret.name = a.name ;
         ret.surname = a.surname ;
         ret.patronymic = a.patronymic ;
