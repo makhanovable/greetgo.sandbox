@@ -74,6 +74,8 @@ export class MainFormComponent {
     }
   }
 
+  //TODO: название функции несет неясную формулировку. По коду ты получаешь детальную информацию клента и видимо здесь появляется модалка.
+  //Но, по названию кажется, что уже должно происходить само редактирование пользователя.
   editClientClicked() {
     if (this.selectedID != "") {
         this.actionType = "edit";
@@ -114,6 +116,8 @@ export class MainFormComponent {
       }
     }
 
+  //TODO: название функции несет неясную формулировку. Видимо здесь появляется форма добавления нового пользователя.
+  //Но, по названию кажется, что уже должно происходить само добавления.
   addClientClicked() {
     this.actionType = "add";
     this.addedClientID = "";
@@ -149,8 +153,7 @@ export class MainFormComponent {
   addNewClient() {
       this.clientToSave = ClientToSave.from(this.clientDetails as ClientToSave);
 
-      // TODO: название переменной. Не забывай называть переменные как я объяснял. *ToSave, *Details, *Record. 
-      // Если забыл, спроси.
+      //TODO: ID клиента должно генерироваться на сервере.
       this.httpService.post("/client/addNewClient", {
           clientToSave  : JSON.stringify(this.clientToSave),
           clientID : this.addedClientID
@@ -176,6 +179,7 @@ export class MainFormComponent {
           clientRecord = res.json();
           for (var i = 0; i < this.clientRecords.length; i++){
               if(this.clientRecords[i].id == clientRecord.id){
+                  //TODO: опечатка?
                   this.clientRecords[i] == clientRecord;
               }
           }
@@ -184,11 +188,6 @@ export class MainFormComponent {
           console.log(error);
       });
   }
-                                    
-  // TODO: эту функцию надо переделать. Здесь создавать только сам объект. 
-  // Эта строка, если ты хочешь так сохранять в stand ДБ, должна генерироваться в stand ДБ.
-  // Иначе смысл в разделении stand и real теряется.
-  // Всё тоже самое и для других объектов, как address и т.д.
 
   fieldsFilledCorrectly() : boolean {
         if (this.clientDetails.name != "" && this.clientDetails.surname != "" && this.clientDetails.gender != ""
