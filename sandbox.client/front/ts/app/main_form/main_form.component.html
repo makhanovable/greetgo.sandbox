@@ -1,4 +1,3 @@
-<!-- TODO: для чего здесь (class="")? -->
 <div>
     <h2>Main Form Component</h2>
 
@@ -91,7 +90,6 @@
             </div>
             <div class="modalField">
                 <p>Характер</p>
-                <!-- TODO: Характеры должны приходить с сервера -->
                 <select name="charm" [(ngModel)]="clientDetails.charm">
                     <option *ngFor="let charm of charmRecords" value = {{charm}}>{{charm}}</option>
                 </select>
