@@ -9,7 +9,6 @@ import java.util.List;
 
 public interface ClientRegister {
     
-    // TODO: для методов добавления сделать один общий метод. Не должно быть разделение зависимой информации.
     ClientRecord addNewClient(ClientToSave clientInfo, String clientID);
     ClientRecord updateClient(ClientToSave clientInfo);
     String removeClient(String clientID);
