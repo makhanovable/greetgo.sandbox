@@ -1,0 +1,97 @@
+<div class="modalView">
+    <div class="modalHolder">
+        <h2>Редактирование пользователя</h2>
+        <hr>
+        <div class="modalField">
+            <p>Имя</p>
+            <input type="text" size="40" [(ngModel)]="clientDetails.name">
+            <p class="important">*</p>
+        </div>
+        <div class="modalField">
+            <p>Фамилия</p>
+            <input type="text" size="40" [(ngModel)]="clientDetails.surname">
+            <p class="important">*</p>
+        </div>
+        <div class="modalField">
+            <p>Отчество</p>
+            <input type="text" size="40" [(ngModel)]="clientDetails.patronymic">
+        </div>
+        <div class="modalField">
+            <p>Пол</p>
+            <select name="gender" [(ngModel)]="clientDetails.gender">
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+            </select>
+            <p class="important">*</p>
+        </div>
+        <div class="modalField">
+            <p>Дата рождения</p>
+            <input type="date" size="40" [(ngModel)]="clientDetails.birth_date">
+            <p class="important">*</p>
+        </div>
+        <div class="modalField">
+            <p>Характер</p>
+            <select name="charm" [(ngModel)]="clientDetails.charm">
+                <option *ngFor="let charm of charmRecords" value = {{charm}}>{{charm}}</option>
+            </select>
+            <p class="important">*</p>
+        </div>
+        <div class="modalField">
+            <p>Адрес (фактический)</p>
+            <div class="adress">
+                <div class="adressField">
+                    <p>Улица</p>
+                    <input type="text" size="22" [(ngModel)]="clientDetails.fAdressStreet">
+                </div>
+                <div class="adressField">
+                    <p class="adressP">Дом</p>
+                    <input type="text" size="22" class="adressInput" [(ngModel)]="clientDetails.fAdressHouse">
+                </div>
+                <div class="adressField">
+                    <p class="adressP">Квартира</p>
+                    <input type="text" size="22" class="adressInput" [(ngModel)]="clientDetails.fAdressFlat">
+                </div>
+            </div>
+        </div>
+        <div class="modalField">
+            <p>Адрес регистрации</p>
+            <div class="adress">
+                <div class="adressField">
+                    <p>Улица</p>
+                    <input type="text" size="22" [(ngModel)]="clientDetails.rAdressStreet">
+                    <p class="important">*</p>
+                </div>
+                <div class="adressField">
+                    <p class="adressP">Дом</p>
+                    <input type="text" size="22" class="adressInput" [(ngModel)]="clientDetails.rAdressHouse">
+                    <p class="important">*</p>
+                </div>
+                <div class="adressField">
+                    <p class="adressP">Квартира</p>
+                    <input type="text" size="22" class="adressInput" [(ngModel)]="clientDetails.rAdressFlat">
+                    <p class="important">*</p>
+                </div>
+            </div>
+        </div>
+        <div class="modalField">
+            <p>Телефоны</p>
+            <div class="adress">
+                <div class="adressField">
+                    <p>Рабочий</p>
+                    <input type="text" size="22" [(ngModel)]="clientDetails.workPhone">
+                </div>
+                <div class="adressField">
+                    <p class="adressP">Домашний</p>
+                    <input type="text" size="22" class="adressInput" [(ngModel)]="clientDetails.homePhone">
+                </div>
+                <div class="adressField">
+                    <p class="adressP">Мобильный</p>
+                    <input type="text" size="22" class="adressInput" [(ngModel)]="clientDetails.mobilePhones[0]">
+                    <p class="important">*</p>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <button class="editAddButton" (click)="editAddClicked()">Сохранить</button>
+    </div>
+</div>

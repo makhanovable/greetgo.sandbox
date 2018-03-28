@@ -5,6 +5,7 @@ import {BrowserModule} from "@angular/platform-browser";
 import {RootComponent} from "./root.component";
 import {LoginComponent} from "./input/login.component";
 import {MainFormComponent} from "./main_form/main_form.component";
+import {ModalViewComponent} from "./main_form/modal_view_component";
 import {HttpService} from "./HttpService";
 
 @NgModule({
@@ -12,7 +13,7 @@ import {HttpService} from "./HttpService";
     BrowserModule, HttpModule, JsonpModule, FormsModule
   ],
   declarations: [
-    RootComponent, LoginComponent, MainFormComponent
+    RootComponent, LoginComponent, MainFormComponent, ModalViewComponent
   ],
   bootstrap: [RootComponent],
   providers: [HttpService],

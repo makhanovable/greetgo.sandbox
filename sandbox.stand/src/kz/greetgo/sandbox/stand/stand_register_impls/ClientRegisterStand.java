@@ -24,8 +24,8 @@ public class ClientRegisterStand  implements ClientRegister{
 
     //TODO: ClientID должен генерироваться на стороне сервера.
     @Override
-    public ClientRecord addNewClient(ClientToSave clientInfo, String clientID) {
-        clientID = db.get().addNewCLient(clientInfo, clientID);
+    public ClientRecord addNewClient(ClientToSave clientInfo) {
+        String clientID = db.get().addNewCLient(clientInfo);
 
         return getClientRecord(clientID);
     }

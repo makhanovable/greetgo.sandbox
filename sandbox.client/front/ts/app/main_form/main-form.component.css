@@ -87,6 +87,7 @@ select {
     display: inline-block;
     margin-left: 0px;
 }
+
 .selected {
     background-color: #dddddd;
 }

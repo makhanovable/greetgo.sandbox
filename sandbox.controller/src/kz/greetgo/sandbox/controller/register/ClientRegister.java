@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface ClientRegister {
     
-    ClientRecord addNewClient(ClientToSave clientInfo, String clientID);
+    ClientRecord addNewClient(ClientToSave clientInfo);
     ClientRecord updateClient(ClientToSave clientInfo);
     String removeClient(String clientID);
     ClientDetails getEditableClientInfo(String clientID);

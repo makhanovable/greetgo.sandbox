@@ -170,15 +170,11 @@ public class StandDb implements HasAfterInject {
     }
   }
 
-  public String addNewCLient(ClientToSave clientToSave, String clientID) {
+  public String addNewCLient(ClientToSave clientToSave) {
 
-    if (clientID == null) {
-      clientsNum++;
-      this.clientID = "c" + String.valueOf(clientsNum);
-      clientToSave.id = this.clientID;
-    } else {
-      clientToSave.id = clientID;
-    }
+    clientsNum++;
+    this.clientID = "c" + String.valueOf(clientsNum);
+    clientToSave.id = this.clientID;
 
     Client c = new Client();
     c.id = clientToSave.id;

@@ -27,8 +27,8 @@ public class ClientController implements Controller {
 
     @ToJson
     @Mapping("/addNewClient")
-    public ClientRecord addNewClient(@Par("clientToSave") @Json ClientToSave clientToSave, @Par("clientID") String clientID) {
-        return clientRegister.get().addNewClient(clientToSave, clientID);
+    public ClientRecord addNewClient(@Par("clientToSave") @Json ClientToSave clientToSave) {
+        return clientRegister.get().addNewClient(clientToSave);
     }
 
     @ToJson
