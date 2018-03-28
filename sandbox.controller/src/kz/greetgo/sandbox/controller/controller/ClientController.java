@@ -25,7 +25,6 @@ public class ClientController implements Controller {
         return clientRegister.get().getFilteredClientsInfo(pageID, filterStr);
     }
 
-    // TODO: для методов добавления сделать один общий метод. Не должно быть разделение зависимой информации.
     @ToJson
     @Mapping("/addNewClient")
     public ClientRecord addNewClient(@Par("clientToSave") @Json ClientToSave clientToSave, @Par("clientID") String clientID) {
