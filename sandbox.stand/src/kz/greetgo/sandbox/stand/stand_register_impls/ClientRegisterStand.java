@@ -22,7 +22,6 @@ public class ClientRegisterStand  implements ClientRegister{
     public BeanGetter<StandDb> db;
     private int pageMax = 6;
 
-    //TODO: ClientID должен генерироваться на стороне сервера.
     @Override
     public ClientRecord addNewClient(ClientToSave clientInfo) {
         String clientID = db.get().addNewCLient(clientInfo);
@@ -94,6 +93,7 @@ public class ClientRegisterStand  implements ClientRegister{
         return clientToReturn;
     }
 
+    //TODO: Нужно возвращать не только имена но и их идентификаторы
     @Override
     public List<String> getCharms() {
         List<String> charms = new ArrayList<String>();
