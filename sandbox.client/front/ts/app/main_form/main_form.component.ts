@@ -53,7 +53,6 @@ export class MainFormComponent {
     this.selectedID = clientId;
   }
 
-  // TODO: изменить логику редактирования. Создать новую независимую функцию для редактирования
   removeClientClicked() {
     if (this.selectedID != "") {
       this.httpService.post("/client/removeClient", {
