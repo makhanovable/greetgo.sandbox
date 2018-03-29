@@ -186,6 +186,7 @@ public class StandDb implements HasAfterInject {
     try {
       c.birth_date = format.parse(clientToSave.birth_date);
     } catch (ParseException e) {
+      // TODO: не глотай exception!
       e.printStackTrace();
     }
     for (CharmDot charmDot : charmStorage.values()) {
@@ -208,6 +209,7 @@ public class StandDb implements HasAfterInject {
       ph = new PhoneDot();
       ph.clientID = clientToSave.id;
       ph.number = phone;
+      // TODO: Почему не ENUM?
       ph.phoneType = "WORK";
       phoneStorage.put(ph.number, ph);
     }
@@ -232,6 +234,7 @@ public class StandDb implements HasAfterInject {
     AdressDot adr = new AdressDot();
     adr.id = String.valueOf(this.adressStorage.values().size() + 1);
     adr.clientID = clientToSave.id;
+    // TODO: Почему не ENUM?
     adr.adressType = "REG";
     adr.street = clientToSave.rAdressStreet;
     adr.house = clientToSave.rAdressHouse;
@@ -293,6 +296,7 @@ public class StandDb implements HasAfterInject {
     }
   }
 
+  // TODO: это уже относится к бизнес логике. Надо это перенести в регистр, а запросы в стэнд бд разделить по отдельным методам.
   public ClientDetails getEditableClientInfo(String clientID) {
 
     ClientDetails clientDetails = clientStorage.get(clientID).toClientDetails();
