@@ -24,9 +24,7 @@ export class ModalViewComponent {
         this.loadCharms();
         this.loadClientDetails();
     }
-
-    //TODO: название функции несет неясную формулировку. По коду ты получаешь детальную информацию клента и видимо здесь появляется модалка.
-    //Но, по названию кажется, что уже должно происходить само редактирование пользователя.
+                                      
     loadClientDetails() {
         if (this.actionType == "edit") {
             let url = "/client/clientDetails/" + this.selectedID;

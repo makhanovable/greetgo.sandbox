@@ -53,7 +53,6 @@ export class MainFormComponent {
     this.selectedID = clientId;
   }
 
-  // TODO: изменить логику редактирования. Создать новую независимую функцию для редактирования
   removeClientClicked() {
     if (this.selectedID != "") {
       this.httpService.post("/client/removeClient", {
@@ -66,8 +65,7 @@ export class MainFormComponent {
     }
   }
 
-  //TODO: название функции несет неясную формулировку. По коду ты получаешь детальную информацию клента и видимо здесь появляется модалка.
-  //Но, по названию кажется, что уже должно происходить само редактирование пользователя.
+  //TODO: как тебе такое название openEditClientForm ?
   openEditClientFormClicked() {
     if (this.selectedID != "") {
         this.actionType = "edit";
@@ -97,8 +95,7 @@ export class MainFormComponent {
       }
     }
 
-  //TODO: название функции несет неясную формулировку. Видимо здесь появляется форма добавления нового пользователя.
-  //Но, по названию кажется, что уже должно происходить само добавления.
+  //TODO: как тебе такое название openAddClientForm ?
   openAddClientFormClicked() {
     this.actionType = "add";
     this.modalViewEnabled = true;
@@ -117,8 +114,7 @@ export class MainFormComponent {
   }
   addNewClient(clientDetails: ClientDetails) {
       this.clientToSave = ClientToSave.from(clientDetails as ClientToSave);
-
-      //TODO: ID клиента должно генерироваться на сервере.
+                                    
       this.httpService.post("/client/addNewClient", {
           clientToSave  : JSON.stringify(this.clientToSave)
       }).toPromise().then(res => {
@@ -143,7 +139,6 @@ export class MainFormComponent {
           clientRecord = res.json();
           for (var i = 0; i < this.clientRecords.length; i++){
               if(this.clientRecords[i].id == clientRecord.id){
-                  //TODO: опечатка?
                   this.clientRecords[i] = clientRecord;
               }
           }
