@@ -284,6 +284,7 @@ public class CiaMigrationWorker extends AbstractMigrationWorker {
     ) {
       ciaTableWorker.startedAt = downloadingStartedAt;
       CiaParser ciaParser = new CiaParser(inputStream, ciaTableWorker, recordsCount);
+      ciaParser.outError = outError;
       {
         long now = System.nanoTime();
         info("FILE Extracted for " + showTime(now, startedAt) + " sec");

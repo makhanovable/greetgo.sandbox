@@ -115,10 +115,6 @@ public class FrsMigrationWorker extends AbstractMigrationWorker {
   protected int parseDataAndSaveInTmpDb() throws IOException, SQLException, SftpException {
 
     int recordsCount = 0;
-    long downloadingStartedAt = System.nanoTime();
-
-//    TarArchiveInputStream tarInput = new TarArchiveInputStream(new BZip2CompressorInputStream(inputFileWorker.downloadFile(fileName)));
-//    tarInput.getNextTarEntry();
 
     long startedAt = System.nanoTime();
 
@@ -126,6 +122,7 @@ public class FrsMigrationWorker extends AbstractMigrationWorker {
 
     try (FrsTableWorker frsTableWorker = new FrsTableWorker(connection, maxBatchSize, tmpAccountTable, tmpTransactionTable)) {
       FrsParser frsParser = new FrsParser(inputStream, frsTableWorker);
+      frsParser.outError = outError;
       recordsCount += frsParser.parseAndSave();
     } finally {
       connection.setAutoCommit(true);
@@ -136,15 +133,6 @@ public class FrsMigrationWorker extends AbstractMigrationWorker {
       info("TOTAL Downloaded records " + recordsCount + " for " + showTime(now, startedAt)
         + " : " + recordsPerSecond(recordsCount, now - startedAt));
     }
-
-//    for (String fileName : fileDirsToLoad) {
-//    }
-
-//    {
-//      long now = System.nanoTime();
-//      info("TOTAL Downloaded records " + recordsCount + " for " + showTime(now, downloadingStartedAt)
-//        + " : " + recordsPerSecond(recordsCount, now - downloadingStartedAt));
-//    }
 
     return recordsCount;
   }

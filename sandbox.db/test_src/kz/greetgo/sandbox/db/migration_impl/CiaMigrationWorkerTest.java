@@ -19,11 +19,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.text.SimpleDateFormat;
@@ -78,6 +74,51 @@ public class CiaMigrationWorkerTest extends ParentTestNg {
   public void closeResources() throws Exception {
     connection.close();
     connection = null;
+  }
+
+  @Test
+  public void test_parseDataAndSaveInTmpDb_on_broken_xml() throws Exception {
+    String brokenXml =
+      "<cia>\n" +
+        "  <client id=\"1-V9M-H6-QB-cuQh3C9hy3\"> <!-- 1 -->\n" +
+        "    <mobilePhone>+7-338-770-07-55</mobilePhone>\n" +
+        "    <name value=\"AлфrГсK3Тc\"/>\n" +
+        "  </client>\n" +
+        "  <client id=\"1-V9M-H6-QB-cuQh3C9hy3\"> <!-- 2 -->\n" +
+        "    <gender value=\"MALE\"/>\n" +
+        "    <birth value=\"" +
+        "\"" + /*Added parse error to the second client!*/
+        "1923-08-22\"/>\n" +
+        "    <name value=\"с5ыsЛЧпмЗO\"/>\n" +
+        "    <surname value=\"JЧчСЗгGhыд\"/>\n" +
+        "  </client>\n" +
+        "</cia>\n";
+
+    CiaMigrationWorker ciaMigrationWorker = getCiaMigrationWorker();
+    ciaMigrationWorker.inputStream = new ByteArrayInputStream(brokenXml.getBytes());
+    ByteArrayOutputStream errorBytesOutput = new ByteArrayOutputStream();
+    ciaMigrationWorker.outError = errorBytesOutput;
+    ciaMigrationWorker.createTmpTables();
+
+    //
+    //
+    ciaMigrationWorker.parseDataAndSaveInTmpDb();
+    //
+    //
+
+    List<ClientTmp> actualClients = migrationTestDao.get().loadClientsList(ciaMigrationWorker.tmpClientTable);
+
+    assertThat(actualClients).isNotNull();
+    assertThat(actualClients).hasSize(1);
+
+    assertThat(errorBytesOutput.size()).isGreaterThan(0);
+
+    String errorStr = errorBytesOutput.toString("UTF-8");
+    System.out.println(errorStr);
+    assertThat(errorStr).contains("lineNumber: 8");
+    assertThat(errorStr).contains("Element type");
+    assertThat(errorStr).contains("birth");
+    assertThat(errorStr).contains("must be followed by");
   }
 
   @Test

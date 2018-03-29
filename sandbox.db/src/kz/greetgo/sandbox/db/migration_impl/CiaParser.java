@@ -5,14 +5,12 @@ import kz.greetgo.sandbox.db.migration_impl.model.ClientTmp;
 import kz.greetgo.sandbox.db.migration_impl.model.PhoneNumber;
 import kz.greetgo.sandbox.db.migration_impl.model.PhoneType;
 import kz.greetgo.sandbox.db.util.SaxHandler;
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
+import org.xml.sax.*;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -24,6 +22,7 @@ public class CiaParser extends SaxHandler {
   private CiaTableWorker ciaTableWorker;
 
   private int recordsNum;
+  public OutputStream outError;
 
   public CiaParser(InputStream inputStream, CiaTableWorker ciaTableWorker, int recordsNum) throws SQLException {
     this.inputStream = inputStream;
@@ -36,7 +35,11 @@ public class CiaParser extends SaxHandler {
 
     XMLReader reader = XMLReaderFactory.createXMLReader();
     reader.setContentHandler(this);
-    reader.parse(new InputSource(inputStream));
+    try {
+      reader.parse(new InputSource(inputStream));
+    } catch (SAXParseException e) {
+      outError.write(e.toString().getBytes());
+    }
     return recordsNum;
   }
 
@@ -67,17 +70,6 @@ public class CiaParser extends SaxHandler {
         client.gender = attributes.getValue("value");
         return;
 
-//      case "/cia/client/birth":
-//        client.birth_date = attributes.getValue("value");
-//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-//        try {
-//          sdf.parse(client.birth_date);
-//        } catch (ParseException e) {
-//          // Проглатывание ошибки
-//          client.birth_date = null;
-//          return;
-//        }
-//        return;
       case "/cia/client/birth":
         try {
           SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
