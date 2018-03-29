@@ -28,7 +28,7 @@
             <tr *ngFor="let clientInfo of clientRecords" [ngClass]="{'selected': selectedID === clientInfo.id}"
                 (click)="selectClient(clientInfo.id)">
                 <td><b>{{clientInfo.fio}}</b></td>
-                <td><b>{{clientInfo.charm}}</b></td>
+                <td><b>{{clientInfo.charmDot}}</b></td>
                 <td><b>{{clientInfo.age}}</b></td>
                 <td><b>{{clientInfo.totalCash}}</b></td>
                 <td><b>{{clientInfo.maxCash}}</b></td>

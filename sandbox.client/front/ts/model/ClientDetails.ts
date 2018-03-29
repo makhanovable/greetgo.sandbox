@@ -1,19 +1,19 @@
 export class ClientDetails {
-    public id = "";
-    public name = "";
-    public surname = "";
-    public patronymic = "";
-    public gender = "";
-    public birth_date = "";
-    public charm = "";
-    public fAdressStreet = "";
-    public fAdressHouse = "";
-    public fAdressFlat = "";
-    public rAdressStreet = "";
-    public rAdressHouse = "";
-    public rAdressFlat = "";
-    public workPhone = "";
-    public homePhone = "";
+    public id : string = "";
+    public name : string = "";
+    public surname : string = "";
+    public patronymic : string = "";
+    public gender : string = "";
+    public birth_date : string = "";
+    public charm : string = "";
+    public fAdressStreet : string = "";
+    public fAdressHouse : string = "";
+    public fAdressFlat : string = "";
+    public rAdressStreet : string = "";
+    public rAdressHouse : string = "";
+    public rAdressFlat : string = "";
+    public homePhone : string = "";
+    public workPhone : string = "";
     public mobilePhones = [""];
 
     public static from(a: ClientDetails) : ClientDetails {

@@ -8,9 +8,9 @@ import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
-import kz.greetgo.sandbox.db.stand.model.Account;
-import kz.greetgo.sandbox.db.stand.model.Charm;
-import kz.greetgo.sandbox.db.stand.model.Client;
+import kz.greetgo.sandbox.db.stand.model.AccountDot;
+import kz.greetgo.sandbox.db.stand.model.CharmDot;
+import kz.greetgo.sandbox.db.stand.model.ClientDot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,18 +45,17 @@ public class ClientRegisterStand  implements ClientRegister{
 
     @Override
     public ClientDetails getEditableClientInfo(String clientID) {
-        ClientDetails clientInfo = db.get().getEditableClientInfo(clientID);
-        return clientInfo;
+        return db.get().getEditableClientInfo(clientID);
     }
 
     @Override
     public ClientToReturn getFilteredClientsInfo(String pageID, String filterStr) {
         ClientToReturn clientToReturn = new ClientToReturn();
 
-        List<Client> clients = new ArrayList<Client>();
+        List<ClientDot> clients = new ArrayList<ClientDot>();
 
         if (filterStr != null) {
-            for (Client client : db.get().clientStorage.values()) {
+            for (ClientDot client : db.get().clientStorage.values()) {
                 if (client.name.toLowerCase().contains(filterStr.toLowerCase()) ||
                     client.surname.toLowerCase().contains(filterStr.toLowerCase()) ||
                     client.patronymic.toLowerCase().contains(filterStr.toLowerCase())) {
@@ -74,7 +73,7 @@ public class ClientRegisterStand  implements ClientRegister{
         int l = (Integer.parseInt(pageID) - 1) * pageMax;
         int r = l + pageMax;
         int cnt = 0;
-        for (Client client : clients) {
+        for (ClientDot client : clients) {
             if (cnt >= l && cnt < r) {
                 ClientRecord clientInfo = new ClientRecord();
                 clientInfo.id = client.id;
@@ -99,8 +98,8 @@ public class ClientRegisterStand  implements ClientRegister{
     public List<String> getCharms() {
         List<String> charms = new ArrayList<String>();
 
-        for (Charm charm : db.get().charmStorage.values()) {
-            charms.add(charm.name);
+        for (CharmDot charmDot : db.get().charmStorage.values()) {
+            charms.add(charmDot.name);
         }
 
         return charms;
@@ -120,9 +119,9 @@ public class ClientRegisterStand  implements ClientRegister{
     private float getTotalCash(String clientId) {
         float totalCash = 0;
 
-        for (Account account : db.get().accountStorage.values()) {
-            if (Objects.equals(account.clientID,clientId)) {
-                totalCash += account.money;
+        for (AccountDot accountDot : db.get().accountStorage.values()) {
+            if (Objects.equals(accountDot.clientID,clientId)) {
+                totalCash += accountDot.money;
             }
         }
 
@@ -131,7 +130,7 @@ public class ClientRegisterStand  implements ClientRegister{
     private float getMinCash(String clientId) {
         float minCash = -1;
 
-        for (Account acc : db.get().accountStorage.values()) {
+        for (AccountDot acc : db.get().accountStorage.values()) {
             if (Objects.equals(acc.clientID,clientId)) {
                 if (minCash == -1) minCash = acc.money; else
                 if (acc.money < minCash) minCash = acc.money;
@@ -143,7 +142,7 @@ public class ClientRegisterStand  implements ClientRegister{
     private float getMaxCash(String clientId) {
         float maxCash = 0;
 
-        for (Account acc : db.get().accountStorage.values()) {
+        for (AccountDot acc : db.get().accountStorage.values()) {
             if (Objects.equals(acc.clientID,clientId)) {
                 if (acc.money > maxCash) maxCash = acc.money;
             }
@@ -153,9 +152,9 @@ public class ClientRegisterStand  implements ClientRegister{
     }
 
     private String getCharm(String charmID) {
-        for (Charm charm : db.get().charmStorage.values()) {
-            if (Objects.equals(charm.id, charmID)) {
-                return charm.name;
+        for (CharmDot charmDot : db.get().charmStorage.values()) {
+            if (Objects.equals(charmDot.id, charmID)) {
+                return charmDot.name;
             }
         }
 
@@ -163,7 +162,7 @@ public class ClientRegisterStand  implements ClientRegister{
     }
 
     public ClientRecord getClientRecord(String clientID) {
-        Client client = db.get().clientStorage.get(clientID);
+        ClientDot client = db.get().clientStorage.get(clientID);
 
         ClientRecord clientInfo = new ClientRecord();
         clientInfo.id = client.id;

@@ -17,13 +17,13 @@ import java.util.*;
 @Bean
 public class StandDb implements HasAfterInject {
   public final Map<String, PersonDot> personStorage = new HashMap<>();
-  public final Map<String, Client> clientStorage = new HashMap<>();
-  public final Map<String, Adress> adressStorage = new HashMap<>();
-  public final Map<String, Charm> charmStorage = new HashMap<>();
-  public final Map<String, Transaction> transactionStorage = new HashMap<>();
+  public final Map<String, ClientDot> clientStorage = new HashMap<>();
+  public final Map<String, AdressDot> adressStorage = new HashMap<>();
+  public final Map<String, CharmDot> charmStorage = new HashMap<>();
+  public final Map<String, TransactionDot> transactionStorage = new HashMap<>();
   public final Map<String, TransactionType> transactionTypeStorage = new HashMap<>();
-  public final Map<String, Phone> phoneStorage = new HashMap<>();
-  public final Map<String, Account> accountStorage = new HashMap<>();
+  public final Map<String, PhoneDot> phoneStorage = new HashMap<>();
+  public final Map<String, AccountDot> accountStorage = new HashMap<>();
 
   private int clientsNum;
   private String clientID;
@@ -84,7 +84,7 @@ public class StandDb implements HasAfterInject {
 
   private void appendClient (List<String[]> data) {
     for (String [] splitLine : data) {
-      Client c = new Client();
+      ClientDot c = new ClientDot();
       c.id = splitLine[0].trim();
       String[] fio = splitLine[1].trim().split("\\s+");
       c.surname = fio[1];
@@ -104,7 +104,7 @@ public class StandDb implements HasAfterInject {
 
   private void appendAdress(List<String[]> data) {
     for (String[] splitLine : data) {
-      Adress adr = new Adress();
+      AdressDot adr = new AdressDot();
       adr.id = String.valueOf(this.adressStorage.values().size() + 1);
       adr.clientID = splitLine[0].trim();
       adr.adressType = splitLine[1].trim();
@@ -117,7 +117,7 @@ public class StandDb implements HasAfterInject {
 
   private void appendPhone(List<String[]> data) {
     for (String[] splitLine : data) {
-      Phone ph = new Phone();
+      PhoneDot ph = new PhoneDot();
       ph.clientID = splitLine[0].trim();
       ph.number = splitLine[1].trim();
       ph.phoneType = splitLine[2].trim();
@@ -127,7 +127,7 @@ public class StandDb implements HasAfterInject {
 
   private void appendAccount(List<String[]> data) {
     for (String[] splitLine : data) {
-      Account acc = new Account();
+      AccountDot acc = new AccountDot();
       acc.id = splitLine[0].trim();
       acc.clientID = splitLine[1].trim();
       acc.money = Float.parseFloat(splitLine[2].trim());
@@ -139,7 +139,7 @@ public class StandDb implements HasAfterInject {
 
   private void appendTransaction(List<String[]> data) {
     for (String[] splitLine : data) {
-      Transaction tr = new Transaction();
+      TransactionDot tr = new TransactionDot();
       tr.id = splitLine[0].trim();
       tr.accountID = splitLine[1].trim();
       tr.money = Float.parseFloat(splitLine[2].trim());
@@ -161,7 +161,7 @@ public class StandDb implements HasAfterInject {
 
   private void appendCharm(List<String[]> data) {
     for (String[] splitLine : data) {
-      Charm ch = new Charm();
+      CharmDot ch = new CharmDot();
       ch.id = splitLine[0].trim();
       ch.name = splitLine[1].trim();
       ch.description = splitLine[2].trim();
@@ -176,7 +176,7 @@ public class StandDb implements HasAfterInject {
     this.clientID = "c" + String.valueOf(clientsNum);
     clientToSave.id = this.clientID;
 
-    Client c = new Client();
+    ClientDot c = new ClientDot();
     c.id = clientToSave.id;
     c.surname = clientToSave.surname;
     c.name = clientToSave.name;
@@ -188,9 +188,9 @@ public class StandDb implements HasAfterInject {
     } catch (ParseException e) {
       e.printStackTrace();
     }
-    for (Charm charm : charmStorage.values()) {
-      if (charm.name.equals(clientToSave.charm)) {
-        c.charmID = charm.id;
+    for (CharmDot charmDot : charmStorage.values()) {
+      if (charmDot.name.equals(clientToSave.charm)) {
+        c.charmID = charmDot.id;
       }
     }
 
@@ -199,23 +199,23 @@ public class StandDb implements HasAfterInject {
     addNewPhones(clientToSave);
     addNewAdresses(clientToSave);
 
-    return clientToSave.id;
+    return c.id;
   }
   public void addNewPhones(ClientToSave clientToSave) {
-      Phone ph = new Phone();
+      PhoneDot ph = new PhoneDot();
       ph.clientID = clientToSave.id;
       ph.number = clientToSave.homePhone;
       ph.phoneType = "HOME";
       phoneStorage.put(ph.number, ph);
 
-      ph = new Phone();
+      ph = new PhoneDot();
       ph.clientID = clientToSave.id;
       ph.number = clientToSave.workPhone;
       ph.phoneType = "WORK";
       phoneStorage.put(ph.number, ph);
 
       for(String phone : clientToSave.mobilePhones) {
-        ph = new Phone();
+        ph = new PhoneDot();
         ph.clientID = clientToSave.id;
         ph.number = phone;
         ph.phoneType = "MOBILE";
@@ -223,7 +223,7 @@ public class StandDb implements HasAfterInject {
       }
   }
   public void addNewAdresses(ClientToSave clientToSave) {
-    Adress adr = new Adress();
+    AdressDot adr = new AdressDot();
     adr.id = String.valueOf(this.adressStorage.values().size() + 1);
     adr.clientID = clientToSave.id;
     adr.adressType = "REG";
@@ -232,7 +232,7 @@ public class StandDb implements HasAfterInject {
     adr.flat = clientToSave.rAdressFlat;
     adressStorage.put(adr.id, adr);
 
-    adr = new Adress();
+    adr = new AdressDot();
     adr.id = String.valueOf(this.adressStorage.values().size() + 1);
     adr.clientID = clientToSave.id;
     adr.adressType = "FACT";
@@ -243,9 +243,7 @@ public class StandDb implements HasAfterInject {
   }
 
   public String updateClient(ClientToSave clientToSave) {
-    System.out.println(clientToSave.id);
-
-    Client c = this.clientStorage.get(clientToSave.id);
+    ClientDot c = this.clientStorage.get(clientToSave.id);
     c.id = clientToSave.id;
     c.surname = clientToSave.surname;
     c.name = clientToSave.name;
@@ -257,9 +255,9 @@ public class StandDb implements HasAfterInject {
     } catch (ParseException e) {
       e.printStackTrace();
     }
-    for (Charm charm : charmStorage.values()) {
-      if (charm.name.equals(clientToSave.charm)) {
-        c.charmID = charm.id;
+    for (CharmDot charmDot : charmStorage.values()) {
+      if (charmDot.name.equals(clientToSave.charm)) {
+        c.charmID = charmDot.id;
       }
     }
 
@@ -268,64 +266,41 @@ public class StandDb implements HasAfterInject {
     addNewPhones(clientToSave);
     addNewAdresses(clientToSave);
 
-    return clientToSave.id;
+    return c.id;
   }
 
   public void removeClient(String clientID) {
     clientStorage.remove(clientID);
 
-    for (Adress adr : this.adressStorage.values()) {
+    for (AdressDot adr : this.adressStorage.values()) {
       if (adr.clientID.equals(clientID)) {
         adressStorage.values().remove(adr);
         break;
       }
     }
 
-    for (Phone phone : phoneStorage.values()) {
-      if (phone.clientID.equals(clientID)) {
-        phoneStorage.values().remove(phone);
+    for (PhoneDot phoneDot : phoneStorage.values()) {
+      if (phoneDot.clientID.equals(clientID)) {
+        phoneStorage.values().remove(phoneDot);
         break;
       }
     }
   }
 
   public ClientDetails getEditableClientInfo(String clientID) {
-    ClientDetails clientDetails = new ClientDetails();
 
-    Client client = this.clientStorage.get(clientID);
-    clientDetails.id = client.id;
-    clientDetails.name = client.name;
-    clientDetails.surname = client.surname;
-    clientDetails.patronymic = client.patronymic;
-    DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-    clientDetails.birth_date = df.format(client.birth_date);
-    clientDetails.charm = charmStorage.get(client.charmID).name;
-    clientDetails.gender = client.gender;
+    ClientDetails clientDetails = clientStorage.get(clientID).toClientDetails();
+    clientDetails.charm = charmStorage.get(clientStorage.get(clientID).charmID).name;
 
-    for (Adress adress : adressStorage.values()) {
-
-      if (adress.clientID.equals(clientID) && adress.adressType.equals("FACT")) {
-        clientDetails.fAdressStreet = adress.street;
-        clientDetails.fAdressHouse = adress.house;
-        clientDetails.fAdressFlat = adress.flat;
-      } else
-      if (adress.clientID.equals(clientID) && adress.adressType.equals("REG")) {
-        clientDetails.rAdressStreet = adress.street;
-        clientDetails.rAdressHouse = adress.house;
-        clientDetails.rAdressFlat = adress.flat;
+    for (AdressDot adressDot : adressStorage.values()) {
+      if (Objects.equals(adressDot.clientID, clientID)) {
+        adressDot.toClientDetails(clientDetails);
       }
     }
 
-    for (Phone phone : phoneStorage.values()) {
-      if (phone.clientID.equals(clientID)) {
-        if (phone.phoneType.equals("HOME")) {
-          clientDetails.homePhone = phone.number;
-        } else
-        if (phone.phoneType.equals("WORK")) {
-          clientDetails.workPhone = phone.number;
-        } else {
-          clientDetails.mobilePhones.add(phone.number);
-        }
+    for (PhoneDot phoneDot : phoneStorage.values()) {
+      if (phoneDot.clientID.equals(clientID)) {
+        phoneDot.toClientDetails(clientDetails);
       }
     }
 

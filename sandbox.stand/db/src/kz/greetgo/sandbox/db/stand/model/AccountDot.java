@@ -3,7 +3,7 @@ package kz.greetgo.sandbox.db.stand.model;
 import java.sql.Timestamp;
 import java.util.*;
 
-public class Account {
+public class AccountDot {
     public String id;
     public String clientID;
     public Float money;

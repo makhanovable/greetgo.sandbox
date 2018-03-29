@@ -77,7 +77,7 @@ public class AuthRegisterStand implements AuthRegister {
       if (!personDot.disabled) err.append(personDot.accountName).append(", ");
       if (accountName == null) continue;
       if (accountName.equals(personDot.accountName)) {
-        if (personDot.disabled) throw new AuthError("Account " + accountName + " is disabled");
+        if (personDot.disabled) throw new AuthError("AccountDot " + accountName + " is disabled");
         return "token:personId=" + personDot.id;
       }
     }
