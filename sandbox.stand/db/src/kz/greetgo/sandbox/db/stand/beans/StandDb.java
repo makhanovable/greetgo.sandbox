@@ -14,6 +14,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+//TODO: все Exception, которые проглотил, исправь. (В других классах тоже!)
 @Bean
 public class StandDb implements HasAfterInject {
   public final Map<String, PersonDot> personStorage = new HashMap<>();
@@ -60,6 +61,7 @@ public class StandDb implements HasAfterInject {
         returnStr.add(splitLine);
       }
     } catch (IOException e) {
+      //TODO: Не проглатывай exception!
       e.printStackTrace();
     }
 
@@ -94,6 +96,7 @@ public class StandDb implements HasAfterInject {
       try {
         c.birth_date = format.parse(splitLine[3].trim());
       } catch (ParseException e) {
+        //TODO: Не проглатывай exception!
         e.printStackTrace();
       }
       c.charmID = splitLine[4].trim();
@@ -262,6 +265,7 @@ public class StandDb implements HasAfterInject {
     try {
       c.birth_date = format.parse(clientToSave.birth_date);
     } catch (ParseException e) {
+      //TODO: Не проглатывай exception!
       e.printStackTrace();
     }
     for (CharmDot charmDot : charmStorage.values()) {
