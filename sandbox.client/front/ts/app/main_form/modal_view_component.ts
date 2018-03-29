@@ -1,6 +1,7 @@
 import {Component, EventEmitter, Output, Input} from "@angular/core";
 import {HttpService} from "../HttpService";
 import {ClientDetails} from "../../model/ClientDetails";
+import {isUndefined} from "util";
 
 @Component({
     selector: 'modal-view-component',
@@ -15,12 +16,11 @@ export class ModalViewComponent {
     @Input()selectedID: string;
     @Input()actionType: string;
     clientDetails: ClientDetails = new ClientDetails();
-    charmRecords: String[] = null;
+    charmRecords: String[];
 
     constructor(private httpService: HttpService) {}
 
     ngOnInit() {
-        // console.log(this.actionType);
         this.loadCharms();
         this.loadClientDetails();
     }
@@ -36,6 +36,8 @@ export class ModalViewComponent {
                 console.log(error);
             });
         }
+
+        // console.log(this.clientDetails.workPhone);
     }
 
     closeModal() {
@@ -44,7 +46,7 @@ export class ModalViewComponent {
 
     loadCharms() {
         this.httpService.get("/client/charms").toPromise().then(result => {
-            console.log(result.json());
+            // console.log(result.json());
             this.charmRecords = result.json();
         }, error => {
             console.log(error);
@@ -69,5 +71,19 @@ export class ModalViewComponent {
         } else {
             return false;
         }
+    }
+
+    addNewWorkPhone() {
+        this.clientDetails.workPhone.push("");
+    }
+    addNewHomePhone() {
+        this.clientDetails.homePhone.push("");
+    }
+    addNewMobilePhone() {
+        this.clientDetails.mobilePhones.push("");
+    }
+
+    trackByFn(index: any) {
+        return index;
     }
 }

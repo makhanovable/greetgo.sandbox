@@ -2,8 +2,8 @@ export class ClientRecord {
     public id: string;
     public fio: string | null;
     public charm: string | null;
-    public age: string;
-    public totalCash : string | null;
-    public minCash : string | null;
-    public maxCash : string | null;
+    public age: number /*int*/;
+    public totalCash : number /*float*/;
+    public minCash : number /*float*/;
+    public maxCash : number /*float*/;
 }

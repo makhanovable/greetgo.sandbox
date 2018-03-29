@@ -202,17 +202,23 @@ public class StandDb implements HasAfterInject {
     return c.id;
   }
   public void addNewPhones(ClientToSave clientToSave) {
-      PhoneDot ph = new PhoneDot();
-      ph.clientID = clientToSave.id;
-      ph.number = clientToSave.homePhone;
-      ph.phoneType = "HOME";
-      phoneStorage.put(ph.number, ph);
+    PhoneDot ph;
 
+    for(String phone : clientToSave.workPhone) {
       ph = new PhoneDot();
       ph.clientID = clientToSave.id;
-      ph.number = clientToSave.workPhone;
+      ph.number = phone;
       ph.phoneType = "WORK";
       phoneStorage.put(ph.number, ph);
+    }
+
+    for(String phone : clientToSave.homePhone) {
+      ph = new PhoneDot();
+      ph.clientID = clientToSave.id;
+      ph.number = phone;
+      ph.phoneType = "HOME";
+      phoneStorage.put(ph.number, ph);
+    }
 
       for(String phone : clientToSave.mobilePhones) {
         ph = new PhoneDot();

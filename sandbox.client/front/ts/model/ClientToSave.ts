@@ -1,20 +1,20 @@
 export class ClientToSave {
-    public id : string = "";
-    public name : string = "";
-    public surname: string = "";
-    public patronymic : string = "";
-    public gender : string = "";
-    public birth_date : string = "";
-    public charm : string = "";
-    public fAdressStreet : string = "";
-    public fAdressHouse : string = "";
-    public fAdressFlat : string = "";
-    public rAdressStreet : string = "";
-    public rAdressHouse : string = "";
-    public rAdressFlat : string = "";
-    public workPhone : string = "";
-    public homePhone : string = "";
-    public mobilePhones = [""];
+    public id : string;
+    public name : string;
+    public surname: string;
+    public patronymic : string;
+    public gender : string;
+    public birth_date : string;
+    public charm : string;
+    public fAdressStreet : string;
+    public fAdressHouse : string;
+    public fAdressFlat : string;
+    public rAdressStreet : string;
+    public rAdressHouse : string;
+    public rAdressFlat : string;
+    public workPhone : string[];
+    public homePhone : string[];
+    public mobilePhones : string[];
 
     public static from(a: ClientToSave) : ClientToSave {
 
@@ -54,8 +54,8 @@ export class ClientToSave {
         this.rAdressStreet = "";
         this.rAdressHouse = "";
         this.rAdressFlat = "";
-        this.workPhone = "";
-        this.homePhone = "";
+        this.workPhone = [""];
+        this.homePhone = [""];
         this.mobilePhones = [""];
     }
 }

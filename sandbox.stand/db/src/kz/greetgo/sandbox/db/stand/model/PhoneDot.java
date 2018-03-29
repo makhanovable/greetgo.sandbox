@@ -10,10 +10,10 @@ public class PhoneDot {
 
     public void toClientDetails(ClientDetails clientDetails) {
         if (this.phoneType.equals("HOME")) {
-            clientDetails.homePhone = this.number;
+            clientDetails.homePhone.add(this.number);
         } else
         if (this.phoneType.equals("WORK")) {
-            clientDetails.workPhone = this.number;
+            clientDetails.workPhone.add(this.number);
         } else {
             clientDetails.mobilePhones.add(this.number);
         }

@@ -76,18 +76,23 @@
         <div class="modalField">
             <p>Телефоны</p>
             <div class="adress">
-                <div class="adressField">
+                <div class="adressField" *ngFor="let p of clientDetails.workPhone; let i = index; trackBy: trackByFn">
                     <p>Рабочий</p>
-                    <input type="text" size="22" [(ngModel)]="clientDetails.workPhone">
+                    <input type="text" size="22" [(ngModel)]="clientDetails.workPhone[i]">
+                    <p class="important"></p>
+                    <button (click)="addNewWorkPhone()">+</button>
                 </div>
-                <div class="adressField">
+                <div class="adressField" *ngFor="let p of clientDetails.homePhone; let i = index; trackBy: trackByFn">
                     <p class="adressP">Домашний</p>
-                    <input type="text" size="22" class="adressInput" [(ngModel)]="clientDetails.homePhone">
+                    <input type="text" size="22" class="adressInput" [(ngModel)]="clientDetails.homePhone[i]">
+                    <p class="important"></p>
+                    <button (click)="addNewHomePhone()">+</button>
                 </div>
-                <div class="adressField">
+                <div class="adressField" *ngFor="let p of clientDetails.mobilePhones; let i = index; trackBy: trackByFn">
                     <p class="adressP">Мобильный</p>
-                    <input type="text" size="22" class="adressInput" [(ngModel)]="clientDetails.mobilePhones[0]">
+                    <input type="text" size="22" class="adressInput" [(ngModel)]= "clientDetails.mobilePhones[i]">
                     <p class="important">*</p>
+                    <button (click)="addNewMobilePhone()">+</button>
                 </div>
             </div>
         </div>
