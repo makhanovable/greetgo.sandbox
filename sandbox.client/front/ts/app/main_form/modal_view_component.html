@@ -1,6 +1,6 @@
 <div class="modalView">
     <div class="modalHolder">
-        <h2>Редактирование пользователя</h2>
+        <h2>{{modalFormTitle}}</h2>
         <hr>
         <div class="modalField">
             <p>Имя</p>
@@ -32,7 +32,7 @@
         <div class="modalField">
             <p>Характер</p>
             <select name="charmDot" [(ngModel)]="clientDetails.charm">
-                <option *ngFor="let charmDot of charmRecords" value = {{charmDot}}>{{charmDot}}</option>
+                <option *ngFor="let charm of charmRecords" value = {{charm.name}}>{{charm.name}}</option>
             </select>
             <p class="important">*</p>
         </div>
@@ -45,11 +45,11 @@
                 </div>
                 <div class="adressField">
                     <p class="adressP">Дом</p>
-                    <input type="text" size="22" class="adressInput" [(ngModel)]="clientDetails.fAdressHouse">
+                    <input type="number" size="22" class="adressInput" [(ngModel)]="clientDetails.fAdressHouse">
                 </div>
                 <div class="adressField">
                     <p class="adressP">Квартира</p>
-                    <input type="text" size="22" class="adressInput" [(ngModel)]="clientDetails.fAdressFlat">
+                    <input type="number" size="22" class="adressInput" [(ngModel)]="clientDetails.fAdressFlat">
                 </div>
             </div>
         </div>
@@ -63,12 +63,12 @@
                 </div>
                 <div class="adressField">
                     <p class="adressP">Дом</p>
-                    <input type="text" size="22" class="adressInput" [(ngModel)]="clientDetails.rAdressHouse">
+                    <input type="number" size="22" class="adressInput" [(ngModel)]="clientDetails.rAdressHouse">
                     <p class="important">*</p>
                 </div>
                 <div class="adressField">
                     <p class="adressP">Квартира</p>
-                    <input type="text" size="22" class="adressInput" [(ngModel)]="clientDetails.rAdressFlat">
+                    <input type="number" size="22" class="adressInput" [(ngModel)]="clientDetails.rAdressFlat">
                     <p class="important">*</p>
                 </div>
             </div>
@@ -78,21 +78,22 @@
             <div class="adress">
                 <div class="adressField" *ngFor="let p of clientDetails.workPhone; let i = index; trackBy: trackByFn">
                     <p>Рабочий</p>
-                    <input type="text" size="22" [(ngModel)]="clientDetails.workPhone[i]">
+                    <input type="number" size="22" [(ngModel)]="clientDetails.workPhone[i]">
                     <p class="important"></p>
                     <button (click)="addNewWorkPhone()">+</button>
                 </div>
                 <div class="adressField" *ngFor="let p of clientDetails.homePhone; let i = index; trackBy: trackByFn">
                     <p class="adressP">Домашний</p>
-                    <input type="text" size="22" class="adressInput" [(ngModel)]="clientDetails.homePhone[i]">
+                    <input type="number" size="22" class="adressInput" [(ngModel)]="clientDetails.homePhone[i]">
                     <p class="important"></p>
                     <button (click)="addNewHomePhone()">+</button>
                 </div>
                 <div class="adressField" *ngFor="let p of clientDetails.mobilePhones; let i = index; trackBy: trackByFn">
                     <p class="adressP">Мобильный</p>
-                    <input type="text" size="22" class="adressInput" [(ngModel)]= "clientDetails.mobilePhones[i]">
+                    <input type="number" size="22" class="adressInput" [(ngModel)]= "clientDetails.mobilePhones[i]">
                     <p class="important">*</p>
-                    <button (click)="addNewMobilePhone()">+</button>
+                    <button [ngClass]="{'invisible': i > 0 }" (click)="addNewMobilePhone()">+</button>
+                    <button [ngClass]="{'invisible': i === 0 }" (click)="removeMobilePhone(i)">-</button>
                 </div>
             </div>
         </div>

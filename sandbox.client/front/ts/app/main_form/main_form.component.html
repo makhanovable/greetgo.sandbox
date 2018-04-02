@@ -1,16 +1,8 @@
 <div>
-    <h2>Main Form Component</h2>
+    <h2>Список клиентов</h2>
 
     <button (click)="exit.emit()">Выход</button>
 
-    <div *ngIf="!clientRecords">
-        <button [disabled]="!loadUserInfoButtonEnabled" (click)="loadUserInfoButtonClicked()">
-            Загрузить данные пользователя
-        </button>
-        <div *ngIf="loadUserInfoError">
-            {{loadUserInfoError}}
-        </div>
-    </div>
     <div *ngIf="clientRecords">
         <div class="search">
             <input type="text" size ="40" [(ngModel)]="filterText">
@@ -28,7 +20,7 @@
             <tr *ngFor="let clientInfo of clientRecords" [ngClass]="{'selected': selectedID === clientInfo.id}"
                 (click)="selectClient(clientInfo.id)">
                 <td><b>{{clientInfo.fio}}</b></td>
-                <td><b>{{clientInfo.charmDot}}</b></td>
+                <td><b>{{clientInfo.charm}}</b></td>
                 <td><b>{{clientInfo.age}}</b></td>
                 <td><b>{{clientInfo.totalCash}}</b></td>
                 <td><b>{{clientInfo.maxCash}}</b></td>
@@ -37,8 +29,8 @@
 
         </table>
         <div class="buttons">
-            <button class="actionButton" (click)="openEditClientFormClicked()">...</button>
-            <button class="actionButton" (click)="openAddClientFormClicked()">+</button>
+            <button class="actionButton" (click)="openEditClientForm()">...</button>
+            <button class="actionButton" (click)="openAddClientForm()">+</button>
             <button class="actionButton" (click)="removeClientClicked()">-</button>
         </div>
         <div class="btn-toolbar">
@@ -61,6 +53,7 @@
         <modal-view-component
                 [selectedID]="selectedID"
                 [actionType]="actionType"
+                [modalFormTitle]="modalFormTitle"
                 (detailsFilled)="editAddClicked($event)">
         </modal-view-component>
     </div>

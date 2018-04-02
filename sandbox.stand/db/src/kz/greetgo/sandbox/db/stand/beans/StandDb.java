@@ -60,9 +60,10 @@ public class StandDb implements HasAfterInject {
 
         returnStr.add(splitLine);
       }
-    } catch (IOException e) {
+    } catch (Exception e) {
       //TODO: Не проглатывай exception!
-      e.printStackTrace();
+      if (e instanceof RuntimeException) throw (RuntimeException) e;
+      throw new RuntimeException(e);
     }
 
     return returnStr;
@@ -95,9 +96,10 @@ public class StandDb implements HasAfterInject {
       DateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
       try {
         c.birth_date = format.parse(splitLine[3].trim());
-      } catch (ParseException e) {
+      } catch (Exception e) {
         //TODO: Не проглатывай exception!
-        e.printStackTrace();
+        if (e instanceof RuntimeException) throw (RuntimeException) e;
+        throw new RuntimeException(e);
       }
       c.charmID = splitLine[4].trim();
       if (fio.length > 2) c.patronymic = fio[2]; else c.patronymic = "";
@@ -188,9 +190,10 @@ public class StandDb implements HasAfterInject {
     DateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
     try {
       c.birth_date = format.parse(clientToSave.birth_date);
-    } catch (ParseException e) {
+    } catch (Exception e) {
       // TODO: не глотай exception!
-      e.printStackTrace();
+      if (e instanceof RuntimeException) throw (RuntimeException) e;
+      throw new RuntimeException(e);
     }
     for (CharmDot charmDot : charmStorage.values()) {
       if (charmDot.name.equals(clientToSave.charm)) {
@@ -206,6 +209,12 @@ public class StandDb implements HasAfterInject {
     return c.id;
   }
   public void addNewPhones(ClientToSave clientToSave) {
+    for(PhoneDot phone : phoneStorage.values()) {
+      if (phone.clientID.equals(clientToSave.id)) {
+        phoneStorage.remove(phone);
+      }
+    }
+
     PhoneDot ph;
 
     for(String phone : clientToSave.workPhone) {
@@ -225,13 +234,13 @@ public class StandDb implements HasAfterInject {
       phoneStorage.put(ph.number, ph);
     }
 
-      for(String phone : clientToSave.mobilePhones) {
-        ph = new PhoneDot();
-        ph.clientID = clientToSave.id;
-        ph.number = phone;
-        ph.phoneType = "MOBILE";
-        phoneStorage.put(ph.number, ph);
-      }
+    for(String phone : clientToSave.mobilePhones) {
+      ph = new PhoneDot();
+      ph.clientID = clientToSave.id;
+      ph.number = phone;
+      ph.phoneType = "MOBILE";
+      phoneStorage.put(ph.number, ph);
+    }
   }
   public void addNewAdresses(ClientToSave clientToSave) {
     AdressDot adr = new AdressDot();
@@ -264,9 +273,10 @@ public class StandDb implements HasAfterInject {
     DateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
     try {
       c.birth_date = format.parse(clientToSave.birth_date);
-    } catch (ParseException e) {
+    } catch (Exception e) {
       //TODO: Не проглатывай exception!
-      e.printStackTrace();
+      if (e instanceof RuntimeException) throw (RuntimeException) e;
+      throw new RuntimeException(e);
     }
     for (CharmDot charmDot : charmStorage.values()) {
       if (charmDot.name.equals(clientToSave.charm)) {
@@ -301,23 +311,4 @@ public class StandDb implements HasAfterInject {
   }
 
   // TODO: это уже относится к бизнес логике. Надо это перенести в регистр, а запросы в стэнд бд разделить по отдельным методам.
-  public ClientDetails getEditableClientInfo(String clientID) {
-
-    ClientDetails clientDetails = clientStorage.get(clientID).toClientDetails();
-    clientDetails.charm = charmStorage.get(clientStorage.get(clientID).charmID).name;
-
-    for (AdressDot adressDot : adressStorage.values()) {
-      if (Objects.equals(adressDot.clientID, clientID)) {
-        adressDot.toClientDetails(clientDetails);
-      }
-    }
-
-    for (PhoneDot phoneDot : phoneStorage.values()) {
-      if (phoneDot.clientID.equals(clientID)) {
-        phoneDot.toClientDetails(clientDetails);
-      }
-    }
-
-    return clientDetails;
-  }
 }

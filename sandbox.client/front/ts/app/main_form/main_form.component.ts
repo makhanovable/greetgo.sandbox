@@ -21,11 +21,16 @@ export class MainFormComponent {
   filterText = "";
   selectedID = "";
   actionType = "";
+  modalFormTitle = "";
   currentIndex = "1";
   pageNumber = 0;
   pagesIndex = [];
 
   constructor(private httpService: HttpService) {}
+
+  ngOnInit() {
+    this.loadUserInfoButtonClicked();
+  }
 
   loadUserInfoButtonClicked() {
     this.loadUserInfoButtonEnabled = false;
@@ -58,7 +63,8 @@ export class MainFormComponent {
       this.httpService.post("/client/removeClient", {
         clientID: this.selectedID
       }).toPromise().then(res => {
-
+        this.clientRecords = this.clientRecords.filter(record => record.id !== this.selectedID);
+        this.selectedID = "";
       }, error => {
         console.log(error);
       })
@@ -66,10 +72,11 @@ export class MainFormComponent {
   }
 
   //TODO: как тебе такое название openEditClientForm ?
-  openEditClientFormClicked() {
+  openEditClientForm() {
     if (this.selectedID != "") {
         this.actionType = "edit";
         this.modalViewEnabled = true;
+        this.modalFormTitle = "Редактирование клиента";
     }
   }
 
@@ -96,9 +103,10 @@ export class MainFormComponent {
     }
 
   //TODO: как тебе такое название openAddClientForm ?
-  openAddClientFormClicked() {
+  openAddClientForm() {
     this.actionType = "add";
     this.modalViewEnabled = true;
+    this.modalFormTitle = "Добавление нового клиента";
   }
 
   closeModal() {
@@ -126,6 +134,7 @@ export class MainFormComponent {
           this.closeModal();
       }, error => {
           console.log(error);
+          alert("Поле даты рождения заполнено не верно");
       });
   }
   updateClientInfo(clientDetails: ClientDetails) {
@@ -134,7 +143,7 @@ export class MainFormComponent {
       this.httpService.post("/client/updateClient", {
           clientToSave  : JSON.stringify(this.clientToSave)
       }).toPromise().then(res => {
-          console.log(res.json());
+          // console.log(res.json());
           let clientRecord = new ClientRecord();
           clientRecord = res.json();
           for (var i = 0; i < this.clientRecords.length; i++){
@@ -144,7 +153,7 @@ export class MainFormComponent {
           }
           this.closeModal();
       }, error => {
-          console.log(error);
+          alert("Поле даты рождения заполнено не верно");
       });
   }
 }

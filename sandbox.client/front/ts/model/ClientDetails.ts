@@ -37,16 +37,6 @@ export class ClientDetails {
         ret.homePhone = a.homePhone ;
         ret.mobilePhones = a.mobilePhones ;
 
-        if (typeof ret.homePhone == "undefined") {
-            ret.homePhone = [""];
-        }
-        if (typeof ret.workPhone == "undefined") {
-            ret.workPhone= [""];
-        }
-        if (typeof ret.mobilePhones == "undefined") {
-            ret.mobilePhones = [""];
-        }
-
         return ret;
     }
 

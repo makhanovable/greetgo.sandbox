@@ -2,6 +2,8 @@ import {Component, EventEmitter, Output, Input} from "@angular/core";
 import {HttpService} from "../HttpService";
 import {ClientDetails} from "../../model/ClientDetails";
 import {isUndefined} from "util";
+import {assertClassMethod} from "babel-types";
+import {CharmRecord} from "../../model/CharmRecord";
 
 @Component({
     selector: 'modal-view-component',
@@ -15,8 +17,10 @@ export class ModalViewComponent {
 
     @Input()selectedID: string;
     @Input()actionType: string;
+    @Input()modalFormTitle: string;
     clientDetails: ClientDetails = new ClientDetails();
-    charmRecords: String[];
+    charmRecords: CharmRecord[];
+    isRemovable: Boolean[];
 
     constructor(private httpService: HttpService) {}
 
@@ -26,25 +30,35 @@ export class ModalViewComponent {
     }
                                       
     loadClientDetails() {
+        this.clientDetails.clearPar();
+        this.isRemovable = [true];
+
         if (this.actionType == "edit") {
             let url = "/client/clientDetails/" + this.selectedID;
             this.httpService.get(url).toPromise().then(result => {
                 this.clientDetails = ClientDetails.from(result.json() as ClientDetails);
+                if (this.clientDetails.homePhone.length == 0) {
+                    this.clientDetails.homePhone = [""];
+                }
+                if (this.clientDetails.workPhone.length == 0) {
+                    this.clientDetails.workPhone = [""];
+                }
             }, error => {
                 console.log(error);
             });
+        } else {
+            this.clientDetails.workPhone = [""];
+            this.clientDetails.homePhone = [""];
+            this.clientDetails.mobilePhones = [""];
         }
-
-        // console.log(this.clientDetails.workPhone);
     }
 
     closeModal() {
-        this.clientDetails.clearPar();
+        // this.clientDetails.clearPar();
     }
 
     loadCharms() {
         this.httpService.get("/client/charms").toPromise().then(result => {
-            // console.log(result.json());
             this.charmRecords = result.json();
         }, error => {
             console.log(error);
@@ -72,13 +86,22 @@ export class ModalViewComponent {
     }
 
     addNewWorkPhone() {
-        this.clientDetails.workPhone.push("");
+        if (this.clientDetails.workPhone[this.clientDetails.workPhone.length-1] != "") {
+            this.clientDetails.workPhone.push("");
+        }
     }
     addNewHomePhone() {
-        this.clientDetails.homePhone.push("");
+        if (this.clientDetails.homePhone[this.clientDetails.homePhone.length-1] != "") {
+            this.clientDetails.homePhone.push("");
+        }
     }
     addNewMobilePhone() {
-        this.clientDetails.mobilePhones.push("");
+        if (this.clientDetails.mobilePhones[this.clientDetails.mobilePhones.length-1] != "") {
+            this.clientDetails.mobilePhones.push("");
+        }
+    }
+    removeMobilePhone(i : number) {
+        this.clientDetails.mobilePhones.splice(i, 1);
     }
 
     trackByFn(index: any) {

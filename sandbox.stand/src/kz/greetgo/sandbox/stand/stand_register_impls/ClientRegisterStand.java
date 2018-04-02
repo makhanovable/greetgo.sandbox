@@ -2,15 +2,10 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.ClientDetails;
-import kz.greetgo.sandbox.controller.model.ClientToReturn;
-import kz.greetgo.sandbox.controller.model.ClientToSave;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
-import kz.greetgo.sandbox.db.stand.model.AccountDot;
-import kz.greetgo.sandbox.db.stand.model.CharmDot;
-import kz.greetgo.sandbox.db.stand.model.ClientDot;
+import kz.greetgo.sandbox.db.stand.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +39,22 @@ public class ClientRegisterStand  implements ClientRegister{
 
     @Override
     public ClientDetails getEditableClientInfo(String clientID) {
-        return db.get().getEditableClientInfo(clientID);
+        ClientDetails clientDetails = db.get().clientStorage.get(clientID).toClientDetails();
+        clientDetails.charm = db.get().charmStorage.get(db.get().clientStorage.get(clientID).charmID).name;
+
+        for (AdressDot adressDot : db.get().adressStorage.values()) {
+            if (Objects.equals(adressDot.clientID, clientID)) {
+                adressDot.toClientDetails(clientDetails);
+            }
+        }
+
+        for (PhoneDot phoneDot : db.get().phoneStorage.values()) {
+            if (phoneDot.clientID.equals(clientID)) {
+                phoneDot.toClientDetails(clientDetails);
+            }
+        }
+
+        return clientDetails;
     }
 
     @Override
@@ -95,11 +105,11 @@ public class ClientRegisterStand  implements ClientRegister{
 
     //TODO: Нужно возвращать не только имена но и их идентификаторы
     @Override
-    public List<String> getCharms() {
-        List<String> charms = new ArrayList<String>();
+    public List<Charm> getCharms() {
+        List<Charm> charms = new ArrayList<Charm>();
 
         for (CharmDot charmDot : db.get().charmStorage.values()) {
-            charms.add(charmDot.name);
+            charms.add(charmDot.toCharm());
         }
 
         return charms;
