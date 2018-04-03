@@ -45,9 +45,4 @@ public class AuthController implements Controller {
   public List<UserInfo> allUserInfo() {
     return authRegister.get().getAllUserInfo();
   }
-
-  //TODO: перенеси все методы контроллера, не относящиеся по логике к авторизации, в новый контроллер для клиентов.
-  //TODO: также создай новый регистр для клиентов
-  //  Done
-
 }
