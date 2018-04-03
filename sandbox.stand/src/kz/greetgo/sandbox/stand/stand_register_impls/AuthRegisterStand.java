@@ -10,7 +10,7 @@ import kz.greetgo.sandbox.controller.register.model.SessionInfo;
 import kz.greetgo.sandbox.controller.register.model.UserParamName;
 import kz.greetgo.sandbox.controller.security.SecurityError;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
-import kz.greetgo.sandbox.db.stand.model.PersonDot;
+import kz.greetgo.sandbox.db.stand.model.*;
 import kz.greetgo.util.ServerUtil;
 
 import java.io.File;
@@ -19,6 +19,10 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+
+import static sun.misc.Version.print;
 
 @Bean
 public class AuthRegisterStand implements AuthRegister {
@@ -70,7 +74,7 @@ public class AuthRegisterStand implements AuthRegister {
       if (!personDot.disabled) err.append(personDot.accountName).append(", ");
       if (accountName == null) continue;
       if (accountName.equals(personDot.accountName)) {
-        if (personDot.disabled) throw new AuthError("Account " + accountName + " is disabled");
+        if (personDot.disabled) throw new AuthError("AccountDot " + accountName + " is disabled");
         return "token:personId=" + personDot.id;
       }
     }
@@ -124,6 +128,21 @@ public class AuthRegisterStand implements AuthRegister {
 
   @Override
   public UserInfo getUserInfo(String personId) {
-    return db.get().personStorage.get(personId).toUserInfo();
-  }
+        for (PersonDot person : db.get().personStorage.values()) {
+            System.out.println(person.accountName);
+        }
+
+        return db.get().personStorage.get(personId).toUserInfo();
+    }
+
+    public List<UserInfo> getAllUserInfo() {
+
+        List<UserInfo> users = new ArrayList<UserInfo>();
+        for (PersonDot person : db.get().personStorage.values()) {
+            users.add(person.toUserInfo());
+        }
+
+        return users;
+    }
+
 }
