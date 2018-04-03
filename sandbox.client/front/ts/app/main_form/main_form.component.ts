@@ -70,8 +70,7 @@ export class MainFormComponent {
       })
     }
   }
-
-  //TODO: как тебе такое название openEditClientForm ?
+                                    
   openEditClientForm() {
     if (this.selectedID != "") {
         this.actionType = "edit";
@@ -102,7 +101,6 @@ export class MainFormComponent {
       }
     }
 
-  //TODO: как тебе такое название openAddClientForm ?
   openAddClientForm() {
     this.actionType = "add";
     this.modalViewEnabled = true;
