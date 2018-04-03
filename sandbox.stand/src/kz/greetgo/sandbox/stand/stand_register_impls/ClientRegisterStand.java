@@ -103,7 +103,6 @@ public class ClientRegisterStand  implements ClientRegister{
         return clientToReturn;
     }
 
-    //TODO: Нужно возвращать не только имена но и их идентификаторы
     @Override
     public List<Charm> getCharms() {
         List<Charm> charms = new ArrayList<Charm>();
