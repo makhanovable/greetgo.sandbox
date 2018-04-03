@@ -100,3 +100,9 @@ select {
     height: auto;
     margin-top: 40px;
 }
+
+.sort {
+    width: 5px;
+    margin: 0px;
+    margin-left: 5px;
+}

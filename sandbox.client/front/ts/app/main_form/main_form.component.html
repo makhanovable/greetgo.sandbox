@@ -10,12 +10,32 @@
         </div>
         <table>
             <tr>
-                <th>ФИО</th>
+                <th>
+                    ФИО
+                    <p class="sort" (click)="sortClientsByFIO('down')">↓</p>
+                    <p class="sort" (click)="sortClientsByFIO('up')">↑</p>
+                </th>
                 <th>Характер</th>
-                <th>Возраст</th>
-                <th>Общий остаток</th>
-                <th>Макс. остаток</th>
-                <th>Мин. остаток</th>
+                <th>
+                    Возраст
+                    <p class="sort" (click)="sortClientsByAge('down')">↓</p>
+                    <p class="sort" (click)="sortClientsByAge('up')">↑</p>
+                </th>
+                <th>
+                    Общий остаток
+                    <p class="sort" (click)="sortClientsByTotalCash('down')">↓</p>
+                    <p class="sort" (click)="sortClientsByTotalCash('up')">↑</p>
+                </th>
+                <th>
+                    Макс. остаток
+                    <p class="sort" (click)="sortClientsByMaxCash('down')">↓</p>
+                    <p class="sort" (click)="sortClientsByMaxCash('up')">↑</p>
+                </th>
+                <th>
+                    Мин. остаток
+                    <p class="sort" (click)="sortClientsByMinCash('down')">↓</p>
+                    <p class="sort" (click)="sortClientsByMinCash('up')">↑</p>
+                </th>
             </tr>
             <tr *ngFor="let clientInfo of clientRecords" [ngClass]="{'selected': selectedID === clientInfo.id}"
                 (click)="selectClient(clientInfo.id)">

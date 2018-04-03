@@ -103,6 +103,12 @@ export class ModalViewComponent {
     removeMobilePhone(i : number) {
         this.clientDetails.mobilePhones.splice(i, 1);
     }
+    removeWorkPhone(i : number) {
+        this.clientDetails.workPhone.splice(i, 1);
+    }
+    removeHomePhone(i : number) {
+        this.clientDetails.homePhone.splice(i, 1);
+    }
 
     trackByFn(index: any) {
         return index;

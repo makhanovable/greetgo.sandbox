@@ -13,6 +13,8 @@ import {ClientToSave} from "../../model/ClientToSave";
 export class MainFormComponent {
   @Output() exit = new EventEmitter<void>();
 
+  arrowUp = "↑";
+  arrowDown = "↓";
   clientRecords: ClientRecord[] = null;
   clientToSave: ClientToSave;
   loadUserInfoButtonEnabled: boolean = true;
@@ -154,4 +156,82 @@ export class MainFormComponent {
           alert("Поле даты рождения заполнено не верно");
       });
   }
+
+  sortClientsByFIO(order: string) {
+      console.log(order);
+      if (order == "up") {
+          this.clientRecords.sort((a, b) => {
+              if (a.fio < b.fio) return -1;
+              else if (a.fio > b.fio) return 1;
+              else return 0;
+          });
+      } else {
+          this.clientRecords.sort((a, b) => {
+              if (a.fio > b.fio) return -1;
+              else if (a.fio < b.fio) return 1;
+              else return 0;
+          });
+      }
+  }
+  sortClientsByAge(order : string) {
+      if (order == "up"){
+          this.clientRecords.sort((a, b) => {
+              if (a.age < b.age) return -1;
+              else if (a.age > b.age) return 1;
+              else return 0;
+          });
+      } else {
+          this.clientRecords.sort((a, b) => {
+              if (a.age > b.age) return -1;
+              else if (a.age < b.age) return 1;
+              else return 0;
+          });
+      }
+  }
+    sortClientsByTotalCash(order: string) {
+      if (order == "up") {
+          this.clientRecords.sort((a, b) => {
+              if (a.totalCash < b.totalCash) return -1;
+              else if (a.totalCash > b.totalCash) return 1;
+              else return 0;
+          });
+      } else {
+          this.clientRecords.sort((a, b) => {
+              if (a.totalCash > b.totalCash) return -1;
+              else if (a.totalCash < b.totalCash) return 1;
+              else return 0;
+          });
+      }
+    }
+    sortClientsByMaxCash(order : string) {
+      if (order == "up"){
+          this.clientRecords.sort((a, b) => {
+              if (a.maxCash < b.maxCash) return -1;
+              else if (a.maxCash > b.maxCash) return 1;
+              else return 0;
+          });
+      } else {
+          this.clientRecords.sort((a, b) => {
+              if (a.maxCash > b.maxCash) return -1;
+              else if (a.maxCash < b.maxCash) return 1;
+              else return 0;
+          });
+      }
+    }
+    sortClientsByMinCash(order : string) {
+      if (order == "up") {
+          this.clientRecords.sort((a, b) => {
+              if (a.minCash < b.minCash) return -1;
+              else if (a.minCash > b.minCash) return 1;
+              else return 0;
+          });
+      } else {
+          this.clientRecords.sort((a, b) => {
+              if (a.minCash > b.minCash) return -1;
+              else if (a.minCash < b.minCash) return 1;
+              else return 0;
+          });
+      }
+    }
+
 }

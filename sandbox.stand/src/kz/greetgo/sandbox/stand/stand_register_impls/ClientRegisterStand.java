@@ -15,7 +15,7 @@ import java.util.Objects;
 public class ClientRegisterStand  implements ClientRegister{
 
     public BeanGetter<StandDb> db;
-    private int pageMax = 6;
+    private int pageMax = 3;
 
     @Override
     public ClientRecord addNewClient(ClientToSave clientInfo) {
