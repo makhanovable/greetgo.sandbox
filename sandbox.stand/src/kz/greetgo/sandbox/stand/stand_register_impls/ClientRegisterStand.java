@@ -19,7 +19,7 @@ public class ClientRegisterStand  implements ClientRegister{
 
     @Override
     public ClientRecord addNewClient(ClientToSave clientInfo) {
-        String clientID = db.get().addNewCLient(clientInfo);
+        String clientID = db.get().addNewClient(clientInfo);
 
         return getClientRecord(clientID);
     }
