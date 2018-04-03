@@ -24,9 +24,6 @@ import java.util.List;
 
 import static sun.misc.Version.print;
 
-//TODO: Для методов, не относящихся к авторизации, сделай отдельный новый регистр. И там реализовывай бизнес логику.
-//(Done)
-
 @Bean
 public class AuthRegisterStand implements AuthRegister {
 
