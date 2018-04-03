@@ -7,9 +7,7 @@ import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Bean
 public class ClientRegisterStand  implements ClientRegister{
@@ -58,7 +56,7 @@ public class ClientRegisterStand  implements ClientRegister{
     }
 
     @Override
-    public ClientToReturn getFilteredClientsInfo(String pageID, String filterStr) {
+    public ClientToReturn getFilteredClientsInfo(String pageID, String filterStr, String sortBy, String sortOrder) {
         ClientToReturn clientToReturn = new ClientToReturn();
 
         List<ClientDot> clients = new ArrayList<ClientDot>();
@@ -75,30 +73,23 @@ public class ClientRegisterStand  implements ClientRegister{
             clients.addAll(db.get().clientStorage.values());
         }
 
-        clientToReturn.pageCount = getPageNum(clients.size());
+        List<ClientRecord> clientRecords = new ArrayList<>();
+        for (ClientDot client : clients) {
+            clientRecords.add(getClientRecord(client.id));
+        }
+        clientRecords = sort(clientRecords, sortBy, sortOrder);
 
-        List<ClientRecord> clientInfos = new ArrayList<ClientRecord>();
+        clientToReturn.pageCount = getPageNum(clients.size());
 
         int l = (Integer.parseInt(pageID) - 1) * pageMax;
         int r = l + pageMax;
         int cnt = 0;
-        for (ClientDot client : clients) {
+        for (ClientRecord client : clientRecords) {
             if (cnt >= l && cnt < r) {
-                ClientRecord clientInfo = new ClientRecord();
-                clientInfo.id = client.id;
-                clientInfo.fio = client.name + " " + client.patronymic + " " + client.surname;
-                clientInfo.age = client.CountAge();
-                clientInfo.totalCash = getTotalCash(client.id);
-                clientInfo.maxCash = getMaxCash(client.id);
-                clientInfo.minCash = getMinCash(client.id);
-                clientInfo.charm = getCharm(client.charmID);
-
-                clientInfos.add(clientInfo);
+                clientToReturn.clientInfos.add(client);
             }
             cnt++;
         }
-
-        clientToReturn.clientInfos = clientInfos;
 
         return clientToReturn;
     }
@@ -146,6 +137,7 @@ public class ClientRegisterStand  implements ClientRegister{
             }
         }
 
+        if (minCash == -1) minCash = 0;
         return minCash;
     }
     private float getMaxCash(String clientId) {
@@ -183,5 +175,128 @@ public class ClientRegisterStand  implements ClientRegister{
         clientInfo.charm = getCharm(client.charmID);
 
         return clientInfo;
+    }
+
+    private List<ClientRecord> sort(List<ClientRecord> clients, String sortBy, String sortOrder) {
+        if ("fio".equals(sortBy)) {
+            clients = sortByFIO(clients, sortOrder);
+        }
+        if ("age".equals(sortBy)) {
+            clients = sortByAge(clients, sortOrder);
+        }
+        if ("totalCash".equals(sortBy)) {
+            clients = sortByTotalCash(clients, sortOrder);
+        }
+        if ("maxCash".equals(sortBy)) {
+            clients = sortByMaxCash(clients, sortOrder);
+        }
+        if ("minCash".equals(sortBy)) {
+            clients = sortByMinCash(clients, sortOrder);
+        }
+
+        return clients;
+    }
+    private List<ClientRecord> sortByFIO(List<ClientRecord> clientsList, String sortOrder) {
+        if ("up".equals(sortOrder)) {
+            Collections.sort(clientsList, new Comparator<ClientRecord>() {
+                @Override
+                public int compare(ClientRecord client1, ClientRecord client2) {
+                    return client1.fio.compareTo(client2.fio);
+                }
+            });
+        } else {
+            Collections.sort(clientsList, new Comparator<ClientRecord>() {
+                @Override
+                public int compare(ClientRecord client1, ClientRecord client2) {
+                    return client2.fio.compareTo(client1.fio);
+                }
+            });
+        }
+
+        return clientsList;
+    }
+    private List<ClientRecord> sortByAge(List<ClientRecord> clientsList, String sortOrder) {
+        if ("down".equals(sortOrder)) {
+            Collections.sort(clientsList, new Comparator<ClientRecord>() {
+                @Override
+                public int compare(ClientRecord client1, ClientRecord client2) {
+                    if (client1.age < client2.age) return 1; else
+                    if (client1.age == client2.age) return 0; else return -1;
+                }
+            });
+        } else {
+            Collections.sort(clientsList, new Comparator<ClientRecord>() {
+                @Override
+                public int compare(ClientRecord client1, ClientRecord client2) {
+                    if (client1.age > client2.age) return 1; else
+                    if (client1.age == client2.age) return 0; else return -1;
+                }
+            });
+        }
+
+        return clientsList;
+    }
+    private List<ClientRecord> sortByTotalCash(List<ClientRecord> clientsList, String sortOrder) {
+        if ("down".equals(sortOrder)) {
+            Collections.sort(clientsList, new Comparator<ClientRecord>() {
+                @Override
+                public int compare(ClientRecord client1, ClientRecord client2) {
+                    if (client1.totalCash < client2.totalCash) return 1; else
+                    if (client1.totalCash == client2.totalCash) return 0; else return -1;
+                }
+            });
+        } else {
+            Collections.sort(clientsList, new Comparator<ClientRecord>() {
+                @Override
+                public int compare(ClientRecord client1, ClientRecord client2) {
+                    if (client1.totalCash > client2.totalCash) return 1; else
+                    if (client1.totalCash == client2.totalCash) return 0; else return -1;
+                }
+            });
+        }
+
+        return clientsList;
+    }
+    private List<ClientRecord> sortByMinCash(List<ClientRecord> clientsList, String sortOrder) {
+        if ("down".equals(sortOrder)) {
+            Collections.sort(clientsList, new Comparator<ClientRecord>() {
+                @Override
+                public int compare(ClientRecord client1, ClientRecord client2) {
+                    if (client1.minCash < client2.minCash) return 1; else
+                    if (client1.minCash == client2.minCash) return 0; else return -1;
+                }
+            });
+        } else {
+            Collections.sort(clientsList, new Comparator<ClientRecord>() {
+                @Override
+                public int compare(ClientRecord client1, ClientRecord client2) {
+                    if (client1.minCash > client2.minCash) return 1; else
+                    if (client1.minCash == client2.minCash) return 0; else return -1;
+                }
+            });
+        }
+
+        return clientsList;
+    }
+    private List<ClientRecord> sortByMaxCash(List<ClientRecord> clientsList, String sortOrder) {
+        if ("down".equals(sortOrder)) {
+            Collections.sort(clientsList, new Comparator<ClientRecord>() {
+                @Override
+                public int compare(ClientRecord client1, ClientRecord client2) {
+                    if (client1.maxCash < client2.maxCash) return 1; else
+                    if (client1.maxCash == client2.maxCash) return 0; else return -1;
+                }
+            });
+        } else {
+            Collections.sort(clientsList, new Comparator<ClientRecord>() {
+                @Override
+                public int compare(ClientRecord client1, ClientRecord client2) {
+                    if (client1.maxCash > client2.maxCash) return 1; else
+                    if (client1.maxCash == client2.maxCash) return 0; else return -1;
+                }
+            });
+        }
+
+        return clientsList;
     }
 }

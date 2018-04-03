@@ -10,6 +10,6 @@ public interface ClientRegister {
     ClientRecord updateClient(ClientToSave clientInfo);
     String removeClient(String clientID);
     ClientDetails getEditableClientInfo(String clientID);
-    ClientToReturn getFilteredClientsInfo(String pageID, String filterStr);
+    ClientToReturn getFilteredClientsInfo(String pageID, String filterStr, String sortBy, String sortOrder);
     List<Charm> getCharms();
 }

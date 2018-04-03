@@ -13,8 +13,8 @@ import {ClientToSave} from "../../model/ClientToSave";
 export class MainFormComponent {
   @Output() exit = new EventEmitter<void>();
 
-  arrowUp = "↑";
-  arrowDown = "↓";
+  sortOrder = "";
+  sortBy = "";
   clientRecords: ClientRecord[] = null;
   clientToSave: ClientToSave;
   loadUserInfoButtonEnabled: boolean = true;
@@ -38,7 +38,7 @@ export class MainFormComponent {
     this.loadUserInfoButtonEnabled = false;
     this.loadUserInfoError = null;
 
-    let url = "/client/clientsInfo/" + this.currentIndex + "/" + this.filterText;
+    let url = "/client/clientsInfo/" + this.currentIndex + "/" + this.filterText + "/" + this.sortBy + "/" + this.sortOrder;
       this.httpService.get(url).toPromise().then(result => {
           this.pageNumber = result.json().pageCount;
           this.addPages();
@@ -158,80 +158,29 @@ export class MainFormComponent {
   }
 
   sortClientsByFIO(order: string) {
-      console.log(order);
-      if (order == "up") {
-          this.clientRecords.sort((a, b) => {
-              if (a.fio < b.fio) return -1;
-              else if (a.fio > b.fio) return 1;
-              else return 0;
-          });
-      } else {
-          this.clientRecords.sort((a, b) => {
-              if (a.fio > b.fio) return -1;
-              else if (a.fio < b.fio) return 1;
-              else return 0;
-          });
-      }
+      this.sortOrder = order;
+      this.sortBy = "fio";
+      this.loadUserInfoButtonClicked();
   }
   sortClientsByAge(order : string) {
-      if (order == "up"){
-          this.clientRecords.sort((a, b) => {
-              if (a.age < b.age) return -1;
-              else if (a.age > b.age) return 1;
-              else return 0;
-          });
-      } else {
-          this.clientRecords.sort((a, b) => {
-              if (a.age > b.age) return -1;
-              else if (a.age < b.age) return 1;
-              else return 0;
-          });
-      }
+      this.sortOrder = order;
+      this.sortBy = "age";
+      this.loadUserInfoButtonClicked();
   }
     sortClientsByTotalCash(order: string) {
-      if (order == "up") {
-          this.clientRecords.sort((a, b) => {
-              if (a.totalCash < b.totalCash) return -1;
-              else if (a.totalCash > b.totalCash) return 1;
-              else return 0;
-          });
-      } else {
-          this.clientRecords.sort((a, b) => {
-              if (a.totalCash > b.totalCash) return -1;
-              else if (a.totalCash < b.totalCash) return 1;
-              else return 0;
-          });
-      }
+        this.sortOrder = order;
+        this.sortBy = "totalCash";
+        this.loadUserInfoButtonClicked();
     }
     sortClientsByMaxCash(order : string) {
-      if (order == "up"){
-          this.clientRecords.sort((a, b) => {
-              if (a.maxCash < b.maxCash) return -1;
-              else if (a.maxCash > b.maxCash) return 1;
-              else return 0;
-          });
-      } else {
-          this.clientRecords.sort((a, b) => {
-              if (a.maxCash > b.maxCash) return -1;
-              else if (a.maxCash < b.maxCash) return 1;
-              else return 0;
-          });
-      }
+      this.sortOrder = order;
+      this.sortBy = "maxCash";
+        this.loadUserInfoButtonClicked();
     }
     sortClientsByMinCash(order : string) {
-      if (order == "up") {
-          this.clientRecords.sort((a, b) => {
-              if (a.minCash < b.minCash) return -1;
-              else if (a.minCash > b.minCash) return 1;
-              else return 0;
-          });
-      } else {
-          this.clientRecords.sort((a, b) => {
-              if (a.minCash > b.minCash) return -1;
-              else if (a.minCash < b.minCash) return 1;
-              else return 0;
-          });
-      }
+      this.sortOrder = order;
+      this.sortBy = "minCash";
+      this.loadUserInfoButtonClicked();
     }
 
 }
