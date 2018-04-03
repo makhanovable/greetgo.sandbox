@@ -14,7 +14,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-//TODO: все Exception, которые проглотил, исправь. (В других классах тоже!)
 @Bean
 public class StandDb implements HasAfterInject {
   public final Map<String, PersonDot> personStorage = new HashMap<>();
@@ -61,7 +60,6 @@ public class StandDb implements HasAfterInject {
         returnStr.add(splitLine);
       }
     } catch (Exception e) {
-      //TODO: Не проглатывай exception!
       if (e instanceof RuntimeException) throw (RuntimeException) e;
       throw new RuntimeException(e);
     }
@@ -97,7 +95,6 @@ public class StandDb implements HasAfterInject {
       try {
         c.birth_date = format.parse(splitLine[3].trim());
       } catch (Exception e) {
-        //TODO: Не проглатывай exception!
         if (e instanceof RuntimeException) throw (RuntimeException) e;
         throw new RuntimeException(e);
       }
@@ -174,8 +171,8 @@ public class StandDb implements HasAfterInject {
       charmStorage.put(ch.id, ch);
     }
   }
-
-  public String addNewCLient(ClientToSave clientToSave) {
+  
+  public String addNewClient(ClientToSave clientToSave) {
 
     clientsNum++;
     this.clientID = "c" + String.valueOf(clientsNum);
@@ -191,7 +188,6 @@ public class StandDb implements HasAfterInject {
     try {
       c.birth_date = format.parse(clientToSave.birth_date);
     } catch (Exception e) {
-      // TODO: не глотай exception!
       if (e instanceof RuntimeException) throw (RuntimeException) e;
       throw new RuntimeException(e);
     }
@@ -221,7 +217,6 @@ public class StandDb implements HasAfterInject {
       ph = new PhoneDot();
       ph.clientID = clientToSave.id;
       ph.number = phone;
-      // TODO: Почему не ENUM?
       ph.phoneType = "WORK";
       phoneStorage.put(ph.number, ph);
     }
@@ -246,7 +241,6 @@ public class StandDb implements HasAfterInject {
     AdressDot adr = new AdressDot();
     adr.id = String.valueOf(this.adressStorage.values().size() + 1);
     adr.clientID = clientToSave.id;
-    // TODO: Почему не ENUM?
     adr.adressType = "REG";
     adr.street = clientToSave.rAdressStreet;
     adr.house = clientToSave.rAdressHouse;
@@ -274,7 +268,6 @@ public class StandDb implements HasAfterInject {
     try {
       c.birth_date = format.parse(clientToSave.birth_date);
     } catch (Exception e) {
-      //TODO: Не проглатывай exception!
       if (e instanceof RuntimeException) throw (RuntimeException) e;
       throw new RuntimeException(e);
     }
@@ -309,6 +302,4 @@ public class StandDb implements HasAfterInject {
       }
     }
   }
-
-  // TODO: это уже относится к бизнес логике. Надо это перенести в регистр, а запросы в стэнд бд разделить по отдельным методам.
 }
