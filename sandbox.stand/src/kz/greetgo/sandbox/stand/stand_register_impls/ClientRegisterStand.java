@@ -29,7 +29,7 @@ public class ClientRegisterStand  implements ClientRegister{
 
     @Override
     public ClientRecord updateClient(ClientToSave clientInfo) {
-        db.get().charmStorage.values().remove(db.get().charmStorage.get(clientInfo.charmID));
+//        db.get().charmStorage.values().remove(db.get().charmStorage.get(clientInfo.charmID));
 
         CharmDot charmID = db.get().charmStorage.get(clientInfo.charmID);
         if (charmID == null) {
