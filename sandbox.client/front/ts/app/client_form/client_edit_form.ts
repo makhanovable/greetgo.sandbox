@@ -7,8 +7,8 @@ import {CharmRecord} from "../../model/CharmRecord";
 
 @Component({
     selector: 'modal-view-component',
-    template: require('./modal_view_component.html'),
-    styles: [require ('./modal_view_component.css')],
+    template: require('./client_edit_form.html'),
+    styles: [require ('./client_edit_form.css')],
 })
 
 export class ModalViewComponent {
@@ -43,6 +43,7 @@ export class ModalViewComponent {
                 if (this.clientDetails.workPhone.length == 0) {
                     this.clientDetails.workPhone = [""];
                 }
+                this.getCharmById();
             }, error => {
                 console.log(error);
             });
@@ -53,12 +54,35 @@ export class ModalViewComponent {
         }
     }
 
+    getCharmById() {
+        let charmExist = false;
+        for (var i = 0; i < this.charmRecords.length; i++) {
+            if (this.charmRecords[i].id == this.clientDetails.charmID) {
+                this.clientDetails.charm = this.charmRecords[i].name;
+                charmExist = true;
+            }
+        }
+
+        if (!charmExist) {
+            this.clientDetails.charm = "";
+            alert("Выбранный ранее характер клиента больше не существует. Выберите другой.")
+        }
+    }
+
     loadCharms() {
         this.httpService.get("/client/charms").toPromise().then(result => {
             this.charmRecords = result.json();
         }, error => {
             console.log(error);
         });
+    }
+
+    charmSelected(newValue : string) {
+        for (var i = 0; i < this.charmRecords.length; i++) {
+            if (this.charmRecords[i].name == newValue) {
+                this.clientDetails.charmID = this.charmRecords[i].id;
+            }
+        }
     }
 
     editAddClicked() {

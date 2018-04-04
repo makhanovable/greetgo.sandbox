@@ -17,6 +17,11 @@ public class ClientRegisterStand  implements ClientRegister{
 
     @Override
     public ClientRecord addNewClient(ClientToSave clientInfo) {
+        CharmDot charmID = db.get().charmStorage.get(clientInfo.charmID);
+        if (charmID == null) {
+            throw new RuntimeException("CharmExistenceError");
+        }
+
         String clientID = db.get().addNewClient(clientInfo);
 
         return getClientRecord(clientID);
@@ -24,6 +29,13 @@ public class ClientRegisterStand  implements ClientRegister{
 
     @Override
     public ClientRecord updateClient(ClientToSave clientInfo) {
+        db.get().charmStorage.values().remove(db.get().charmStorage.get(clientInfo.charmID));
+
+        CharmDot charmID = db.get().charmStorage.get(clientInfo.charmID);
+        if (charmID == null) {
+            throw new RuntimeException("CharmExistenceError");
+        }
+
         String clientID = db.get().updateClient(clientInfo);
 
         return getClientRecord(clientID);
@@ -38,7 +50,7 @@ public class ClientRegisterStand  implements ClientRegister{
     @Override
     public ClientDetails getEditableClientInfo(String clientID) {
         ClientDetails clientDetails = db.get().clientStorage.get(clientID).toClientDetails();
-        clientDetails.charm = db.get().charmStorage.get(db.get().clientStorage.get(clientID).charmID).name;
+//        clientDetails.charm = db.get().charmStorage.get(db.get().clientStorage.get(clientID).charmID).name;
 
         for (AdressDot adressDot : db.get().adressStorage.values()) {
             if (Objects.equals(adressDot.clientID, clientID)) {

@@ -5,7 +5,8 @@ export class ClientDetails {
     public patronymic : string;
     public gender : string;
     public birth_date : string;
-    public charm : string;
+    public charmID : string;
+    public charm: string;
     public fAdressStreet : string;
     public fAdressHouse : string;
     public fAdressFlat : string;
@@ -26,7 +27,7 @@ export class ClientDetails {
         ret.patronymic = a.patronymic ;
         ret.gender = a.gender ;
         ret.birth_date = a.birth_date ;
-        ret.charm = a.charm ;
+        ret.charmID = a.charmID ;
         ret.fAdressStreet = a.fAdressStreet ;
         ret.fAdressHouse = a.fAdressHouse ;
         ret.fAdressFlat = a.fAdressFlat ;
@@ -41,12 +42,12 @@ export class ClientDetails {
     }
 
     public clearPar() {
-        console.log("I'm here");
         this.name = "";
         this.surname = "";
         this.patronymic = "";
         this.gender = "";
         this.birth_date = "";
+        this.charmID = "";
         this.charm = "";
         this.fAdressStreet = "";
         this.fAdressHouse = "";

@@ -26,6 +26,7 @@ public class ClientDot {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         clientDetails.birth_date = df.format(this.birth_date);
         clientDetails.gender = this.gender;
+        clientDetails.charmID = this.charmID;
 
         return clientDetails;
     }

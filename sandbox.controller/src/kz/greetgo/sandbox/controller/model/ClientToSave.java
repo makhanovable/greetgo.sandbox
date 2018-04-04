@@ -10,7 +10,7 @@ public class ClientToSave {
   public String patronymic;
   public String gender;
   public String birth_date;
-  public String charm;
+  public String charmID;
   public String fAdressStreet;
   public String fAdressHouse;
   public String fAdressFlat;

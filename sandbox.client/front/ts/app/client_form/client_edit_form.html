@@ -31,7 +31,7 @@
         </div>
         <div class="modalField">
             <p>Характер</p>
-            <select name="charmDot" [(ngModel)]="clientDetails.charm">
+            <select name="charmDot" [(ngModel)]="clientDetails.charm" (ngModelChange)="charmSelected($event)">
                 <option *ngFor="let charm of charmRecords" value = {{charm.name}}>{{charm.name}}</option>
             </select>
             <p class="important">*</p>
