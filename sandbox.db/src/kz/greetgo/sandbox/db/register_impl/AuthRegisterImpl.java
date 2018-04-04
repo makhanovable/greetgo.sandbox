@@ -14,6 +14,8 @@ import kz.greetgo.sandbox.controller.register.model.UserParamName;
 import kz.greetgo.sandbox.controller.security.SecurityError;
 import kz.greetgo.sandbox.db.dao.AuthDao;
 
+import java.util.List;
+
 @Bean
 public class AuthRegisterImpl implements AuthRegister {
 
@@ -82,5 +84,10 @@ public class AuthRegisterImpl implements AuthRegister {
     UserInfo userInfo = authDao.get().getUserInfo(personId);
     if (userInfo == null) throw new NotFound();
     return userInfo;
+  }
+
+  @Override
+  public List<UserInfo> getAllUserInfo() {
+    throw new UnsupportedOperationException("Not Implemented");
   }
 }

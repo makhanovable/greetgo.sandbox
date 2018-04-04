@@ -10,4 +10,18 @@
     ]]></sql>
   </changeSet>
 
+  <changeSet author="pompei" id="create-table-Client">
+    <sql endDelimiter=";;"><![CDATA[
+      create table Client (
+        id int not null primary key,
+        surname varchar(255) not null,
+        name varchar(255) not null,
+        patronymic varchar(255),
+        gender varchar(10),
+        birth_date date,
+        charm: int
+      )
+    ]]></sql>
+  </changeSet>
+
 </databaseChangeLog>

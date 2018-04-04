@@ -1,17 +1,19 @@
-import {Component, EventEmitter, Output} from "@angular/core";
+import {Component, EventEmitter, Output, ViewChild} from "@angular/core";
 import {HttpService} from "../HttpService";
 import {ClientDetails} from "../../model/ClientDetails";
 import {ClientRecord} from "../../model/ClientRecord";
 import {ClientToSave} from "../../model/ClientToSave";
+import {ModalViewComponent} from "./client_edit_form";
 
 @Component({
     selector: 'main-form-component',
-    template: require('./main_form.component.html'),
-    styles: [require ('./main-form.component.css')],
+    template: require('./clients_list.html'),
+    styles: [require ('./clients_list.css')],
 })
 
 export class MainFormComponent {
   @Output() exit = new EventEmitter<void>();
+  @ViewChild(ModalViewComponent) editForm: ModalViewComponent;
 
   sortOrder = "";
   sortBy = "";
@@ -153,7 +155,12 @@ export class MainFormComponent {
           }
           this.closeModal();
       }, error => {
-          alert("Поле даты рождения заполнено не верно");
+          if (error._body.includes("CharmExistenceError")) {
+              this.editForm.loadCharms();
+              alert("Выбранного вами характера больше не существует. Выберите другой")
+          } else {
+              alert("Поле даты рождения заполнено не верно");
+          }
       });
   }
 

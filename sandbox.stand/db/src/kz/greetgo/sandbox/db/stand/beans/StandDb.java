@@ -184,17 +184,13 @@ public class StandDb implements HasAfterInject {
     c.name = clientToSave.name;
     c.patronymic = clientToSave.patronymic;
     c.gender = clientToSave.gender;
+    c.charmID = clientToSave.charmID;
     DateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
     try {
       c.birth_date = format.parse(clientToSave.birth_date);
     } catch (Exception e) {
       if (e instanceof RuntimeException) throw (RuntimeException) e;
-      throw new RuntimeException(e);
-    }
-    for (CharmDot charmDot : charmStorage.values()) {
-      if (charmDot.name.equals(clientToSave.charm)) {
-        c.charmID = charmDot.id;
-      }
+      throw new RuntimeException("DateFormatError",e);
     }
 
     clientStorage.put(c.id, c);
@@ -264,17 +260,13 @@ public class StandDb implements HasAfterInject {
     c.name = clientToSave.name;
     c.patronymic = clientToSave.patronymic;
     c.gender = clientToSave.gender;
+    c.charmID = clientToSave.charmID;
     DateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
     try {
       c.birth_date = format.parse(clientToSave.birth_date);
     } catch (Exception e) {
       if (e instanceof RuntimeException) throw (RuntimeException) e;
       throw new RuntimeException(e);
-    }
-    for (CharmDot charmDot : charmStorage.values()) {
-      if (charmDot.name.equals(clientToSave.charm)) {
-        c.charmID = charmDot.id;
-      }
     }
 
     clientStorage.put(c.id, c);

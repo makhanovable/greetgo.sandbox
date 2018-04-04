@@ -10,6 +10,7 @@ public class ClientDetails {
   public String patronymic;
   public String gender;
   public String birth_date;
+  public String charmID;
   public String charm;
   public String fAdressStreet;
   public String fAdressHouse;
