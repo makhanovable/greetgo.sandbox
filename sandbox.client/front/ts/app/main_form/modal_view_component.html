@@ -80,13 +80,15 @@
                     <p>Рабочий</p>
                     <input type="number" size="22" [(ngModel)]="clientDetails.workPhone[i]">
                     <p class="important"></p>
-                    <button (click)="addNewWorkPhone()">+</button>
+                    <button [ngClass]="{'invisible': i > 0 }" (click)="addNewWorkPhone()">+</button>
+                    <button [ngClass]="{'invisible': i === 0 }" (click)="removeWorkPhone(i)">-</button>
                 </div>
                 <div class="adressField" *ngFor="let p of clientDetails.homePhone; let i = index; trackBy: trackByFn">
                     <p class="adressP">Домашний</p>
                     <input type="number" size="22" class="adressInput" [(ngModel)]="clientDetails.homePhone[i]">
                     <p class="important"></p>
-                    <button (click)="addNewHomePhone()">+</button>
+                    <button [ngClass]="{'invisible': i > 0 }" (click)="addNewHomePhone()">+</button>
+                    <button [ngClass]="{'invisible': i === 0 }" (click)="removeHomePhone(i)">-</button>
                 </div>
                 <div class="adressField" *ngFor="let p of clientDetails.mobilePhones; let i = index; trackBy: trackByFn">
                     <p class="adressP">Мобильный</p>

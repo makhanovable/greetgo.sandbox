@@ -53,10 +53,6 @@ export class ModalViewComponent {
         }
     }
 
-    closeModal() {
-        // this.clientDetails.clearPar();
-    }
-
     loadCharms() {
         this.httpService.get("/client/charms").toPromise().then(result => {
             this.charmRecords = result.json();
@@ -66,9 +62,11 @@ export class ModalViewComponent {
     }
 
     editAddClicked() {
+        if (this.clientDetails.birth_date.length > 10) {
+            alert("Неверный формат даты рождения");
+        } else
         if (this.fieldsFilledCorrectly()) {
             this.detailsFilled.emit(this.clientDetails);
-            this.closeModal();
         } else {
             alert("Заполните все необходимые поля, помеченные звездочкой");
         }
@@ -102,6 +100,12 @@ export class ModalViewComponent {
     }
     removeMobilePhone(i : number) {
         this.clientDetails.mobilePhones.splice(i, 1);
+    }
+    removeWorkPhone(i : number) {
+        this.clientDetails.workPhone.splice(i, 1);
+    }
+    removeHomePhone(i : number) {
+        this.clientDetails.homePhone.splice(i, 1);
     }
 
     trackByFn(index: any) {

@@ -17,9 +17,10 @@ public class ClientController implements Controller {
     public BeanGetter<ClientRegister> clientRegister;
 
     @ToJson
-    @Mapping("/clientsInfo/{pageID}/{filterStr}")
-    public ClientToReturn filteredClients(@ParPath("pageID") String pageID, @ParPath("filterStr") String filterStr) {
-        return clientRegister.get().getFilteredClientsInfo(pageID, filterStr);
+    @Mapping("/clientsInfo/{pageID}/{filterStr}/{sortBy}/{sortOrder}")
+    public ClientToReturn filteredClients(@ParPath("pageID") String pageID, @ParPath("filterStr") String filterStr,
+            @ParPath("sortBy") String sortBy, @ParPath("sortOrder") String sortOrder) {
+        return clientRegister.get().getFilteredClientsInfo(pageID, filterStr, sortBy, sortOrder);
     }
 
     @ToJson
