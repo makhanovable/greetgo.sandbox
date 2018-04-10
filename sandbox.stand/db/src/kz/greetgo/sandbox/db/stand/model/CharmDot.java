@@ -3,7 +3,7 @@ package kz.greetgo.sandbox.db.stand.model;
 import kz.greetgo.sandbox.controller.model.Charm;
 
 public class CharmDot {
-    public String id;
+    public int id;
     public String name;
     public String description;
     public Float energy;
@@ -11,9 +11,9 @@ public class CharmDot {
     public Charm toCharm() {
         Charm charm = new Charm();
 
-        charm.id = this.id;
+        charm.id = String.valueOf(this.id);
         charm.name = this.name;
-        charm.desc = this.description;
+        charm.description = this.description;
         charm.energy = this.energy;
 
         return charm;

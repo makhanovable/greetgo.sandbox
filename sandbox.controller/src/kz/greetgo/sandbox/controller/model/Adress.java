@@ -1,8 +1,6 @@
-package kz.greetgo.sandbox.db.stand.model;
+package kz.greetgo.sandbox.controller.model;
 
-import kz.greetgo.sandbox.controller.model.ClientDetails;
-
-public class AdressDot {
+public class Adress {
     public int id;
     public int clientID;
     public String adressType;
@@ -10,16 +8,18 @@ public class AdressDot {
     public String house;
     public String flat;
 
-    public void toClientDetails(ClientDetails clientDetails) {
-        if (this.adressType.equals("FACT")) {
+    public ClientDetails toClientDetails(ClientDetails clientDetails) {
+        if ("FACT".equals(this.adressType)) {
             clientDetails.fAdressStreet = this.street;
             clientDetails.fAdressHouse = this.house;
             clientDetails.fAdressFlat = this.flat;
         } else
-        if (this.adressType.equals("REG")) {
+        if ("REG".equals(this.adressType)) {
             clientDetails.rAdressStreet = this.street;
             clientDetails.rAdressHouse = this.house;
             clientDetails.rAdressFlat = this.flat;
         }
+
+        return clientDetails;
     }
 }

@@ -5,6 +5,7 @@ import kz.greetgo.depinject.core.HasAfterInject;
 import kz.greetgo.sandbox.controller.model.ClientDetails;
 import kz.greetgo.sandbox.controller.model.ClientToSave;
 import kz.greetgo.sandbox.db.stand.model.*;
+import org.omg.CORBA.INTERNAL;
 
 
 import java.io.*;
@@ -17,16 +18,16 @@ import java.util.*;
 @Bean
 public class StandDb implements HasAfterInject {
   public final Map<String, PersonDot> personStorage = new HashMap<>();
-  public final Map<String, ClientDot> clientStorage = new HashMap<>();
-  public final Map<String, AdressDot> adressStorage = new HashMap<>();
-  public final Map<String, CharmDot> charmStorage = new HashMap<>();
-  public final Map<String, TransactionDot> transactionStorage = new HashMap<>();
-  public final Map<String, TransactionType> transactionTypeStorage = new HashMap<>();
+  public final Map<Integer, ClientDot> clientStorage = new HashMap<>();
+  public final Map<Integer, AdressDot> adressStorage = new HashMap<>();
+  public final Map<Integer, CharmDot> charmStorage = new HashMap<>();
+  public final Map<Integer, TransactionDot> transactionStorage = new HashMap<>();
+  public final Map<Integer, TransactionType> transactionTypeStorage = new HashMap<>();
   public final Map<String, PhoneDot> phoneStorage = new HashMap<>();
-  public final Map<String, AccountDot> accountStorage = new HashMap<>();
+  public final Map<Integer, AccountDot> accountStorage = new HashMap<>();
 
   private int clientsNum;
-  private String clientID;
+  private int clientID;
 
   @Override
   public void afterInject() throws Exception {
@@ -86,9 +87,8 @@ public class StandDb implements HasAfterInject {
   private void appendClient (List<String[]> data) {
     for (String [] splitLine : data) {
       ClientDot c = new ClientDot();
-      c.id = splitLine[0].trim();
+      c.id = Integer.parseInt(splitLine[0].trim());
       String[] fio = splitLine[1].trim().split("\\s+");
-      c.surname = fio[1];
       c.name = fio[0];
       c.gender = splitLine[2].trim();
       DateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
@@ -98,8 +98,14 @@ public class StandDb implements HasAfterInject {
         if (e instanceof RuntimeException) throw (RuntimeException) e;
         throw new RuntimeException(e);
       }
-      c.charmID = splitLine[4].trim();
-      if (fio.length > 2) c.patronymic = fio[2]; else c.patronymic = "";
+      c.charm_id = Integer.parseInt(splitLine[4].trim());
+      if (fio.length > 2) {
+        c.patronymic = fio[1];
+        c.surname = fio[2];
+      } else {
+        c.patronymic = "";
+        c.surname = fio[1];
+      }
       clientStorage.put(c.id, c);
     }
   }
@@ -107,8 +113,8 @@ public class StandDb implements HasAfterInject {
   private void appendAdress(List<String[]> data) {
     for (String[] splitLine : data) {
       AdressDot adr = new AdressDot();
-      adr.id = String.valueOf(this.adressStorage.values().size() + 1);
-      adr.clientID = splitLine[0].trim();
+      adr.id = this.adressStorage.values().size() + 1;
+      adr.clientID = Integer.parseInt(splitLine[0].trim());
       adr.adressType = splitLine[1].trim();
       adr.street = splitLine[2].trim();
       adr.house = splitLine[3].trim();
@@ -120,7 +126,7 @@ public class StandDb implements HasAfterInject {
   private void appendPhone(List<String[]> data) {
     for (String[] splitLine : data) {
       PhoneDot ph = new PhoneDot();
-      ph.clientID = splitLine[0].trim();
+      ph.clientID = Integer.parseInt(splitLine[0].trim());
       ph.number = splitLine[1].trim();
       ph.phoneType = splitLine[2].trim();
       phoneStorage.put(ph.number, ph);
@@ -130,8 +136,8 @@ public class StandDb implements HasAfterInject {
   private void appendAccount(List<String[]> data) {
     for (String[] splitLine : data) {
       AccountDot acc = new AccountDot();
-      acc.id = splitLine[0].trim();
-      acc.clientID = splitLine[1].trim();
+      acc.id = Integer.parseInt(splitLine[0].trim());
+      acc.clientID = Integer.parseInt(splitLine[1].trim());
       acc.money = Float.parseFloat(splitLine[2].trim());
       acc.number = splitLine[3].trim();
       acc.registered_at = Timestamp.valueOf(splitLine[4].trim());
@@ -142,11 +148,11 @@ public class StandDb implements HasAfterInject {
   private void appendTransaction(List<String[]> data) {
     for (String[] splitLine : data) {
       TransactionDot tr = new TransactionDot();
-      tr.id = splitLine[0].trim();
-      tr.accountID = splitLine[1].trim();
+      tr.id = Integer.parseInt(splitLine[0].trim());
+      tr.accountID = Integer.parseInt(splitLine[1].trim());
       tr.money = Float.parseFloat(splitLine[2].trim());
       tr.finished_at = Timestamp.valueOf(splitLine[3].trim());
-      tr.transactionTypeID = splitLine[4].trim();
+      tr.transactionTypeID = Integer.parseInt(splitLine[4].trim());
       transactionStorage.put(tr.id, tr);
     }
   }
@@ -154,7 +160,7 @@ public class StandDb implements HasAfterInject {
   private void appendTransactiontype(List<String[]> data) {
     for (String[] splitLine : data) {
       TransactionType trtp = new TransactionType();
-      trtp.id = splitLine[0].trim();
+      trtp.id = Integer.parseInt(splitLine[0].trim());
       trtp.code = splitLine[1].trim();
       trtp.name = splitLine[2].trim();
       transactionTypeStorage.put(trtp.id, trtp);
@@ -164,7 +170,7 @@ public class StandDb implements HasAfterInject {
   private void appendCharm(List<String[]> data) {
     for (String[] splitLine : data) {
       CharmDot ch = new CharmDot();
-      ch.id = splitLine[0].trim();
+      ch.id = Integer.parseInt(splitLine[0].trim());
       ch.name = splitLine[1].trim();
       ch.description = splitLine[2].trim();
       ch.energy = Float.parseFloat(splitLine[3].trim());
@@ -175,7 +181,7 @@ public class StandDb implements HasAfterInject {
   public String addNewClient(ClientToSave clientToSave) {
 
     clientsNum++;
-    this.clientID = "c" + String.valueOf(clientsNum);
+    this.clientID = clientsNum;
     clientToSave.id = this.clientID;
 
     ClientDot c = new ClientDot();
@@ -184,7 +190,7 @@ public class StandDb implements HasAfterInject {
     c.name = clientToSave.name;
     c.patronymic = clientToSave.patronymic;
     c.gender = clientToSave.gender;
-    c.charmID = clientToSave.charmID;
+    c.charm_id = clientToSave.charm_id;
     DateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
     try {
       c.birth_date = format.parse(clientToSave.birth_date);
@@ -198,11 +204,11 @@ public class StandDb implements HasAfterInject {
     addNewPhones(clientToSave);
     addNewAdresses(clientToSave);
 
-    return c.id;
+    return String.valueOf(c.id);
   }
   public void addNewPhones(ClientToSave clientToSave) {
     for(PhoneDot phone : phoneStorage.values()) {
-      if (phone.clientID.equals(clientToSave.id)) {
+      if (phone.clientID == clientToSave.id) {
         phoneStorage.remove(phone);
       }
     }
@@ -235,7 +241,7 @@ public class StandDb implements HasAfterInject {
   }
   public void addNewAdresses(ClientToSave clientToSave) {
     AdressDot adr = new AdressDot();
-    adr.id = String.valueOf(this.adressStorage.values().size() + 1);
+    adr.id = this.adressStorage.values().size() + 1;
     adr.clientID = clientToSave.id;
     adr.adressType = "REG";
     adr.street = clientToSave.rAdressStreet;
@@ -244,7 +250,7 @@ public class StandDb implements HasAfterInject {
     adressStorage.put(adr.id, adr);
 
     adr = new AdressDot();
-    adr.id = String.valueOf(this.adressStorage.values().size() + 1);
+    adr.id = this.adressStorage.values().size() + 1;
     adr.clientID = clientToSave.id;
     adr.adressType = "FACT";
     adr.street = clientToSave.fAdressStreet;
@@ -260,7 +266,7 @@ public class StandDb implements HasAfterInject {
     c.name = clientToSave.name;
     c.patronymic = clientToSave.patronymic;
     c.gender = clientToSave.gender;
-    c.charmID = clientToSave.charmID;
+    c.charm_id = clientToSave.charm_id;
     DateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
     try {
       c.birth_date = format.parse(clientToSave.birth_date);
@@ -274,21 +280,21 @@ public class StandDb implements HasAfterInject {
     addNewPhones(clientToSave);
     addNewAdresses(clientToSave);
 
-    return c.id;
+    return String.valueOf(c.id);
   }
 
   public void removeClient(String clientID) {
     clientStorage.remove(clientID);
 
     for (AdressDot adr : this.adressStorage.values()) {
-      if (adr.clientID.equals(clientID)) {
+      if (adr.clientID == Integer.parseInt(clientID)) {
         adressStorage.values().remove(adr);
         break;
       }
     }
 
     for (PhoneDot phoneDot : phoneStorage.values()) {
-      if (phoneDot.clientID.equals(clientID)) {
+      if (phoneDot.clientID == Integer.parseInt(clientID)) {
         phoneStorage.values().remove(phoneDot);
         break;
       }

@@ -1,19 +1,17 @@
-package kz.greetgo.sandbox.db.stand.model;
-
-import kz.greetgo.sandbox.controller.model.ClientDetails;
+package kz.greetgo.sandbox.controller.model;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-public class ClientDot {
+public class Client {
     public int id;
     public String surname;
     public String name;
     public String patronymic;
     public String gender;
-    public Date  birth_date;
+    public Date birth_date;
     public int charm_id;
 
     public ClientDetails toClientDetails() {

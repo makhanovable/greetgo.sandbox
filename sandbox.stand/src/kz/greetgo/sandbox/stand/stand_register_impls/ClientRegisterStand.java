@@ -59,7 +59,7 @@ public class ClientRegisterStand  implements ClientRegister{
         }
 
         for (PhoneDot phoneDot : db.get().phoneStorage.values()) {
-            if (phoneDot.clientID.equals(clientID)) {
+            if (phoneDot.clientID == Integer.parseInt(clientID)) {
                 phoneDot.toClientDetails(clientDetails);
             }
         }

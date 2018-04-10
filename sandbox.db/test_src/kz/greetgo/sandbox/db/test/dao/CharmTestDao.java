@@ -1,16 +1,21 @@
 package kz.greetgo.sandbox.db.test.dao;
 
 import kz.greetgo.sandbox.controller.model.Charm;
+import kz.greetgo.sandbox.db.stand.model.CharmDot;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
 public interface CharmTestDao {
 
-    @Select("Select * from charm")
-    List<Charm> getAll();
+    @Update("TRUNCATE charms CASCADE;")
+    void clearCharms();
 
-    @Insert("Insert into charm (id, name, description, energy) values (#{id}, #{name}, #{desc}, #{energy})")
-    void insert(Charm charm);
+    @Select("Select * from charms")
+    List<Charm> getAllCharms();
+
+    @Insert("insert into charms (id, name, description, energy) values (#{id}, #{name}, #{description}, #{energy})")
+    void insertCharm(CharmDot charmDot);
 }

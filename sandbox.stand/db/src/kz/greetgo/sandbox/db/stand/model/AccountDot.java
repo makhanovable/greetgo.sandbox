@@ -4,8 +4,8 @@ import java.sql.Timestamp;
 import java.util.*;
 
 public class AccountDot {
-    public String id;
-    public String clientID;
+    public int id;
+    public int clientID;
     public Float money;
     public String number;
     public Timestamp registered_at;
