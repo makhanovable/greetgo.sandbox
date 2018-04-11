@@ -1,10 +1,11 @@
 package kz.greetgo.sandbox.db.report.model;
 
 public class ClientListRow {
-    String fio;
-    String charm;
-    int age;
-    float totalCash;
-    float maxCash;
-    float minCash;
+    public int no;
+    public String fio;
+    public String charm;
+    public int age;
+    public float totalCash;
+    public float maxCash;
+    public float minCash;
 }
