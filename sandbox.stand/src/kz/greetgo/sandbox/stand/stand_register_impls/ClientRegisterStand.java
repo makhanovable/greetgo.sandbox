@@ -17,7 +17,7 @@ public class ClientRegisterStand  implements ClientRegister{
 
     @Override
     public ClientRecord addNewClient(ClientToSave clientInfo) {
-        CharmDot charmID = db.get().charmStorage.get(clientInfo.charmID);
+        CharmDot charmID = db.get().charmStorage.get(clientInfo.charm_id);
         if (charmID == null) {
             throw new RuntimeException("CharmExistenceError");
         }
@@ -31,7 +31,7 @@ public class ClientRegisterStand  implements ClientRegister{
     public ClientRecord updateClient(ClientToSave clientInfo) {
 //        db.get().charmStorage.values().remove(db.get().charmStorage.get(clientInfo.charmID));
 
-        CharmDot charmID = db.get().charmStorage.get(clientInfo.charmID);
+        CharmDot charmID = db.get().charmStorage.get(clientInfo.charm_id);
         if (charmID == null) {
             throw new RuntimeException("CharmExistenceError");
         }
@@ -87,7 +87,7 @@ public class ClientRegisterStand  implements ClientRegister{
 
         List<ClientRecord> clientRecords = new ArrayList<>();
         for (ClientDot client : clients) {
-            clientRecords.add(getClientRecord(client.id));
+            clientRecords.add(getClientRecord(String.valueOf(client.id)));
         }
         clientRecords = sort(clientRecords, sortBy, sortOrder);
 
@@ -128,22 +128,22 @@ public class ClientRegisterStand  implements ClientRegister{
         return pageNum;
     }
 
-    private float getTotalCash(String clientId) {
+    private float getTotalCash(int clientId) {
         float totalCash = 0;
 
         for (AccountDot accountDot : db.get().accountStorage.values()) {
-            if (Objects.equals(accountDot.clientID,clientId)) {
+            if (accountDot.clientID == clientId) {
                 totalCash += accountDot.money;
             }
         }
 
         return totalCash;
     }
-    private float getMinCash(String clientId) {
+    private float getMinCash(int clientId) {
         float minCash = -1;
 
         for (AccountDot acc : db.get().accountStorage.values()) {
-            if (Objects.equals(acc.clientID,clientId)) {
+            if (acc.clientID == clientId) {
                 if (minCash == -1) minCash = acc.money; else
                 if (acc.money < minCash) minCash = acc.money;
             }
@@ -152,11 +152,11 @@ public class ClientRegisterStand  implements ClientRegister{
         if (minCash == -1) minCash = 0;
         return minCash;
     }
-    private float getMaxCash(String clientId) {
+    private float getMaxCash(int clientId) {
         float maxCash = 0;
 
         for (AccountDot acc : db.get().accountStorage.values()) {
-            if (Objects.equals(acc.clientID,clientId)) {
+            if (acc.clientID == clientId) {
                 if (acc.money > maxCash) maxCash = acc.money;
             }
         }
@@ -164,9 +164,9 @@ public class ClientRegisterStand  implements ClientRegister{
         return maxCash;
     }
 
-    private String getCharm(String charmID) {
+    private String getCharm(int charmID) {
         for (CharmDot charmDot : db.get().charmStorage.values()) {
-            if (Objects.equals(charmDot.id, charmID)) {
+            if (charmDot.id == charmID) {
                 return charmDot.name;
             }
         }
@@ -184,7 +184,7 @@ public class ClientRegisterStand  implements ClientRegister{
         clientInfo.totalCash = getTotalCash(client.id);
         clientInfo.maxCash = getMaxCash(client.id);
         clientInfo.minCash = getMinCash(client.id);
-        clientInfo.charm = getCharm(client.charmID);
+        clientInfo.charm = getCharm(client.charm_id);
 
         return clientInfo;
     }
