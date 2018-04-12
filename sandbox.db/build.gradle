@@ -4,8 +4,6 @@ dependencies {
   compile "kz.greetgo.db:greetgo.db:$greetgoDbVersion"
   compile "kz.greetgo:greetgo.conf:$greetgoConfVersion"
   compile "kz.greetgo.mvc:greetgo.mvc.security:$greetgoMvcVersion"
-  // https://mvnrepository.com/artifact/kz.greetgo/greetgo.msoffice
-  compile group: 'kz.greetgo', name: 'greetgo.msoffice', version: '0.4.23'
 
 
   compile group: 'org.postgresql', name: 'postgresql', version: '9.4-1202-jdbc42'

@@ -1,7 +1,8 @@
-package kz.greetgo.sandbox.db.report;
+package kz.greetgo.sandbox.controller.report;
 
+import kz.greetgo.msoffice.xlsx.gen.PageSetup;
 import kz.greetgo.msoffice.xlsx.gen.Sheet;
-import kz.greetgo.sandbox.db.report.model.ClientListRow;
+import kz.greetgo.sandbox.controller.report.model.ClientListRow;
 import kz.greetgo.msoffice.xlsx.gen.Xlsx;
 
 import java.io.File;
@@ -24,6 +25,7 @@ public class ClientsListReportViewReal implements ClientsListReportView{
         xlsx = new Xlsx();
 
         sheet = xlsx.newSheet(true);
+        sheet.setScaleByWidth();
 
         sheet.row().start();
         sheet.cellStr(1, title);
@@ -40,19 +42,23 @@ public class ClientsListReportViewReal implements ClientsListReportView{
         sheet.cellStr(6, "Макс. остаток");
         sheet.cellStr(7, "Мин. остаток");
         sheet.row().finish();
-
-
     }
 
     @Override
     public void append(ClientListRow clientListRow) {
         sheet.row().start();
         sheet.cellInt(1, clientListRow.no);
+        sheet.setScaleByWidth();
         sheet.cellStr(2, clientListRow.fio);
+        sheet.setScaleByWidth();
         sheet.cellStr(3, clientListRow.charm);
+        sheet.setScaleByWidth();
         sheet.cellInt(4, clientListRow.age);
+        sheet.setScaleByWidth();
         sheet.cellDouble(5, clientListRow.totalCash);
+        sheet.setScaleByWidth();
         sheet.cellDouble(6, clientListRow.maxCash);
+        sheet.setScaleByWidth();
         sheet.cellDouble(7, clientListRow.minCash);
         sheet.row().finish();
     }

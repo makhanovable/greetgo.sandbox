@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.db.report.model;
+package kz.greetgo.sandbox.controller.report.model;
 
 public class ClientListRow {
     public int no;

@@ -1,6 +1,6 @@
-package kz.greetgo.sandbox.db.report;
+package kz.greetgo.sandbox.controller.report;
 
-import kz.greetgo.sandbox.db.report.model.ClientListRow;
+import kz.greetgo.sandbox.controller.report.model.ClientListRow;
 
 public interface ClientsListReportView {
     void start (String title);

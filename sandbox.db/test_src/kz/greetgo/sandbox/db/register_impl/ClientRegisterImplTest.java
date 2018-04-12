@@ -3,6 +3,8 @@ package kz.greetgo.sandbox.db.register_impl;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.controller.report.*;
+import kz.greetgo.sandbox.controller.report.model.ClientListRow;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.AdressDot;
 import kz.greetgo.sandbox.db.stand.model.CharmDot;
@@ -13,7 +15,11 @@ import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -236,7 +242,10 @@ public class ClientRegisterImplTest extends ParentTestNg {
     @Test
     public void testGetFilteredClientsInfo() throws Exception {
         clientTestDao.get().clearClients();
+        charmTestDao.get().clearCharms();
 
+        standDb.get().charmStorage.values().stream()
+                .forEach(charmTestDao.get()::insertCharm);
         standDb.get().clientStorage.values().stream()
                 .forEach(clientTestDao.get()::insertClient);
         standDb.get().accountStorage.values().stream()
@@ -293,6 +302,48 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(charms.get(2).name).isEqualTo("флегматик");
         assertThat(charms.get(3)).isNotNull();
         assertThat(charms.get(3).name).isEqualTo("сангвиник");
+    }
+
+
+    private static class TestView implements ClientsListReportView {
+
+        public String title;
+        public String userName;
+
+        @Override
+        public void start(String title) {
+            this.title = title;
+        }
+
+        List<ClientListRow> rowList = new ArrayList<ClientListRow>();
+
+        @Override
+        public void append(ClientListRow clientListRow) {
+            rowList.add(clientListRow);
+        }
+
+        @Override
+        public void finish(String userName) {
+            this.userName = userName;
+        }
+    }
+    @Test
+    public void genClientListReport() throws Exception {
+        OutputStream outf = new FileOutputStream(new File("/Users/sanzharburumbay/Downloads/test.xlsx"));
+
+        ClientsListReportViewReal view = new ClientsListReportViewReal(outf);
+
+        UserInfo userInfo = new UserInfo();
+        userInfo.id = "1";
+        userInfo.accountName = "userName";
+        userInfo.surname = "Пушкин";
+        //
+        //
+        clientRegister.get().genClientListReport(userInfo, view, "");
+        //
+        //
+
+//        assertThat(view.rowList).hasSize(1);
     }
 
 }

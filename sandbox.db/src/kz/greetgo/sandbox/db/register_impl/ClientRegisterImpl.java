@@ -1,11 +1,15 @@
 package kz.greetgo.sandbox.db.register_impl;
 
+import kz.greetgo.db.Jdbc;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.dao.*;
 import kz.greetgo.sandbox.db.model.Sorter;
+import kz.greetgo.sandbox.controller.report.*;
+import kz.greetgo.sandbox.db.register_impl.jdbc.TestJdbc;
+import kz.greetgo.sandbox.db.util.JdbcSandbox;
 import kz.greetgo.util.RND;
 
 import java.sql.Date;
@@ -234,5 +238,12 @@ public class ClientRegisterImpl implements ClientRegister {
         List<Charm> charms = charmDao.get().getAllCharms();
 
         return charms;
+    }
+
+    public BeanGetter<JdbcSandbox> jdbcSandbox;
+
+    @Override
+    public void genClientListReport(UserInfo userInfo, ClientsListReportView clientsListReportView, String filterStr) {
+        jdbcSandbox.get().execute(new TestJdbc(userInfo, clientsListReportView, filterStr));
     }
 }
