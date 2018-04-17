@@ -10,6 +10,8 @@ dependencies {
   compile group: 'org.liquibase', name: 'liquibase-core', version: '3.5.1'
   compile group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.1.1'
 
+  compile group: 'javax.mail', name: 'mail', version: '1.4.7'
+
   testCompile "kz.greetgo.depinject:greetgo.depinject.testng:$depinjectVersion"
   testCompile project(':sandbox.stand:db').sourceSets.main.output
 
