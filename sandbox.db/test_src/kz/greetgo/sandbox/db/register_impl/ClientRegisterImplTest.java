@@ -240,9 +240,10 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
 
     @Test
-    public void testGetFilteredClientsInfo() throws Exception {
+    public void testPagingSortedByAge() throws Exception {
         clientTestDao.get().clearClients();
         charmTestDao.get().clearCharms();
+        accountTestDao.get().clearAccounts();
 
         standDb.get().charmStorage.values().stream()
                 .forEach(charmTestDao.get()::insertCharm);
@@ -253,7 +254,96 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         //
         //
+        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo("2", "","age","up");
+        //
+        //
+
+        assertThat(clients).isNotNull();
+        assertThat(clients.clientInfos).isNotNull();
+        assertThat(clients.clientInfos).hasSize(1);
+        assertThat(clients.clientInfos.get(0).fio).isEqualTo("Толстой Лев Николаевич");
+        assertThat(clients.clientInfos.get(0).age).isEqualTo(120);
+    }
+    @Test
+    public void testPagingSortedByCash() throws Exception {
+        clientTestDao.get().clearClients();
+        charmTestDao.get().clearCharms();
+        accountTestDao.get().clearAccounts();
+
+        standDb.get().charmStorage.values().stream()
+                .forEach(charmTestDao.get()::insertCharm);
+        standDb.get().clientStorage.values().stream()
+                .forEach(clientTestDao.get()::insertClient);
+        standDb.get().accountStorage.values().stream()
+                .forEach(accountTestDao.get()::insertAccount);
+
+        //
+        //
+        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo("2", "","totalCash","up");
+        //
+        //
+
+        assertThat(clients).isNotNull();
+        assertThat(clients.clientInfos).isNotNull();
+        assertThat(clients.clientInfos).hasSize(1);
+        assertThat(clients.clientInfos.get(0).fio).isEqualTo("Лермонтов Михаил Юрьевич");
+        assertThat(clients.clientInfos.get(0).totalCash).isEqualTo(43200);
+    }
+
+    @Test
+    public void testGetFilteredClientsInfo() throws Exception {
+        clientTestDao.get().clearClients();
+        charmTestDao.get().clearCharms();
+        accountTestDao.get().clearAccounts();
+
+        standDb.get().charmStorage.values().stream()
+                .forEach(charmTestDao.get()::insertCharm);
+        standDb.get().clientStorage.values().stream()
+                .forEach(clientTestDao.get()::insertClient);
+        standDb.get().accountStorage.values().stream()
+                .forEach(accountTestDao.get()::insertAccount);
+
+        TestView view = new TestView();
+
+        //
+        //
+        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo("1", "Ал","","");
+        clientRegister.get().genClientListReport("Пушкин", view,"Ал", "", "");
+        //
+        //
+
+        assertThat(clients).isNotNull();
+        assertThat(clients.pageCount).isEqualTo(1);
+        assertThat(clients.clientInfos).isNotNull();
+        assertThat(clients.clientInfos).hasSize(1);
+        assertThat(clients.clientInfos.get(0).fio).isEqualTo("Пушкин Александр Сергеевич");
+        assertThat(clients.clientInfos.get(0).age).isEqualTo(20);
+        assertThat(clients.clientInfos.get(0).totalCash).isEqualTo(25000);
+        assertThat(clients.clientInfos.get(0).minCash).isEqualTo(25000);
+        assertThat(clients.clientInfos.get(0).maxCash).isEqualTo(25000);
+
+        assertThat(view.rowList).hasSize(1);
+        assertThat(view.rowList.get(0).fio).isEqualTo("Пушкин Александр Сергеевич");
+    }
+    @Test
+    public void testGetFilteredClientsInfoSortedByFIOUp() throws Exception {
+        clientTestDao.get().clearClients();
+        charmTestDao.get().clearCharms();
+        accountTestDao.get().clearAccounts();
+
+        standDb.get().charmStorage.values().stream()
+                .forEach(charmTestDao.get()::insertCharm);
+        standDb.get().clientStorage.values().stream()
+                .forEach(clientTestDao.get()::insertClient);
+        standDb.get().accountStorage.values().stream()
+                .forEach(accountTestDao.get()::insertAccount);
+
+        TestView view = new TestView();
+
+        //
+        //
         ClientToReturn clients = clientRegister.get().getFilteredClientsInfo("1", "","fio","up");
+        clientRegister.get().genClientListReport("Пушкин", view,"", "fio", "up");
         //
         //
 
@@ -261,9 +351,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(clients.pageCount).isEqualTo(2);
         assertThat(clients.clientInfos).isNotNull();
         assertThat(clients.clientInfos).hasSize(3);
-        assertThat(clients.clientInfos.get(0).id).isEqualTo(3);
-        assertThat(clients.clientInfos.get(1).id).isEqualTo(2);
-        assertThat(clients.clientInfos.get(2).id).isEqualTo(1);
+        assertThat(clients.clientInfos.get(0).fio).isEqualTo("Бурумбай Санжар Ришадулы");
+        assertThat(clients.clientInfos.get(1).fio).isEqualTo("Лермонтов Михаил Юрьевич");
+        assertThat(clients.clientInfos.get(2).fio).isEqualTo("Пушкин Александр Сергеевич");
         assertThat(clients.clientInfos.get(0).totalCash).isEqualTo(0);
         assertThat(clients.clientInfos.get(1).totalCash).isEqualTo(43200);
         assertThat(clients.clientInfos.get(2).totalCash).isEqualTo(25000);
@@ -273,6 +363,213 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(clients.clientInfos.get(0).maxCash).isEqualTo(0);
         assertThat(clients.clientInfos.get(1).maxCash).isEqualTo(43200);
         assertThat(clients.clientInfos.get(2).maxCash).isEqualTo(25000);
+
+        assertThat(view.rowList).hasSize(4);
+        assertThat(view.rowList.get(1).fio).isEqualTo("Толстой Лев Николаевич");
+        assertThat(view.rowList.get(3).fio).isEqualTo("Лермонтов Михаил Юрьевич");
+        assertThat(view.rowList.get(2).fio).isEqualTo("Бурумбай Санжар Ришадулы");
+        assertThat(view.rowList.get(0).fio).isEqualTo("Пушкин Александр Сергеевич");
+    }
+    @Test
+    public void testGetFilteredClientsInfoSortedByFIODown() throws Exception {
+        clientTestDao.get().clearClients();
+        charmTestDao.get().clearCharms();
+        accountTestDao.get().clearAccounts();
+
+        standDb.get().charmStorage.values().stream()
+                .forEach(charmTestDao.get()::insertCharm);
+        standDb.get().clientStorage.values().stream()
+                .forEach(clientTestDao.get()::insertClient);
+        standDb.get().accountStorage.values().stream()
+                .forEach(accountTestDao.get()::insertAccount);
+
+        TestView view = new TestView();
+
+        //
+        //
+        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo("1", "","fio","down");
+        clientRegister.get().genClientListReport("Pushkin", view, "", "fio", "down");
+        //
+        //
+
+        assertThat(clients).isNotNull();
+        assertThat(clients.pageCount).isEqualTo(2);
+        assertThat(clients.clientInfos).isNotNull();
+        assertThat(clients.clientInfos).hasSize(3);
+        assertThat(clients.clientInfos.get(0).fio).isEqualTo("Толстой Лев Николаевич");
+        assertThat(clients.clientInfos.get(1).fio).isEqualTo("Пушкин Александр Сергеевич");
+        assertThat(clients.clientInfos.get(2).fio).isEqualTo("Лермонтов Михаил Юрьевич");
+        assertThat(clients.clientInfos.get(0).totalCash).isEqualTo(0);
+        assertThat(clients.clientInfos.get(1).totalCash).isEqualTo(25000);
+        assertThat(clients.clientInfos.get(2).totalCash).isEqualTo(43200);
+        assertThat(clients.clientInfos.get(0).minCash).isEqualTo(0);
+        assertThat(clients.clientInfos.get(1).minCash).isEqualTo(25000);
+        assertThat(clients.clientInfos.get(2).minCash).isEqualTo(43200);
+        assertThat(clients.clientInfos.get(0).maxCash).isEqualTo(0);
+        assertThat(clients.clientInfos.get(1).maxCash).isEqualTo(25000);
+        assertThat(clients.clientInfos.get(2).maxCash).isEqualTo(43200);
+
+        assertThat(view.rowList).hasSize(4);
+        assertThat(view.rowList.get(1).fio).isEqualTo("Толстой Лев Николаевич");
+        assertThat(view.rowList.get(3).fio).isEqualTo("Лермонтов Михаил Юрьевич");
+        assertThat(view.rowList.get(2).fio).isEqualTo("Бурумбай Санжар Ришадулы");
+        assertThat(view.rowList.get(0).fio).isEqualTo("Пушкин Александр Сергеевич");
+    }
+    @Test
+    public void testGetFilteredClientsInfoSortedByAgeUp() throws Exception {
+        clientTestDao.get().clearClients();
+        charmTestDao.get().clearCharms();
+        accountTestDao.get().clearAccounts();
+
+        standDb.get().charmStorage.values().stream()
+                .forEach(charmTestDao.get()::insertCharm);
+        standDb.get().clientStorage.values().stream()
+                .forEach(clientTestDao.get()::insertClient);
+        standDb.get().accountStorage.values().stream()
+                .forEach(accountTestDao.get()::insertAccount);
+
+        TestView view = new TestView();
+
+        //
+        //
+        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo("1", "","age","up");
+        clientRegister.get().genClientListReport("Pushkin", view, "", "age", "up");
+        //
+        //
+
+        assertThat(clients).isNotNull();
+        assertThat(clients.pageCount).isEqualTo(2);
+        assertThat(clients.clientInfos).isNotNull();
+        assertThat(clients.clientInfos).hasSize(3);
+        assertThat(clients.clientInfos.get(0).fio).isEqualTo("Пушкин Александр Сергеевич");
+        assertThat(clients.clientInfos.get(1).fio).isEqualTo("Лермонтов Михаил Юрьевич");
+        assertThat(clients.clientInfos.get(2).fio).isEqualTo("Бурумбай Санжар Ришадулы");
+        assertThat(clients.clientInfos.get(0).age).isEqualTo(20);
+        assertThat(clients.clientInfos.get(1).age).isEqualTo(20);
+        assertThat(clients.clientInfos.get(2).age).isEqualTo(28);
+
+        assertThat(view.rowList).hasSize(4);
+        assertThat(view.rowList.get(0).age).isEqualTo(20);
+        assertThat(view.rowList.get(1).age).isEqualTo(20);
+        assertThat(view.rowList.get(2).age).isEqualTo(28);
+        assertThat(view.rowList.get(3).age).isEqualTo(120);
+    }
+    @Test
+    public void testGetFilteredClientsInfoSortedByAgeDown() throws Exception {
+        clientTestDao.get().clearClients();
+        charmTestDao.get().clearCharms();
+        accountTestDao.get().clearAccounts();
+
+        standDb.get().charmStorage.values().stream()
+                .forEach(charmTestDao.get()::insertCharm);
+        standDb.get().clientStorage.values().stream()
+                .forEach(clientTestDao.get()::insertClient);
+        standDb.get().accountStorage.values().stream()
+                .forEach(accountTestDao.get()::insertAccount);
+
+        TestView view = new TestView();
+
+        //
+        //
+        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo("1", "","age","down");
+        clientRegister.get().genClientListReport("Pushkin", view, "", "age", "down");
+        //
+        //
+
+        assertThat(clients).isNotNull();
+        assertThat(clients.pageCount).isEqualTo(2);
+        assertThat(clients.clientInfos).isNotNull();
+        assertThat(clients.clientInfos).hasSize(3);
+        assertThat(clients.clientInfos.get(0).fio).isEqualTo("Толстой Лев Николаевич");
+        assertThat(clients.clientInfos.get(1).fio).isEqualTo("Бурумбай Санжар Ришадулы");
+        assertThat(clients.clientInfos.get(2).fio).isEqualTo("Пушкин Александр Сергеевич");
+        assertThat(clients.clientInfos.get(0).age).isEqualTo(120);
+        assertThat(clients.clientInfos.get(1).age).isEqualTo(28);
+        assertThat(clients.clientInfos.get(2).age).isEqualTo(20);
+
+        assertThat(view.rowList).hasSize(4);
+        assertThat(view.rowList.get(0).age).isEqualTo(120);
+        assertThat(view.rowList.get(1).age).isEqualTo(28);
+        assertThat(view.rowList.get(2).age).isEqualTo(20);
+        assertThat(view.rowList.get(3).age).isEqualTo(20);
+    }
+    @Test
+    public void testGetFilteredClientsInfoSortedByCashUp() throws Exception {
+        clientTestDao.get().clearClients();
+        charmTestDao.get().clearCharms();
+        accountTestDao.get().clearAccounts();
+
+        standDb.get().charmStorage.values().stream()
+                .forEach(charmTestDao.get()::insertCharm);
+        standDb.get().clientStorage.values().stream()
+                .forEach(clientTestDao.get()::insertClient);
+        standDb.get().accountStorage.values().stream()
+                .forEach(accountTestDao.get()::insertAccount);
+
+        TestView view = new TestView();
+
+        //
+        //
+        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo("1", "","totalCash","up");
+        clientRegister.get().genClientListReport("Pushkin", view, "", "totalCash", "up");
+        //
+        //
+
+        assertThat(clients).isNotNull();
+        assertThat(clients.pageCount).isEqualTo(2);
+        assertThat(clients.clientInfos).isNotNull();
+        assertThat(clients.clientInfos).hasSize(3);
+        assertThat(clients.clientInfos.get(0).fio).isEqualTo("Бурумбай Санжар Ришадулы");
+        assertThat(clients.clientInfos.get(1).fio).isEqualTo("Толстой Лев Николаевич");
+        assertThat(clients.clientInfos.get(2).fio).isEqualTo("Пушкин Александр Сергеевич");
+        assertThat(clients.clientInfos.get(0).totalCash).isEqualTo(0);
+        assertThat(clients.clientInfos.get(1).totalCash).isEqualTo(0);
+        assertThat(clients.clientInfos.get(2).totalCash).isEqualTo(25000);
+
+        assertThat(view.rowList).hasSize(4);
+        assertThat(view.rowList.get(0).totalCash).isEqualTo(0);
+        assertThat(view.rowList.get(1).totalCash).isEqualTo(0);
+        assertThat(view.rowList.get(2).totalCash).isEqualTo(25000);
+        assertThat(view.rowList.get(3).totalCash).isEqualTo(43200);
+    }
+    @Test
+    public void testGetFilteredClientsInfoSortedByCashDown() throws Exception {
+        clientTestDao.get().clearClients();
+        charmTestDao.get().clearCharms();
+        accountTestDao.get().clearAccounts();
+
+        standDb.get().charmStorage.values().stream()
+                .forEach(charmTestDao.get()::insertCharm);
+        standDb.get().clientStorage.values().stream()
+                .forEach(clientTestDao.get()::insertClient);
+        standDb.get().accountStorage.values().stream()
+                .forEach(accountTestDao.get()::insertAccount);
+
+        TestView view = new TestView();
+
+        //
+        //
+        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo("1", "","totalCash","down");
+        clientRegister.get().genClientListReport("Pushkin", view, "", "totalCash", "down");
+        //
+        //
+
+        assertThat(clients).isNotNull();
+        assertThat(clients.pageCount).isEqualTo(2);
+        assertThat(clients.clientInfos).isNotNull();
+        assertThat(clients.clientInfos).hasSize(3);
+        assertThat(clients.clientInfos.get(0).fio).isEqualTo("Лермонтов Михаил Юрьевич");
+        assertThat(clients.clientInfos.get(1).fio).isEqualTo("Пушкин Александр Сергеевич");
+        assertThat(clients.clientInfos.get(2).fio).isEqualTo("Бурумбай Санжар Ришадулы");
+        assertThat(clients.clientInfos.get(0).totalCash).isEqualTo(43200);
+        assertThat(clients.clientInfos.get(1).totalCash).isEqualTo(25000);
+        assertThat(clients.clientInfos.get(2).totalCash).isEqualTo(0);
+
+        assertThat(view.rowList).hasSize(4);
+        assertThat(view.rowList.get(3).totalCash).isEqualTo(0);
+        assertThat(view.rowList.get(2).totalCash).isEqualTo(0);
+        assertThat(view.rowList.get(1).totalCash).isEqualTo(25000);
+        assertThat(view.rowList.get(0).totalCash).isEqualTo(43200);
     }
 
     @Test
@@ -329,21 +626,29 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
     @Test
     public void genClientListReport() throws Exception {
-        OutputStream outf = new FileOutputStream(new File("/Users/sanzharburumbay/Downloads/test.xlsx"));
+        clientTestDao.get().clearClients();
+        charmTestDao.get().clearCharms();
+        accountTestDao.get().clearAccounts();
 
-        ClientsListReportViewReal view = new ClientsListReportViewReal(outf);
+        standDb.get().charmStorage.values().stream()
+                .forEach(charmTestDao.get()::insertCharm);
+        standDb.get().clientStorage.values().stream()
+                .forEach(clientTestDao.get()::insertClient);
+        standDb.get().accountStorage.values().stream()
+                .forEach(accountTestDao.get()::insertAccount);
 
-        UserInfo userInfo = new UserInfo();
-        userInfo.id = "1";
-        userInfo.accountName = "userName";
-        userInfo.surname = "Пушкин";
+        TestView view = new TestView();
+
         //
         //
-        clientRegister.get().genClientListReport(userInfo, view, "");
+        clientRegister.get().genClientListReport("Пушкин", view, "", "", "");
         //
         //
 
-//        assertThat(view.rowList).hasSize(1);
+        assertThat(view.rowList).hasSize(4);
+        assertThat(view.rowList.get(0).fio).isEqualTo("Толстой Лев Николаевич");
+        assertThat(view.rowList.get(1).fio).isEqualTo("Лермонтов Михаил Юрьевич");
+        assertThat(view.rowList.get(2).fio).isEqualTo("Бурумбай Санжар Ришадулы");
+        assertThat(view.rowList.get(3).fio).isEqualTo("Пушкин Александр Сергеевич");
     }
-
 }

@@ -34,7 +34,8 @@ public class Sorter {
                     return client1.fio.compareTo(client2.fio);
                 }
             });
-        } else {
+        } else
+        if ("down".equals(sortOrder)) {
             Collections.sort(clientsList, new Comparator<ClientRecord>() {
                 @Override
                 public int compare(ClientRecord client1, ClientRecord client2) {
@@ -54,7 +55,8 @@ public class Sorter {
                     if (client1.age == client2.age) return 0; else return -1;
                 }
             });
-        } else {
+        } else
+        if ("up".equals(sortOrder)){
             Collections.sort(clientsList, new Comparator<ClientRecord>() {
                 @Override
                 public int compare(ClientRecord client1, ClientRecord client2) {
@@ -75,7 +77,8 @@ public class Sorter {
                     if (client1.totalCash == client2.totalCash) return 0; else return -1;
                 }
             });
-        } else {
+        } else
+        if ("up".equals(sortOrder)){
             Collections.sort(clientsList, new Comparator<ClientRecord>() {
                 @Override
                 public int compare(ClientRecord client1, ClientRecord client2) {
@@ -96,7 +99,8 @@ public class Sorter {
                     if (client1.minCash == client2.minCash) return 0; else return -1;
                 }
             });
-        } else {
+        } else
+        if ("up".equals(sortOrder)){
             Collections.sort(clientsList, new Comparator<ClientRecord>() {
                 @Override
                 public int compare(ClientRecord client1, ClientRecord client2) {
@@ -117,7 +121,8 @@ public class Sorter {
                     if (client1.maxCash == client2.maxCash) return 0; else return -1;
                 }
             });
-        } else {
+        } else
+        if ("up".equals(sortOrder)){
             Collections.sort(clientsList, new Comparator<ClientRecord>() {
                 @Override
                 public int compare(ClientRecord client1, ClientRecord client2) {

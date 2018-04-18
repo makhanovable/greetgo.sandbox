@@ -20,5 +20,5 @@ public interface ClientRegister {
 
     List<Charm> getCharms();
 
-    void genClientListReport(UserInfo userInfo, ClientsListReportView clientsListReportView, String filterStr);
+    void genClientListReport(String username, ClientsListReportView clientsListReportView, String filterStr, String sortBy, String sortOrder);
 }

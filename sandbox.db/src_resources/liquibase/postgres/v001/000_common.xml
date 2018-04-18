@@ -62,7 +62,7 @@
     <sql endDelimiter=";;"><![CDATA[
       create table accounts (
         id int not null primary key,
-        money float,
+        money float default 0,
         number varchar(100),
         registered_at timestamp,
         client_id int references clients(id)

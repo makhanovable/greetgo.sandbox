@@ -158,7 +158,7 @@ public class ClientRegisterImpl implements ClientRegister {
     public ClientToReturn getFilteredClientsInfo(String pageID, String filterStr, String sortBy, String sortOrder) {
         ClientToReturn clientToReturn = new ClientToReturn();
 
-        filterStr += "%" + filterStr + "%";
+        filterStr = "%" + filterStr + "%";
         List<Client> clients = clientDao.get().getFilteredClients(filterStr);
 
         clientToReturn.pageCount = getPageNum(clients.size());
@@ -243,7 +243,7 @@ public class ClientRegisterImpl implements ClientRegister {
     public BeanGetter<JdbcSandbox> jdbcSandbox;
 
     @Override
-    public void genClientListReport(UserInfo userInfo, ClientsListReportView clientsListReportView, String filterStr) {
-        jdbcSandbox.get().execute(new TestJdbc(userInfo, clientsListReportView, filterStr));
+    public void genClientListReport(String username, ClientsListReportView clientsListReportView, String filterStr, String sortBy, String sortOrder) {
+        jdbcSandbox.get().execute(new TestJdbc(username, clientsListReportView, filterStr, sortBy, sortOrder));
     }
 }

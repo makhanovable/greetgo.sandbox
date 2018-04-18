@@ -5,9 +5,13 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.controller.report.ClientsListReportPDFViewReal;
+import kz.greetgo.sandbox.controller.report.ClientsListReportView;
+import kz.greetgo.sandbox.controller.report.ClientsListReportViewReal;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
 
+import java.io.*;
 import java.util.List;
 
 @Bean
@@ -52,5 +56,32 @@ public class ClientController implements Controller {
     @Mapping("/charms")
     public List<Charm> getCharms() {
         return clientRegister.get().getCharms();
+    }
+
+    @AsIs
+    @NoSecurity
+    @Mapping("/report")
+    public void createReport(@ParPath("reportType") String reportType,@ParPath("filterStr") String filterStr,
+                             @ParPath("username") String username,
+                               @ParPath("sortBy") String sortBy, @ParPath("sortOrder") String sortOrder) {
+        String home = System.getProperty("user.home");
+        File file = new File(home+"/Downloads/report.xlsx");
+        OutputStream outf;
+        try {
+            outf = new FileOutputStream(file);
+        } catch (Exception e) {
+            if (e instanceof FileNotFoundException) throw (RuntimeException) e;
+            throw new RuntimeException("Report file create error",e);
+        }
+
+        ClientsListReportView view = null;
+        if ("excel".equals(reportType)) {
+            view = new ClientsListReportViewReal(outf);
+        } else
+        if ("pdf".equals(reportType)) {
+            view = new ClientsListReportPDFViewReal(outf);
+        }
+
+        clientRegister.get().genClientListReport(username, view, filterStr, sortBy, sortOrder);
     }
 }
