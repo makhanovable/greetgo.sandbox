@@ -11,24 +11,24 @@ public class DirectEmailSendBuilderTest {
     EmailInfo c = EmailInfo.load();
 
     SendEmailService sendEmailService = DirectEmailSendBuilder.newBuilder()
-      .setAccount(c.emailAccountName(), c.emailAccountPassword())
+      .setGoogleAccount(c.emailAccountName(), c.emailAccountPassword())
       .build();
 
     sendEmailService.newLetter()
-      .setTitle("Заголовок письма")
+      .setTitle("Заголовок письма html")
       .addDestination(c.toEmail1())
       .addCopyTo(c.toEmail2())
       .addHiddenCopyTo(c.toEmail3())
-      .setContentHtml("Привем все <b>Вам</b>")
+      .setContentHtml("Привем всем <b>Вам</b>")
       .send()
     ;
 
     sendEmailService.newLetter()
-      .setTitle("Заголовок письма")
+      .setTitle("Заголовок письма text")
       .addDestination(c.toEmail1())
       .addCopyTo(c.toEmail2())
       .addHiddenCopyTo(c.toEmail3())
-      .setContentText("Привем все Вам")
+      .setContentText("Привем всем Вам")
       .send()
     ;
 
