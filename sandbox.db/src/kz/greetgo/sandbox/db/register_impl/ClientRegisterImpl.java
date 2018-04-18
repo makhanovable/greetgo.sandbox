@@ -155,8 +155,13 @@ public class ClientRegisterImpl implements ClientRegister {
     }
 
     @Override
-    public ClientToReturn getFilteredClientsInfo(String pageID, String filterStr, String sortBy, String sortOrder) {
+    public ClientToReturn getFilteredClientsInfo(ClientsListParams clientsListParams) {
         ClientToReturn clientToReturn = new ClientToReturn();
+
+        int pageID = clientsListParams.pageID;
+        String filterStr = clientsListParams.filterSortParams.filterStr;
+        String sortBy = clientsListParams.filterSortParams.sortBy;
+        String sortOrder = clientsListParams.filterSortParams.sortOrder;
 
         filterStr = "%" + filterStr + "%";
         List<Client> clients = clientDao.get().getFilteredClients(filterStr);
@@ -170,7 +175,7 @@ public class ClientRegisterImpl implements ClientRegister {
 
         clientRecords = Sorter.sort(clientRecords, sortBy, sortOrder);
 
-        int l = (Integer.parseInt(pageID) - 1) * pageMax;
+        int l = (pageID - 1) * pageMax;
         int r = l + pageMax;
         int cnt = 0;
         for (ClientRecord client : clientRecords) {
@@ -243,7 +248,12 @@ public class ClientRegisterImpl implements ClientRegister {
     public BeanGetter<JdbcSandbox> jdbcSandbox;
 
     @Override
-    public void genClientListReport(String username, ClientsListReportView clientsListReportView, String filterStr, String sortBy, String sortOrder) {
+    public void genClientListReport(ClientsListReportParams clientsListReportParams) {
+        String username = clientsListReportParams.username;
+        ClientsListReportView clientsListReportView= clientsListReportParams.view;
+        String filterStr = clientsListReportParams.filterSortParams.filterStr;
+        String sortBy = clientsListReportParams.filterSortParams.sortBy;
+        String sortOrder = clientsListReportParams.filterSortParams.sortOrder;
         jdbcSandbox.get().execute(new TestJdbc(username, clientsListReportView, filterStr, sortBy, sortOrder));
     }
 }

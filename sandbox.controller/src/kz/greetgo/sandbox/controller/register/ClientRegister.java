@@ -16,9 +16,9 @@ public interface ClientRegister {
 
     ClientDetails getEditableClientInfo(String clientID);
 
-    ClientToReturn getFilteredClientsInfo(String pageID, String filterStr, String sortBy, String sortOrder);
+    ClientToReturn getFilteredClientsInfo(ClientsListParams clientsListParams);
 
     List<Charm> getCharms();
 
-    void genClientListReport(String username, ClientsListReportView clientsListReportView, String filterStr, String sortBy, String sortOrder);
+    void genClientListReport(ClientsListReportParams clientsListReportParamsParams);
 }

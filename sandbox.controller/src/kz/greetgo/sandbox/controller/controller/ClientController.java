@@ -24,7 +24,11 @@ public class ClientController implements Controller {
     @Mapping("/clientsInfo/{pageID}/{filterStr}/{sortBy}/{sortOrder}")
     public ClientToReturn filteredClients(@ParPath("pageID") String pageID, @ParPath("filterStr") String filterStr,
             @ParPath("sortBy") String sortBy, @ParPath("sortOrder") String sortOrder) {
-        return clientRegister.get().getFilteredClientsInfo(pageID, filterStr, sortBy, sortOrder);
+
+        FilterSortParams filterSortParams = new FilterSortParams(filterStr, sortBy, sortOrder);
+        ClientsListParams clientsListParams = new ClientsListParams(Integer.parseInt(pageID), filterSortParams);
+
+        return clientRegister.get().getFilteredClientsInfo(clientsListParams);
     }
 
     @ToJson
@@ -82,6 +86,6 @@ public class ClientController implements Controller {
             view = new ClientsListReportPDFViewReal(outf);
         }
 
-        clientRegister.get().genClientListReport(username, view, filterStr, sortBy, sortOrder);
+//        clientRegister.get().genClientListReport(username, view, filterStr, sortBy, sortOrder);
     }
 }

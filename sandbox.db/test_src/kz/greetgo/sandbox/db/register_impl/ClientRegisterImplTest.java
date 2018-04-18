@@ -252,9 +252,12 @@ public class ClientRegisterImplTest extends ParentTestNg {
         standDb.get().accountStorage.values().stream()
                 .forEach(accountTestDao.get()::insertAccount);
 
+        FilterSortParams filterSortParams = new FilterSortParams("", "age", "up");
+        ClientsListParams clientsListParams = new ClientsListParams(2, filterSortParams);
+
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo("2", "","age","up");
+        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
         //
         //
 
@@ -277,9 +280,12 @@ public class ClientRegisterImplTest extends ParentTestNg {
         standDb.get().accountStorage.values().stream()
                 .forEach(accountTestDao.get()::insertAccount);
 
+        FilterSortParams filterSortParams = new FilterSortParams("", "totalCash", "up");
+        ClientsListParams clientsListParams = new ClientsListParams(2, filterSortParams);
+
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo("2", "","totalCash","up");
+        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
         //
         //
 
@@ -304,11 +310,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
+        FilterSortParams filterSortParams = new FilterSortParams("Ал", "", "");
+        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+        ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo("1", "Ал","","");
-        clientRegister.get().genClientListReport("Пушкин", view,"Ал", "", "");
+        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
 
@@ -339,11 +348,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
+        FilterSortParams filterSortParams = new FilterSortParams("", "fio", "up");
+        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+        ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo("1", "","fio","up");
-        clientRegister.get().genClientListReport("Пушкин", view,"", "fio", "up");
+        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
 
@@ -384,11 +396,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
+        FilterSortParams filterSortParams = new FilterSortParams("", "fio", "down");
+        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+        ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo("1", "","fio","down");
-        clientRegister.get().genClientListReport("Pushkin", view, "", "fio", "down");
+        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
 
@@ -429,11 +444,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
+        FilterSortParams filterSortParams = new FilterSortParams("", "age", "up");
+        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+        ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo("1", "","age","up");
-        clientRegister.get().genClientListReport("Pushkin", view, "", "age", "up");
+        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
 
@@ -468,11 +486,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
+        FilterSortParams filterSortParams = new FilterSortParams("", "age", "down");
+        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+        ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo("1", "","age","down");
-        clientRegister.get().genClientListReport("Pushkin", view, "", "age", "down");
+        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
 
@@ -507,11 +528,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
+        FilterSortParams filterSortParams = new FilterSortParams("", "totalCash", "up");
+        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+        ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo("1", "","totalCash","up");
-        clientRegister.get().genClientListReport("Pushkin", view, "", "totalCash", "up");
+        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
 
@@ -546,11 +570,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
+        FilterSortParams filterSortParams = new FilterSortParams("", "totalCash", "down");
+        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+        ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo("1", "","totalCash","down");
-        clientRegister.get().genClientListReport("Pushkin", view, "", "totalCash", "down");
+        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
 
@@ -638,10 +665,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
-
+        FilterSortParams filterSortParams = new FilterSortParams("", "", "");
+        ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Pushkin", view, filterSortParams);
         //
         //
-        clientRegister.get().genClientListReport("Пушкин", view, "", "", "");
+        clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
 
