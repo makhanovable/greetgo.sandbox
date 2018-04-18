@@ -224,7 +224,7 @@ public class GenerateInputFiles {
     return String.valueOf(ret);
   }
 
-  static final String DIR = "build/out_files";
+  static final String DIR = "builder/out_files";
 
   final AtomicBoolean clearPrinter = new AtomicBoolean(false);
   PrintStream printer = null;

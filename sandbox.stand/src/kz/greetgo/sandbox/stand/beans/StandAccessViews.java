@@ -18,7 +18,7 @@ import static kz.greetgo.util.ServerUtil.streamToStr0;
 public class StandAccessViews extends SandboxViews {
 
   //see --> В этом файле можно настраивать скорость работы сервисов (он работает на горячюю)
-  private final File config = new File("build/sleep_in_request.txt");
+  private final File config = new File("builder/sleep_in_request.txt");
 
   @Override
   protected void beforeRequest() {

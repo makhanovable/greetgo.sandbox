@@ -40,8 +40,8 @@ public class TokenRegisterTest {
     String ext = sdf.format(new Date());
 
     // Перед каждым тестом придумываем новые файлы, где система будет хранить ключи для ассиместричного шифрования
-    tokenRegister.privateKeyFile = new File("build/TokenRegisterTest/" + ext + "_privateKeyFile");
-    tokenRegister.publicKeyFile = new File("build/TokenRegisterTest/" + ext + "_publicKeyFile");
+    tokenRegister.privateKeyFile = new File("builder/TokenRegisterTest/" + ext + "_privateKeyFile");
+    tokenRegister.publicKeyFile = new File("builder/TokenRegisterTest/" + ext + "_publicKeyFile");
 
     //Инициируем внутренние ресурсы
     tokenRegister.afterInject();

@@ -326,7 +326,7 @@ task('server', () => {
     server: path.resolve('build', 'public')
   });
 
-  browser.watch("build/public/**/*.*").on('change', browser.reload);
+  browser.watch("builder/public/**/*.*").on('change', browser.reload);
 });
 
 task('start', ser('clean',

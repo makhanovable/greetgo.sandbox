@@ -23,7 +23,7 @@ import java.nio.file.Path;
 @Bean
 public class AuthRegisterStand implements AuthRegister {
 
-  private final Path storageDir = new File("build/user_param_storage").toPath();
+  private final Path storageDir = new File("builder/user_param_storage").toPath();
 
   private File getUserParamFile(UserParamName name) {
     return storageDir.resolve(name.name() + ".txt").toFile();

@@ -11,7 +11,7 @@ dependencies {
   testCompile "kz.greetgo.depinject:greetgo.depinject.gen:$depinjectVersion"
 }
 
-//war.dependsOn project(':sandbox.client').build
+//war.dependsOn project(':sandbox.client').builder
 //war.dependsOn beanContainerJar
 
 task generateBeanContainerJavas(type: JavaExec) {

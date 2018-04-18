@@ -27,7 +27,7 @@ public class Modules {
     {
       File dir = new File(moduleName);
       if (dir.isDirectory()
-        && new File("build.gradle").isFile()
+        && new File("builder.gradle").isFile()
         && new File("settings.gradle").isFile()
         && new File("README.md").isFile()
         ) {

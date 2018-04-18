@@ -68,10 +68,10 @@ subprojects {
 
   sourceSets.main.java.srcDirs = ["src"]
   sourceSets.main.resources.srcDirs = ["src", "src_resources"]
-  //sourceSets.main.output.resourcesDir = "build/classes/main"
+  //sourceSets.main.output.resourcesDir = "builder/classes/main"
   sourceSets.test.java.srcDirs = ["test_src"]
   sourceSets.test.resources.srcDirs = ["test_src", "test_resources"]
-  //sourceSets.test.output.resourcesDir = "build/classes/test"
+  //sourceSets.test.output.resourcesDir = "builder/classes/test"
 
   //noinspection GroovyMissingReturnStatement
   test { useTestNG() }

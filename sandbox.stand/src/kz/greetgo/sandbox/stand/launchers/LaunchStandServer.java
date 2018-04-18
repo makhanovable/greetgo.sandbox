@@ -13,7 +13,7 @@ public class LaunchStandServer {
   private void run() throws Exception {
     DepinjectUtil.implementAndUseBeanContainers(
       "kz.greetgo.sandbox.stand",
-      Modules.standDir() + "/build/src_bean_containers");
+      Modules.standDir() + "/builder/src_bean_containers");
 
     StandBeanContainer container = Depinject.newInstance(StandBeanContainer.class);
 
