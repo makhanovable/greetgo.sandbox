@@ -1,7 +1,5 @@
 package kz.greetgo.sandbox.db.util.email_direct_sender;
 
-import kz.greetgo.conf.ConfData;
-
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
@@ -18,14 +16,7 @@ public class DirectEmailSender {
   }
 
   public void exec() {
-    ConfData c = new ConfData();
-    c.readFromStream(getClass().getResourceAsStream("account_info.txt"));
-
-    String emailAccountName = c.str("by_mail");
-    String emailAccountPassword = c.str("by_pass");
-    String toEmail1 = c.str("email1");
-    String toEmail2 = c.str("email2");
-    String toEmail3 = c.str("email3");
+    EmailInfo c = EmailInfo.load();
 
     Properties properties = new Properties();
 
@@ -38,16 +29,16 @@ public class DirectEmailSender {
     Session session = Session.getDefaultInstance(properties, new javax.mail.Authenticator() {
       @Override
       protected PasswordAuthentication getPasswordAuthentication() {
-        return new PasswordAuthentication(emailAccountName, emailAccountPassword);
+        return new PasswordAuthentication(c.emailAccountName(), c.emailAccountPassword());
       }
     });
 
     try {
       MimeMessage message = new MimeMessage(session);
 
-      message.addRecipient(Message.RecipientType.TO, new InternetAddress(toEmail1));
-      message.addRecipient(Message.RecipientType.CC, new InternetAddress(toEmail2));
-      message.addRecipient(Message.RecipientType.BCC, new InternetAddress(toEmail3));
+      message.addRecipient(Message.RecipientType.TO, new InternetAddress(c.toEmail1()));
+      message.addRecipient(Message.RecipientType.CC, new InternetAddress(c.toEmail2()));
+      message.addRecipient(Message.RecipientType.BCC, new InternetAddress(c.toEmail3()));
 
       message.setSubject("Привет от прекрасного далёка");
 

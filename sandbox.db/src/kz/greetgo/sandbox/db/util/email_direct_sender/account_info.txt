@@ -1,6 +1,0 @@
-by_mail=jkolpakov@gmail.com
-by_pass=jkolpakov123
-
-email1=ekolpakov@greet-go.com
-email2=john.kolpakov.x@gmail.com
-email3=pompei@mail.ru

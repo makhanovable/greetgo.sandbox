@@ -1,0 +1,6 @@
+emailAccountName=jkolpakov@gmail.com
+emailAccountPassword=jkolpakov123
+
+toEmail1=ekolpakov@greet-go.com
+toEmail2=john.kolpakov.x@gmail.com
+toEmail3=pompei@mail.ru
