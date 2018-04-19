@@ -32,7 +32,7 @@ public class DirectEmailSender {
     Session session = Session.getDefaultInstance(props, new javax.mail.Authenticator() {
       @Override
       protected PasswordAuthentication getPasswordAuthentication() {
-        return new PasswordAuthentication(c.emailAccountName(), c.emailAccountPassword());
+        return new PasswordAuthentication(c.googleAccountName(), c.googleAccountPassword());
       }
     });
 

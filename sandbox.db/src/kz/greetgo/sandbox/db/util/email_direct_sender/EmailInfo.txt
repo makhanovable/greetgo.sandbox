@@ -1,5 +1,5 @@
-emailAccountName=jkolpakov@gmail.com
-emailAccountPassword=jkolpakov123
+googleAccountName=jkolpakov@gmail.com
+googleAccountPassword=jkolpakov123
 
 toEmail1=ekolpakov@greet-go.com
 toEmail2=john.kolpakov.x@gmail.com

@@ -16,9 +16,9 @@ public class EmailInfo {
     return this;
   }
 
-  public String emailAccountName() {return c.str("emailAccountName");}
+  public String googleAccountName() {return c.str("googleAccountName");}
 
-  public String emailAccountPassword() {return c.str("emailAccountPassword");}
+  public String googleAccountPassword() {return c.str("googleAccountPassword");}
 
   public String toEmail1() {return c.str("toEmail1");}
 
