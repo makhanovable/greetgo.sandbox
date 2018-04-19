@@ -21,4 +21,6 @@ public interface ClientRegister {
     List<Charm> getCharms();
 
     void genClientListReport(ClientsListReportParams clientsListReportParamsParams);
+
+    int saveReportParams();
 }

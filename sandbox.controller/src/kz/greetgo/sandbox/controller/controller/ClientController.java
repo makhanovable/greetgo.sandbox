@@ -3,6 +3,7 @@ package kz.greetgo.sandbox.controller.controller;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
+import kz.greetgo.mvc.interfaces.RequestTunnel;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.report.ClientsListReportPDFViewReal;
@@ -13,6 +14,8 @@ import kz.greetgo.sandbox.controller.util.Controller;
 
 import java.io.*;
 import java.util.List;
+
+import static com.sun.prism.impl.PrismSettings.trace;
 
 @Bean
 @Mapping("/client")
@@ -66,26 +69,11 @@ public class ClientController implements Controller {
     @AsIs
     @NoSecurity
     @Mapping("/report")
-    public void createReport(@ParPath("reportType") String reportType,@ParPath("filterStr") String filterStr,
-                             @ParPath("username") String username,
-                               @ParPath("sortBy") String sortBy, @ParPath("sortOrder") String sortOrder) {
-        String home = System.getProperty("user.home");
-        File file = new File(home+"/Downloads/report.xlsx");
-        OutputStream outf;
-        try {
-            outf = new FileOutputStream(file);
-        } catch (Exception e) {
-            if (e instanceof FileNotFoundException) throw (RuntimeException) e;
-            throw new RuntimeException("Report file create error",e);
-        }
+    public void createReport(@ParPath("reportType") String reportType, @ParPath("filterStr") String filterStr,
+                             @ParPath("username") String username, @ParPath("sortBy") String sortBy,
+                             @ParPath("sortOrder") String sortOrder) {
 
-        ClientsListReportView view = null;
-        if ("excel".equals(reportType)) {
-            view = new ClientsListReportViewReal(outf);
-        } else
-        if ("pdf".equals(reportType)) {
-            view = new ClientsListReportPDFViewReal(outf);
-        }
+
 
 //        clientRegister.get().genClientListReport(username, view, filterStr, sortBy, sortOrder);
     }

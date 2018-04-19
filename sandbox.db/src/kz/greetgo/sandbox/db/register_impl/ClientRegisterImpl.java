@@ -256,4 +256,9 @@ public class ClientRegisterImpl implements ClientRegister {
         String sortOrder = clientsListReportParams.filterSortParams.sortOrder;
         jdbcSandbox.get().execute(new TestJdbc(username, clientsListReportView, filterStr, sortBy, sortOrder));
     }
+
+    @Override
+    public int saveReportParams() {
+        return 0;
+    }
 }
