@@ -18,15 +18,18 @@ public class DirectEmailSender {
   public void exec() {
     EmailInfo c = EmailInfo.load();
 
-    Properties properties = new Properties();
+    Properties props = new Properties();
 
-    properties.setProperty("mail.smtp.host", "smtp.gmail.com");
-    properties.setProperty("mail.smtp.port", "587");
-    properties.setProperty("mail.smtp.auth", "true");
-    properties.setProperty("mail.smtp.starttls.enable", "true");
-    properties.setProperty("mail.mime.charset", "UTF-8");
+    props.setProperty("mail.smtp.host", "smtp.gmail.com");
+    props.setProperty("mail.smtp.port", "587");
+    props.setProperty("mail.smtp.auth", "true");
+    props.setProperty("mail.smtp.starttls.enable", "true");
+    props.setProperty("mail.mime.charset", "UTF-8");
 
-    Session session = Session.getDefaultInstance(properties, new javax.mail.Authenticator() {
+//    props.setProperty("mail.smtp.socks.host", "localhost");
+//    props.setProperty("mail.smtp.socks.port", "22222");
+
+    Session session = Session.getDefaultInstance(props, new javax.mail.Authenticator() {
       @Override
       protected PasswordAuthentication getPasswordAuthentication() {
         return new PasswordAuthentication(c.emailAccountName(), c.emailAccountPassword());
@@ -49,14 +52,14 @@ public class DirectEmailSender {
           " Привет всем. <i>Это текст курсивом</i>"
 
         , "text/html; charset=UTF-8");
-
-      message.setText(
-
-        "This is красное " +
-          "сообщение. Hi all." +
-          " Привет всем. Это текст курсивом"
-
-        , "UTF-8");
+//
+//      message.setText(
+//
+//        "This is красное " +
+//          "сообщение. Hi all." +
+//          " Привет всем. Это текст курсивом"
+//
+//        , "UTF-8");
 
       Transport.send(message);
       System.out.println("Sent message successfully....");
