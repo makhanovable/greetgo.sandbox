@@ -257,6 +257,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(clientDetails.rAdressStreet).isEqualTo(adressDot.street);
     }
 
+    //TODO: нет сортировки по убыванию
     @Test
     public void testPagingSortedByAge() throws Exception {
         clientTestDao.get().clearClients();
@@ -285,6 +286,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(clients.clientInfos.get(0).fio).isEqualTo("Толстой Лев Николаевич");
         assertThat(clients.clientInfos.get(0).age).isEqualTo(120);
     }
+    
+    //TODO: нет сортировки по убыванию
     @Test
     public void testPagingSortedByCash() throws Exception {
         clientTestDao.get().clearClients();
