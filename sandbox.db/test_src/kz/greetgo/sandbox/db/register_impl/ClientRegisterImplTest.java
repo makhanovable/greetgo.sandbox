@@ -24,6 +24,8 @@ import java.util.Date;
 import java.util.List;
 import static org.fest.assertions.api.Assertions.assertThat;
 
+//TODO: ещё раз проверь все тесты и дополни
+//замечания, по которым надо отработать в тесте testAddNewClient
 public class ClientRegisterImplTest extends ParentTestNg {
 
     public BeanGetter<ClientRegister> clientRegister;
