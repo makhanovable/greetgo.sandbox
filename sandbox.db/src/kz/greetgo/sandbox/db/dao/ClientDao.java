@@ -15,6 +15,7 @@ public interface ClientDao {
     @Select("Select * from clients where id = #{clientID}")
     Client getClient(@Param("clientID") int clientID);
 
+    //Плохой запрос, при больших нагрузках система не выдержит
     @Delete("Delete from clients CASCADE where id = #{clientID}")
     void removeClient(@Param("clientID") int clientID);
 
