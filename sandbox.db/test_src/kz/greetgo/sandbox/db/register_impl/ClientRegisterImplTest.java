@@ -35,6 +35,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public BeanGetter<StandDb> standDb;
 
     @Test
+    //TODO: исправить тест
     public void testAddNewClient() throws Exception {
         clientTestDao.get().clearClients();
         charmTestDao.get().clearCharms();
@@ -64,14 +65,26 @@ public class ClientRegisterImplTest extends ParentTestNg {
         //
         //
         ClientRecord clientRecord = clientRegister.get().addNewClient(clientToSave);
+            //TODO: здесь только вызов регистра (вызов бизнес логики), которая проверяется
+            //даошки убери вниз
+
+            //TODO: если захочешь id изменить,то придётся менять в нескольких местах.
+            //Реши эту проблему
         List<Adress> adresses = adressTestDao.get().getAdress(1);
         List<Phone> phones = phoneTestDao.get().getPhones(1);
         //
         //
 
         assertThat(clientRecord).isNotNull();
+        //TODO: если захочешь id изменить,то придётся менять в нескольких местах.
+        //Реши эту проблему
         assertThat(clientRecord.id).isEqualTo(1);
+        //TODO: если захочешь fio изменить,то придётся менять в нескольких местах.
+        //Реши эту проблему
         assertThat(clientRecord.fio).isEqualTo("Путин Владимир Владимирович");
+        //TODO: если захочешь id изменить,то придётся менять в нескольких местах.
+        //Реши эту проблему
+        //TODO: и так далее все параметры во всех методах
         assertThat(clientRecord.charm).isEqualTo("меланхолик");
         assertThat(clientRecord.age).isEqualTo(20);
         assertThat(adresses).isNotNull();
@@ -83,6 +96,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(phones).hasSize(1);
         assertThat(phones.get(0).clientID).isEqualTo(1);
         assertThat(phones.get(0).number).isEqualTo("87779105332");
+        
+        //TODO: Ты проверил clintRecord, то что вернул сервер. Но это не гарантирует, что регистр сохранил его в БД.
+        //я думаю, ты догодался, какую проверку надо сделать. Допиши тест.
     }
 
     @Test
