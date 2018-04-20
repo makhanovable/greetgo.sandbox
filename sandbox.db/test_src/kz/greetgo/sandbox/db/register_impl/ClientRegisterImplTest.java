@@ -29,7 +29,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 //TODO: нужно больше тестов на пагинацию, скажи, когда приступишь. Разбирём все моменты
 
-//TODO: Нет тестов, проверяющий поведение регистров при неверном вводе. Добавить.
+//TODO: Нет тестов, проверяющих поведение регистров при неверном вводе. Добавить.
 public class ClientRegisterImplTest extends ParentTestNg {
 
     public BeanGetter<ClientRegister> clientRegister;
