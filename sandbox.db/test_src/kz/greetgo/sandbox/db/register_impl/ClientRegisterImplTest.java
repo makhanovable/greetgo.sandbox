@@ -26,6 +26,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 //TODO: ещё раз проверь все тесты и дополни
 //замечания, по которым надо отработать в тесте testAddNewClient
+
+//TODO: нужно больше тестов на пагинацию, скажи, когда приступишь. Разбирём все моменты
 public class ClientRegisterImplTest extends ParentTestNg {
 
     public BeanGetter<ClientRegister> clientRegister;
