@@ -68,7 +68,12 @@ public class ClientRegisterStand  implements ClientRegister{
     }
 
     @Override
-    public ClientToReturn getFilteredClientsInfo(String pageID, String filterStr, String sortBy, String sortOrder) {
+    public ClientToReturn getFilteredClientsInfo(ClientsListParams clientsListParams) {
+        String filterStr = clientsListParams.filterSortParams.filterStr;
+        String sortBy = clientsListParams.filterSortParams.sortBy;
+        String sortOrder = clientsListParams.filterSortParams.sortOrder;
+        int pageID = clientsListParams.pageID;
+
         ClientToReturn clientToReturn = new ClientToReturn();
 
         List<ClientDot> clients = new ArrayList<ClientDot>();
@@ -76,9 +81,9 @@ public class ClientRegisterStand  implements ClientRegister{
         if (filterStr != null) {
             for (ClientDot client : db.get().clientStorage.values()) {
                 if (client.name.toLowerCase().contains(filterStr.toLowerCase()) ||
-                    client.surname.toLowerCase().contains(filterStr.toLowerCase()) ||
-                    client.patronymic.toLowerCase().contains(filterStr.toLowerCase())) {
-                        clients.add(client);
+                        client.surname.toLowerCase().contains(filterStr.toLowerCase()) ||
+                        client.patronymic.toLowerCase().contains(filterStr.toLowerCase())) {
+                    clients.add(client);
                 }
             }
         } else {
@@ -93,7 +98,7 @@ public class ClientRegisterStand  implements ClientRegister{
 
         clientToReturn.pageCount = getPageNum(clients.size());
 
-        int l = (Integer.parseInt(pageID) - 1) * pageMax;
+        int l = (pageID - 1) * pageMax;
         int r = l + pageMax;
         int cnt = 0;
         for (ClientRecord client : clientRecords) {
@@ -115,6 +120,21 @@ public class ClientRegisterStand  implements ClientRegister{
         }
 
         return charms;
+    }
+
+    @Override
+    public void genClientListReport(ClientsListReportParams clientsListReportParams) {
+
+    }
+
+    @Override
+    public int saveReportParams(ReportParamsToSave reportParamsToSave) {
+        return 0;
+    }
+
+    @Override
+    public ReportParamsToSave popReportParams(int report_id) {
+        return null;
     }
 
     private int getPageNum(int cnt) {

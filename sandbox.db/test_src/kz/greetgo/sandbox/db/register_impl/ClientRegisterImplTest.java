@@ -1,6 +1,7 @@
 package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.msoffice.docx.Run;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.report.*;
@@ -13,6 +14,8 @@ import kz.greetgo.sandbox.db.stand.model.PhoneDot;
 import kz.greetgo.sandbox.db.test.dao.*;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
+import org.junit.Rule;
+import org.junit.rules.ExpectedException;
 import org.testng.annotations.Test;
 
 import java.io.File;
@@ -20,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -40,6 +44,45 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public BeanGetter<AdressTestDao> adressTestDao;
     public BeanGetter<StandDb> standDb;
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
+    @Test(expectedExceptions = RuntimeException.class)
+    //TODO: исправить тест
+    public void testEditFormFill() throws Exception {
+        clientTestDao.get().clearClients();
+        charmTestDao.get().clearCharms();
+        adressTestDao.get().clearAdresses();
+        phoneTestDao.get().clearPhones();
+
+        CharmDot charmDot = new CharmDot();
+        charmDot.id = 1;
+        charmDot.name = "меланхолик";
+        charmDot.description = "asdasd";
+        charmDot.energy = (float) 123;
+        charmTestDao.get().insertCharm(charmDot);
+
+        ClientToSave clientToSave = new ClientToSave();
+        clientToSave.id = 1;
+        clientToSave.name = null;
+        clientToSave.surname = null;
+        clientToSave.gender = "MALE";
+        clientToSave.birth_date = "1997-09-27";
+        clientToSave.charm_id = 1;
+        clientToSave.rAdressStreet = "Каратал";
+        clientToSave.rAdressHouse = "15";
+        clientToSave.rAdressFlat = "25";
+
+        //
+        //
+        ClientRecord clientRecord = clientRegister.get().addNewClient(clientToSave);
+        //
+        //
+
+//        thrown.expect(RuntimeException.class);
+
+        assertThat(false).isTrue();
+    }
     @Test
     //TODO: исправить тест
     public void testAddNewClient() throws Exception {
@@ -76,35 +119,41 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
             //TODO: если захочешь id изменить,то придётся менять в нескольких местах.
             //Реши эту проблему
-        List<Adress> adresses = adressTestDao.get().getAdress(1);
-        List<Phone> phones = phoneTestDao.get().getPhones(1);
         //
         //
+
+        List<Adress> adresses = adressTestDao.get().getAdress(clientRecord.id);
+        List<Phone> phones = phoneTestDao.get().getPhones(clientRecord.id);
 
         assertThat(clientRecord).isNotNull();
         //TODO: если захочешь id изменить,то придётся менять в нескольких местах.
         //Реши эту проблему
-        assertThat(clientRecord.id).isEqualTo(1);
         //TODO: если захочешь fio изменить,то придётся менять в нескольких местах.
         //Реши эту проблему
-        assertThat(clientRecord.fio).isEqualTo("Путин Владимир Владимирович");
+        String fio = clientToSave.surname + " " + clientToSave.name + " " + clientToSave.patronymic;
+        assertThat(clientRecord.fio).isEqualTo(fio);
         //TODO: если захочешь id изменить,то придётся менять в нескольких местах.
         //Реши эту проблему
         //TODO: и так далее все параметры во всех методах
-        assertThat(clientRecord.charm).isEqualTo("меланхолик");
+        assertThat(clientRecord.charm).isEqualTo(charmDot.name);
         assertThat(clientRecord.age).isEqualTo(20);
         assertThat(adresses).isNotNull();
         assertThat(adresses).hasSize(1);
-        assertThat(adresses.get(0).clientID).isEqualTo(1);
         assertThat(adresses.get(0).adressType).isEqualTo("REG");
-        assertThat(adresses.get(0).street).isEqualTo("Каратал");
+        assertThat(adresses.get(0).street).isEqualTo(clientToSave.rAdressStreet);
         assertThat(phones).isNotNull();
         assertThat(phones).hasSize(1);
-        assertThat(phones.get(0).clientID).isEqualTo(1);
-        assertThat(phones.get(0).number).isEqualTo("87779105332");
-        
+        assertThat(phones.get(0).number).isEqualTo(clientToSave.mobilePhones.get(0));
+
         //TODO: Ты проверил clintRecord, то что вернул сервер. Но это не гарантирует, что регистр сохранил его в БД.
         //я думаю, ты догодался, какую проверку надо сделать. Допиши тест.
+        List<ClientDot> clients = clientTestDao.get().getAllClients();
+        assertThat(clients.get(0).surname).isEqualTo(clientToSave.surname);
+        assertThat(clients.get(0).name).isEqualTo(clientToSave.name);
+        assertThat(clients.get(0).patronymic).isEqualTo(clientToSave.patronymic);
+        assertThat(clients.get(0).birth_date).isEqualTo(clientToSave.birth_date);
+        assertThat(clients.get(0).charm_id).isEqualTo(clientToSave.charm_id);
+        assertThat(clients.get(0).gender).isEqualTo(clientToSave.gender);
     }
 
     @Test
@@ -153,27 +202,29 @@ public class ClientRegisterImplTest extends ParentTestNg {
         //
         //
         ClientRecord clientRecord2  = clientRegister.get().updateClient(clientToSave);
-        List<Adress> adresses = adressTestDao.get().getAdress(clientRecord1.id);
-        List<Phone> phones = phoneTestDao.get().getPhones(clientRecord1.id);
         //
         //
 
+        List<Adress> adresses = adressTestDao.get().getAdress(clientRecord1.id);
+        List<Phone> phones = phoneTestDao.get().getPhones(clientRecord1.id);
+
         assertThat(clientRecord2).isNotNull();
         assertThat(clientRecord2.id).isEqualTo(clientRecord1.id);
-        assertThat(clientRecord2.fio).isEqualTo("Пушкин Александр Сергеевич");
-        assertThat(clientRecord2.charm).isEqualTo("меланхолик");
+        String fio = clientToSave.surname + " " + clientToSave.name + " " + clientToSave.patronymic;
+        assertThat(clientRecord2.fio).isEqualTo(fio);
+        assertThat(clientRecord2.charm).isEqualTo(charmDot.name);
         assertThat(clientRecord2.age).isEqualTo(30);
         assertThat(adresses).isNotNull();
         assertThat(adresses).hasSize(2);
         assertThat(adresses.get(0).adressType).isEqualTo("REG");
-        assertThat(adresses.get(0).street).isEqualTo("Каратал");
+        assertThat(adresses.get(0).street).isEqualTo(clientToSave.rAdressStreet);
         assertThat(adresses.get(1).adressType).isEqualTo("FACT");
-        assertThat(adresses.get(1).street).isEqualTo("Кабанбай батыра");
+        assertThat(adresses.get(1).street).isEqualTo(clientToSave.fAdressStreet);
         assertThat(phones).isNotNull();
         assertThat(phones).hasSize(3);
-        assertThat(phones.get(0).number).isEqualTo("87779105332");
-        assertThat(phones.get(1).number).isEqualTo("87474415332");
-        assertThat(phones.get(2).number).isEqualTo("87282305227");
+        assertThat(phones.get(0).number).isEqualTo(clientToSave.mobilePhones.get(0));
+        assertThat(phones.get(1).number).isEqualTo(clientToSave.mobilePhones.get(1));
+        assertThat(phones.get(2).number).isEqualTo(clientToSave.homePhone.get(0));
     }
 
     @Test
@@ -201,9 +252,10 @@ public class ClientRegisterImplTest extends ParentTestNg {
         //
         //
         String str = clientRegister.get().removeClient(String.valueOf(1));
+        //
+        //
+
         List<ClientDot> clients = clientTestDao.get().getAllClients();
-        //
-        //
 
         assertThat(str).isEqualTo(String.valueOf(1));
         assertThat(clients).hasSize(0);
@@ -256,27 +308,52 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         assertThat(clientDetails).isNotNull();
         assertThat(clientDetails.id).isEqualTo(clientDot.id);
+        assertThat(clientDetails.name).isEqualTo(clientDot.name);
+        assertThat(clientDetails.surname).isEqualTo(clientDot.surname);
+        assertThat(clientDetails.patronymic).isEqualTo(clientDot.patronymic);
+        assertThat(clientDetails.gender).isEqualTo(clientDot.gender);
         assertThat(clientDetails.charm_id).isEqualTo(charmDot.id);
         assertThat(clientDetails.mobilePhones.get(0)).isEqualTo(phoneDot.number);
         assertThat(clientDetails.rAdressStreet).isEqualTo(adressDot.street);
     }
 
-    //TODO: нет сортировки по убыванию
     @Test
-    public void testPagingSortedByAge() throws Exception {
+    public void testMiddlePageSortedByAgeUp() throws Exception {
         clientTestDao.get().clearClients();
         charmTestDao.get().clearCharms();
         accountTestDao.get().clearAccounts();
 
         standDb.get().charmStorage.values().stream()
                 .forEach(charmTestDao.get()::insertCharm);
-        standDb.get().clientStorage.values().stream()
-                .forEach(clientTestDao.get()::insertClient);
-        standDb.get().accountStorage.values().stream()
-                .forEach(accountTestDao.get()::insertAccount);
+
+        List<ClientDot> clientDots = new ArrayList<>();
+        for (int i = 1; i <= 30; i++) {
+            ClientDot clientDot = new ClientDot();
+            clientDot.id = i;
+            clientDot.name = RND.str(10);
+            clientDot.surname = RND.str(10);
+            clientDot.patronymic = RND.str(10);
+            clientDot.birth_date = RND.dateYears(1990, 2015);
+            clientDot.gender = RND.str(4);
+            clientDot.charm_id = RND.plusInt(4) + 1;
+            clientTestDao.get().insertClient(clientDot);
+            clientDots.add(clientDot);
+        }
+
+        clientDots.sort(new Comparator<ClientDot>() {
+            @Override
+            public int compare(ClientDot o1, ClientDot o2) {
+                if (o1.CountAge() > o2.CountAge()) {
+                    return 1;
+                } else
+                if (o1.CountAge() < o2.CountAge()) {
+                    return -1;
+                } else {return 0;}
+            }
+        });
 
         FilterSortParams filterSortParams = new FilterSortParams("", "age", "up");
-        ClientsListParams clientsListParams = new ClientsListParams(2, filterSortParams);
+        ClientsListParams clientsListParams = new ClientsListParams(5, filterSortParams);
 
         //
         //
@@ -286,27 +363,53 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         assertThat(clients).isNotNull();
         assertThat(clients.clientInfos).isNotNull();
-        assertThat(clients.clientInfos).hasSize(1);
-        assertThat(clients.clientInfos.get(0).fio).isEqualTo("Толстой Лев Николаевич");
-        assertThat(clients.clientInfos.get(0).age).isEqualTo(120);
+        assertThat(clients.clientInfos).hasSize(3);
+        for (int i = 0; i < 3; i++) {
+            assertThat(clients.clientInfos.get(i).id).isEqualTo(clientDots.get(i + 12).id);
+            assertThat(clients.clientInfos.get(i).age).isEqualTo(clientDots.get(i + 12).CountAge());
+            String fio = clientDots.get(i + 12).surname + " " + clientDots.get(i + 12).name + " " + clientDots.get(i + 12).patronymic;
+            assertThat(clients.clientInfos.get(i).fio).isEqualTo(fio);
+        }
     }
-    
+
     //TODO: нет сортировки по убыванию
     @Test
-    public void testPagingSortedByCash() throws Exception {
+    public void testMiddlePageSortedByAgeDown() throws Exception {
         clientTestDao.get().clearClients();
         charmTestDao.get().clearCharms();
         accountTestDao.get().clearAccounts();
 
         standDb.get().charmStorage.values().stream()
                 .forEach(charmTestDao.get()::insertCharm);
-        standDb.get().clientStorage.values().stream()
-                .forEach(clientTestDao.get()::insertClient);
-        standDb.get().accountStorage.values().stream()
-                .forEach(accountTestDao.get()::insertAccount);
 
-        FilterSortParams filterSortParams = new FilterSortParams("", "totalCash", "up");
-        ClientsListParams clientsListParams = new ClientsListParams(2, filterSortParams);
+        List<ClientDot> clientDots = new ArrayList<>();
+        for (int i = 1; i <= 30; i++) {
+            ClientDot clientDot = new ClientDot();
+            clientDot.id = i;
+            clientDot.name = RND.str(10);
+            clientDot.surname = RND.str(10);
+            clientDot.patronymic = RND.str(10);
+            clientDot.birth_date = RND.dateYears(1990, 2015);
+            clientDot.gender = RND.str(4);
+            clientDot.charm_id = RND.plusInt(4) + 1;
+            clientTestDao.get().insertClient(clientDot);
+            clientDots.add(clientDot);
+        }
+
+        clientDots.sort(new Comparator<ClientDot>() {
+            @Override
+            public int compare(ClientDot o1, ClientDot o2) {
+                if (o1.CountAge() < o2.CountAge()) {
+                    return 1;
+                } else
+                if (o1.CountAge() > o2.CountAge()) {
+                    return -1;
+                } else {return 0;}
+            }
+        });
+
+        FilterSortParams filterSortParams = new FilterSortParams("", "age", "down");
+        ClientsListParams clientsListParams = new ClientsListParams(5, filterSortParams);
 
         //
         //
@@ -316,9 +419,121 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         assertThat(clients).isNotNull();
         assertThat(clients.clientInfos).isNotNull();
-        assertThat(clients.clientInfos).hasSize(1);
-        assertThat(clients.clientInfos.get(0).fio).isEqualTo("Лермонтов Михаил Юрьевич");
-        assertThat(clients.clientInfos.get(0).totalCash).isEqualTo(43200);
+        assertThat(clients.clientInfos).hasSize(3);
+        for (int i = 0; i < 3; i++) {
+            assertThat(clients.clientInfos.get(i).id).isEqualTo(clientDots.get(i + 12).id);
+            assertThat(clients.clientInfos.get(i).age).isEqualTo(clientDots.get(i + 12).CountAge());
+            String fio = clientDots.get(i + 12).surname + " " + clientDots.get(i + 12).name + " " + clientDots.get(i + 12).patronymic;
+            assertThat(clients.clientInfos.get(i).fio).isEqualTo(fio);
+        }
+    }
+    @Test
+    public void testLastPageSortedByAgeUp() throws Exception {
+        clientTestDao.get().clearClients();
+        charmTestDao.get().clearCharms();
+        accountTestDao.get().clearAccounts();
+
+        standDb.get().charmStorage.values().stream()
+                .forEach(charmTestDao.get()::insertCharm);
+
+        List<ClientDot> clientDots = new ArrayList<>();
+        for (int i = 1; i <= 30; i++) {
+            ClientDot clientDot = new ClientDot();
+            clientDot.id = i;
+            clientDot.name = RND.str(10);
+            clientDot.surname = RND.str(10);
+            clientDot.patronymic = RND.str(10);
+            clientDot.birth_date = RND.dateYears(1990, 2015);
+            clientDot.gender = RND.str(4);
+            clientDot.charm_id = RND.plusInt(4) + 1;
+            clientTestDao.get().insertClient(clientDot);
+            clientDots.add(clientDot);
+        }
+
+        clientDots.sort(new Comparator<ClientDot>() {
+            @Override
+            public int compare(ClientDot o1, ClientDot o2) {
+                if (o1.CountAge() > o2.CountAge()) {
+                    return 1;
+                } else
+                if (o1.CountAge() < o2.CountAge()) {
+                    return -1;
+                } else {return 0;}
+            }
+        });
+
+        FilterSortParams filterSortParams = new FilterSortParams("", "age", "up");
+        ClientsListParams clientsListParams = new ClientsListParams(10, filterSortParams);
+
+        //
+        //
+        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        //
+        //
+
+        assertThat(clients).isNotNull();
+        assertThat(clients.clientInfos).isNotNull();
+        assertThat(clients.clientInfos).hasSize(3);
+        for (int i = 0; i < 3; i++) {
+            assertThat(clients.clientInfos.get(i).id).isEqualTo(clientDots.get(i + 27).id);
+            assertThat(clients.clientInfos.get(i).age).isEqualTo(clientDots.get(i + 27).CountAge());
+            String fio = clientDots.get(i + 27).surname + " " + clientDots.get(i + 27).name + " " + clientDots.get(i + 27).patronymic;
+            assertThat(clients.clientInfos.get(i).fio).isEqualTo(fio);
+        }
+    }
+    @Test
+    public void testLastPageSortedByAgeDown() throws Exception {
+        clientTestDao.get().clearClients();
+        charmTestDao.get().clearCharms();
+        accountTestDao.get().clearAccounts();
+
+        standDb.get().charmStorage.values().stream()
+                .forEach(charmTestDao.get()::insertCharm);
+
+        List<ClientDot> clientDots = new ArrayList<>();
+        for (int i = 1; i <= 30; i++) {
+            ClientDot clientDot = new ClientDot();
+            clientDot.id = i;
+            clientDot.name = RND.str(10);
+            clientDot.surname = RND.str(10);
+            clientDot.patronymic = RND.str(10);
+            clientDot.birth_date = RND.dateYears(1990, 2015);
+            clientDot.gender = RND.str(4);
+            clientDot.charm_id = RND.plusInt(4) + 1;
+            clientTestDao.get().insertClient(clientDot);
+            clientDots.add(clientDot);
+        }
+
+        clientDots.sort(new Comparator<ClientDot>() {
+            @Override
+            public int compare(ClientDot o1, ClientDot o2) {
+                if (o1.CountAge() < o2.CountAge()) {
+                    return 1;
+                } else
+                if (o1.CountAge() > o2.CountAge()) {
+                    return -1;
+                } else {return 0;}
+            }
+        });
+
+        FilterSortParams filterSortParams = new FilterSortParams("", "age", "down");
+        ClientsListParams clientsListParams = new ClientsListParams(10, filterSortParams);
+
+        //
+        //
+        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        //
+        //
+
+        assertThat(clients).isNotNull();
+        assertThat(clients.clientInfos).isNotNull();
+        assertThat(clients.clientInfos).hasSize(3);
+        for (int i = 0; i < 3; i++) {
+            assertThat(clients.clientInfos.get(i).id).isEqualTo(clientDots.get(i + 27).id);
+            assertThat(clients.clientInfos.get(i).age).isEqualTo(clientDots.get(i + 27).CountAge());
+            String fio = clientDots.get(i + 27).surname + " " + clientDots.get(i + 27).name + " " + clientDots.get(i + 27).patronymic;
+            assertThat(clients.clientInfos.get(i).fio).isEqualTo(fio);
+        }
     }
 
     @Test

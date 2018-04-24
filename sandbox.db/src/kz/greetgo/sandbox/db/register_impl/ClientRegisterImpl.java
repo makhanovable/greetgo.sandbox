@@ -27,9 +27,11 @@ public class ClientRegisterImpl implements ClientRegister {
     public BeanGetter<CharmDao> charmDao;
     public BeanGetter<AdressDao> adressDao;
     public BeanGetter<PhoneDao> phoneDao;
+    public BeanGetter<ReportParamsDao> reportParamsDao;
+    public BeanGetter<ConfigParamsDao> configParamsDao;
 
     //TODO: константой конфигурационные параметры нельзя хранить.
-    private int pageMax = 3;
+//    private int pageMax = 3;
 
     @Override
     public ClientRecord addNewClient(ClientToSave clientInfo) {
@@ -38,14 +40,21 @@ public class ClientRegisterImpl implements ClientRegister {
         //Наши же системы разрабатываются для огромных компаний. 
         //Представь, что было бы с нашей системой, которая сейчас стоит в Китае, если бы мы так id генерировали.
         //Переделать.
-        clientInfo.id = RND.plusInt(100) + 1;
+        clientInfo.id = RND.plusInt(Integer.MAX_VALUE) + 1;
 
         Client client = new Client();
         client.id = clientInfo.id;
-        client.name = clientInfo.name;
-        client.surname = clientInfo.surname;
-        client.patronymic = clientInfo.patronymic;
-        client.gender = clientInfo.gender;
+        if (clientInfo.name == null || clientInfo.surname == null ||
+                clientInfo.mobilePhones == null || clientInfo.rAdressStreet == null ||
+                clientInfo.rAdressHouse == null || clientInfo.rAdressFlat == null) {
+            throw new RuntimeException("Null values");
+        } else {
+            client.name = clientInfo.name;
+            client.surname = clientInfo.surname;
+            client.patronymic = clientInfo.patronymic;
+            client.gender = clientInfo.gender;
+            client.charm_id = clientInfo.charm_id;
+        }
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
         try {
             client.birth_date = format.parse(clientInfo.birth_date);
@@ -55,7 +64,6 @@ public class ClientRegisterImpl implements ClientRegister {
             if (e instanceof RuntimeException) throw (RuntimeException) e;
             throw new RuntimeException("DateFormatError",e);
         }
-        client.charm_id = clientInfo.charm_id;
 
         clientDao.get().insertClient(client);
 
@@ -63,8 +71,7 @@ public class ClientRegisterImpl implements ClientRegister {
         addNewAdresses(clientInfo);
 
         //TODO: Упрости нижние две строчки.
-        ClientRecord clientRecord = getClientRecord(client);
-        return  clientRecord;
+        return getClientRecord(client);
     }
     private void addNewPhones(ClientToSave clientToSave) {
         for(String phone : clientToSave.mobilePhones) {
@@ -175,6 +182,8 @@ public class ClientRegisterImpl implements ClientRegister {
     public ClientToReturn getFilteredClientsInfo(ClientsListParams clientsListParams) {
         ClientToReturn clientToReturn = new ClientToReturn();
 
+        int pageMax = configParamsDao.get().getPageMax();
+
         int pageID = clientsListParams.pageID;
         String filterStr = clientsListParams.filterSortParams.filterStr;
         String sortBy = clientsListParams.filterSortParams.sortBy;
@@ -183,7 +192,7 @@ public class ClientRegisterImpl implements ClientRegister {
         filterStr = "%" + filterStr + "%";
         List<Client> clients = clientDao.get().getFilteredClients(filterStr);
 
-        clientToReturn.pageCount = getPageNum(clients.size());
+        clientToReturn.pageCount = getPageNum(clients.size(), pageMax);
 
         List<ClientRecord> clientRecords = new ArrayList<>();
         for (Client client : clients) {
@@ -244,7 +253,7 @@ public class ClientRegisterImpl implements ClientRegister {
 
         return maxCash;
     }
-    private int getPageNum(int cnt) {
+    private int getPageNum(int cnt, int pageMax) {
         int pageNum;
         if (cnt % pageMax == 0) {
             pageNum = cnt / pageMax;
@@ -275,7 +284,16 @@ public class ClientRegisterImpl implements ClientRegister {
     }
 
     @Override
-    public int saveReportParams() {
-        return 0;
+    public int saveReportParams(ReportParamsToSave reportParamsToSave) {
+        reportParamsDao.get().insertReportParams(reportParamsToSave);
+        return reportParamsToSave.report_id;
+    }
+
+    @Override
+    public ReportParamsToSave popReportParams(int report_id) {
+        ReportParamsToSave reportParamsToSave = reportParamsDao.get().getReportParams(report_id);
+        reportParamsDao.get().removeRepostParams(report_id);
+
+        return reportParamsToSave;
     }
 }

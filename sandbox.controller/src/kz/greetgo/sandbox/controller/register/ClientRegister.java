@@ -20,7 +20,9 @@ public interface ClientRegister {
 
     List<Charm> getCharms();
 
-    void genClientListReport(ClientsListReportParams clientsListReportParamsParams);
+    void genClientListReport(ClientsListReportParams clientsListReportParams);
 
-    int saveReportParams();
+    int saveReportParams(ReportParamsToSave reportParamsToSave);
+
+    ReportParamsToSave popReportParams(int report_id);
 }

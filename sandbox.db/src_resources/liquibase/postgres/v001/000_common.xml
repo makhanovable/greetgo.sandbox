@@ -51,9 +51,10 @@
   <changeSet author="pompei" id="create-table-phones">
     <sql endDelimiter=";;"><![CDATA[
       create table phones (
-        number varchar(20) not null primary key,
+        number varchar(20) not null,
         phoneType varchar(10) not null,
-        client_id int references clients(id)
+        client_id int references clients(id),
+        primary key (number, client_id)
       )
     ]]></sql>
   </changeSet>
@@ -88,6 +89,27 @@
         finished_at timestamp,
         account_id int references accounts(id),
         transaction_type_id int references transaction_types(id)
+      )
+    ]]></sql>
+  </changeSet>
+
+  <changeSet author="pompei" id="create-table-report_params">
+    <sql endDelimiter=";;"><![CDATA[
+      create table report_params (
+        report_id int not null primary key,
+        username varchar(100),
+        report_type varchar(10),
+        filterStr varchar(100),
+        sortBy varchar(20),
+        sortOrder varchar(10)
+      )
+    ]]></sql>
+  </changeSet>
+
+  <changeSet author="pompei" id="create-table-config_params">
+    <sql endDelimiter=";;"><![CDATA[
+      create table config_params (
+        page_max int not null
       )
     ]]></sql>
   </changeSet>
