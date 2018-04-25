@@ -22,6 +22,7 @@ public class DbLoader {
   public BeanGetter<PhoneTestDao> phoneTestDao;
   public BeanGetter<AccountTestDao> accountTestDao;
   public BeanGetter<TransactionTypeTestDao> transactionTypeTestDao;
+  public BeanGetter<ConfigParamsDao> configParamsDao;
   public BeanGetter<TransactionTestDao> transactionTestDao;
   public BeanGetter<TokenRegister> tokenManager;
 
@@ -62,6 +63,10 @@ public class DbLoader {
     logger.info("Loading transactions...");
     standDb.get().transactionStorage.values().stream()
             .forEach(transactionTestDao.get()::insertTransaction);
+
+    logger.info("Loading config params...");
+    configParamsDao.get().insertPhone(3);
+
 
     logger.info("Finish loading test data");
   }

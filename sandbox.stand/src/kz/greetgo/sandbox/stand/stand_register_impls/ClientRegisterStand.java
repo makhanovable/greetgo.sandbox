@@ -6,6 +6,7 @@ import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.*;
+import kz.greetgo.util.RND;
 
 import java.util.*;
 
@@ -92,6 +93,7 @@ public class ClientRegisterStand  implements ClientRegister{
 
         List<ClientRecord> clientRecords = new ArrayList<>();
         for (ClientDot client : clients) {
+//            System.out.println(client.id);
             clientRecords.add(getClientRecord(String.valueOf(client.id)));
         }
         clientRecords = sort(clientRecords, sortBy, sortOrder);
@@ -129,7 +131,7 @@ public class ClientRegisterStand  implements ClientRegister{
 
     @Override
     public int saveReportParams(ReportParamsToSave reportParamsToSave) {
-        return 0;
+        return 123;
     }
 
     @Override
@@ -195,7 +197,7 @@ public class ClientRegisterStand  implements ClientRegister{
     }
 
     public ClientRecord getClientRecord(String clientID) {
-        ClientDot client = db.get().clientStorage.get(clientID);
+        ClientDot client = db.get().clientStorage.get(Integer.parseInt(clientID));
 
         ClientRecord clientInfo = new ClientRecord();
         clientInfo.id = client.id;

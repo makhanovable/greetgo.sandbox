@@ -25,7 +25,7 @@ export class LoginComponent {
   constructor(private httpService: HttpService) {}
 
   forgotPassword() {
-    window.alert("При запуске скрипта инициации БД выводятся пользователи и их пароли: посмотрите там!");
+      window.alert("При запуске скрипта инициации БД выводятся пользователи и их пароли: посмотрите там!");
   }
 
   updateEnterButton() {

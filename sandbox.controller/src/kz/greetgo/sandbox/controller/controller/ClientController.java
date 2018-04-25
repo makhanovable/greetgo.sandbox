@@ -1,5 +1,6 @@
 package kz.greetgo.sandbox.controller.controller;
 
+import com.sun.net.httpserver.HttpContext;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
@@ -13,6 +14,7 @@ import kz.greetgo.sandbox.controller.report.ClientsListReportViewReal;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
 import kz.greetgo.util.RND;
+import org.omg.PortableServer.Current;
 
 import java.io.*;
 import java.net.URLEncoder;
@@ -76,13 +78,25 @@ public class ClientController implements Controller {
                              @ParSession("personId") String personId, @Par("sortBy") String sortBy,
                              @Par("sortOrder") String sortOrder) {
 
+        System.out.print(reportType);
+
         UserInfo user = authRegister.get().getUserInfo(personId);
         String username = user.surname + " " + user.name + " " + user.patronymic;
 
-        FilterSortParams filterSortParams = new FilterSortParams(filterStr, sortBy, sortOrder);
-
         int report_id = RND.plusInt(100) + 1;
-        ReportParamsToSave reportParamsToSave = new ReportParamsToSave(report_id, username, reportType, filterSortParams);
+
+        if (filterStr == null) {
+            filterStr = "";
+        }
+        if (sortBy == null) {
+            sortBy = "";
+        }
+        if (sortOrder== null) {
+            sortOrder = "";
+        }
+
+        ReportParamsToSave reportParamsToSave = new ReportParamsToSave(report_id, username, reportType,
+                                                                        filterStr, sortBy, sortOrder);
 
         return clientRegister.get().saveReportParams(reportParamsToSave);
     }
@@ -94,26 +108,34 @@ public class ClientController implements Controller {
 
         ReportParamsToSave reportParams = clientRegister.get().popReportParams(reportID);
 
-        if ("pdf".equals(reportParams.report_type)) {
+        if ("PDF".equals(reportParams.report_type)) {
+            System.out.println("Generating PDF document");
+
             String filename = reportParams.report_type + "-" + RND.intStr(10) + ".pdf";
             filename = URLEncoder.encode(filename, "UTF-8");
 
             tunnel.setResponseHeader("Content-Disposition", "attachment; filename=" + filename);
+            tunnel.setResponseContentType("application/pdf");
             OutputStream out = tunnel.getResponseOutputStream();
 
             ClientsListReportPDFViewReal view = new ClientsListReportPDFViewReal(out);
-            ClientsListReportParams clientsListReportParams = new ClientsListReportParams(reportParams.username, view, reportParams.filterSortParams);
+            FilterSortParams filterSortParams = new FilterSortParams(reportParams.filterStr, reportParams.sortBy, reportParams.sortOrder);
+            ClientsListReportParams clientsListReportParams = new ClientsListReportParams(reportParams.username, view, filterSortParams);
 
             clientRegister.get().genClientListReport(clientsListReportParams);
         } else {
+            System.out.println("Generating XLSX document");
+
             String filename = reportParams.report_type + "-" + RND.intStr(10) + ".xlsx";
             filename = URLEncoder.encode(filename, "UTF-8");
 
             tunnel.setResponseHeader("Content-Disposition", "attachment; filename=" + filename);
+            tunnel.setResponseContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             OutputStream out = tunnel.getResponseOutputStream();
 
             ClientsListReportViewReal view = new ClientsListReportViewReal(out);
-            ClientsListReportParams clientsListReportParams = new ClientsListReportParams(reportParams.username, view, reportParams.filterSortParams);
+            FilterSortParams filterSortParams = new FilterSortParams(reportParams.filterStr, reportParams.sortBy, reportParams.sortOrder);
+            ClientsListReportParams clientsListReportParams = new ClientsListReportParams(reportParams.username, view, filterSortParams);
 
             clientRegister.get().genClientListReport(clientsListReportParams);
         }

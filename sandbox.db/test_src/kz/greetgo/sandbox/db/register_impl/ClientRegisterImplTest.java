@@ -42,6 +42,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public BeanGetter<AccountTestDao> accountTestDao;
     public BeanGetter<PhoneTestDao> phoneTestDao;
     public BeanGetter<AdressTestDao> adressTestDao;
+    public BeanGetter<ReportParamsDao> reportParamsDao;
     public BeanGetter<StandDb> standDb;
 
     @Rule
@@ -868,6 +869,24 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(charms.get(3).name).isEqualTo("сангвиник");
     }
 
+    @Test
+    public void testGetReportParams() {
+        ReportParamsToSave reportParamsToSave = new ReportParamsToSave(1, "PDF", "Sanzhar", "","","");
+
+        //
+        //
+        clientRegister.get().saveReportParams(reportParamsToSave);
+        ReportParamsToSave reportParamsToSave1 = clientRegister.get().popReportParams(1);
+        //
+        //
+
+        assertThat(reportParamsToSave1.report_id).isEqualTo(1);
+        assertThat(reportParamsToSave1.report_type).isNotNull();
+        assertThat(reportParamsToSave1.username).isNotNull();
+        assertThat(reportParamsToSave1.filterStr).isNotNull();
+        assertThat(reportParamsToSave1.sortBy).isNotNull();
+        assertThat(reportParamsToSave1.sortOrder).isNotNull();
+    }
 
     private static class TestView implements ClientsListReportView {
 

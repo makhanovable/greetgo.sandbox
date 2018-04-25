@@ -4,12 +4,8 @@ import kz.greetgo.sandbox.controller.report.model.ClientListRow;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
-import sun.font.FontFamily;
 
 import java.io.*;
-import java.util.Date;
-
-import static com.itextpdf.text.html.HtmlTags.FONT;
 
 public class ClientsListReportPDFViewReal implements ClientsListReportView{
     private Document pdf_report;

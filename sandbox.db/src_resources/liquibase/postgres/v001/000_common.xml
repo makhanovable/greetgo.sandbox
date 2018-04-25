@@ -51,10 +51,9 @@
   <changeSet author="pompei" id="create-table-phones">
     <sql endDelimiter=";;"><![CDATA[
       create table phones (
-        number varchar(20) not null,
+        number varchar(20) not null primary key,
         phoneType varchar(10) not null,
-        client_id int references clients(id),
-        primary key (number, client_id)
+        client_id int references clients(id)
       )
     ]]></sql>
   </changeSet>
@@ -98,10 +97,10 @@
       create table report_params (
         report_id int not null primary key,
         username varchar(100),
-        report_type varchar(10),
+        report_type varchar(100),
         filterStr varchar(100),
-        sortBy varchar(20),
-        sortOrder varchar(10)
+        sortBy varchar(100),
+        sortOrder varchar(100)
       )
     ]]></sql>
   </changeSet>

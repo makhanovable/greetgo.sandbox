@@ -43,7 +43,6 @@ export class ModalViewComponent {
                 if (this.clientDetails.workPhone.length == 0) {
                     this.clientDetails.workPhone = [""];
                 }
-                this.getCharmById();
             }, error => {
                 console.log(error);
             });
@@ -57,7 +56,7 @@ export class ModalViewComponent {
     getCharmById() {
         let charmExist = false;
         for (var i = 0; i < this.charmRecords.length; i++) {
-            if (this.charmRecords[i].id == this.clientDetails.charmID) {
+            if (this.charmRecords[i].id == this.clientDetails.charm_id) {
                 this.clientDetails.charm = this.charmRecords[i].name;
                 charmExist = true;
             }
@@ -72,6 +71,7 @@ export class ModalViewComponent {
     loadCharms() {
         this.httpService.get("/client/charms").toPromise().then(result => {
             this.charmRecords = result.json();
+            this.getCharmById();
         }, error => {
             console.log(error);
         });
@@ -80,7 +80,7 @@ export class ModalViewComponent {
     charmSelected(newValue : string) {
         for (var i = 0; i < this.charmRecords.length; i++) {
             if (this.charmRecords[i].name == newValue) {
-                this.clientDetails.charmID = this.charmRecords[i].id;
+                this.clientDetails.charm_id = this.charmRecords[i].id;
             }
         }
     }
