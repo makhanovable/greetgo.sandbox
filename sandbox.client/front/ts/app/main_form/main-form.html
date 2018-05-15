@@ -1,5 +1,5 @@
 <div>
-    <h2>Main Form Component HELLO WORLD {{testVar}}</h2>
+    <h2>Main Form Component</h2>
 
     <button (click)="exit.emit()">Выход</button>
 
@@ -49,6 +49,35 @@
 
             </tbody>
         </table>
-
     </div>
+
+    <div>
+        <h1>Editable list</h1>
+        <button (click)="checkHealthButtonClicked()">
+           Load data
+        </button>
+        <table>
+            <thead>
+                <tr>
+                    <th>FIO</th>
+                    <th>Charm</th>
+                    <th>Age</th>
+                    <th>Total</th>
+                    <th>Max</th>
+                    <th>Min</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let info of accountInfoList">
+                    <td>{{ info.fullName }}</td>
+                    <td>{{ info.charm }}</td>
+                    <td>{{ info.age }}</td>
+                    <td>{{ info.totalAccountBalance }}</td>
+                    <td>{{ info.maxAccountBalance }}</td>
+                    <td>{{ info.minAccountBalance }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
 </div>

@@ -1,0 +1,12 @@
+th, td {
+    padding: 15px;
+}
+
+td {
+    height: 50px;
+    text-align: left;
+}
+
+th {
+    text-align: center;
+}
