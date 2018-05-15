@@ -28,8 +28,7 @@ import java.util.Date;
 import java.util.List;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-//TODO: ещё раз проверь все тесты и дополни
-//замечания, по которым надо отработать в тесте testAddNewClient
+// TODO: TODO: ещё раз проверь все тесты и дополни
 
 //TODO: нужно больше тестов на пагинацию, скажи, когда приступишь. Разбирём все моменты
 
@@ -49,7 +48,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public ExpectedException thrown = ExpectedException.none();
 
     @Test(expectedExceptions = RuntimeException.class)
-    //TODO: исправить тест
     public void testEditFormFill() throws Exception {
         clientTestDao.get().clearClients();
         charmTestDao.get().clearCharms();
@@ -115,11 +113,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
         //
         //
         ClientRecord clientRecord = clientRegister.get().addNewClient(clientToSave);
-            //TODO: здесь только вызов регистра (вызов бизнес логики), которая проверяется
-            //даошки убери вниз
-
-            //TODO: если захочешь id изменить,то придётся менять в нескольких местах.
-            //Реши эту проблему
         //
         //
 
@@ -127,15 +120,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
         List<Phone> phones = phoneTestDao.get().getPhones(clientRecord.id);
 
         assertThat(clientRecord).isNotNull();
-        //TODO: если захочешь id изменить,то придётся менять в нескольких местах.
-        //Реши эту проблему
-        //TODO: если захочешь fio изменить,то придётся менять в нескольких местах.
-        //Реши эту проблему
         String fio = clientToSave.surname + " " + clientToSave.name + " " + clientToSave.patronymic;
         assertThat(clientRecord.fio).isEqualTo(fio);
-        //TODO: если захочешь id изменить,то придётся менять в нескольких местах.
-        //Реши эту проблему
-        //TODO: и так далее все параметры во всех методах
         assertThat(clientRecord.charm).isEqualTo(charmDot.name);
         assertThat(clientRecord.age).isEqualTo(20);
         assertThat(adresses).isNotNull();
@@ -146,8 +132,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(phones).hasSize(1);
         assertThat(phones.get(0).number).isEqualTo(clientToSave.mobilePhones.get(0));
 
-        //TODO: Ты проверил clintRecord, то что вернул сервер. Но это не гарантирует, что регистр сохранил его в БД.
-        //я думаю, ты догодался, какую проверку надо сделать. Допиши тест.
         List<ClientDot> clients = clientTestDao.get().getAllClients();
         assertThat(clients.get(0).surname).isEqualTo(clientToSave.surname);
         assertThat(clients.get(0).name).isEqualTo(clientToSave.name);
