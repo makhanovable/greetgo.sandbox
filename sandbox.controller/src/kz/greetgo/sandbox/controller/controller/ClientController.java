@@ -22,6 +22,8 @@ import java.util.List;
 
 import static com.sun.prism.impl.PrismSettings.trace;
 
+// TODO: TODO: 2.01. Имена мапингов контроллеров должны совпадать с именами методов контроллеров.
+
 @Bean
 @Mapping("/client")
 public class ClientController implements Controller {
