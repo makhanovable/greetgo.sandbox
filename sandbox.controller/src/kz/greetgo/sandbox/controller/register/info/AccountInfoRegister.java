@@ -4,4 +4,5 @@ import kz.greetgo.sandbox.controller.model.AccountInfo;
 
 public interface AccountInfoRegister {
   AccountInfo[] getAllAccountInfo();
+  String healthCheck();
 }

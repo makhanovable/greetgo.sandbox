@@ -21,4 +21,9 @@ public class AccountController implements Controller {
     return accInfoRegister.get().getAllAccountInfo();
   }
 
+  @ToJson
+  @Mapping("/ok")
+  public String healthCheck() {
+    return accInfoRegister.get().healthCheck();
+  }
 }
