@@ -602,10 +602,10 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(clients.clientInfos.get(2).maxCash).isEqualTo(25000);
 
         assertThat(view.rowList).hasSize(4);
-        assertThat(view.rowList.get(1).fio).isEqualTo("Толстой Лев Николаевич");
-        assertThat(view.rowList.get(3).fio).isEqualTo("Лермонтов Михаил Юрьевич");
-        assertThat(view.rowList.get(2).fio).isEqualTo("Бурумбай Санжар Ришадулы");
-        assertThat(view.rowList.get(0).fio).isEqualTo("Пушкин Александр Сергеевич");
+        assertThat(view.rowList.get(3).fio).isEqualTo("Толстой Лев Николаевич");
+        assertThat(view.rowList.get(1).fio).isEqualTo("Лермонтов Михаил Юрьевич");
+        assertThat(view.rowList.get(0).fio).isEqualTo("Бурумбай Санжар Ришадулы");
+        assertThat(view.rowList.get(2).fio).isEqualTo("Пушкин Александр Сергеевич");
     }
     @Test
     public void testGetFilteredClientsInfoSortedByFIODown() throws Exception {
@@ -650,10 +650,10 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(clients.clientInfos.get(2).maxCash).isEqualTo(43200);
 
         assertThat(view.rowList).hasSize(4);
-        assertThat(view.rowList.get(1).fio).isEqualTo("Толстой Лев Николаевич");
-        assertThat(view.rowList.get(3).fio).isEqualTo("Лермонтов Михаил Юрьевич");
-        assertThat(view.rowList.get(2).fio).isEqualTo("Бурумбай Санжар Ришадулы");
-        assertThat(view.rowList.get(0).fio).isEqualTo("Пушкин Александр Сергеевич");
+        assertThat(view.rowList.get(0).fio).isEqualTo("Толстой Лев Николаевич");
+        assertThat(view.rowList.get(2).fio).isEqualTo("Лермонтов Михаил Юрьевич");
+        assertThat(view.rowList.get(3).fio).isEqualTo("Бурумбай Санжар Ришадулы");
+        assertThat(view.rowList.get(1).fio).isEqualTo("Пушкин Александр Сергеевич");
     }
     @Test
     public void testGetFilteredClientsInfoSortedByAgeUp() throws Exception {
@@ -916,10 +916,16 @@ public class ClientRegisterImplTest extends ParentTestNg {
         //
         //
 
+        view.rowList.sort(new Comparator<ClientListRow>() {
+            @Override
+            public int compare(ClientListRow o1, ClientListRow o2) {
+                return (o1.fio.compareTo(o2.fio));
+            }
+        });
         assertThat(view.rowList).hasSize(4);
-        assertThat(view.rowList.get(0).fio).isEqualTo("Толстой Лев Николаевич");
+        assertThat(view.rowList.get(3).fio).isEqualTo("Толстой Лев Николаевич");
         assertThat(view.rowList.get(1).fio).isEqualTo("Лермонтов Михаил Юрьевич");
-        assertThat(view.rowList.get(2).fio).isEqualTo("Бурумбай Санжар Ришадулы");
-        assertThat(view.rowList.get(3).fio).isEqualTo("Пушкин Александр Сергеевич");
+        assertThat(view.rowList.get(0).fio).isEqualTo("Бурумбай Санжар Ришадулы");
+        assertThat(view.rowList.get(2).fio).isEqualTo("Пушкин Александр Сергеевич");
     }
 }

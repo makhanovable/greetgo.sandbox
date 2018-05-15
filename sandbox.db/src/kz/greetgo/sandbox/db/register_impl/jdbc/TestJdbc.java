@@ -101,7 +101,11 @@ public class TestJdbc implements ConnectionCallback<Void> {
         sql.append("group by clients.id ");
 
         if ("fio".equals(sortBy)) {
-            sql.append("order by surname, name, patronymic ");
+            if ("up".equals(sortOrder)) {
+                sql.append("order by surname COLLATE \"C\", name COLLATE \"C\", patronymic COLLATE \"C\"");
+            } else {
+                sql.append("order by surname COLLATE \"C\" DESC, name COLLATE \"C\" DESC, patronymic COLLATE \"C\" DESC");
+            }
         } else
         if ("age".equals(sortBy)) {
             sql.append("order by birth_date ");
@@ -119,14 +123,16 @@ public class TestJdbc implements ConnectionCallback<Void> {
         if ("up".equals(sortOrder)) {
             if ("age".equals(sortBy)){
                 sql.append("DESC");
-            } else {
+            } else
+            if (!"fio".equals(sortBy)){
                 sql.append("ASC");
             }
         } else
         if ("down".equals(sortOrder)) {
             if ("age".equals(sortBy)){
                 sql.append("ASC");
-            } else {
+            } else
+            if (!"fio".equals(sortBy)){
                 sql.append("DESC");
             }
         }
