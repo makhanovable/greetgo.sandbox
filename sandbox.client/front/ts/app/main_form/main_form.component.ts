@@ -11,11 +11,11 @@ export class MainFormComponent {
   @Output() exit = new EventEmitter<void>();
 
   userInfo: UserInfo | null = null;
-        testVar = "BKBKBKBK";
   loadUserInfoButtonEnabled: boolean = true;
   loadUserInfoError: string | null;
 
-  constructor(private httpService: HttpService) {}
+  constructor(private httpService: HttpService) {
+  }
 
   loadUserInfoButtonClicked() {
     this.loadUserInfoButtonEnabled = false;
