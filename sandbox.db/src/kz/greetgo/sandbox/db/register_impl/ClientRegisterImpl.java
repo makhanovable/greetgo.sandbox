@@ -30,16 +30,9 @@ public class ClientRegisterImpl implements ClientRegister {
     public BeanGetter<ReportParamsDao> reportParamsDao;
     public BeanGetter<ConfigParamsDao> configParamsDao;
 
-    //TODO: константой конфигурационные параметры нельзя хранить.
-//    private int pageMax = 3;
-
     @Override
     public ClientRecord addNewClient(ClientToSave clientInfo) {
         
-        //TODO: Верная генерация, если клиентов максимум будет такое количество.
-        //Наши же системы разрабатываются для огромных компаний. 
-        //Представь, что было бы с нашей системой, которая сейчас стоит в Китае, если бы мы так id генерировали.
-        //Переделать.
         clientInfo.id = RND.plusInt(Integer.MAX_VALUE) + 1;
 
         Client client = new Client();
@@ -59,8 +52,6 @@ public class ClientRegisterImpl implements ClientRegister {
         try {
             client.birth_date = format.parse(clientInfo.birth_date);
         } catch (Exception e) {
-            //TODO: Молодец. Хоршое решение. Объяснишь, почему так сделал.
-            //TODO: Также, этот участок можно заменить на более компактный. Замени здесь и в других подобных местах.
             if (e instanceof RuntimeException) throw (RuntimeException) e;
             throw new RuntimeException("DateFormatError",e);
         }
@@ -69,8 +60,7 @@ public class ClientRegisterImpl implements ClientRegister {
 
         addNewPhones(clientInfo);
         addNewAdresses(clientInfo);
-
-        //TODO: Упрости нижние две строчки.
+        
         return getClientRecord(client);
     }
     private void addNewPhones(ClientToSave clientToSave) {
