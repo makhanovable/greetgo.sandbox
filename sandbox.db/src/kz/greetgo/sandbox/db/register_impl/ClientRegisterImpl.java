@@ -32,8 +32,8 @@ public class ClientRegisterImpl implements ClientRegister {
 
     @Override
     public ClientRecord addNewClient(ClientToSave clientInfo) {
-        
-        clientInfo.id = RND.plusInt(Integer.MAX_VALUE) + 1;
+
+        clientInfo.id = RND.plusInt(1000000) + 1;
 
         Client client = new Client();
         client.id = clientInfo.id;
