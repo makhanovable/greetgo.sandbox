@@ -182,6 +182,7 @@ public class ClientRegisterImpl implements ClientRegister {
     public ClientToReturn getFilteredClientsInfo(ClientsListParams clientsListParams) {
         ClientToReturn clientToReturn = new ClientToReturn();
 
+        //TODO: структура таблицы неверна
         int pageMax = configParamsDao.get().getPageMax();
 
         int pageID = clientsListParams.pageID;
