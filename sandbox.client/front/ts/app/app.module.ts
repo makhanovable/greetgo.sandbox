@@ -6,6 +6,7 @@ import {RootComponent} from "./root.component";
 import {LoginComponent} from "./input/login.component";
 import {MainFormComponent} from "./main_form/main_form.component";
 import {HttpService} from "./HttpService";
+import {TestService} from "./service/testService";
 
 @NgModule({
   imports: [
@@ -15,7 +16,7 @@ import {HttpService} from "./HttpService";
     RootComponent, LoginComponent, MainFormComponent
   ],
   bootstrap: [RootComponent],
-  providers: [HttpService],
+  providers: [HttpService, TestService],
   entryComponents: [],
 })
 export class AppModule {

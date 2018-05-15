@@ -1,15 +1,21 @@
-import {Component, EventEmitter, Output} from "@angular/core";
+import {Component, EventEmitter, OnDestroy, Output} from "@angular/core";
 import {UserInfo} from "../../model/UserInfo";
 import {HttpService} from "../HttpService";
 import {PhoneType} from "../../model/PhoneType";
 import {ClientAccountInfo} from "../../model/ClientAccountInfo";
+import {TestService} from "../service/testService";
+import {Subscription} from "rxjs/Subscription";
 
 @Component({
   selector: 'main-form-component',
   template: require('./main-form.html'),
   styles: [require('./main-form.css')]
 })
-export class MainFormComponent {
+export class MainFormComponent implements OnDestroy{
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
+
   @Output() exit = new EventEmitter<void>();
 
   userInfo: UserInfo | null = null;
@@ -17,8 +23,11 @@ export class MainFormComponent {
   loadUserInfoError: string | null;
 
   accountInfoList: ClientAccountInfo[] | null = null;
+  subscription:Subscription;
+  constructor(private httpService: HttpService, private testService: TestService) {
+    this.subscription = testService.getValue().subscribe(value => {
 
-  constructor(private httpService: HttpService) {
+    });
   }
 
   loadUserInfoButtonClicked() {
@@ -37,8 +46,7 @@ export class MainFormComponent {
     });
   }
 
-  checkHealthButtonClicked() {
-
+  loadAccountDataClicked() {
     this.accountInfoList = [
       ClientAccountInfo.copy({
         "fullName": "Some Full Name",
@@ -68,4 +76,13 @@ export class MainFormComponent {
 
     console.log(this.accountInfoList)
   }
+
+  checkHealthButtonClicked() {
+    this.httpService.get("/account/ok").toPromise().then(response => {
+      console.log(response)
+    }, error => {
+      console.log(error)
+    });
+  }
+
 }

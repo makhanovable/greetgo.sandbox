@@ -3,6 +3,7 @@ import {HttpService} from "../HttpService";
 import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
 import "rxjs/add/operator/toPromise";
+import {TestService} from "../service/testService";
 
 @Component({
   selector: 'login-component',
@@ -22,7 +23,7 @@ export class LoginComponent {
 
   @Output() finish = new EventEmitter<void>();
 
-  constructor(private httpService: HttpService) {}
+  constructor(private httpService: HttpService, private testService: TestService) {}
 
   forgotPassword() {
     window.alert("При запуске скрипта инициации БД выводятся пользователи и их пароли: посмотрите там!");
@@ -60,6 +61,10 @@ export class LoginComponent {
         this.errorMessage = error;
       }
     });
+
+
+    //TODO delete example
+    this.testService.setValue("asd");
   }
 
   registrationButtonClicked() {
