@@ -12,8 +12,8 @@ import kz.greetgo.mvc.interfaces.SessionParameterGetter;
 import kz.greetgo.mvc.interfaces.Views;
 import kz.greetgo.sandbox.controller.errors.JsonRestError;
 import kz.greetgo.sandbox.controller.errors.RestError;
-import kz.greetgo.sandbox.controller.register.AuthRegister;
-import kz.greetgo.sandbox.controller.register.model.SessionInfo;
+import kz.greetgo.sandbox.controller.register.auth.AuthRegister;
+import kz.greetgo.sandbox.controller.register.auth.model.SessionInfo;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.security.SecurityError;
 

@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.controller.register.model;
+package kz.greetgo.sandbox.controller.register.auth.model;
 
 import java.io.Serializable;
 import java.util.Date;
