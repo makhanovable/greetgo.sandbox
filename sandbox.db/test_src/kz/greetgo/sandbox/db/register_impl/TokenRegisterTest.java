@@ -2,7 +2,7 @@ package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.mvc.security.SerializeUtil;
 import kz.greetgo.mvc.util.Base64Util;
-import kz.greetgo.sandbox.controller.register.model.SessionInfo;
+import kz.greetgo.sandbox.controller.register.auth.model.SessionInfo;
 import kz.greetgo.util.RND;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;

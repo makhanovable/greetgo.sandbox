@@ -1,9 +1,9 @@
-package kz.greetgo.sandbox.controller.register;
+package kz.greetgo.sandbox.controller.register.auth;
 
 import kz.greetgo.sandbox.controller.model.AuthInfo;
 import kz.greetgo.sandbox.controller.model.UserInfo;
-import kz.greetgo.sandbox.controller.register.model.SessionInfo;
-import kz.greetgo.sandbox.controller.register.model.UserParamName;
+import kz.greetgo.sandbox.controller.register.auth.model.SessionInfo;
+import kz.greetgo.sandbox.controller.register.auth.model.UserParamName;
 import kz.greetgo.sandbox.controller.security.SecurityError;
 
 /**

@@ -10,7 +10,7 @@ import kz.greetgo.mvc.security.SecuritySourceConfigDefault;
 import kz.greetgo.mvc.security.SecuritySourceOnFiles;
 import kz.greetgo.mvc.security.SerializeUtil;
 import kz.greetgo.mvc.util.Base64Util;
-import kz.greetgo.sandbox.controller.register.model.SessionInfo;
+import kz.greetgo.sandbox.controller.register.auth.model.SessionInfo;
 import kz.greetgo.sandbox.db.util.App;
 
 import java.io.File;

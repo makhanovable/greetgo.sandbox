@@ -1,7 +1,7 @@
 package kz.greetgo.sandbox.db.dao.postgres;
 
 import kz.greetgo.depinject.core.Bean;
-import kz.greetgo.sandbox.controller.register.model.UserParamName;
+import kz.greetgo.sandbox.controller.register.auth.model.UserParamName;
 import kz.greetgo.sandbox.db.dao.AuthDao;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
