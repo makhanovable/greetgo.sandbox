@@ -40,7 +40,7 @@ public class ClientRegisterImpl implements ClientRegister {
         //Наши же системы разрабатываются для огромных компаний. 
         //Представь, что было бы с нашей системой, которая сейчас стоит в Китае, если бы мы так id генерировали.
         //Переделать.
-        clientInfo.id = RND.plusInt(Integer.MAX_VALUE) + 1;
+        clientInfo.id = RND.plusInt(1000000) + 1;
 
         Client client = new Client();
         client.id = clientInfo.id;
