@@ -30,17 +30,10 @@ public class ClientRegisterImpl implements ClientRegister {
     public BeanGetter<ReportParamsDao> reportParamsDao;
     public BeanGetter<ConfigParamsDao> configParamsDao;
 
-    //TODO: константой конфигурационные параметры нельзя хранить.
-//    private int pageMax = 3;
-
     @Override
     public ClientRecord addNewClient(ClientToSave clientInfo) {
         
-        //TODO: Верная генерация, если клиентов максимум будет такое количество.
-        //Наши же системы разрабатываются для огромных компаний. 
-        //Представь, что было бы с нашей системой, которая сейчас стоит в Китае, если бы мы так id генерировали.
-        //Переделать.
-        clientInfo.id = RND.plusInt(1000000) + 1;
+        clientInfo.id = RND.plusInt(Integer.MAX_VALUE) + 1;
 
         Client client = new Client();
         client.id = clientInfo.id;
@@ -182,6 +175,7 @@ public class ClientRegisterImpl implements ClientRegister {
     public ClientToReturn getFilteredClientsInfo(ClientsListParams clientsListParams) {
         ClientToReturn clientToReturn = new ClientToReturn();
 
+        //TODO: структура таблицы неверна
         int pageMax = configParamsDao.get().getPageMax();
 
         int pageID = clientsListParams.pageID;

@@ -22,6 +22,8 @@ import java.util.List;
 
 import static com.sun.prism.impl.PrismSettings.trace;
 
+// TODO: TODO: 2.01. Имена мапингов контроллеров должны совпадать с именами методов контроллеров.
+
 @Bean
 @Mapping("/client")
 public class ClientController implements Controller {
@@ -31,7 +33,6 @@ public class ClientController implements Controller {
 
     @ToJson
     @Mapping("/clientsInfo/{pageID}/{filterStr}/{sortBy}/{sortOrder}")
-    //TODO: 2.01. Имена мапингов контроллеров должны совпадать с именами методов контроллеров.
     public ClientToReturn getFilteredClients(@ParPath("pageID") String pageID, @ParPath("filterStr") String filterStr,
             @ParPath("sortBy") String sortBy, @ParPath("sortOrder") String sortOrder) {
 
