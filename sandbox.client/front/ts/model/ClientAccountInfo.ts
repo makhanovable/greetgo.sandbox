@@ -3,17 +3,17 @@ export class ClientAccountInfo {
   public fullName: string;
   public charm: string;
   public age: number;
-  public totalAccountBalance: number;
-  public maxAccountBalance: number;
-  public minAccountBalance: number;
+  public totalAccBalance: number;
+  public maxAccBalance: number;
+  public minAccBalance: number;
 
   public assign(o: any): ClientAccountInfo {
     this.fullName = o.fullName;
     this.charm = o.charm;
     this.age = o.age;
-    this.totalAccountBalance = o.totalAccountBalance;
-    this.maxAccountBalance = o.maxAccountBalance;
-    this.minAccountBalance = o.minAccountBalance;
+    this.totalAccBalance = o.totalAccBalance;
+    this.maxAccBalance = o.maxAccBalance;
+    this.minAccBalance = o.minAccBalance;
     return this;
   }
 

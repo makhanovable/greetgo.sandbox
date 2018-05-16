@@ -42,9 +42,4 @@ public class AuthController implements Controller {
     return authRegister.get().getUserInfo(personId);
   }
 
-  @ToJson
-  @Mapping("/ok")
-  public String healthCheck() {
-    return "asdsadasd";
-  }
 }

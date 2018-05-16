@@ -23,7 +23,7 @@ export class LoginComponent {
 
   @Output() finish = new EventEmitter<void>();
 
-  constructor(private httpService: HttpService, private testService: TestService) {}
+  constructor(private httpService: HttpService) {}
 
   forgotPassword() {
     window.alert("При запуске скрипта инициации БД выводятся пользователи и их пароли: посмотрите там!");
@@ -64,7 +64,7 @@ export class LoginComponent {
 
 
     //TODO delete example
-    this.testService.setValue("asd");
+    // this.testService.setValue("asd");
   }
 
   registrationButtonClicked() {

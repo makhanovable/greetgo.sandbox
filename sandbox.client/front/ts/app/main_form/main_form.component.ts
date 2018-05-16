@@ -47,34 +47,42 @@ export class MainFormComponent implements OnDestroy{
   }
 
   loadAccountDataClicked() {
-    this.accountInfoList = [
-      ClientAccountInfo.copy({
-        "fullName": "Some Full Name",
-        "charm": "ch1",
-        "age": 1,
-        "totalAccountBalance":  5,
-        "maxAccountBalance": 2,
-        "minAccountBalance": 1
-      }),
-      ClientAccountInfo.copy({
-        "fullName": "Qwerty Full Name",
-        "charm": "ch1",
-        "age": 1,
-        "totalAccountBalance":  5,
-        "maxAccountBalance": 2,
-        "minAccountBalance": 1
-      }),
-      ClientAccountInfo.copy({
-        "fullName": "World Full Name",
-        "charm": "ch1",
-        "age": 1,
-        "totalAccountBalance":  5,
-        "maxAccountBalance": 2,
-        "minAccountBalance": 1
-      })
-    ];
+    // this.accountInfoList = [
+    //   ClientAccountInfo.copy({
+    //     "fullName": "Some Full Name",
+    //     "charm": "ch1",
+    //     "age": 1,
+    //     "totalAccountBalance":  5,
+    //     "maxAccountBalance": 2,
+    //     "minAccountBalance": 1
+    //   }),
+    //   ClientAccountInfo.copy({
+    //     "fullName": "Qwerty Full Name",
+    //     "charm": "ch1",
+    //     "age": 1,
+    //     "totalAccountBalance":  5,
+    //     "maxAccountBalance": 2,
+    //     "minAccountBalance": 1
+    //   }),
+    //   ClientAccountInfo.copy({
+    //     "fullName": "World Full Name",
+    //     "charm": "ch1",
+    //     "age": 1,
+    //     "totalAccountBalance":  5,
+    //     "maxAccountBalance": 2,
+    //     "minAccountBalance": 1
+    //   })
+    // ];
 
-    console.log(this.accountInfoList)
+    this.httpService.get("/account/").toPromise().then(response => {
+        console.log(response)
+        this.accountInfoList = response.json();
+
+        console.log(this.accountInfoList)
+
+      }, error => {
+      console.log(error)
+    });
   }
 
   checkHealthButtonClicked() {
