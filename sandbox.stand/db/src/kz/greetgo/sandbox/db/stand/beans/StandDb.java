@@ -6,6 +6,7 @@ import kz.greetgo.sandbox.db.stand.model.*;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,6 +17,7 @@ public class StandDb implements HasAfterInject {
   public final Map<Integer, AddressDot> addressStorage = new HashMap<>();
   public final Map<Integer, PhoneDot> phoneStorage = new HashMap<>();
   public final Map<Integer, CharmDot> charmStorage = new HashMap<>();
+  public final Map<Integer, AccountDot> accountStorage = new HashMap<>();
 
   @Override
   public void afterInject() throws Exception {
@@ -54,11 +56,24 @@ public class StandDb implements HasAfterInject {
           case "CHARM":
             appendCharm(splitLine);
             break;
+          case "ACCOUNT":
+            appendAccount(splitLine);
           default:
             throw new RuntimeException("Unknown command " + command);
         }
       }
     }
+  }
+
+  private void appendAccount(String[] splitLine) {
+    AccountDot a = new AccountDot();
+    a.id = Integer.parseInt(splitLine[1]);
+    a.clientId = Integer.parseInt(splitLine[2]);
+    a.money = Float.parseFloat(splitLine[3]);
+    a.number = splitLine[4];
+    a.registeredAt = Timestamp.valueOf(splitLine[5]);
+
+    accountStorage.put(a.id, a);
   }
 
   private void appendCharm(String[] splitLine) {
