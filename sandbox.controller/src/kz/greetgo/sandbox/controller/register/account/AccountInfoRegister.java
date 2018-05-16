@@ -1,8 +1,10 @@
-package kz.greetgo.sandbox.controller.register.info;
+package kz.greetgo.sandbox.controller.register.account;
 
 import kz.greetgo.sandbox.controller.model.AccountInfo;
 
+import java.util.List;
+
 public interface AccountInfoRegister {
-  AccountInfo[] getAllAccountInfo();
+  List<AccountInfo> getAllAccountInfo();
   String healthCheck();
 }
