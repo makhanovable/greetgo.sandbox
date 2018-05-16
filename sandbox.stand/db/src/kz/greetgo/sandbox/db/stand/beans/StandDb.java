@@ -2,9 +2,7 @@ package kz.greetgo.sandbox.db.stand.beans;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.HasAfterInject;
-import kz.greetgo.sandbox.controller.model.AccountInfo;
-import kz.greetgo.sandbox.db.stand.model.AccountInfoDot;
-import kz.greetgo.sandbox.db.stand.model.PersonDot;
+import kz.greetgo.sandbox.db.stand.model.*;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -14,7 +12,10 @@ import java.util.Map;
 @Bean
 public class StandDb implements HasAfterInject {
   public final Map<String, PersonDot> personStorage = new HashMap<>();
-  public final Map<Integer, AccountInfoDot> accountInfoStorage = new HashMap<>();
+  public final Map<Integer, ClientDot> clientStorage = new HashMap<>();
+  public final Map<Integer, AddressDot> addressStorage = new HashMap<>();
+  public final Map<Integer, PhoneDot> phoneStorage = new HashMap<>();
+  public final Map<Integer, CharmDot> charmStorage = new HashMap<>();
 
   @Override
   public void afterInject() throws Exception {
@@ -38,14 +39,62 @@ public class StandDb implements HasAfterInject {
           case "PERSON":
             appendPerson(splitLine, line, lineNo);
             break;
-          case "ACCOUNT_INFO":
-            appendAccountInfo(splitLine);
+//          case "ACCOUNT_INFO":
+//            appendAccountInfo(splitLine);
+//            break;
+          case "CLIENT":
+              appendClient(splitLine);
+            break;
+          case "PHONE":
+            appendPhone(splitLine);
+            break;
+          case "ADDRESS":
+            appendAddress(splitLine);
+            break;
+          case "CHARM":
+            appendCharm(splitLine);
             break;
           default:
             throw new RuntimeException("Unknown command " + command);
         }
       }
     }
+  }
+
+  private void appendCharm(String[] splitLine) {
+    CharmDot c = new CharmDot();
+    c.id = Integer.parseInt(splitLine[1]);
+    c.name = splitLine[2];
+    c.description = splitLine[3];
+    c.energy = Float.parseFloat(splitLine[4]);
+
+    charmStorage.put(c.id, c);
+  }
+
+  private void appendAddress(String[] splitLine) {
+     AddressDot a = new AddressDot();
+     a.id = Integer.parseInt(splitLine[1]);
+     a.addressType = splitLine[2];
+     a.clientId = Integer.parseInt(splitLine[3]);
+     a.street = splitLine[4];
+     a.house = splitLine[5];
+     a.flat = splitLine[6];
+
+     addressStorage.put(a.id, a);
+  }
+
+  private void appendPhone(String[] splitLine) {
+    PhoneDot p = new PhoneDot();
+    p.id = Integer.parseInt(splitLine[1]);
+    p.clientId = Integer.parseInt(splitLine[2]);
+    p.number = splitLine[3];
+    p.type = splitLine[4];
+
+    phoneStorage.put(p.id, p);
+  }
+
+  private void appendClient(String[] splitLine) {
+    ClientDot c = new ClientDot();
   }
 
   @SuppressWarnings("unused")
@@ -62,16 +111,16 @@ public class StandDb implements HasAfterInject {
     personStorage.put(p.id, p);
   }
 
-  private void appendAccountInfo(String[] splitLine) {
-    AccountInfoDot acc = new AccountInfoDot();
-    acc.id = Integer.parseInt(splitLine[1].trim());
-    acc.fullName = splitLine[2].trim();
-    acc.charm = splitLine[3].trim();
-    acc.age = Integer.parseInt(splitLine[4].trim());
-    acc.totalAccBalance = Float.parseFloat(splitLine[5].trim());
-    acc.maxAccBalance = Float.parseFloat(splitLine[6].trim());
-    acc.minAccBalance = Float.parseFloat(splitLine[7].trim());
-
-    accountInfoStorage.put(acc.id, acc);
-  }
+//  private void appendAccountInfo(String[] splitLine) {
+//    AccountInfoDot acc = new AccountInfoDot();
+//    acc.id = Integer.parseInt(splitLine[1].trim());
+//    acc.fullName = splitLine[2].trim();
+//    acc.charm = splitLine[3].trim();
+//    acc.age = Integer.parseInt(splitLine[4].trim());
+//    acc.totalAccBalance = Float.parseFloat(splitLine[5].trim());
+//    acc.maxAccBalance = Float.parseFloat(splitLine[6].trim());
+//    acc.minAccBalance = Float.parseFloat(splitLine[7].trim());
+//
+//    accountInfoStorage.put(acc.id, acc);
+//  }
 }

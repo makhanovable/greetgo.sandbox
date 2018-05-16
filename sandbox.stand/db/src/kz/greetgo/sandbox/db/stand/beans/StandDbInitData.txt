@@ -1,4 +1,30 @@
 PERSON; p1; pushkin   111 ; Александр Сергеевич Пушкин
 PERSON; p2; lermontov 111 ; Михаил Юрьевич Лермонтов
-ACCOUNT_INFO; 1; Александр Сергеевич Пушкин; Характер1; 21; 1111.123; 1111.123; 22.05
-ACCOUNT_INFO; 2; Михаил Юрьевич Лермонтов; Характер1; 27; 1234.123; 555.123; 66.05
+#
+#ACCOUNT_INFO; 1; Александр Сергеевич Пушкин; Характер1; 21; 1111.123; 1111.123; 22.05
+#ACCOUNT_INFO; 2; Михаил Юрьевич Лермонтов; Характер1; 27; 1234.123; 555.123; 66.05
+#
+#            CHARMS
+#
+CHARM; 1; FirstCharm; Here is its description; 100
+CHARM; 2; SecondCharm; Here is its description; 200
+CHARM; 3; ThirdCharm; Here is its description; 300
+#
+#            CLIENTS
+#
+CLIENT; 1; Александр; Сергеевич; Пушкин; MALE; 06-06-1799; 1
+CLIENT; 2; Михаил; Юрьевич; Лермонтов; MALE; 15-10-1814; 2
+#
+#            ADDRESSES
+#
+ADDRESS; 1; 1; FACT; Kabanbay Batyr; 145; 22
+ADDRESS; 2; 1; REG; Tole bi; 220; 54
+ADDRESS; 3; 2; FACT; Chernomorskaya; 2;
+#
+#            PHONES
+#
+PHONE; 1; 1; +7-777-777-77-01; "HOME"
+PHONE; 2; 1; +7-777-777-77-02; "WORK"
+PHONE; 3; 1; +7-777-777-77-03; "MOBILE"
+PHONE; 4; 2; +7-777-777-77-77; "WORK"
+PHONE; 5; 2; +7-777-777-77-77; "MOBILE"

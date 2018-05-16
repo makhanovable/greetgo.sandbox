@@ -32,7 +32,7 @@ public class AccountRegisterStand implements AccountInfoRegister {
 
   @Override
   public ClientInfo getClientInfo(int clientId) {
-//    System.out.println(clientId);
+
 
     return null;
   }
