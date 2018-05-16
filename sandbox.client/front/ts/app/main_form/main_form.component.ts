@@ -5,6 +5,7 @@ import {PhoneType} from "../../model/PhoneType";
 import {ClientAccountInfo} from "../../model/ClientAccountInfo";
 import {TestService} from "../service/testService";
 import {Subscription} from "rxjs/Subscription";
+import random = require("core-js/fn/number/random");
 
 @Component({
   selector: 'main-form-component',
@@ -74,7 +75,7 @@ export class MainFormComponent implements OnDestroy{
     //   })
     // ];
 
-    this.httpService.get("/account/").toPromise().then(response => {
+    this.httpService.get("/accounts/").toPromise().then(response => {
         console.log(response)
         this.accountInfoList = response.json();
 
@@ -85,12 +86,21 @@ export class MainFormComponent implements OnDestroy{
     });
   }
 
-  checkHealthButtonClicked() {
-    this.httpService.get("/account/ok").toPromise().then(response => {
+  loadClientInfoClicked() {
+    const clientId = 77;
+
+    this.httpService.get("/accounts/info", {clientId: clientId}).toPromise().then(response => {
       console.log(response)
     }, error => {
       console.log(error)
     });
   }
 
+  checkHealthButtonClicked() {
+    this.httpService.get("/accounts/ok").toPromise().then(response => {
+      console.log(response)
+    }, error => {
+      console.log(error)
+    });
+  }
 }
