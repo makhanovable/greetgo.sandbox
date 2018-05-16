@@ -18,4 +18,8 @@ public class AccountInfo {
     this.maxAccBalance = maxAccBalance;
     this.minAccBalance = minAccBalance;
   }
+
+  public AccountInfo() {
+
+  }
 }

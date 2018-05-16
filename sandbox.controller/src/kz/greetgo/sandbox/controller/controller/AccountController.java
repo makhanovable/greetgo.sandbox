@@ -4,10 +4,9 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.Mapping;
 import kz.greetgo.mvc.annotations.Par;
-import kz.greetgo.mvc.annotations.ParSession;
 import kz.greetgo.mvc.annotations.ToJson;
 import kz.greetgo.sandbox.controller.model.AccountInfo;
-import kz.greetgo.sandbox.controller.model.ClientInfo;
+import kz.greetgo.sandbox.controller.model.Client;
 import kz.greetgo.sandbox.controller.register.account.AccountInfoRegister;
 import kz.greetgo.sandbox.controller.util.Controller;
 
@@ -27,7 +26,7 @@ public class AccountController implements Controller {
 
   @ToJson
   @Mapping("/info")
-  public ClientInfo getClientInfo(@Par("clientId") int clientId) {
+  public Client getClientInfo(@Par("clientId") int clientId) {
     return accInfoRegister.get().getClientInfo(clientId);
   }
 
