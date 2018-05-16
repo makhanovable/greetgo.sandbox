@@ -12,14 +12,14 @@ CHARM; 3; ThirdCharm; Here is its description; 300
 #
 #            CLIENTS
 #
-CLIENT; 1; Александр; Сергеевич; Пушкин; MALE; 06-06-1799; 1
-CLIENT; 2; Михаил; Юрьевич; Лермонтов; MALE; 15-10-1814; 2
+CLIENT; 1; Александр Сергеевич Пушкин; MALE; 06-06-1799; 1
+CLIENT; 2; Михаил Юрьевич Лермонтов; MALE; 15-10-1814; 2
 #
 #            ADDRESSES
 #
-ADDRESS; 1; 1; FACT; Kabanbay Batyr; 145; 22
-ADDRESS; 2; 1; REG; Tole bi; 220; 54
-ADDRESS; 3; 2; FACT; Chernomorskaya; 2;
+ADDRESS; 1; 1; FACT; Kabanbay Batyr, 145, 22
+ADDRESS; 2; 1; REG; Tole bi, 220, 54
+ADDRESS; 3; 2; FACT; Chernomorskaya, 2
 #
 #            PHONES
 #
@@ -31,6 +31,6 @@ PHONE; 5; 2; +7-777-777-77-77; "MOBILE"
 #
 #            ACCOUNTS
 #
-ACCOUNT; 1; 1; 2000; DSCXC12312ASFF; 01-01-2017
-ACCOUNT; 2; 1; 230; QWERTYUIOWERW; 01-01-2017
-ACCOUNT; 3; 2; 2000; ><MNBVCVCBVCB; 01-01-2017
+ACCOUNT; 1; 1; 2000; DSCXC12312ASFF; 01-01-2017 00:00:00
+ACCOUNT; 2; 1; 230; QWERTYUIOWERW; 01-01-2017 00:00:00
+ACCOUNT; 3; 2; 2000; ><MNBVCVCBVCB; 01-01-2017 00:00:00

@@ -7,6 +7,7 @@ import kz.greetgo.sandbox.controller.model.ClientInfo;
 import kz.greetgo.sandbox.controller.register.account.AccountInfoRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.AccountInfoDot;
+import kz.greetgo.sandbox.db.stand.model.ClientDot;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -23,8 +24,8 @@ public class AccountRegisterStand implements AccountInfoRegister {
   public List<AccountInfo> getAllAccountInfo() {
     ArrayList<AccountInfo> accountInfoList = new ArrayList<>();
 
-    for(AccountInfoDot acc : db.get().accountInfoStorage.values()) {
-      accountInfoList.add(acc.toAccountInfo());
+    for(ClientDot clientDot : db.get().clientStorage.values()) {
+      System.out.println(clientDot.name);
     }
 
     return accountInfoList;

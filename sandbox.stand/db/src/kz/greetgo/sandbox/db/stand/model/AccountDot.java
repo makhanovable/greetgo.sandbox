@@ -1,5 +1,6 @@
 package kz.greetgo.sandbox.db.stand.model;
 
+
 import java.sql.Timestamp;
 
 public class AccountDot {

@@ -7,6 +7,9 @@ import kz.greetgo.sandbox.db.stand.model.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,7 +48,7 @@ public class StandDb implements HasAfterInject {
 //            appendAccountInfo(splitLine);
 //            break;
           case "CLIENT":
-              appendClient(splitLine);
+            appendClient(splitLine);
             break;
           case "PHONE":
             appendPhone(splitLine);
@@ -58,6 +61,7 @@ public class StandDb implements HasAfterInject {
             break;
           case "ACCOUNT":
             appendAccount(splitLine);
+            break;
           default:
             throw new RuntimeException("Unknown command " + command);
         }
@@ -67,49 +71,73 @@ public class StandDb implements HasAfterInject {
 
   private void appendAccount(String[] splitLine) {
     AccountDot a = new AccountDot();
-    a.id = Integer.parseInt(splitLine[1]);
-    a.clientId = Integer.parseInt(splitLine[2]);
-    a.money = Float.parseFloat(splitLine[3]);
-    a.number = splitLine[4];
-    a.registeredAt = Timestamp.valueOf(splitLine[5]);
+    a.id = Integer.parseInt(splitLine[1].trim());
+    a.clientId = Integer.parseInt(splitLine[2].trim());
+    a.money = Float.parseFloat(splitLine[3].trim());
+    a.number = splitLine[4].trim();
+
+    try {
+      Date parsedDate = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss").parse(splitLine[5].trim());
+      a.registeredAt = new java.sql.Timestamp(parsedDate.getTime());
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
 
     accountStorage.put(a.id, a);
   }
 
   private void appendCharm(String[] splitLine) {
     CharmDot c = new CharmDot();
-    c.id = Integer.parseInt(splitLine[1]);
-    c.name = splitLine[2];
-    c.description = splitLine[3];
-    c.energy = Float.parseFloat(splitLine[4]);
+    c.id = Integer.parseInt(splitLine[1].trim());
+    c.name = splitLine[2].trim();
+    c.description = splitLine[3].trim();
+    c.energy = Float.parseFloat(splitLine[4].trim());
 
     charmStorage.put(c.id, c);
   }
 
   private void appendAddress(String[] splitLine) {
-     AddressDot a = new AddressDot();
-     a.id = Integer.parseInt(splitLine[1]);
-     a.addressType = splitLine[2];
-     a.clientId = Integer.parseInt(splitLine[3]);
-     a.street = splitLine[4];
-     a.house = splitLine[5];
-     a.flat = splitLine[6];
+    AddressDot a = new AddressDot();
+    a.id = Integer.parseInt(splitLine[1].trim());
+    a.clientId = Integer.parseInt(splitLine[2].trim());
+    a.addressType = splitLine[3];
 
-     addressStorage.put(a.id, a);
+    String[] fullAdd = splitLine[4].trim().split(",");
+    a.street = fullAdd[0].trim();
+    a.house = fullAdd[1].trim();
+    if(fullAdd.length > 2) a.flat = fullAdd[2].trim();
+
+    addressStorage.put(a.id, a);
   }
 
   private void appendPhone(String[] splitLine) {
     PhoneDot p = new PhoneDot();
-    p.id = Integer.parseInt(splitLine[1]);
-    p.clientId = Integer.parseInt(splitLine[2]);
-    p.number = splitLine[3];
-    p.type = splitLine[4];
+    p.id = Integer.parseInt(splitLine[1].trim());
+    p.clientId = Integer.parseInt(splitLine[2].trim());
+    p.number = splitLine[3].trim();
+    p.type = splitLine[4].trim();
 
     phoneStorage.put(p.id, p);
   }
 
   private void appendClient(String[] splitLine) {
     ClientDot c = new ClientDot();
+    c.id = Integer.parseInt(splitLine[1].trim());
+    c.gender = splitLine[3].trim();
+    c.charmId = Integer.parseInt(splitLine[5].trim());
+
+    try {
+      c.birthDate = new SimpleDateFormat("dd-MM-yyyy").parse(splitLine[4].trim());
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+
+    String[] fio = splitLine[2].trim().split("\\s+");
+    c.name = fio[0].trim();
+    c.surname = fio[1].trim();
+    if (fio.length > 2) c.patronymic = fio[2].trim();
+
+    clientStorage.put(c.id, c);
   }
 
   @SuppressWarnings("unused")
