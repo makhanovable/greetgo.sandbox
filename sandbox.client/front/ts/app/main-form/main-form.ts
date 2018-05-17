@@ -10,8 +10,8 @@ import {Charm} from "../../model/Charm";
 
 @Component({
   selector: 'main-form-component',
-  template: require('./main_form.html'),
-  styles: [require('./main_form.css')]
+  template: require('./main-form.html'),
+  styles: [require('./main-form.css')]
 })
 export class MainFormComponent implements OnDestroy{
 

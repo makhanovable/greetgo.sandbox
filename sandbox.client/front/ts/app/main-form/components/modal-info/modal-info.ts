@@ -1,10 +1,10 @@
 import {Component, Inject} from "@angular/core";
-import {Charm} from "../../../model/Charm";
+import {Charm} from "../../../../model/Charm";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material";
 
 @Component({
   selector: 'modal-info-component',
-  template: require('./modal_info_component.html'),
+  template: require('./modal-info.html'),
 })
 export class ModalInfoComponent {
 

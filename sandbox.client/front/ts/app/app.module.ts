@@ -6,9 +6,9 @@ import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 
 import {RootComponent} from "./root.component";
 import {LoginComponent} from "./input/login.component";
-import {ModalInfoComponent} from "./main_form/modal_info_component/modal_info_component";
-import {MainFormComponent} from "./main_form/main_form.component";
-import {TableBasicExample} from "./main_form/account-table/table-basic-example";
+import {ModalInfoComponent} from "./main-form/components/modal-info/modal-info";
+import {MainFormComponent} from "./main-form/main-form";
+import {AccountTableComponent} from "./main-form/components/account-table/account-table";
 
 import {HttpService} from "./HttpService";
 import {TestService} from "./service/testService";
@@ -95,7 +95,7 @@ import 'hammerjs'
     BrowserModule, HttpModule, JsonpModule, FormsModule, BrowserAnimationsModule, DemoMaterialModule,
   ],
   declarations: [
-    RootComponent, LoginComponent, MainFormComponent, ModalInfoComponent, TableBasicExample
+    RootComponent, LoginComponent, MainFormComponent, ModalInfoComponent, AccountTableComponent
   ],
   bootstrap: [RootComponent],
   providers: [HttpService, TestService],

@@ -7,10 +7,10 @@ import {SelectionModel} from "@angular/cdk/collections";
  */
 @Component({
   selector: 'table-basic-example',
-  styles: [require('./table-basic-example.css')],
-  template: require('./table-basic-example.html'),
+  styles: [require('./account-table.css')],
+  template: require('./account-table.html'),
 })
-export class TableBasicExample {
+export class AccountTableComponent {
 
   displayedColumns = ['select', 'position', 'fio', 'charm', 'age', 'total', 'max', 'min'];
   dataSource = new MatTableDataSource <Element>(ELEMENT_DATA);
@@ -66,8 +66,3 @@ const ELEMENT_DATA: Element[] = [
   {position: 19, name: 'Potassium', weight: 39.0983, symbol: 'K'},
   {position: 20, name: 'Calcium', weight: 40.078, symbol: 'Ca'},
 ];
-
-
-/**  Copyright 2018 Google Inc. All Rights Reserved.
- Use of this source code is governed by an MIT-style license that
- can be found in the LICENSE file at http://angular.io/license */
