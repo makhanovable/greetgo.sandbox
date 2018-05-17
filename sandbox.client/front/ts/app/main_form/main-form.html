@@ -1,60 +1,57 @@
-<div>
-    <h2>Main Form Component</h2>
+<div class="container">
+    <div class="row center">
+        <button (click)="exit.emit()">Выход</button>
 
-    <button (click)="exit.emit()">Выход</button>
+        <div *ngIf="!userInfo">
+            <button [disabled]="!loadUserInfoButtonEnabled" (click)="loadUserInfoButtonClicked()">
+                Загрузить данные пользователя
+            </button>
+            <div *ngIf="loadUserInfoError">
+                {{loadUserInfoError}}
+            </div>
+        </div>
+        <div *ngIf="userInfo">
 
-    <div *ngIf="!userInfo">
-        <button [disabled]="!loadUserInfoButtonEnabled" (click)="loadUserInfoButtonClicked()">
-            Загрузить данные пользователя
-        </button>
-        <div *ngIf="loadUserInfoError">
-            {{loadUserInfoError}}
+            <table>
+                <tbody>
+
+                <tr>
+                    <td>ID</td>
+                    <td>&nbsp;:&nbsp;</td>
+                    <td><b>{{userInfo.id}}</b></td>
+                </tr>
+                <tr>
+                    <td>Account name</td>
+                    <td>&nbsp;:&nbsp;</td>
+                    <td><b>{{userInfo.accountName}}</b></td>
+                </tr>
+                <tr>
+                    <td>Surname</td>
+                    <td>&nbsp;:&nbsp;</td>
+                    <td><b>{{userInfo.surname}}</b></td>
+                </tr>
+                <tr>
+                    <td>Name</td>
+                    <td>&nbsp;:&nbsp;</td>
+                    <td><b>{{userInfo.name}}</b></td>
+                </tr>
+                <tr>
+                    <td>Patronymic</td>
+                    <td>&nbsp;:&nbsp;</td>
+                    <td><b>{{userInfo.patronymic}}</b></td>
+                </tr>
+                <tr>
+                    <td>Phone type</td>
+                    <td>&nbsp;:&nbsp;</td>
+                    <td><b>{{userInfo.phoneType}}</b></td>
+                </tr>
+
+                </tbody>
+            </table>
         </div>
     </div>
-    <div *ngIf="userInfo">
 
-        <table>
-            <tbody>
-
-            <tr>
-                <td>ID</td>
-                <td>&nbsp;:&nbsp;</td>
-                <td><b>{{userInfo.id}}</b></td>
-            </tr>
-            <tr>
-                <td>Account name</td>
-                <td>&nbsp;:&nbsp;</td>
-                <td><b>{{userInfo.accountName}}</b></td>
-            </tr>
-            <tr>
-                <td>Surname</td>
-                <td>&nbsp;:&nbsp;</td>
-                <td><b>{{userInfo.surname}}</b></td>
-            </tr>
-            <tr>
-                <td>Name</td>
-                <td>&nbsp;:&nbsp;</td>
-                <td><b>{{userInfo.name}}</b></td>
-            </tr>
-            <tr>
-                <td>Patronymic</td>
-                <td>&nbsp;:&nbsp;</td>
-                <td><b>{{userInfo.patronymic}}</b></td>
-            </tr>
-            <tr>
-                <td>Phone type</td>
-                <td>&nbsp;:&nbsp;</td>
-                <td><b>{{userInfo.phoneType}}</b></td>
-            </tr>
-
-            </tbody>
-        </table>
-    </div>
-
-    <div>
-        <button (click)="checkHealthButtonClicked()">
-            Health check
-        </button>
+    <div class="row">
         <h1>Editable list</h1>
         <button (click)="loadAccountDataClicked()">
            Load data
@@ -62,7 +59,7 @@
         <button (click)="loadClientInfoClicked()">
             Get random client info
         </button>
-        <table>
+        <table class="table table-hover">
             <thead>
                 <tr>
                     <th>FIO</th>
@@ -74,7 +71,8 @@
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let info of accountInfoList">
+                <tr *ngFor="let info of accountInfoList; let i = index" (click)="setClickRow(i)"
+                    [class.active]="i == selectedRow">
                     <td>{{ info.fullName }}</td>
                     <td>{{ info.charm }}</td>
                     <td>{{ info.age }}</td>
@@ -85,5 +83,82 @@
             </tbody>
         </table>
     </div>
+    <div class="well well-lg">
+        Selected Row : <strong>{{selectedRow}}</strong>
+    </div>
+    <button (click)="openEditModal()">Edit</button>
 
+    <div *ngIf="isEditMode">
+        <div class="modal">
+            <div class="modal-content">
+                <span class="close" (click)="closeEditModal()">&times;</span>
+                <form class="form-horizontal" method="post" action="#">
+
+                    <div class="form-group">
+                        <label for="surname" class="cols-sm-2 control-label">Surname</label>
+                        <div class="cols-sm-10">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="fa fa-user fa" aria-hidden="true"></i></span>
+                                <input type="text" class="form-control" name="surname" id="surname"  placeholder="Enter your Surname"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name" class="cols-sm-2 control-label">Name</label>
+                        <div class="cols-sm-10">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="fa fa-envelope fa" aria-hidden="true"></i></span>
+                                <input type="text" class="form-control" name="name" id="name"  placeholder="Enter your Name"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="patronymic" class="cols-sm-2 control-label">Patronymic</label>
+                        <div class="cols-sm-10">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="fa fa-users fa" aria-hidden="true"></i></span>
+                                <input type="text" class="form-control" name="patronymic" id="patronymic"  placeholder="Enter your Patronymic"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gender" class="cols-sm-2 control-label">Gender</label>
+                        <form name="gender" id="gender">
+                            <label class="radio-inline">
+                                <input type="radio" name="optradio">Male
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" name="optradio">Female
+                            </label>
+                        </form>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="humanDate">Date of Birth</label>
+                        <input id="humanDate" [(ngModel)]="humanDate" type="date" name="startDate" class="form-control"/>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="charm" class="cols-sm-2 control-label">Charm</label>
+                        <select id="charm" name="charm" class="form-control" [(ngModel)]="charmSelectedValue">
+                            <option *ngFor="let c of charmList" [ngValue]="c">{{c.name}}</option>
+                        </select>
+                    </div>
+                    
+                    
+                    <div class="form-group ">
+                        <button type="button"
+                                (click)="checkIt()"
+                                class="btn btn-primary btn-lg btn-block login-button">Register</button>
+                    </div>
+                    <div class="login-register">
+                        <a href="index.php">Login</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>

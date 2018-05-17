@@ -47,6 +47,8 @@
     "jquery-contextmenu": "^2.6.2",
     "less-plugin-autoprefix": "^1.5.1",
     "less-plugin-npm-import": "^2.1.0",
+    "ngx-bootstrap": "^2.0.5",
+    "ng2-combobox": "0.6.0",
     "node-notifier": "^5.1.2",
     "raw-loader": "^0.5.1",
     "rxjs": "^5.4.3",

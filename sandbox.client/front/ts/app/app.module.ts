@@ -7,13 +7,14 @@ import {LoginComponent} from "./input/login.component";
 import {MainFormComponent} from "./main_form/main_form.component";
 import {HttpService} from "./HttpService";
 import {TestService} from "./service/testService";
+import {BsDatepickerModule} from "ngx-bootstrap";
 
 @NgModule({
   imports: [
-    BrowserModule, HttpModule, JsonpModule, FormsModule
+    BrowserModule, HttpModule, JsonpModule, FormsModule,
   ],
   declarations: [
-    RootComponent, LoginComponent, MainFormComponent
+    RootComponent, LoginComponent, MainFormComponent,
   ],
   bootstrap: [RootComponent],
   providers: [HttpService, TestService],
