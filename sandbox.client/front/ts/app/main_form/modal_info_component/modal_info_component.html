@@ -1,73 +1,91 @@
 <div>
-    <div class="modal">
-        <div class="modal-content">
-            <span class="close" (click)="closeEditModal()">&times;</span>
-            <form class="form-horizontal" method="post" action="#">
+    <!--<button mat-button>Click it</button>-->
+    <!--<mat-card>Simple card</mat-card>-->
 
-                <div class="form-group">
-                    <label for="surname" class="cols-sm-2 control-label">Surname</label>
-                    <div class="cols-sm-10">
-                        <div class="input-group">
-                            <span class="input-group-addon"><i class="fa fa-user fa" aria-hidden="true"></i></span>
-                            <input type="text" class="form-control" name="surname" id="surname"  placeholder="Enter your Surname"/>
-                        </div>
-                    </div>
-                </div>
+    <!--<form class="example-form">-->
+        <!--<mat-form-field class="example-full-width">-->
+            <!--<input matInput placeholder="Favorite food" value="Sushi">-->
+        <!--</mat-form-field>-->
 
-                <div class="form-group">
-                    <label for="name" class="cols-sm-2 control-label">Name</label>
-                    <div class="cols-sm-10">
-                        <div class="input-group">
-                            <span class="input-group-addon"><i class="fa fa-envelope fa" aria-hidden="true"></i></span>
-                            <input type="text" class="form-control" name="name" id="name"  placeholder="Enter your Name"/>
-                        </div>
-                    </div>
-                </div>
+        <!--<mat-form-field class="example-full-width">-->
+            <!--<textarea matInput placeholder="Leave a comment"></textarea>-->
+        <!--</mat-form-field>-->
+    <!--</form>-->
 
-                <div class="form-group">
-                    <label for="patronymic" class="cols-sm-2 control-label">Patronymic</label>
-                    <div class="cols-sm-10">
-                        <div class="input-group">
-                            <span class="input-group-addon"><i class="fa fa-users fa" aria-hidden="true"></i></span>
-                            <input type="text" class="form-control" name="patronymic" id="patronymic"  placeholder="Enter your Patronymic"/>
-                        </div>
-                    </div>
-                </div>
+    <mat-radio-group>
+        <mat-radio-button value="1">Option 1</mat-radio-button>
+        <mat-radio-button value="2">Option 2</mat-radio-button>
+    </mat-radio-group>
 
-                <div class="form-group">
-                    <label for="gender" class="cols-sm-2 control-label">Gender</label>
-                    <form name="gender" id="gender">
-                        <label class="radio-inline">
-                            <input type="radio" name="optradio">Male
-                        </label>
-                        <label class="radio-inline">
-                            <input type="radio" name="optradio">Female
-                        </label>
-                    </form>
-                </div>
+    <button mat-button>GGG</button>
 
-                <div class="form-group">
-                    <label for="humanDate">Date of Birth</label>
-                    <input id="humanDate" [(ngModel)]="humanDate" type="date" name="startDate" class="form-control"/>
-                </div>
+    <!--<div>-->
+        <!--<span class="close" (click)="closeEditModal()">&times;</span>-->
+        <!--<form class="form-horizontal" method="post" action="#">-->
 
-                <div class="form-group">
-                    <label for="charm" class="cols-sm-2 control-label">Charm</label>
-                    <select id="charm" name="charm" class="form-control" [(ngModel)]="charmSelectedValue">
-                        <option *ngFor="let c of charmList" [ngValue]="c">{{c.name}}</option>
-                    </select>
-                </div>
+            <!--<div class="form-group">-->
+                <!--<label for="surname" class="cols-sm-2 control-label">Surname</label>-->
+                <!--<div class="cols-sm-10">-->
+                    <!--<div class="input-group">-->
+                        <!--<span class="input-group-addon"><i class="fa fa-user fa" aria-hidden="true"></i></span>-->
+                        <!--<input type="text" class="form-control" name="surname" id="surname"  placeholder="Enter your Surname"/>-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+
+            <!--<div class="form-group">-->
+                <!--<label for="name" class="cols-sm-2 control-label">Name</label>-->
+                <!--<div class="cols-sm-10">-->
+                    <!--<div class="input-group">-->
+                        <!--<span class="input-group-addon"><i class="fa fa-envelope fa" aria-hidden="true"></i></span>-->
+                        <!--<input type="text" class="form-control" name="name" id="name"  placeholder="Enter your Name"/>-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+
+            <!--<div class="form-group">-->
+                <!--<label for="patronymic" class="cols-sm-2 control-label">Patronymic</label>-->
+                <!--<div class="cols-sm-10">-->
+                    <!--<div class="input-group">-->
+                        <!--<span class="input-group-addon"><i class="fa fa-users fa" aria-hidden="true"></i></span>-->
+                        <!--<input type="text" class="form-control" name="patronymic" id="patronymic"  placeholder="Enter your Patronymic"/>-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+
+            <!--<div class="form-group">-->
+                <!--<label for="gender" class="cols-sm-2 control-label">Gender</label>-->
+                <!--<form name="gender" id="gender">-->
+                    <!--<label class="radio-inline">-->
+                        <!--<input type="radio" name="optradio">Male-->
+                    <!--</label>-->
+                    <!--<label class="radio-inline">-->
+                        <!--<input type="radio" name="optradio">Female-->
+                    <!--</label>-->
+                <!--</form>-->
+            <!--</div>-->
+
+            <!--<div class="form-group">-->
+                <!--<label for="humanDate">Date of Birth</label>-->
+                <!--<input id="humanDate" [(ngModel)]="humanDate" type="date" name="startDate" class="form-control"/>-->
+            <!--</div>-->
+
+            <!--<div class="form-group">-->
+                <!--<label for="charm" class="cols-sm-2 control-label">Charm</label>-->
+                <!--<select id="charm" name="charm" class="form-control" [(ngModel)]="charmSelectedValue">-->
+                    <!--<option *ngFor="let c of charmList" [ngValue]="c">{{c.name}}</option>-->
+                <!--</select>-->
+            <!--</div>-->
 
 
-                <div class="form-group ">
-                    <button type="button"
-                            (click)="checkIt()"
-                            class="btn btn-primary btn-lg btn-block login-button">Register</button>
-                </div>
-                <div class="login-register">
-                    <a href="index.php">Login</a>
-                </div>
-            </form>
-        </div>
-    </div>
+            <!--<div class="form-group ">-->
+                <!--<button type="button"-->
+                        <!--(click)="checkIt()"-->
+                        <!--class="btn btn-primary btn-lg btn-block login-button">Register</button>-->
+            <!--</div>-->
+            <!--<div class="login-register">-->
+                <!--<a href="index.php">Login</a>-->
+            <!--</div>-->
+        <!--</form>-->
+    <!--</div>-->
 </div>

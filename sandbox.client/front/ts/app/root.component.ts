@@ -2,7 +2,7 @@ import {Component, OnInit} from "@angular/core";
 import {HttpService} from "./HttpService";
 import {AuthInfo} from "../model/AuthInfo";
 
-// import "@angular/material/prebuilt-themes/indigo-pink.css";
+// import "@angular/material/prebuilt-themes/indigo-pink.less";
 // import "../../../node_modules/hammerjs/hammer.js"
 
 @Component({
