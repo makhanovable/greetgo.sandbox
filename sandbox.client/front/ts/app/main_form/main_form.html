@@ -1,0 +1,94 @@
+<div class="container">
+    <div class="row center">
+        <button (click)="exit.emit()">Выход</button>
+
+        <div *ngIf="!userInfo">
+            <button [disabled]="!loadUserInfoButtonEnabled" (click)="loadUserInfoButtonClicked()">
+                Загрузить данные пользователя
+            </button>
+            <div *ngIf="loadUserInfoError">
+                {{loadUserInfoError}}
+            </div>
+        </div>
+        <div *ngIf="userInfo">
+
+            <table>
+                <tbody>
+
+                <tr>
+                    <td>ID</td>
+                    <td>&nbsp;:&nbsp;</td>
+                    <td><b>{{userInfo.id}}</b></td>
+                </tr>
+                <tr>
+                    <td>Account name</td>
+                    <td>&nbsp;:&nbsp;</td>
+                    <td><b>{{userInfo.accountName}}</b></td>
+                </tr>
+                <tr>
+                    <td>Surname</td>
+                    <td>&nbsp;:&nbsp;</td>
+                    <td><b>{{userInfo.surname}}</b></td>
+                </tr>
+                <tr>
+                    <td>Name</td>
+                    <td>&nbsp;:&nbsp;</td>
+                    <td><b>{{userInfo.name}}</b></td>
+                </tr>
+                <tr>
+                    <td>Patronymic</td>
+                    <td>&nbsp;:&nbsp;</td>
+                    <td><b>{{userInfo.patronymic}}</b></td>
+                </tr>
+                <tr>
+                    <td>Phone type</td>
+                    <td>&nbsp;:&nbsp;</td>
+                    <td><b>{{userInfo.phoneType}}</b></td>
+                </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row">
+        <h1>Editable list</h1>
+        <button (click)="loadAccountDataClicked()">
+           Load data
+        </button>
+        <button (click)="loadClientInfoClicked()">
+            Get random client info
+        </button>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>FIO</th>
+                    <th>Charm</th>
+                    <th>Age</th>
+                    <th>Total</th>
+                    <th>Max</th>
+                    <th>Min</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let info of accountInfoList; let i = index" (click)="setClickRow(i)"
+                    [class.active]="i == selectedRow">
+                    <td>{{ info.fullName }}</td>
+                    <td>{{ info.charm }}</td>
+                    <td>{{ info.age }}</td>
+                    <td>{{ info.totalAccBalance }}</td>
+                    <td>{{ info.maxAccBalance }}</td>
+                    <td>{{ info.minAccBalance }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="well well-lg">
+        Selected Row : <strong>{{selectedRow}}</strong>
+    </div>
+    <button (click)="openEditModal()">Edit</button>
+
+    <modal-info-component></modal-info-component>
+
+
+</div>

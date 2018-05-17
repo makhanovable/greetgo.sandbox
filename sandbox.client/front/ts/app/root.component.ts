@@ -2,6 +2,9 @@ import {Component, OnInit} from "@angular/core";
 import {HttpService} from "./HttpService";
 import {AuthInfo} from "../model/AuthInfo";
 
+// import "@angular/material/prebuilt-themes/indigo-pink.css";
+// import "../../../node_modules/hammerjs/hammer.js"
+
 @Component({
   selector: 'root-component',
   template: `
@@ -14,7 +17,7 @@ import {AuthInfo} from "../model/AuthInfo";
       *ngIf="mode == 'main-form'"
       (exit)="exit()"
     ></main-form-component>
-
+    
     <div *ngIf="mode == 'init'">
       Инициация системы... <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
     </div>
