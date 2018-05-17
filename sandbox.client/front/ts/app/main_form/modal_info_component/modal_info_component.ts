@@ -1,5 +1,6 @@
-import {Component} from "@angular/core";
+import {Component, Inject} from "@angular/core";
 import {Charm} from "../../../model/Charm";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material";
 
 @Component({
   selector: 'modal-info-component',
@@ -7,26 +8,19 @@ import {Charm} from "../../../model/Charm";
 })
 export class ModalInfoComponent {
 
-  foods = [
-    {value: 'steak-0', viewValue: 'Steak'},
-    {value: 'pizza-1', viewValue: 'Pizza'},
-    {value: 'tacos-2', viewValue: 'Tacos'}
-  ];
-
   c1 = new Charm();
   charmSelectedValue = this.c1;
   charmList: Charm[] | null = null;
 
   birthDate: any;
 
-  constructor() {
+  constructor(public dialog: MatDialog) {
     this.c1.id = 1;
     this.c1.name = "Charm 1";
     this.charmList = [];
     this.charmList.push(this.c1);
     this.birthDate = new Date(2015, 1, 4);
   }
-
 
   set humanDate(e){
     e = e.split('-');
