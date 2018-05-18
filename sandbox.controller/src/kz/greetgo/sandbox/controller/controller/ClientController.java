@@ -7,15 +7,16 @@ import kz.greetgo.mvc.annotations.Par;
 import kz.greetgo.mvc.annotations.ToJson;
 import kz.greetgo.sandbox.controller.model.ClientInfoModel;
 import kz.greetgo.sandbox.controller.register.client.ClientRegister;
+import kz.greetgo.sandbox.controller.util.Controller;
 
 @Bean
 @Mapping("/client")
-public class ClientController {
+public class ClientController implements Controller {
 
   public BeanGetter<ClientRegister> clientRegister;
 
   @ToJson
-  @Mapping("/info/")
+  @Mapping("/info")
   public ClientInfoModel getClientInfo(@Par("clientId") int clientId) {
     return clientRegister.get().getClientInfo(clientId);
   }

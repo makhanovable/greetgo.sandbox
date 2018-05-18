@@ -45,6 +45,12 @@ export class MainFormComponent implements OnDestroy{
     dialogConfig.autoFocus = true;
     dialogConfig.data = {accountInfo: accountInfo};
 
+    this.httpService.get("/client/info", {clientId: accountInfo.id}).toPromise().then(response => {
+      console.log(response.json());
+    }, error => {
+      console.log(error);
+    });
+
     const dialogRef = this.dialog.open(ModalInfoComponent, dialogConfig);
 
     dialogRef.afterClosed().subscribe(data => {

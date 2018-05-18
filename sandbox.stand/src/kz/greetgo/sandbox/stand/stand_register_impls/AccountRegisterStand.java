@@ -7,13 +7,15 @@ import kz.greetgo.sandbox.controller.model.AccountInfo;
 import kz.greetgo.sandbox.controller.register.account.AccountRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.AccountDot;
+import kz.greetgo.sandbox.db.stand.model.ClientDot;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
-import static java.util.Calendar.DATE;
-import static java.util.Calendar.MONTH;
-import static java.util.Calendar.YEAR;
+import static java.util.Calendar.*;
 
 @Bean
 public class AccountRegisterStand implements AccountRegister {
