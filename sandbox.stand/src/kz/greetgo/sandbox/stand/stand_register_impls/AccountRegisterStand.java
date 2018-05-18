@@ -45,6 +45,13 @@ public class AccountRegisterStand implements AccountInfoRegister {
       accountInfoList.add(accountInfo);
     }
 
+    accountInfoList.add(new AccountInfo("A"));
+    accountInfoList.add(new AccountInfo("B"));
+    accountInfoList.add(new AccountInfo("C"));
+    accountInfoList.add(new AccountInfo("D"));
+    accountInfoList.add(new AccountInfo("E"));
+    accountInfoList.add(new AccountInfo("F"));
+    accountInfoList.add(new AccountInfo("G"));
     return accountInfoList;
   }
 

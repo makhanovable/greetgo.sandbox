@@ -14,7 +14,6 @@ export class AccountInfoDataSource implements DataSource<AccountInfo> {
 
   constructor(private httpService: HttpService) { }
 
-
   connect(collectionViewer: CollectionViewer): Observable<AccountInfo[]> {
     return this.accInfosSubject.asObservable();
   }
@@ -24,14 +23,17 @@ export class AccountInfoDataSource implements DataSource<AccountInfo> {
   }
 
 
-  loadAccountInfoList() {
+  loadAccountInfoList(pageIndex = 0, pageSize = 3, sortBy = '',sortDirection = 'asc') {
 
     this.loadingSubject.next(true);
 
+    console.log("PageIndex:"+pageIndex+", PageSize:"+pageSize+", SortBy:"+sortBy+", Sort:"+sortDirection);
+
     this.httpService.get("/accounts/").toPromise().then(response => {
+      // console.log(response.json());
       this.accInfosSubject.next(response.json());
     }, error => {
-      console.log(error)
+      console.log(error);
     });
 
     this.loadingSubject.next(false);

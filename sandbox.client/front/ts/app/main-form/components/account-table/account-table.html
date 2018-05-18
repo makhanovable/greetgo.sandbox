@@ -1,23 +1,28 @@
 <div class="account-table-container mat-elevation-z8">
-    <div class="account-table-header">
-        <mat-form-field>
-            <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
-        </mat-form-field>
+    <!--<div class="account-table-header">-->
+        <!--<mat-form-field>-->
+            <!--<input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">-->
+        <!--</mat-form-field>-->
+    <!--</div>-->
+    <h1>Table</h1>
+
+    <div class="spinner-container" *ngIf="dataSource.loading$ | async">
+        <mat-spinner></mat-spinner>
     </div>
 
     <mat-table #table [dataSource]="dataSource" matSort>
 
-        <!-- Checkbox Column -->
-        <ng-container matColumnDef="select">
-            <mat-header-cell *matHeaderCellDef>
-            </mat-header-cell>
-            <mat-cell *matCellDef="let row">
-                <mat-checkbox (click)="$event.stopPropagation()"
-                              (change)="$event ? selection.toggle(row) : null"
-                              [checked]="selection.isSelected(row)">
-                </mat-checkbox>
-            </mat-cell>
-        </ng-container>
+        <!--&lt;!&ndash; Checkbox Column &ndash;&gt;-->
+        <!--<ng-container matColumnDef="select">-->
+            <!--<mat-header-cell *matHeaderCellDef>-->
+            <!--</mat-header-cell>-->
+            <!--<mat-cell *matCellDef="let row">-->
+                <!--<mat-checkbox (click)="$event.stopPropagation()"-->
+                              <!--(change)="$event ? selection.toggle(row) : null"-->
+                              <!--[checked]="selection.isSelected(row)">-->
+                <!--</mat-checkbox>-->
+            <!--</mat-cell>-->
+        <!--</ng-container>-->
 
         <!-- FIO -->
         <ng-container matColumnDef="fio">
@@ -61,8 +66,9 @@
     </mat-table>
 
     <mat-paginator #paginator
-                   [pageSize]="10"
-                   [pageSizeOptions]="[5, 10, 20]"
+                   [length]="9"
+                   [pageSize]="3"
+                   [pageSizeOptions]="[3, 5, 10]"
                    [showFirstLastButtons]="true">
     </mat-paginator>
 </div>

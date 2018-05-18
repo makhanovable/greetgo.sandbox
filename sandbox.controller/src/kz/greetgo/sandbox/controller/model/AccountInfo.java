@@ -19,6 +19,10 @@ public class AccountInfo {
     this.minAccBalance = minAccBalance;
   }
 
+  public AccountInfo(String fullName) {
+    this.fullName = fullName;
+  }
+
   public AccountInfo() {
 
   }

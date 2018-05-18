@@ -6,6 +6,7 @@ import {AccountService} from "../../../services/AccountService";
 import {AccountInfo} from "../../../../model/AccountInfo";
 import {HttpService} from "../../../HttpService";
 import {AccountInfoDataSource} from "./AccountInfoDataSource";
+import {tap} from "rxjs/operators";
 
 
 @Component({
@@ -16,13 +17,35 @@ import {AccountInfoDataSource} from "./AccountInfoDataSource";
 export class AccountTableComponent {
 
   dataSource: AccountInfoDataSource;
-  displayedColumns = ['select', 'fio', 'charm', 'age', 'total', 'max', 'min'];
+  displayedColumns = ['fio', 'charm', 'age', 'total', 'max', 'min'];
+
+  @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild(MatSort) sort: MatSort;
 
   constructor(private httpService: HttpService) { }
 
   ngOnInit() {
     this.dataSource = new AccountInfoDataSource(this.httpService);
     this.dataSource.loadAccountInfoList();
+  }
+
+  ngAfterViewInit() {
+
+    this.sort.sortChange.subscribe(() => {
+      this.paginator.pageIndex = 0;
+      this.loadAccountInfoPage();
+    });
+
+    this.paginator.page
+      .pipe(
+        tap(() => this.loadAccountInfoPage())
+      ).subscribe();
+  }
+
+  loadAccountInfoPage() {
+    this.dataSource.loadAccountInfoList(
+      this.paginator.pageIndex, this.paginator.pageSize,
+      this.sort.active, this.sort.direction);
   }
 
   onRowClicked(row) {
