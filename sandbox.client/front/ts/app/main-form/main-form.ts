@@ -2,7 +2,6 @@ import {Component, EventEmitter, OnDestroy, Output} from "@angular/core";
 import {UserInfo} from "../../model/UserInfo";
 import {HttpService} from "../HttpService";
 import {PhoneType} from "../../model/PhoneType";
-import {ClientAccountInfo} from "../../model/ClientAccountInfo";
 import {TestService} from "../service/testService";
 import {Subscription} from "rxjs/Subscription";
 import random = require("core-js/fn/number/random");
@@ -19,7 +18,6 @@ export class MainFormComponent implements OnDestroy{
   subscription:Subscription;
 
   userInfo: UserInfo | null = null;
-  accountInfoList: ClientAccountInfo[] | null = null;
 
   loadUserInfoButtonEnabled: boolean = true;
   loadUserInfoError: string | null;
@@ -61,28 +59,28 @@ export class MainFormComponent implements OnDestroy{
       this.userInfo = null;
     });
   }
-
-  loadAccountDataClicked() {
-    this.httpService.get("/accounts/").toPromise().then(response => {
-        this.accountInfoList = response.json();
-
-        console.log(this.accountInfoList)
-
-      }, error => {
-      console.log(error)
-    });
-  }
-
-  loadClientInfoClicked() {
-    const clientId = this.accountInfoList[this.selectedRow].id;
-
-    this.httpService.get("/accounts/info", {clientId: clientId})
-      .toPromise().then(response => {
-      console.log(response)
-    }, error => {
-      console.log(error)
-    });
-  }
+  //
+  // loadAccountDataClicked() {
+  //   this.httpService.get("/accounts/").toPromise().then(response => {
+  //       this.accountInfoList = response.json();
+  //
+  //       console.log(this.accountInfoList)
+  //
+  //     }, error => {
+  //     console.log(error)
+  //   });
+  // }
+  //
+  // loadClientInfoClicked() {
+  //   const clientId = this.accountInfoList[this.selectedRow].id;
+  //
+  //   this.httpService.get("/accounts/info", {clientId: clientId})
+  //     .toPromise().then(response => {
+  //     console.log(response)
+  //   }, error => {
+  //     console.log(error)
+  //   });
+  // }
 
   checkHealthButtonClicked() {
     this.httpService.get("/accounts/ok").toPromise().then(response => {

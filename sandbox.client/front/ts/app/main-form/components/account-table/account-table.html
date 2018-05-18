@@ -19,50 +19,44 @@
             </mat-cell>
         </ng-container>
 
-        <!-- POSITION -->
-        <ng-container matColumnDef="position">
-            <mat-header-cell *matHeaderCellDef> No. </mat-header-cell>
-            <mat-cell *matCellDef="let element"> {{element.position}} </mat-cell>
-        </ng-container>
-
         <!-- FIO -->
         <ng-container matColumnDef="fio">
             <mat-header-cell *matHeaderCellDef mat-sort-header> FIO </mat-header-cell>
-            <mat-cell *matCellDef="let element"> {{element.name}} </mat-cell>
+            <mat-cell *matCellDef="let element"> {{element.fullName}} </mat-cell>
         </ng-container>
 
         <!-- CHARM -->
         <ng-container matColumnDef="charm">
             <mat-header-cell *matHeaderCellDef> Charm </mat-header-cell>
-            <mat-cell mat-cell *matCellDef="let element"> {{element.weight}} </mat-cell>
+            <mat-cell mat-cell *matCellDef="let element"> {{element.charm}} </mat-cell>
         </ng-container>
 
         <!-- AGE -->
         <ng-container matColumnDef="age">
             <mat-header-cell *matHeaderCellDef mat-sort-header> Age </mat-header-cell>
-            <mat-cell mat-cell *matCellDef="let element"> {{element.symbol}} </mat-cell>
+            <mat-cell mat-cell *matCellDef="let element"> {{element.age}} </mat-cell>
         </ng-container>
 
         <!-- TOTAL -->
         <ng-container matColumnDef="total">
             <mat-header-cell *matHeaderCellDef mat-sort-header> Total </mat-header-cell>
-            <mat-cell mat-cell *matCellDef="let element"> {{element.symbol}} </mat-cell>
+            <mat-cell mat-cell *matCellDef="let element"> {{element.totalAccBalance}} </mat-cell>
         </ng-container>
 
         <!-- MAX -->
         <ng-container matColumnDef="max">
             <mat-header-cell *matHeaderCellDef mat-sort-header> Max </mat-header-cell>
-            <mat-cell mat-cell *matCellDef="let element"> {{element.symbol}} </mat-cell>
+            <mat-cell mat-cell *matCellDef="let element"> {{element.maxAccBalance}} </mat-cell>
         </ng-container>
 
         <!-- MIN -->
         <ng-container matColumnDef="min">
             <mat-header-cell *matHeaderCellDef mat-sort-header> Min </mat-header-cell>
-            <mat-cell mat-cell *matCellDef="let element"> {{element.symbol}} </mat-cell>
+            <mat-cell mat-cell *matCellDef="let element"> {{element.minAccBalance}} </mat-cell>
         </ng-container>
 
         <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: displayedColumns;"
+        <mat-row *matRowDef="let row; columns: displayedColumns; let i = index"
                  (click)="onRowClicked(row)"></mat-row>
     </mat-table>
 

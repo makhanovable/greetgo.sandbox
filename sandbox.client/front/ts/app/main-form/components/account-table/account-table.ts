@@ -1,6 +1,7 @@
 import {Component, ViewChild} from '@angular/core';
 import {MatPaginator, MatSort, MatTableDataSource} from "@angular/material";
 import {SelectionModel} from "@angular/cdk/collections";
+import {HttpService} from "../../../HttpService";
 
 /**
  * @title Basic table
@@ -12,9 +13,13 @@ import {SelectionModel} from "@angular/cdk/collections";
 })
 export class AccountTableComponent {
 
-  displayedColumns = ['select', 'position', 'fio', 'charm', 'age', 'total', 'max', 'min'];
-  dataSource = new MatTableDataSource <Element>(ELEMENT_DATA);
+  accountInfoList: Element[] = [];
+
+  displayedColumns = ['select', 'fio', 'charm', 'age', 'total', 'max', 'min'];
+  dataSource: MatTableDataSource<Element>;
   selection = new SelectionModel<Element>(false);
+
+
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
@@ -25,9 +30,22 @@ export class AccountTableComponent {
     this.dataSource.filter = filterValue;
   }
 
+  constructor(private httpService: HttpService) { }
+
   ngOnInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
+    this.httpService.get("/accounts/").toPromise().then(response => {
+      console.log(response.json());
+      this.accountInfoList = response.json();
+      this.dataSource  = new MatTableDataSource <Element>(this.accountInfoList);
+      this.dataSource.paginator = this.paginator;
+      this.dataSource.sort = this.sort;
+
+      console.log(this.accountInfoList)
+    }, error => {
+      console.log(error)
+    });
+
+
   }
 
   onRowClicked(row) {
