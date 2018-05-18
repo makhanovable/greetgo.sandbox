@@ -26,3 +26,14 @@
 .mat-row {
     cursor: pointer;
 }
+
+.account-button-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.account-button {
+    border: 1px solid #3f51b5;
+    font-weight: bold;
+}

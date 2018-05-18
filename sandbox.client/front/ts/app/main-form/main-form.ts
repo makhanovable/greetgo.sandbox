@@ -44,6 +44,15 @@ export class MainFormComponent implements OnDestroy{
     console.log(this.isEditMode)
   }
 
+  handleAddAccClick = function() {
+    console.log("main handle add");
+  };
+
+  handleEditAccClick = function(accountInfo) {
+    console.log("main handle edit");
+    console.log(accountInfo.id);
+  };
+
   loadUserInfoButtonClicked() {
     this.loadUserInfoButtonEnabled = false;
     this.loadUserInfoError = null;
@@ -59,28 +68,6 @@ export class MainFormComponent implements OnDestroy{
       this.userInfo = null;
     });
   }
-  //
-  // loadAccountDataClicked() {
-  //   this.httpService.get("/accounts/").toPromise().then(response => {
-  //       this.accountInfoList = response.json();
-  //
-  //       console.log(this.accountInfoList)
-  //
-  //     }, error => {
-  //     console.log(error)
-  //   });
-  // }
-  //
-  // loadClientInfoClicked() {
-  //   const clientId = this.accountInfoList[this.selectedRow].id;
-  //
-  //   this.httpService.get("/accounts/info", {clientId: clientId})
-  //     .toPromise().then(response => {
-  //     console.log(response)
-  //   }, error => {
-  //     console.log(error)
-  //   });
-  // }
 
   checkHealthButtonClicked() {
     this.httpService.get("/accounts/ok").toPromise().then(response => {

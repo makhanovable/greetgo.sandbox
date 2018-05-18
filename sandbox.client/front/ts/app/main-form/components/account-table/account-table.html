@@ -6,6 +6,20 @@
         </mat-form-field>
     </div>
 
+    <div class="account-button-row">
+        <button mat-button
+                (click)="onAddClicked()"
+                class="account-button">+</button>
+        <button mat-button
+                (click)="onEditClicked()"
+                class="account-button"
+                [disabled]="!this.selection.hasValue()">...</button>
+        <button mat-button
+                (click)="onDeleteClicked()"
+                class="account-button"
+                [disabled]="!this.selection.hasValue()">-</button>
+    </div>
+
     <!--<div class="spinner-container" *ngIf="dataSource.loading$ | async">-->
         <!--<mat-spinner></mat-spinner>-->
     <!--</div>-->

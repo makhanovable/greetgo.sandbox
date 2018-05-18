@@ -1,4 +1,4 @@
-import {Component, ElementRef, ViewChild} from '@angular/core';
+import {Component, ElementRef, EventEmitter, Output, ViewChild} from '@angular/core';
 import {MatPaginator, MatSort} from "@angular/material";
 import {SelectionModel} from "@angular/cdk/collections";
 import {AccountInfo} from "../../../../model/AccountInfo";
@@ -24,8 +24,10 @@ export class AccountTableComponent {
   @ViewChild(MatSort) sort: MatSort;
   @ViewChild('filter') filter: ElementRef;
 
-  constructor(private httpService: HttpService) {
-  }
+  @Output() onAddAccount: EventEmitter<null> = new EventEmitter();
+  @Output() onEditAccount: EventEmitter<AccountInfo> = new EventEmitter();
+
+  constructor(private httpService: HttpService) {}
 
   ngOnInit() {
     this.dataSource = new GenericDataSource();
@@ -85,4 +87,17 @@ export class AccountTableComponent {
       this.dataSource.stopLoading()
     });
   }
+
+  onAddClicked() {
+    this.onAddAccount.emit();
+  }
+
+  onEditClicked() {
+    this.onEditAccount.emit(this.selection.selected[0]);
+  }
+
+  onDeleteClicked() {
+    
+  }
+
 }
