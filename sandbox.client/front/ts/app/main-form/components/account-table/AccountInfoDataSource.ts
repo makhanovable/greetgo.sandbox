@@ -3,7 +3,6 @@ import {AccountInfo} from "../../../../model/AccountInfo";
 import {Observable} from "rxjs/Observable";
 import {BehaviorSubject} from "rxjs/BehaviorSubject";
 import {HttpService} from "../../../HttpService";
-import {error} from "util";
 
 export class AccountInfoDataSource implements DataSource<AccountInfo> {
 
@@ -23,11 +22,11 @@ export class AccountInfoDataSource implements DataSource<AccountInfo> {
   }
 
 
-  loadAccountInfoList(pageIndex = 0, pageSize = 3, sortBy = '',sortDirection = 'asc') {
+  loadAccountInfoList(pageIndex = 0, pageSize = 3, sortBy = '',sortDirection = 'asc', filter = '') {
 
     this.loadingSubject.next(true);
 
-    console.log("PageIndex:"+pageIndex+", PageSize:"+pageSize+", SortBy:"+sortBy+", Sort:"+sortDirection);
+    console.log("PageIndex:"+pageIndex+", PageSize:"+pageSize+", SortBy:"+sortBy+", Sort:"+sortDirection+", Filter:"+filter);
 
     this.httpService.get("/accounts/").toPromise().then(response => {
       // console.log(response.json());

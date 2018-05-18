@@ -1,12 +1,11 @@
-import {Component, ViewChild} from '@angular/core';
-import {MatPaginator, MatSort, MatTableDataSource} from "@angular/material";
+import {Component, ElementRef, ViewChild} from '@angular/core';
+import {MatPaginator, MatSort} from "@angular/material";
 import {SelectionModel} from "@angular/cdk/collections";
-import {Observable} from "rxjs/Observable";
-import {AccountService} from "../../../services/AccountService";
 import {AccountInfo} from "../../../../model/AccountInfo";
 import {HttpService} from "../../../HttpService";
 import {AccountInfoDataSource} from "./AccountInfoDataSource";
-import {tap} from "rxjs/operators";
+import {debounceTime, distinctUntilChanged, tap} from "rxjs/operators";
+import {fromEvent} from "rxjs/observable/fromEvent";
 
 
 @Component({
@@ -17,12 +16,15 @@ import {tap} from "rxjs/operators";
 export class AccountTableComponent {
 
   dataSource: AccountInfoDataSource;
-  displayedColumns = ['fio', 'charm', 'age', 'total', 'max', 'min'];
+  displayedColumns = ['select', 'fio', 'charm', 'age', 'total', 'max', 'min'];
+  selection = new SelectionModel<AccountInfo>(false);
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
+  @ViewChild('filter') filter: ElementRef;
 
-  constructor(private httpService: HttpService) { }
+  constructor(private httpService: HttpService) {
+  }
 
   ngOnInit() {
     this.dataSource = new AccountInfoDataSource(this.httpService);
@@ -30,6 +32,16 @@ export class AccountTableComponent {
   }
 
   ngAfterViewInit() {
+
+    fromEvent(this.filter.nativeElement, 'keyup')
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        tap(() => {
+          this.paginator.pageIndex = 0;
+          this.loadAccountInfoPage();
+        })
+      ).subscribe();
 
     this.sort.sortChange.subscribe(() => {
       this.paginator.pageIndex = 0;
@@ -44,13 +56,16 @@ export class AccountTableComponent {
 
   loadAccountInfoPage() {
     this.dataSource.loadAccountInfoList(
-      this.paginator.pageIndex, this.paginator.pageSize,
-      this.sort.active, this.sort.direction);
+      this.paginator.pageIndex,
+      this.paginator.pageSize,
+      this.sort.active,
+      this.sort.direction,
+      this.filter.nativeElement.value);
   }
 
-  onRowClicked(row) {
-    // this.selection.toggle(row);
-    console.log(row.position);
+  onRowClicked(accountInfo) {
+    this.selection.isSelected(accountInfo) ?
+      this.selection.deselect(accountInfo) : this.selection.select(accountInfo)
   }
 
 }
