@@ -1,9 +1,10 @@
 import {Component, Inject, OnInit} from "@angular/core";
-import {Charm} from "../../../../model/Charm";
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material";
-import {AccountInfo} from "../../../../model/AccountInfo";
+import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material";
 import {MainFormComponent} from "../../main-form";
 import {FormBuilder, FormGroup} from "@angular/forms";
+import {ClientInfoModel} from "../../../../model/ClientInfoModel";
+import {Gender} from "../../../../model/Gender";
+import {PhoneType} from "../../../../model/PhoneType";
 
 @Component({
   selector: 'modal-info-component',
@@ -13,13 +14,13 @@ import {FormBuilder, FormGroup} from "@angular/forms";
 export class ModalInfoComponent implements OnInit {
 
   form: FormGroup;
-  accountInfo: AccountInfo = null;
+  clientInfoModel: ClientInfoModel = null;
 
   name: string = '';
   surname: string = '';
   patronymic: string = '';
-  gender: 'MALE';
-  charm: string[] = [];
+  gender: Gender = Gender.MALE;
+  charm: number = 0;
   streetFact: string = '';
   houseFact: string = '';
   flatFact: string = '';
@@ -34,13 +35,53 @@ export class ModalInfoComponent implements OnInit {
 
   charms = [];
 
-  constructor(
-    private fb: FormBuilder,
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    private dialogRef: MatDialogRef<MainFormComponent>) {
+  constructor(private fb: FormBuilder,
+              @Inject(MAT_DIALOG_DATA) public data: any,
+              private dialogRef: MatDialogRef<MainFormComponent>) {
 
-    if(typeof data.accountInfo != 'undefined')
-      this.accountInfo = data.accountInfo;
+    if (data.clientInfoModel !== null) {
+      this.clientInfoModel = data.clientInfoModel;
+
+      this.name = this.clientInfoModel.clientInfo.name;
+      this.surname = this.clientInfoModel.clientInfo.surname;
+      this.patronymic = this.clientInfoModel.clientInfo.patronymic;
+      this.gender = this.clientInfoModel.clientInfo.gender;
+      this.charm = this.clientInfoModel.clientInfo.charm;
+
+      if (this.clientInfoModel.factAddress !== null) {
+        this.streetFact = this.clientInfoModel.factAddress.street;
+        this.houseFact = this.clientInfoModel.factAddress.house;
+        this.flatFact = this.clientInfoModel.factAddress.flat;
+      }
+
+      if (this.clientInfoModel.regAddress !== null) {
+        this.streetReg = this.clientInfoModel.regAddress.street;
+        this.houseReg = this.clientInfoModel.regAddress.house;
+        this.flatReg = this.clientInfoModel.regAddress.flat;
+      }
+
+      let mobileCounter = 0;
+      for (let i = 0; i < this.clientInfoModel.phones.length; i++) {
+        const phone = this.clientInfoModel.phones[i];
+        if (phone.type == PhoneType.HOME) {
+          this.phoneHome = phone.number;
+        } else if (phone.type == PhoneType.WORK) {
+          this.phoneWork = phone.number;
+        } else if (phone.type == PhoneType.MOBILE) {
+          switch (mobileCounter++) {
+            case 0:
+              this.phoneMobile1 = phone.number;
+              break;
+            case 1:
+              this.phoneMobile2 = phone.number;
+              break;
+            case 3:
+              this.phoneMobile3 = phone.number;
+              break;
+          }
+        }
+      }
+    }
   }
 
   ngOnInit(): void {

@@ -2,10 +2,7 @@ import {Component, EventEmitter, OnDestroy, Output} from "@angular/core";
 import {UserInfo} from "../../model/UserInfo";
 import {HttpService} from "../HttpService";
 import {PhoneType} from "../../model/PhoneType";
-import {AccountService} from "../services/AccountService";
 import {Subscription} from "rxjs/Subscription";
-import random = require("core-js/fn/number/random");
-import {Charm} from "../../model/Charm";
 import {MatDialog, MatDialogConfig} from "@angular/material";
 import {ModalInfoComponent} from "./components/modal-info/modal-info";
 
@@ -14,10 +11,10 @@ import {ModalInfoComponent} from "./components/modal-info/modal-info";
   template: require('./main-form.html'),
   styles: [require('./main-form.css')]
 })
-export class MainFormComponent implements OnDestroy{
+export class MainFormComponent implements OnDestroy {
 
   @Output() exit = new EventEmitter<void>();
-  subscription:Subscription;
+  subscription: Subscription;
 
   userInfo: UserInfo | null = null;
 
@@ -26,30 +23,40 @@ export class MainFormComponent implements OnDestroy{
 
   isEditMode = false;
 
-  constructor(private httpService: HttpService, private dialog: MatDialog) { }
+  constructor(private httpService: HttpService, private dialog: MatDialog) {
+  }
 
-  handleAddAccClick = function() {
+  handleAddAccClick = function () {
     console.log("main handle add");
     this.openModal();
   };
 
-  handleEditAccClick = function(accountInfo) {
+  handleEditAccClick = function (accountInfo) {
     console.log("main handle edit");
     console.log(accountInfo.id);
     this.openModal(accountInfo);
   };
 
   openModal(accountInfo) {
+    if (typeof accountInfo != 'undefined') {
+
+      this.httpService.get("/client/info", {clientId: accountInfo.id}).toPromise().then(response => {
+
+        this.configureModal(response.json());
+
+      }, error => {
+        console.log(error);
+      });
+    } else {
+      this.configureModal(null);
+    }
+  }
+
+  configureModal(clientInfoModel) {
     const dialogConfig = new MatDialogConfig();
     dialogConfig.disableClose = true;
     dialogConfig.autoFocus = true;
-    dialogConfig.data = {accountInfo: accountInfo};
-
-    this.httpService.get("/client/info", {clientId: accountInfo.id}).toPromise().then(response => {
-      console.log(response.json());
-    }, error => {
-      console.log(error);
-    });
+    dialogConfig.data = {clientInfoModel: clientInfoModel};
 
     const dialogRef = this.dialog.open(ModalInfoComponent, dialogConfig);
 
