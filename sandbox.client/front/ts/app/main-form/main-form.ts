@@ -6,6 +6,8 @@ import {AccountService} from "../services/AccountService";
 import {Subscription} from "rxjs/Subscription";
 import random = require("core-js/fn/number/random");
 import {Charm} from "../../model/Charm";
+import {MatDialog, MatDialogConfig} from "@angular/material";
+import {ModalInfoComponent} from "./components/modal-info/modal-info";
 
 @Component({
   selector: 'main-form-component',
@@ -21,37 +23,30 @@ export class MainFormComponent implements OnDestroy{
 
   loadUserInfoButtonEnabled: boolean = true;
   loadUserInfoError: string | null;
-  selectedRow: number;
-  setClickRow: Function;
 
   isEditMode = false;
 
-  constructor(private httpService: HttpService, private testService: AccountService) {
-    this.subscription = testService.getValue().subscribe(value => {});
-
-    this.setClickRow = function(index) {
-      this.selectedRow = index;
-    };
-  }
-
-  openEditModal() {
-    this.isEditMode = true;
-    console.log(this.isEditMode);
-  }
-
-  closeEditModal() {
-    this.isEditMode = false;
-    console.log(this.isEditMode)
-  }
+  constructor(private httpService: HttpService, private dialog: MatDialog) { }
 
   handleAddAccClick = function() {
     console.log("main handle add");
+    this.openModal();
   };
 
   handleEditAccClick = function(accountInfo) {
     console.log("main handle edit");
     console.log(accountInfo.id);
+    this.openModal(accountInfo);
   };
+
+  openModal(accountInfo) {
+    const dialogConfig = new MatDialogConfig();
+    dialogConfig.disableClose = true;
+    dialogConfig.autoFocus = true;
+    dialogConfig.data = {accountInfo: accountInfo};
+
+    this.dialog.open(ModalInfoComponent, dialogConfig);
+  }
 
   loadUserInfoButtonClicked() {
     this.loadUserInfoButtonEnabled = false;

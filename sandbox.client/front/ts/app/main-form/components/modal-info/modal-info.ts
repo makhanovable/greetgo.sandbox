@@ -1,39 +1,60 @@
-import {Component, Inject} from "@angular/core";
+import {Component, Inject, OnInit} from "@angular/core";
 import {Charm} from "../../../../model/Charm";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material";
+import {AccountInfo} from "../../../../model/AccountInfo";
+import {MainFormComponent} from "../../main-form";
+import {FormBuilder, FormGroup} from "@angular/forms";
 
 @Component({
   selector: 'modal-info-component',
   template: require('./modal-info.html'),
+  styles: [require('./modal-info.css')],
 })
-export class ModalInfoComponent {
+export class ModalInfoComponent implements OnInit {
 
-  c1 = new Charm();
-  charmSelectedValue = this.c1;
-  charmList: Charm[] | null = null;
+  form: FormGroup;
+  accountInfo: AccountInfo;
 
-  birthDate: any;
+  description: string;
 
-  constructor(public dialog: MatDialog) {
-    this.c1.id = 1;
-    this.c1.name = "Charm 1";
-    this.charmList = [];
-    this.charmList.push(this.c1);
-    this.birthDate = new Date(2015, 1, 4);
+  charms = ["charm1", "charm2", "ccharm3"];
+
+  constructor(
+    private fb: FormBuilder,
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private dialogRef: MatDialogRef<MainFormComponent>) {
+
+    this.accountInfo = data.accountInfo;
+    this.description = "some desc"
   }
 
-  set humanDate(e){
-    e = e.split('-');
-    let d = new Date(Date.UTC(e[0], e[1]-1, e[2]));
-    this.birthDate.setFullYear(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+  ngOnInit(): void {
+    this.form = this.fb.group({
+      name: [this.description],
+      surname: [this.description],
+      patronymic: [this.description],
+      gender: ['MALE'],
+      charm: [this.charms[1]],
+      streetFact: [this.description],
+      houseFact: [this.description],
+      flatFact: [this.description],
+      streetReg: [this.description],
+      houseReg: [this.description],
+      flatReg: [this.description],
+      phoneHome: [this.description],
+      phoneWork: [this.description],
+      phoneMobile1: [this.description],
+      phoneMobile2: [this.description],
+      phoneMobile3: [this.description],
+    });
   }
 
-  get humanDate(){
-    return this.birthDate.toISOString().substring(0, 10);
+
+  save() {
+
   }
 
-
-  checkIt() {
-    console.log(this.charmSelectedValue);
+  close() {
+    this.dialogRef.close();
   }
 }

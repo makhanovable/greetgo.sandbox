@@ -1,6 +1,6 @@
 import {NgModule} from "@angular/core";
 import {HttpModule, JsonpModule} from "@angular/http";
-import {FormsModule} from "@angular/forms";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {BrowserModule} from "@angular/platform-browser";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 
@@ -24,6 +24,7 @@ import {
   MatDialogModule,
   MatDividerModule,
   MatExpansionModule,
+  MatFormFieldModule,
   MatGridListModule,
   MatIconModule,
   MatInputModule,
@@ -83,23 +84,31 @@ import {
     MatTabsModule,
     MatToolbarModule,
     MatTooltipModule,
+    MatFormFieldModule
   ]
 })
-export class DemoMaterialModule {}
+export class DemoMaterialModule {
+}
 
 import 'core-js/es6/reflect';
 import 'hammerjs'
 
 @NgModule({
   imports: [
-    BrowserModule, HttpModule, JsonpModule, FormsModule, BrowserAnimationsModule, DemoMaterialModule,
+    BrowserModule,
+    HttpModule,
+    JsonpModule,
+    FormsModule,
+    BrowserAnimationsModule,
+    DemoMaterialModule,
+    ReactiveFormsModule,
   ],
   declarations: [
-    RootComponent, LoginComponent, MainFormComponent, ModalInfoComponent, AccountTableComponent
+    RootComponent, LoginComponent, MainFormComponent, ModalInfoComponent, AccountTableComponent,
   ],
   bootstrap: [RootComponent],
   providers: [HttpService, AccountService],
-  entryComponents: [],
+  entryComponents: [ModalInfoComponent],
 })
 export class AppModule {
 }

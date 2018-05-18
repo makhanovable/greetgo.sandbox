@@ -1,71 +1,100 @@
 <div>
-    <!--<div>-->
-        <!--<span class="close" (click)="closeEditModal()">&times;</span>-->
-        <!--<form class="form-horizontal" method="post" action="#">-->
+    <h2 mat-dialog-title>It is a tile</h2>
 
-            <!--<div class="form-group">-->
-                <!--<label for="surname" class="cols-sm-2 control-label">Surname</label>-->
-                <!--<div class="cols-sm-10">-->
-                    <!--<div class="input-group">-->
-                        <!--<span class="input-group-addon"><i class="fa fa-user fa" aria-hidden="true"></i></span>-->
-                        <!--<input type="text" class="form-control" name="surname" id="surname"  placeholder="Enter your Surname"/>-->
-                    <!--</div>-->
-                <!--</div>-->
-            <!--</div>-->
+    <mat-dialog-content [formGroup]="form" class="modal-form">
 
-            <!--<div class="form-group">-->
-                <!--<label for="name" class="cols-sm-2 control-label">Name</label>-->
-                <!--<div class="cols-sm-10">-->
-                    <!--<div class="input-group">-->
-                        <!--<span class="input-group-addon"><i class="fa fa-envelope fa" aria-hidden="true"></i></span>-->
-                        <!--<input type="text" class="form-control" name="name" id="name"  placeholder="Enter your Name"/>-->
-                    <!--</div>-->
-                <!--</div>-->
-            <!--</div>-->
+        <mat-form-field>
+            <input matInput placeholder="Name" formControlName="name" />
+        </mat-form-field>
 
-            <!--<div class="form-group">-->
-                <!--<label for="patronymic" class="cols-sm-2 control-label">Patronymic</label>-->
-                <!--<div class="cols-sm-10">-->
-                    <!--<div class="input-group">-->
-                        <!--<span class="input-group-addon"><i class="fa fa-users fa" aria-hidden="true"></i></span>-->
-                        <!--<input type="text" class="form-control" name="patronymic" id="patronymic"  placeholder="Enter your Patronymic"/>-->
-                    <!--</div>-->
-                <!--</div>-->
-            <!--</div>-->
+        <mat-form-field>
+            <input matInput placeholder="Surname" formControlName="surname" />
+        </mat-form-field>
 
-            <!--<div class="form-group">-->
-                <!--<label for="gender" class="cols-sm-2 control-label">Gender</label>-->
-                <!--<form name="gender" id="gender">-->
-                    <!--<label class="radio-inline">-->
-                        <!--<input type="radio" name="optradio">Male-->
-                    <!--</label>-->
-                    <!--<label class="radio-inline">-->
-                        <!--<input type="radio" name="optradio">Female-->
-                    <!--</label>-->
-                <!--</form>-->
-            <!--</div>-->
+        <mat-form-field>
+            <input matInput placeholder="Patronymic" formControlName="patronymic" />
+        </mat-form-field>
 
-            <!--<div class="form-group">-->
-                <!--<label for="humanDate">Date of Birth</label>-->
-                <!--<input id="humanDate" [(ngModel)]="humanDate" type="date" name="startDate" class="form-control"/>-->
-            <!--</div>-->
+        <mat-radio-group formControlName="gender">
+            <mat-radio-button value="MALE">Male</mat-radio-button>
+            <mat-radio-button value="FEMALE">Female</mat-radio-button>
+        </mat-radio-group>
 
-            <!--<div class="form-group">-->
-                <!--<label for="charm" class="cols-sm-2 control-label">Charm</label>-->
-                <!--<select id="charm" name="charm" class="form-control" [(ngModel)]="charmSelectedValue">-->
-                    <!--<option *ngFor="let c of charmList" [ngValue]="c">{{c.name}}</option>-->
-                <!--</select>-->
-            <!--</div>-->
+        <mat-form-field>
+            <mat-select formControlName="charm">
+                <mat-option
+                    [value]="charm"
+                    *ngFor="let charm of charms" >{{ charm }}</mat-option>
+            </mat-select>
+        </mat-form-field>
 
+        <div>
+            <h4>Address of residence</h4>
+            <br />
 
-            <!--<div class="form-group ">-->
-                <!--<button type="button"-->
-                        <!--(click)="checkIt()"-->
-                        <!--class="btn btn-primary btn-lg btn-block login-button">Register</button>-->
-            <!--</div>-->
-            <!--<div class="login-register">-->
-                <!--<a href="index.php">Login</a>-->
-            <!--</div>-->
-        <!--</form>-->
-    <!--</div>-->
+            <mat-form-field>
+                <input matInput placeholder="Street" formControlName="streetFact" />
+            </mat-form-field>
+
+            <mat-form-field>
+                <input matInput placeholder="House" formControlName="houseFact" />
+            </mat-form-field>
+
+            <mat-form-field>
+                <input matInput placeholder="Flat" formControlName="flatFact" />
+            </mat-form-field>
+        </div>
+
+        <div>
+            <h4>Address of registration</h4>
+            <br />
+
+            <mat-form-field>
+                <input matInput placeholder="Street" formControlName="streetReg" />
+            </mat-form-field>
+
+            <mat-form-field>
+                <input matInput placeholder="House" formControlName="houseReg" />
+            </mat-form-field>
+
+            <mat-form-field>
+                <input matInput placeholder="Flat" formControlName="flatReg" />
+            </mat-form-field>
+        </div>
+
+        <div>
+            <mat-label>Phones</mat-label>
+
+            <mat-form-field>
+                <mat-label>Home</mat-label>
+                <input matInput formControlName="phoneHome" />
+            </mat-form-field>
+
+            <mat-form-field>
+                <mat-label>Work</mat-label>
+                <input matInput formControlName="phoneWork" />
+            </mat-form-field>
+
+            <mat-form-field>
+                <mat-label>Mobile1</mat-label>
+                <input matInput formControlName="phoneMobile1" />
+            </mat-form-field>
+
+            <mat-form-field>
+                <mat-label>Mobile2</mat-label>
+                <input matInput formControlName="phoneMobile2" />
+            </mat-form-field>
+
+            <mat-form-field>
+                <mat-label>Mobile3</mat-label>
+                <input matInput formControlName="phoneMobile3" />
+            </mat-form-field>
+        </div>
+
+    </mat-dialog-content>
+
+    <mat-dialog-actions>
+        <button class="mat-rised-button" (click)="close()">Close</button>
+        <button class="mat-rised-button mat-primary" (click)="save()">Save</button>
+    </mat-dialog-actions>
 </div>
