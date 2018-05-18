@@ -1,7 +1,9 @@
-package kz.greetgo.sandbox.controller.migration.core;
+package kz.greetgo.sandbox.db.migration.core;
 
-import kz.greetgo.sandbox.controller.migration.interfaces.ConnectionConfig;
-import kz.greetgo.sandbox.controller.migration.util.TimeUtils;
+import kz.greetgo.sandbox.db.migration.interfaces.ConnectionConfig;
+import kz.greetgo.sandbox.db.migration.model.ClientXMLRecord;
+import kz.greetgo.sandbox.db.migration.util.ConnectionUtils;
+import kz.greetgo.sandbox.db.migration.util.TimeUtils;
 import org.xml.sax.SAXException;
 
 import java.io.Closeable;
@@ -11,8 +13,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static kz.greetgo.sandbox.controller.migration.util.TimeUtils.recordsPerSecond;
-import static kz.greetgo.sandbox.controller.migration.util.TimeUtils.showTime;
+import static kz.greetgo.sandbox.db.migration.util.TimeUtils.recordsPerSecond;
+import static kz.greetgo.sandbox.db.migration.util.TimeUtils.showTime;
+
 
 public class Migration implements Closeable {
 
@@ -118,7 +121,7 @@ public class Migration implements Closeable {
 
     {
       long now = System.nanoTime();
-      info("Downloaded of portion " + portionSize + " finished for " + TimeUtils.showTime(now, startedAt));
+      info("Downloaded of portion " + portionSize + " finished for " + showTime(now, startedAt));
     }
 
     if (portionSize == 0) return 0;
@@ -129,7 +132,7 @@ public class Migration implements Closeable {
 
     {
       long now = System.nanoTime();
-      info("Migration of portion " + portionSize + " finished for " + TimeUtils.showTime(now, startedAt));
+      info("Migration of portion " + portionSize + " finished for " + showTime(now, startedAt));
     }
 
     return portionSize;
@@ -137,10 +140,12 @@ public class Migration implements Closeable {
 
   private void createOperConnection() throws Exception {
 //    operConnection = ConnectionUtils.create(operConfig);
+    operConnection = ConnectionUtils.getPostgresAdminConnection();
   }
 
   private void createCiaConnection() throws Exception {
 //    ciaConnection = ConnectionUtils.create(ciaConfig);
+    ciaConnection = ConnectionUtils.getPostgresAdminConnection();
   }
 
   private int download() throws SQLException, IOException, SAXException {
@@ -194,9 +199,9 @@ public class Migration implements Closeable {
           long startedAt = System.nanoTime();
 
           while (ciaRS.next()) {
-            ClientRecord r = new ClientRecord();
-            r.number = ciaRS.getLong("number");
-            r.parseRecordData(ciaRS.getString("record_data"));
+            FromXMLParser parser = new FromXMLParser();
+            Long number = ciaRS.getLong("number");
+            ClientXMLRecord r = parser.parseRecordData(number, ciaRS.getString("record_data"));
 
             operPS.setLong(1, r.number);
             operPS.setString(2, r.id);
@@ -309,7 +314,7 @@ public class Migration implements Closeable {
                 showStatus.set(false);
 
                 long now = System.nanoTime();
-                info(" -- uploaded errors " + recordsCount + " for " + TimeUtils.showTime(now, startedAt)
+                info(" -- uploaded errors " + recordsCount + " for " + showTime(now, startedAt)
                   + " : " + recordsPerSecond(recordsCount, now - startedAt));
               }
             }
@@ -321,7 +326,7 @@ public class Migration implements Closeable {
 
             {
               long now = System.nanoTime();
-              info("TOTAL Uploaded errors " + recordsCount + " for " + TimeUtils.showTime(now, startedAt)
+              info("TOTAL Uploaded errors " + recordsCount + " for " + showTime(now, startedAt)
                 + " : " + recordsPerSecond(recordsCount, now - startedAt));
             }
           }
@@ -397,7 +402,7 @@ public class Migration implements Closeable {
                 showStatus.set(false);
 
                 long now = System.nanoTime();
-                info(" -- uploaded ok records " + recordsCount + " for " + TimeUtils.showTime(now, startedAt)
+                info(" -- uploaded ok records " + recordsCount + " for " + showTime(now, startedAt)
                   + " : " + recordsPerSecond(recordsCount, now - startedAt));
               }
             }
@@ -409,7 +414,7 @@ public class Migration implements Closeable {
 
             {
               long now = System.nanoTime();
-              info("TOTAL Uploaded ok records " + recordsCount + " for " + TimeUtils.showTime(now, startedAt)
+              info("TOTAL Uploaded ok records " + recordsCount + " for " + showTime(now, startedAt)
                 + " : " + recordsPerSecond(recordsCount, now - startedAt));
             }
           }

@@ -4,5 +4,7 @@ dependencies {
   compile group: 'kz.greetgo', name: 'greetgo.msoffice', version: '0.4.23'
   compile group: 'com.itextpdf', name: 'itextpdf', version: '5.3.4'
 
+//  compile group: 'postgresql', name: 'postgresql', version: '9.0-801.jdbc4'
+
   compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.21'
 }

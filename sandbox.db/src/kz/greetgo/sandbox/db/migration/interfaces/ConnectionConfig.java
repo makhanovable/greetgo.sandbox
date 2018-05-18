@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.controller.migration.interfaces;
+package kz.greetgo.sandbox.db.migration.interfaces;
 
 public interface ConnectionConfig {
   String url();

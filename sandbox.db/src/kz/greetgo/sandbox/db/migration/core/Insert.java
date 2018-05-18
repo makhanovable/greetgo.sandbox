@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.controller.migration.core;
+package kz.greetgo.sandbox.db.migration.core;
 
 import java.util.ArrayList;
 import java.util.List;

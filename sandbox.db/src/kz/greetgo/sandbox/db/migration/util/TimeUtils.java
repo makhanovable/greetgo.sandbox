@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.controller.migration.util;
+package kz.greetgo.sandbox.db.migration.util;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;

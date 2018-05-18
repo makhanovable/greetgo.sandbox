@@ -1,5 +1,6 @@
 package kz.greetgo.sandbox.db.register_impl;
 
+import kz.greetgo.conf.SysParams;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.msoffice.docx.Run;
 import kz.greetgo.sandbox.controller.model.*;
@@ -16,11 +17,13 @@ import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -928,4 +931,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(view.rowList.get(0).fio).isEqualTo("Бурумбай Санжар Ришадулы");
         assertThat(view.rowList.get(2).fio).isEqualTo("Пушкин Александр Сергеевич");
     }
+
+
 }
