@@ -51,7 +51,7 @@ export class ModalInfoComponent implements OnInit {
 
 
   save() {
-
+    this.dialogRef.close(this.form.value);
   }
 
   close() {

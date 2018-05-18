@@ -45,7 +45,11 @@ export class MainFormComponent implements OnDestroy{
     dialogConfig.autoFocus = true;
     dialogConfig.data = {accountInfo: accountInfo};
 
-    this.dialog.open(ModalInfoComponent, dialogConfig);
+    const dialogRef = this.dialog.open(ModalInfoComponent, dialogConfig);
+
+    dialogRef.afterClosed().subscribe(data => {
+      console.log(data);
+    })
   }
 
   loadUserInfoButtonClicked() {
