@@ -2,6 +2,8 @@ package kz.greetgo.sandbox.db.stand.beans;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.HasAfterInject;
+import kz.greetgo.sandbox.controller.model.AddressType;
+import kz.greetgo.sandbox.controller.model.PhoneType;
 import kz.greetgo.sandbox.db.stand.model.*;
 
 import java.io.BufferedReader;
@@ -100,7 +102,7 @@ public class StandDb implements HasAfterInject {
     AddressDot a = new AddressDot();
     a.id = Integer.parseInt(splitLine[1].trim());
     a.clientId = Integer.parseInt(splitLine[2].trim());
-    a.addressType = splitLine[3];
+    a.addressType = AddressType.valueOf(splitLine[3].trim());
 
     String[] fullAdd = splitLine[4].trim().split(",");
     a.street = fullAdd[0].trim();
@@ -115,7 +117,7 @@ public class StandDb implements HasAfterInject {
     p.id = Integer.parseInt(splitLine[1].trim());
     p.clientId = Integer.parseInt(splitLine[2].trim());
     p.number = splitLine[3].trim();
-    p.type = splitLine[4].trim();
+    p.type = PhoneType.valueOf(splitLine[4].trim());
 
     phoneStorage.put(p.id, p);
   }

@@ -13,39 +13,54 @@ import {FormBuilder, FormGroup} from "@angular/forms";
 export class ModalInfoComponent implements OnInit {
 
   form: FormGroup;
-  accountInfo: AccountInfo;
+  accountInfo: AccountInfo = null;
 
-  description: string;
+  name: string = '';
+  surname: string = '';
+  patronymic: string = '';
+  gender: 'MALE';
+  charm: string[] = [];
+  streetFact: string = '';
+  houseFact: string = '';
+  flatFact: string = '';
+  streetReg: string = '';
+  houseReg: string = '';
+  flatReg: string = '';
+  phoneHome: string = '';
+  phoneWork: string = '';
+  phoneMobile1: string = '';
+  phoneMobile2: string = '';
+  phoneMobile3: string = '';
 
-  charms = ["charm1", "charm2", "ccharm3"];
+  charms = [];
 
   constructor(
     private fb: FormBuilder,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private dialogRef: MatDialogRef<MainFormComponent>) {
 
-    this.accountInfo = data.accountInfo;
-    this.description = "some desc"
+    if(typeof data.accountInfo != 'undefined')
+      this.accountInfo = data.accountInfo;
   }
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      name: [this.description],
-      surname: [this.description],
-      patronymic: [this.description],
+      name: [this.name],
+      surname: [this.surname],
+      patronymic: [this.patronymic],
       gender: ['MALE'],
       charm: [this.charms[1]],
-      streetFact: [this.description],
-      houseFact: [this.description],
-      flatFact: [this.description],
-      streetReg: [this.description],
-      houseReg: [this.description],
-      flatReg: [this.description],
-      phoneHome: [this.description],
-      phoneWork: [this.description],
-      phoneMobile1: [this.description],
-      phoneMobile2: [this.description],
-      phoneMobile3: [this.description],
+      streetFact: [this.streetFact],
+      houseFact: [this.houseFact],
+      flatFact: [this.flatFact],
+      streetReg: [this.streetReg],
+      houseReg: [this.houseReg],
+      flatReg: [this.flatReg],
+      phoneHome: [this.phoneHome],
+      phoneWork: [this.phoneWork],
+      phoneMobile1: [this.phoneMobile1],
+      phoneMobile2: [this.phoneMobile2],
+      phoneMobile3: [this.phoneMobile3],
     });
   }
 

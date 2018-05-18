@@ -5,8 +5,6 @@ import kz.greetgo.sandbox.controller.model.Client;
 
 import java.util.List;
 
-public interface AccountInfoRegister {
+public interface AccountRegister {
   List<AccountInfo> getAllAccountInfo();
-  Client getClientInfo(int clientId);
-  String healthCheck();
 }

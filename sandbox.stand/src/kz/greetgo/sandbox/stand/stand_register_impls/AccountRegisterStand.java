@@ -4,11 +4,9 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.Account;
 import kz.greetgo.sandbox.controller.model.AccountInfo;
-import kz.greetgo.sandbox.controller.model.Client;
-import kz.greetgo.sandbox.controller.register.account.AccountInfoRegister;
+import kz.greetgo.sandbox.controller.register.account.AccountRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.AccountDot;
-import kz.greetgo.sandbox.db.stand.model.ClientDot;
 
 import java.time.Instant;
 import java.util.*;
@@ -18,7 +16,7 @@ import static java.util.Calendar.MONTH;
 import static java.util.Calendar.YEAR;
 
 @Bean
-public class AccountRegisterStand implements AccountInfoRegister {
+public class AccountRegisterStand implements AccountRegister {
 
 //  private final Path storageDir = new File()
 
@@ -104,15 +102,4 @@ public class AccountRegisterStand implements AccountInfoRegister {
     return diff;
   }
 
-  @Override
-  public Client getClientInfo(int clientId) {
-
-
-    return null;
-  }
-
-  @Override
-  public String healthCheck() {
-    return "HEALTH CHECK: OK";
-  }
 }

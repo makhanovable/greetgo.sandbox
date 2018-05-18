@@ -5,4 +5,11 @@ public class Charm {
   public String name;
   public String description;
   public Float energy;
+
+  public Charm(int id, String name, String description, Float energy) {
+    this.id = id;
+    this.name = name;
+    this.description = description;
+    this.energy = energy;
+  }
 }
