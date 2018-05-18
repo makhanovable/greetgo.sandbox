@@ -3,10 +3,9 @@ import {MatPaginator, MatSort} from "@angular/material";
 import {SelectionModel} from "@angular/cdk/collections";
 import {AccountInfo} from "../../../../model/AccountInfo";
 import {HttpService} from "../../../HttpService";
-import {AccountInfoDataSource} from "./AccountInfoDataSource";
+import {GenericDataSource} from "./GenericDataSource";
 import {debounceTime, distinctUntilChanged, tap} from "rxjs/operators";
 import {fromEvent} from "rxjs/observable/fromEvent";
-
 
 @Component({
   selector: 'table-basic-example',
@@ -15,9 +14,11 @@ import {fromEvent} from "rxjs/observable/fromEvent";
 })
 export class AccountTableComponent {
 
-  dataSource: AccountInfoDataSource;
+  dataSource: GenericDataSource;
   displayedColumns = ['select', 'fio', 'charm', 'age', 'total', 'max', 'min'];
   selection = new SelectionModel<AccountInfo>(false);
+
+  responseLength = 0;
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
@@ -27,40 +28,31 @@ export class AccountTableComponent {
   }
 
   ngOnInit() {
-    this.dataSource = new AccountInfoDataSource(this.httpService);
-    this.dataSource.loadAccountInfoList();
+    this.dataSource = new GenericDataSource();
+    this.loadAccountPage();
   }
 
   ngAfterViewInit() {
-
     fromEvent(this.filter.nativeElement, 'keyup')
       .pipe(
         debounceTime(500),
         distinctUntilChanged(),
         tap(() => {
           this.paginator.pageIndex = 0;
-          this.loadAccountInfoPage();
+          this.loadAccountPage();
         })
       ).subscribe();
 
     this.sort.sortChange.subscribe(() => {
       this.paginator.pageIndex = 0;
-      this.loadAccountInfoPage();
+      this.loadAccountPage();
     });
 
     this.paginator.page
       .pipe(
-        tap(() => this.loadAccountInfoPage())
+        tap(() => this.loadAccountPage()
+        )
       ).subscribe();
-  }
-
-  loadAccountInfoPage() {
-    this.dataSource.loadAccountInfoList(
-      this.paginator.pageIndex,
-      this.paginator.pageSize,
-      this.sort.active,
-      this.sort.direction,
-      this.filter.nativeElement.value);
   }
 
   onRowClicked(accountInfo) {
@@ -68,4 +60,29 @@ export class AccountTableComponent {
       this.selection.deselect(accountInfo) : this.selection.select(accountInfo)
   }
 
+  loadAccountPage() {
+    this.loadAccountInfoList(
+      this.paginator.pageIndex,
+      this.paginator.pageSize,
+      this.sort.active,
+      this.sort.direction,
+      this.filter.nativeElement.value)
+  }
+
+  loadAccountInfoList(pageIndex = 0, pageSize = 3, sortBy = '', sortDirection = 'asc', filter = '') {
+
+    console.log("PageIndex:" + pageIndex + ", PageSize:" + pageSize + ", SortBy:" + sortBy + ", Sort:" + sortDirection + ", Filter:" + filter);
+
+    this.dataSource.startLoading();
+    this.httpService.get("/accounts/").toPromise().then(response => {
+      const result = response.json();
+      this.responseLength = Object.keys(result).length;
+
+      this.dataSource.updateDateSource(result);
+      this.dataSource.stopLoading();
+    }, error => {
+      console.log(error);
+      this.dataSource.stopLoading()
+    });
+  }
 }

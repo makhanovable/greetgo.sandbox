@@ -6,9 +6,9 @@
         </mat-form-field>
     </div>
 
-    <div class="spinner-container" *ngIf="dataSource.loading$ | async">
-        <mat-spinner></mat-spinner>
-    </div>
+    <!--<div class="spinner-container" *ngIf="dataSource.loading$ | async">-->
+        <!--<mat-spinner></mat-spinner>-->
+    <!--</div>-->
 
     <mat-table #table [dataSource]="dataSource" matSort>
 
@@ -66,7 +66,7 @@
     </mat-table>
 
     <mat-paginator #paginator
-                   [length]="9"
+                   [length]="responseLength"
                    [pageSize]="3"
                    [pageSizeOptions]="[3, 5, 10]"
                    [showFirstLastButtons]="true">
