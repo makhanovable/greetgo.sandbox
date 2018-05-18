@@ -3,7 +3,7 @@ import {HttpService} from "../HttpService";
 import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
 import "rxjs/add/operator/toPromise";
-import {TestService} from "../service/testService";
+import {AccountService} from "../services/AccountService";
 
 @Component({
   selector: 'login-component',

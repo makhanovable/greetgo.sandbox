@@ -23,3 +23,12 @@ export class AccountInfo {
     return result;
   }
 }
+// export interface AccountInfo {
+//   id: number;
+//   fullName: string;
+//   charm: string;
+//   age: number;
+//   totalAccBalance: number;
+//   maxAccBalance: number;
+//   minAccBalance: number;
+// }

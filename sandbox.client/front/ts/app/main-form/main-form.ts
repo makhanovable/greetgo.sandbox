@@ -2,7 +2,7 @@ import {Component, EventEmitter, OnDestroy, Output} from "@angular/core";
 import {UserInfo} from "../../model/UserInfo";
 import {HttpService} from "../HttpService";
 import {PhoneType} from "../../model/PhoneType";
-import {TestService} from "../service/testService";
+import {AccountService} from "../services/AccountService";
 import {Subscription} from "rxjs/Subscription";
 import random = require("core-js/fn/number/random");
 import {Charm} from "../../model/Charm";
@@ -26,7 +26,7 @@ export class MainFormComponent implements OnDestroy{
 
   isEditMode = false;
 
-  constructor(private httpService: HttpService, private testService: TestService) {
+  constructor(private httpService: HttpService, private testService: AccountService) {
     this.subscription = testService.getValue().subscribe(value => {});
 
     this.setClickRow = function(index) {

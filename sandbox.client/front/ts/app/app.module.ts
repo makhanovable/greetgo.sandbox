@@ -11,7 +11,7 @@ import {MainFormComponent} from "./main-form/main-form";
 import {AccountTableComponent} from "./main-form/components/account-table/account-table";
 
 import {HttpService} from "./HttpService";
-import {TestService} from "./service/testService";
+import {AccountService} from "./services/AccountService";
 
 import {
   MatAutocompleteModule,
@@ -98,7 +98,7 @@ import 'hammerjs'
     RootComponent, LoginComponent, MainFormComponent, ModalInfoComponent, AccountTableComponent
   ],
   bootstrap: [RootComponent],
-  providers: [HttpService, TestService],
+  providers: [HttpService, AccountService],
   entryComponents: [],
 })
 export class AppModule {
