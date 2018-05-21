@@ -2,3 +2,7 @@
     display: flex;
     flex-direction: column;
 }
+
+.modal-datepicker {
+    margin-top: 20px;
+}

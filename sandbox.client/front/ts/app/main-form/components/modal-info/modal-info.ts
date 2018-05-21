@@ -21,6 +21,7 @@ export class ModalInfoComponent implements OnInit {
   surname: string = '';
   patronymic: string = '';
   gender: Gender = Gender.MALE;
+  birthDate: Date = null;
   charmId: number = 0;
   streetFact: string = '';
   houseFact: string = '';
@@ -47,6 +48,7 @@ export class ModalInfoComponent implements OnInit {
       this.surname = this.clientInfoModel.clientInfo.surname;
       this.patronymic = this.clientInfoModel.clientInfo.patronymic;
       this.gender = this.clientInfoModel.clientInfo.gender;
+      this.birthDate = new Date(this.clientInfoModel.clientInfo.birthDate);
       this.charmId = this.clientInfoModel.clientInfo.charmId;
       this.charmsDictionary = this.clientInfoModel.charmsDictionary;
 
@@ -94,6 +96,7 @@ export class ModalInfoComponent implements OnInit {
       surname: [this.surname],
       patronymic: [this.patronymic],
       gender: ['MALE'],
+      birthDate: [this.birthDate],
       charm: [this.charmId],
       streetFact: [this.streetFact],
       houseFact: [this.houseFact],

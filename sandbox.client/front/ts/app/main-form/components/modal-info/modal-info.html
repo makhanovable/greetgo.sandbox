@@ -20,6 +20,12 @@
             <mat-radio-button value="FEMALE">Female</mat-radio-button>
         </mat-radio-group>
 
+        <mat-form-field class="modal-datepicker">
+            <input matInput [matDatepicker]="picker" placeholder="Choose a date" formControlName="birthDate"/>
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+
         <mat-form-field>
             <mat-select formControlName="charm">
                 <mat-option
