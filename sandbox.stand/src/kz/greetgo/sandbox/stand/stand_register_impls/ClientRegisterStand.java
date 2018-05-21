@@ -21,11 +21,14 @@ public class ClientRegisterStand implements ClientRegister {
   public ClientInfoModel getClientInfo(int clientId) {
     ClientInfoModel clientInfoModel = new ClientInfoModel();
 
-    clientInfoModel.clientInfo = db.get().clientStorage.get(clientId).toClient();
+    if(clientId != -1) {
+      clientInfoModel.clientInfo = db.get().clientStorage.get(clientId).toClient();
+      clientInfoModel.factAddress = getAddress(clientId, AddressType.FACT);
+      clientInfoModel.regAddress = getAddress(clientId, AddressType.REG);
+      clientInfoModel.phones = getPhones(clientId);
+    }
+
     clientInfoModel.charmsDictionary = getCharmsDictionary();
-    clientInfoModel.factAddress = getAddress(clientId, AddressType.FACT);
-    clientInfoModel.regAddress = getAddress(clientId, AddressType.REG);
-    clientInfoModel.phones = getPhones(clientId);
 
     return clientInfoModel;
   }

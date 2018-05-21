@@ -27,29 +27,19 @@ export class MainFormComponent implements OnDestroy {
   }
 
   handleAddAccClick = function () {
-    console.log("main handle add");
-    this.openModal();
+    this.openModal(-1);
   };
 
   handleEditAccClick = function (accountInfo) {
-    console.log("main handle edit");
-    console.log(accountInfo.id);
-    this.openModal(accountInfo);
+    this.openModal(accountInfo.id);
   };
 
-  openModal(accountInfo) {
-    if (typeof accountInfo != 'undefined') {
-
-      this.httpService.get("/client/info", {clientId: accountInfo.id}).toPromise().then(response => {
-
-        this.configureModal(response.json());
-
-      }, error => {
-        console.log(error);
-      });
-    } else {
-      this.configureModal(null);
-    }
+  openModal(clientId) {
+    this.httpService.get("/client/info", {clientId: clientId}).toPromise().then(response => {
+      this.configureModal(response.json());
+    }, error => {
+      console.log(error);
+    });
   }
 
   configureModal(clientInfoModel) {

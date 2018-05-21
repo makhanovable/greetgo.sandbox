@@ -15,7 +15,6 @@ import {Charm} from "../../../../model/Charm";
 export class ModalInfoComponent implements OnInit {
 
   form: FormGroup;
-  clientInfoModel: ClientInfoModel = null;
 
   name: string = '';
   surname: string = '';
@@ -41,52 +40,55 @@ export class ModalInfoComponent implements OnInit {
               @Inject(MAT_DIALOG_DATA) public data: any,
               private dialogRef: MatDialogRef<MainFormComponent>) {
 
-    if (data.clientInfoModel !== null) {
-      this.clientInfoModel = data.clientInfoModel;
+    this.charmsDictionary = data.clientInfoModel.charmsDictionary;
+    this.charmId = this.charmsDictionary[0].id;
 
-      this.name = this.clientInfoModel.clientInfo.name;
-      this.surname = this.clientInfoModel.clientInfo.surname;
-      this.patronymic = this.clientInfoModel.clientInfo.patronymic;
-      this.gender = this.clientInfoModel.clientInfo.gender;
-      this.birthDate = new Date(this.clientInfoModel.clientInfo.birthDate);
-      this.charmId = this.clientInfoModel.clientInfo.charmId;
-      this.charmsDictionary = this.clientInfoModel.charmsDictionary;
+    if (data.clientInfoModel.clientInfo !== null) {
+      this.loadClientInfo(data.clientInfoModel);
+      console.log(data.clientInfoModel)
+    }
+  }
 
-      if (this.clientInfoModel.factAddress !== null) {
-        this.streetFact = this.clientInfoModel.factAddress.street;
-        this.houseFact = this.clientInfoModel.factAddress.house;
-        this.flatFact = this.clientInfoModel.factAddress.flat;
-      }
+  private loadClientInfo(clientInfoModel) {
+    this.name = clientInfoModel.clientInfo.name;
+    this.surname = clientInfoModel.clientInfo.surname;
+    this.patronymic = clientInfoModel.clientInfo.patronymic;
+    this.gender = clientInfoModel.clientInfo.gender;
+    this.birthDate = new Date(clientInfoModel.clientInfo.birthDate);
+    this.charmId = clientInfoModel.clientInfo.charmId;
 
-      if (this.clientInfoModel.regAddress !== null) {
-        this.streetReg = this.clientInfoModel.regAddress.street;
-        this.houseReg = this.clientInfoModel.regAddress.house;
-        this.flatReg = this.clientInfoModel.regAddress.flat;
-      }
+    if (clientInfoModel.factAddress !== null) {
+      this.streetFact = clientInfoModel.factAddress.street;
+      this.houseFact = clientInfoModel.factAddress.house;
+      this.flatFact = clientInfoModel.factAddress.flat;
+    }
 
-      let mobileCounter = 0;
-      for (let i = 0; i < this.clientInfoModel.phones.length; i++) {
-        const phone = this.clientInfoModel.phones[i];
-        if (phone.type == PhoneType.HOME) {
-          this.phoneHome = phone.number;
-        } else if (phone.type == PhoneType.WORK) {
-          this.phoneWork = phone.number;
-        } else if (phone.type == PhoneType.MOBILE) {
-          switch (mobileCounter++) {
-            case 0:
-              this.phoneMobile1 = phone.number;
-              break;
-            case 1:
-              this.phoneMobile2 = phone.number;
-              break;
-            case 3:
-              this.phoneMobile3 = phone.number;
-              break;
-          }
+    if (clientInfoModel.regAddress !== null) {
+      this.streetReg = clientInfoModel.regAddress.street;
+      this.houseReg = clientInfoModel.regAddress.house;
+      this.flatReg = clientInfoModel.regAddress.flat;
+    }
+
+    let mobileCounter = 0;
+    for (let i = 0; i < clientInfoModel.phones.length; i++) {
+      const phone = clientInfoModel.phones[i];
+      if (phone.type == PhoneType.HOME) {
+        this.phoneHome = phone.number;
+      } else if (phone.type == PhoneType.WORK) {
+        this.phoneWork = phone.number;
+      } else if (phone.type == PhoneType.MOBILE) {
+        switch (mobileCounter++) {
+          case 0:
+            this.phoneMobile1 = phone.number;
+            break;
+          case 1:
+            this.phoneMobile2 = phone.number;
+            break;
+          case 3:
+            this.phoneMobile3 = phone.number;
+            break;
         }
       }
-
-      console.log(data.clientInfoModel)
     }
   }
 
