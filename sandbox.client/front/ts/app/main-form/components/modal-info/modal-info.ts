@@ -7,6 +7,8 @@ import {Gender} from "../../../../model/Gender";
 import {PhoneType} from "../../../../model/PhoneType";
 import {Charm} from "../../../../model/Charm";
 import {HttpService} from "../../../HttpService";
+import {ActionType} from "../../../../model/ActionType";
+import {AccountService} from "../../../services/AccountService";
 
 @Component({
   selector: 'modal-info-component',
@@ -14,6 +16,8 @@ import {HttpService} from "../../../HttpService";
   styles: [require('./modal-info.css')],
 })
 export class ModalInfoComponent implements OnInit {
+
+  actionType: ActionType;
 
   form: FormGroup;
 
@@ -40,8 +44,9 @@ export class ModalInfoComponent implements OnInit {
   constructor(private fb: FormBuilder,
               @Inject(MAT_DIALOG_DATA) public data: any,
               private dialogRef: MatDialogRef<MainFormComponent>,
-              private httpService: HttpService) {
+              private httpService: HttpService, private accountService: AccountService) {
 
+    this.actionType = data.actionType;
 
     this.httpService.get("/client/info", {clientId: data.clientId}).toPromise().then(response => {
       this.loadData(response);
@@ -60,7 +65,7 @@ export class ModalInfoComponent implements OnInit {
     this.charmsDictionary = clientInfoModel.charmsDictionary;
     this.charmId = this.charmsDictionary[0].id;
 
-    if (clientInfoModel.clientInfo !== null) {
+    if (this.actionType == ActionType.EDIT) {
       this.loadClientInfo(clientInfoModel);
     }
 
@@ -133,10 +138,41 @@ export class ModalInfoComponent implements OnInit {
   }
 
   save() {
-    this.dialogRef.close(this.form.value);
+    if(this.actionType == ActionType.CREATE) {
+      this.createNewClient();
+    }
   }
 
   close() {
     this.dialogRef.close();
+  }
+
+  createNewClient() {
+    this.httpService.post("/client/create",{
+      name: this.form.controls["name"].value,
+      surname: this.form.controls["surname"].value,
+      patronymic: this.form.controls["patronymic"].value,
+      gender: this.form.controls["gender"].value,
+      birthDate: this.form.controls["birthDate"].value.getTime(),
+      charmId: this.form.controls["charm"].value,
+      streetFact: this.form.controls["streetFact"].value,
+      houseFact: this.form.controls["houseFact"].value,
+      flatFact: this.form.controls["flatFact"].value,
+      streetReg: this.form.controls["streetReg"].value,
+      houseReg: this.form.controls["houseReg"].value,
+      flatReg: this.form.controls["flatReg"].value,
+      phoneHome: this.form.controls["phoneHome"].value,
+      phoneWork: this.form.controls["phoneWork"].value,
+      phoneMobile1: this.form.controls["phoneMobile1"].value,
+      phoneMobile2: this.form.controls["phoneMobile2"].value,
+      phoneMobile3: this.form.controls["phoneMobile3"].value,
+    }).toPromise().then(response => {
+
+      console.log(response.json());
+      this.accountService.addNewAccount(response.json());
+      this.dialogRef.close();
+    }, error => {
+      console.log(error);
+    });
   }
 }

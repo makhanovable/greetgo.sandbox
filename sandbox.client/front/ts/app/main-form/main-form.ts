@@ -12,6 +12,7 @@ import {Phone} from "../../model/Phone";
 import {AddressType} from "../../model/AddressType";
 import {Gender} from "../../model/Gender";
 import {AccountService} from "../services/AccountService";
+import {ActionType} from "../../model/ActionType";
 
 @Component({
   selector: 'main-form-component',
@@ -31,59 +32,27 @@ export class MainFormComponent implements OnDestroy {
   isEditMode = false;
   DUMB_ID = -1;
 
-  constructor(private httpService: HttpService, private dialog: MatDialog, private accountService: AccountService) {}
+  constructor(private httpService: HttpService, private dialog: MatDialog) {}
 
-  handleAddAccClick = function () {
-    this.openModal(this.DUMB_ID);
+  handleCreateAccClick = function () {
+    this.openModal(this.DUMB_ID, ActionType.CREATE);
   };
 
   handleEditAccClick = function (accountInfo) {
-    this.openModal(accountInfo.id);
+    this.openModal(accountInfo.id, ActionType.EDIT);
   };
 
-  openModal(clientId,) {
+  openModal(clientId:number, actionType: ActionType) {
     const dialogConfig = new MatDialogConfig();
     dialogConfig.disableClose = true;
     dialogConfig.autoFocus = true;
-    dialogConfig.data = {clientId: clientId};
+    dialogConfig.data = {clientId: clientId, actionType: actionType};
 
     const dialogRef = this.dialog.open(ModalInfoComponent, dialogConfig);
 
     dialogRef.afterClosed().subscribe(data => {
       console.log(data);
-      if(data !== 'undefined') {
-        this.createNewClient(data)
-      }
     })
-  }
-
-  createNewClient(data) {
-
-    this.httpService.post("/client/create",{
-      name: data.name,
-      surname: data.surname,
-      patronymic: data.patronymic,
-      gender: data.gender,
-      birthDate: data.birthDate.getTime(),
-      charmId: data.charm,
-      streetFact: data.streetFact,
-      houseFact: data.houseFact,
-      flatFact: data.flatFact,
-      streetReg: data.streetReg,
-      houseReg: data.houseReg,
-      flatReg: data.flatReg,
-      phoneHome: data.phoneHome,
-      phoneWork: data.phoneWork,
-      phoneMobile1: data.phoneMobile1,
-      phoneMobile2: data.phoneMobile2,
-      phoneMobile3: data.phoneMobile3,
-    }).toPromise().then(response => {
-
-      this.accountService.addNewAccount(response.json());
-
-    }, error => {
-      console.log(error);
-    });
   }
 
   loadUserInfoButtonClicked() {
