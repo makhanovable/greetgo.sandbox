@@ -29,11 +29,12 @@ export class MainFormComponent implements OnDestroy {
   loadUserInfoError: string | null;
 
   isEditMode = false;
+  DUMB_ID = -1;
 
   constructor(private httpService: HttpService, private dialog: MatDialog, private accountService: AccountService) {}
 
   handleAddAccClick = function () {
-    this.openModal(-1);
+    this.openModal(this.DUMB_ID);
   };
 
   handleEditAccClick = function (accountInfo) {

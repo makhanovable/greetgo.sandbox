@@ -31,6 +31,7 @@ export class AccountTableComponent {
   constructor(private httpService: HttpService, private accountService: AccountService) {
     this.accountService.accountAdded.subscribe(accountInfo => {
       this.dataSource.addNewItem(accountInfo);
+      console.log(accountInfo);
     });
   }
 
@@ -64,7 +65,7 @@ export class AccountTableComponent {
 
   onRowClicked(accountInfo) {
     this.selection.isSelected(accountInfo) ?
-      this.selection.deselect(accountInfo) : this.selection.select(accountInfo)
+      this.selection.deselect(accountInfo) : this.selection.select(accountInfo);
   }
 
   loadAccountPage() {

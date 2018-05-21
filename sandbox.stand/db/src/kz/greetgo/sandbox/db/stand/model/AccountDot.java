@@ -19,4 +19,14 @@ public class AccountDot {
                         this.number,
                         this.registeredAt);
   }
+
+  public AccountDot() { }
+
+  public AccountDot(int id, int clientId, Float money, String number, Timestamp registeredAt) {
+    this.id = id;
+    this.clientId = clientId;
+    this.money = money;
+    this.number = number;
+    this.registeredAt = registeredAt;
+  }
 }

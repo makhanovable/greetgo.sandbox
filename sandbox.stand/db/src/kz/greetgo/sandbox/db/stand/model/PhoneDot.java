@@ -12,4 +12,13 @@ public class PhoneDot {
   public Phone toPhone() {
     return new Phone(this.id,this.clientId, this.number, this.type);
   }
+
+  public PhoneDot() { }
+
+  public PhoneDot(int id, int clientId, String number, PhoneType type) {
+    this.id = id;
+    this.clientId = clientId;
+    this.number = number;
+    this.type = type;
+  }
 }

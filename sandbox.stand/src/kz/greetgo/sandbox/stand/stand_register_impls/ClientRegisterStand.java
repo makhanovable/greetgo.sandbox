@@ -5,25 +5,26 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.client.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
-import kz.greetgo.sandbox.db.stand.model.AddressDot;
-import kz.greetgo.sandbox.db.stand.model.CharmDot;
-import kz.greetgo.sandbox.db.stand.model.ClientDot;
-import kz.greetgo.sandbox.db.stand.model.PhoneDot;
+import kz.greetgo.sandbox.db.stand.model.*;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static kz.greetgo.sandbox.stand.util.Constants.DUMB_ID;
+
 @Bean
 public class ClientRegisterStand implements ClientRegister {
 
-  private BeanGetter<StandDb> db;
+  public BeanGetter<StandDb> db;
 
   @Override
   public ClientInfoModel getClientInfo(int clientId) {
     ClientInfoModel clientInfoModel = new ClientInfoModel();
 
-    if(clientId != -1) {
+    if(clientId != DUMB_ID) {
       clientInfoModel.clientInfo = db.get().clientStorage.get(clientId).toClient();
       clientInfoModel.factAddress = getAddress(clientId, AddressType.FACT);
       clientInfoModel.regAddress = getAddress(clientId, AddressType.REG);
@@ -54,18 +55,49 @@ public class ClientRegisterStand implements ClientRegister {
                                      String phoneMobile2,
                                      String phoneMobile3) {
 
-    ClientDot newClient = new ClientDot(db.get().clientStorage.size() + 1, name, surname, patronymic,
+    int newClientId = db.get().clientStorage.size() + 1;
+    ClientDot newClient = new ClientDot(newClientId, name, surname, patronymic,
       Gender.valueOf(gender), new Date(birthDate), charmId);
+
+    db.get().clientStorage.put(newClientId, newClient);
 
     addNewAddress(db.get().addressStorage.size() + 1, newClient.id, AddressType.FACT, streetFact, houseFact, flatFact);
     addNewAddress(db.get().addressStorage.size() + 1, newClient.id, AddressType.REG, streetReg, houseReg, flatReg);
+
+    addDefaultAccount(newClient.id);
+
+    addNewPhone(PhoneType.HOME, phoneHome, newClient.id);
+    addNewPhone(PhoneType.WORK, phoneWork, newClient.id);
+    addNewPhone(PhoneType.MOBILE, phoneMobile1, newClient.id);
+    addNewPhone(PhoneType.MOBILE, phoneMobile2, newClient.id);
+    addNewPhone(PhoneType.MOBILE, phoneMobile3, newClient.id);
 
     AccountInfo newAccountInfo = new AccountInfo();
 
     newAccountInfo.fullName = String.format("%s %s %s", name, surname, patronymic);
     newAccountInfo.charm = db.get().charmStorage.get(charmId).name;
+    newAccountInfo.id = newClientId;
 
     return newAccountInfo;
+  }
+
+  private void addNewPhone(PhoneType type, String number, int clientId) {
+    if(number == null || number.isEmpty() || clientId == DUMB_ID) {
+      return;
+//      throw new NullPointerException("add number clientId:" + clientId);
+    }
+
+    int newPhoneId = db.get().phoneStorage.size() + 1;
+    db.get().phoneStorage.put(newPhoneId, new PhoneDot(newPhoneId, clientId, number, type));
+  }
+
+  private void addDefaultAccount(int clientId) {
+    int newAccountId = db.get().accountStorage.size() + 1;
+
+    db.get().accountStorage.put(newAccountId,
+      new AccountDot(newAccountId, clientId, 0f, "KZT!@#$",
+        new java.sql.Timestamp(Date.from(Instant.now()).getTime())));
+
   }
 
   private void addNewAddress(int id, int clientId, AddressType type, String street, String house, String flat) {
