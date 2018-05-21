@@ -3,15 +3,14 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
+import kz.greetgo.sandbox.controller.register.account.AccountRegister;
 import kz.greetgo.sandbox.controller.register.client.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.*;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import static kz.greetgo.sandbox.stand.util.Constants.DUMB_ID;
@@ -20,12 +19,13 @@ import static kz.greetgo.sandbox.stand.util.Constants.DUMB_ID;
 public class ClientRegisterStand implements ClientRegister {
 
   public BeanGetter<StandDb> db;
+  public BeanGetter<AccountRegister> accountRegister;
 
   @Override
   public ClientInfoModel getClientInfo(int clientId) {
     ClientInfoModel clientInfoModel = new ClientInfoModel();
 
-    if(clientId != DUMB_ID) {
+    if (clientId != DUMB_ID) {
       clientInfoModel.clientInfo = db.get().clientStorage.get(clientId).toClient();
       clientInfoModel.factAddress = getAddress(clientId, AddressType.FACT);
       clientInfoModel.regAddress = getAddress(clientId, AddressType.REG);
@@ -83,11 +83,80 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
+  public AccountInfo editClient(int clientId,
+                                String name,
+                                String surname,
+                                String patronymic,
+                                String gender,
+                                Long birthDate,
+                                int charmId,
+                                String streetFact,
+                                String houseFact,
+                                String flatFact,
+                                String streetReg,
+                                String houseReg,
+                                String flatReg,
+                                String phoneHome,
+                                String phoneWork,
+                                String phoneMobile1,
+                                String phoneMobile2,
+                                String phoneMobile3) {
+
+    ClientDot clientDot = db.get().clientStorage.get(clientId);
+    if (clientDot == null) {
+      throw new NullPointerException("no such client id:" + clientId);
+    }
+
+    clientDot.name = name;
+    clientDot.surname = surname;
+    clientDot.patronymic = patronymic;
+    clientDot.birthDate = new Date(birthDate);
+    clientDot.gender = Gender.valueOf(gender);
+    clientDot.charmId = charmId;
+
+    updateAddress(AddressType.FACT, clientId, streetFact, houseFact, flatFact);
+    updateAddress(AddressType.REG, clientId, streetReg, houseReg, flatReg);
+
+//  TODO: phone edit
+//  TODO: birthdate edit
+
+    return accountRegister.get().getAccountInfo(clientId);
+  }
+
+  private void updatePhone(PhoneType type, int clientId, String number) {
+    Phone phone = getPhone(type, clientId);
+//    TODO: COMPLETE
+//
+//    if(phone== null) {
+//      PhoneDot phoneDot = new PhoneDot(db.get().phoneStorage.size() + 1,);
+//      phoneDot.id = ;
+//      db.get().phoneStorage.put(phoneDot.id, phoneDot);
+//
+//      phone = phoneDot.toPhone();
+//    }
+  }
+
+  private void updateAddress(AddressType type, int clientId, String street, String house, String flat) {
+    Address address = getAddress(clientId, type);
+
+    if (address == null) {
+      AddressDot addressDot = new AddressDot(db.get().addressStorage.size() + 1, clientId, type, street, house, flat);
+      db.get().addressStorage.put(addressDot.id, addressDot);
+      return;
+    }
+
+    address.street = street;
+    address.house = house;
+    address.flat = flat;
+  }
+
+
+  @Override
   public AccountInfo deleteClient(int clientId) {
     Client client = db.get().clientStorage.get(clientId).toClient();
     AccountInfo accountInfo = new AccountInfo();
 
-    if(client == null) {
+    if (client == null) {
       throw new NullPointerException("client does not exist id:" + clientId);
     }
     db.get().clientStorage.remove(clientId);
@@ -101,7 +170,7 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private void addNewPhone(PhoneType type, String number, int clientId) {
-    if(number == null || number.isEmpty() || clientId == DUMB_ID) {
+    if (number == null || number.isEmpty() || clientId == DUMB_ID) {
       return;
 //      throw new NullPointerException("add number clientId:" + clientId);
     }
@@ -138,7 +207,7 @@ public class ClientRegisterStand implements ClientRegister {
   private List<Charm> getCharmsDictionary() {
     List<Charm> result = new ArrayList<>();
 
-    for(CharmDot charmDot : db.get().charmStorage.values()) {
+    for (CharmDot charmDot : db.get().charmStorage.values()) {
       result.add(charmDot.toCharm());
     }
 
@@ -146,8 +215,8 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private Address getAddress(int clientId, AddressType addressType) {
-    for(AddressDot addressDot : db.get().addressStorage.values()) {
-      if(addressDot.clientId == clientId && addressDot.addressType == addressType) {
+    for (AddressDot addressDot : db.get().addressStorage.values()) {
+      if (addressDot.clientId == clientId && addressDot.addressType == addressType) {
         return addressDot.toAddress();
       }
     }
@@ -158,12 +227,22 @@ public class ClientRegisterStand implements ClientRegister {
   private List<Phone> getPhones(int clientId) {
     List<Phone> result = new ArrayList<>();
 
-    for(PhoneDot phoneDot : db.get().phoneStorage.values()) {
-      if(phoneDot.clientId == clientId)
+    for (PhoneDot phoneDot : db.get().phoneStorage.values()) {
+      if (phoneDot.clientId == clientId)
         result.add(phoneDot.toPhone());
     }
 
     return result;
+  }
+
+  private Phone getPhone(PhoneType type, int clientId) {
+    for (PhoneDot phoneDot : db.get().phoneStorage.values()) {
+      if (phoneDot.clientId == clientId && phoneDot.type == type) {
+        return phoneDot.toPhone();
+      }
+    }
+
+    return null;
   }
 
 }

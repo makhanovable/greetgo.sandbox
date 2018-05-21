@@ -29,23 +29,31 @@ public class AccountRegisterStand implements AccountRegister {
     ArrayList<AccountInfo> accountInfoList = new ArrayList<>();
 
     for(ClientDot clientDot : db.get().clientStorage.values()) {
-        AccountInfo accountInfo = new AccountInfo();
-        accountInfo.id = clientDot.id;
-        accountInfo.fullName = String.format("%s %s %s", clientDot.name, clientDot.surname, clientDot.patronymic);
-        accountInfo.charm = getCharmById(clientDot.charmId);
-        accountInfo.age = calculateYearDiff(clientDot.birthDate);
-
-        ArrayList<Account> accounts = selectAccountsByClientId(accountInfo.id);
-        if(accounts.size() == 0) continue; // TODO: throw an Exception
-
-        accountInfo.totalAccBalance = getTotalAccBalance(accounts);
-        accountInfo.minAccBalance = getMinAccBalance(accounts);
-        accountInfo.maxAccBalance = getMaxAccBalance(accounts);
-
+      AccountInfo accountInfo = getAccountInfo(clientDot.id);
       accountInfoList.add(accountInfo);
     }
 
     return accountInfoList;
+  }
+
+  @Override
+  public AccountInfo getAccountInfo(int clientId) {
+    ClientDot clientDot = db.get().clientStorage.get(clientId);
+
+    AccountInfo accountInfo = new AccountInfo();
+    accountInfo.id = clientDot.id;
+    accountInfo.fullName = String.format("%s %s %s", clientDot.name, clientDot.surname, clientDot.patronymic);
+    accountInfo.charm = getCharmById(clientDot.charmId);
+    accountInfo.age = calculateYearDiff(clientDot.birthDate);
+
+    ArrayList<Account> accounts = selectAccountsByClientId(accountInfo.id);
+    if(accounts.size() == 0) return null;
+
+    accountInfo.totalAccBalance = getTotalAccBalance(accounts);
+    accountInfo.minAccBalance = getMinAccBalance(accounts);
+    accountInfo.maxAccBalance = getMaxAccBalance(accounts);
+
+    return accountInfo;
   }
 
   private float getMinAccBalance(ArrayList<Account> accounts) {

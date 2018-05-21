@@ -2,7 +2,6 @@ import {Component, Inject, OnInit} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material";
 import {MainFormComponent} from "../../main-form";
 import {FormBuilder, FormGroup} from "@angular/forms";
-import {ClientInfoModel} from "../../../../model/ClientInfoModel";
 import {Gender} from "../../../../model/Gender";
 import {PhoneType} from "../../../../model/PhoneType";
 import {Charm} from "../../../../model/Charm";
@@ -20,6 +19,8 @@ export class ModalInfoComponent implements OnInit {
   actionType: ActionType;
 
   form: FormGroup;
+
+  clientId: number;
 
   name: string = '';
   surname: string = '';
@@ -47,8 +48,9 @@ export class ModalInfoComponent implements OnInit {
               private httpService: HttpService, private accountService: AccountService) {
 
     this.actionType = data.actionType;
+    this.clientId = data.clientId;
 
-    this.httpService.get("/client/info", {clientId: data.clientId}).toPromise().then(response => {
+    this.httpService.get("/client/info", {clientId: this.clientId}).toPromise().then(response => {
       this.loadData(response);
     }, error => {
       console.log(error);
@@ -138,8 +140,13 @@ export class ModalInfoComponent implements OnInit {
   }
 
   save() {
-    if(this.actionType == ActionType.CREATE) {
-      this.createNewClient();
+    switch (this.actionType) {
+      case ActionType.CREATE:
+        this.createNewClient();
+        break;
+      case ActionType.EDIT:
+        this.editClient();
+        break;
     }
   }
 
@@ -148,7 +155,37 @@ export class ModalInfoComponent implements OnInit {
   }
 
   createNewClient() {
-    this.httpService.post("/client/create",{
+    this.httpService.post("/client/create", {
+      name: this.form.controls["name"].value,
+      surname: this.form.controls["surname"].value,
+      patronymic: this.form.controls["patronymic"].value,
+      gender: this.form.controls["gender"].value,
+      birthDate: this.form.controls["birthDate"].value.getTime(),
+      charmId: this.form.controls["charm"].value,
+      streetFact: this.form.controls["streetFact"].value,
+      houseFact: this.form.controls["houseFact"].value,
+      flatFact: this.form.controls["flatFact"].value,
+      streetReg: this.form.controls["streetReg"].value,
+      houseReg: this.form.controls["houseReg"].value,
+      flatReg: this.form.controls["flatReg"].value,
+      phoneHome: this.form.controls["phoneHome"].value,
+      phoneWork: this.form.controls["phoneWork"].value,
+      phoneMobile1: this.form.controls["phoneMobile1"].value,
+      phoneMobile2: this.form.controls["phoneMobile2"].value,
+      phoneMobile3: this.form.controls["phoneMobile3"].value,
+    }).toPromise().then(response => {
+
+      this.accountService.addNewAccount(response.json());
+      this.dialogRef.close();
+    }, error => {
+      console.log(error);
+    });
+  }
+
+  private editClient() {
+    console.log(this.form.controls["charm"].value);
+    this.httpService.post("/client/edit", {
+      clientId: this.clientId,
       name: this.form.controls["name"].value,
       surname: this.form.controls["surname"].value,
       patronymic: this.form.controls["patronymic"].value,
@@ -169,7 +206,8 @@ export class ModalInfoComponent implements OnInit {
     }).toPromise().then(response => {
 
       console.log(response.json());
-      this.accountService.addNewAccount(response.json());
+      // this.accountService.addNewAccount(response.json());
+      // TODO: add update table
       this.dialogRef.close();
     }, error => {
       console.log(error);

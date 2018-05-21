@@ -66,6 +66,48 @@ public class ClientController implements Controller {
   }
 
   @ToJson()
+  @Mapping("/edit")
+  public AccountInfo editClient(
+    @Par("clientId") int clientId,
+    @Par("name") String name,
+    @Par("surname") String surname,
+    @Par("patronymic") String patronymic,
+    @Par("gender") String gender,
+    @Par("birthDate") Long birthDate,
+    @Par("charmId") int charmId,
+    @Par("streetFact") String streetFact,
+    @Par("houseFact") String houseFact,
+    @Par("flatFact") String flatFact,
+    @Par("streetReg") String streetReg,
+    @Par("houseReg") String houseReg,
+    @Par("flatReg") String flatReg,
+    @Par("phoneHome") String phoneHome,
+    @Par("phoneWork") String phoneWork,
+    @Par("phoneMobile1") String phoneMobile1,
+    @Par("phoneMobile2") String phoneMobile2,
+    @Par("phoneMobile3") String phoneMobile3) {
+
+    return clientRegister.get().editClient(clientId,
+                                            name,
+                                            surname,
+                                            patronymic,
+                                            gender,
+                                            birthDate,
+                                            charmId,
+                                            streetFact,
+                                            houseFact,
+                                            flatFact,
+                                            streetReg,
+                                            houseReg,
+                                            flatReg,
+                                            phoneHome,
+                                            phoneWork,
+                                            phoneMobile1,
+                                            phoneMobile2,
+                                            phoneMobile3);
+  }
+
+  @ToJson()
   @Mapping("/delete")
   public AccountInfo deleteClient(@Par("clientId") int clientId) {
     return clientRegister.get().deleteClient(clientId);

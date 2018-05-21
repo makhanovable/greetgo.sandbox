@@ -8,6 +8,8 @@ public class Address {
   public String house;
   public String flat;
 
+  public Address() { }
+
   public Address(int id, int clientId, AddressType addressType, String street, String house, String flat) {
     this.id = id;
     this.clientId = clientId;

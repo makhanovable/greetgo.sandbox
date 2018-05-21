@@ -28,5 +28,25 @@ public interface ClientRegister {
                               String phoneMobile2,
                               String phoneMobile3);
 
+  AccountInfo editClient(int clientId,
+                          String name,
+                          String surname,
+                          String patronymic,
+                          String gender,
+                          Long birthDate,
+                          int charmId,
+                          String streetFact,
+                          String houseFact,
+                          String flatFact,
+                          String streetReg,
+                          String houseReg,
+                          String flatReg,
+                          String phoneHome,
+                          String phoneWork,
+                          String phoneMobile1,
+                          String phoneMobile2,
+                          String phoneMobile3);
+
+
   AccountInfo deleteClient(int clientId);
 }
