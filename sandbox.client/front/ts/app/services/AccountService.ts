@@ -8,8 +8,10 @@ import {HttpService} from "../HttpService";
 export class AccountService {
 
   private accountAddedSource = new Subject;
+  private accountDeleteSource = new Subject;
 
   accountAdded = this.accountAddedSource.asObservable();
+  accountDeleted = this.accountDeleteSource.asObservable();
 
   constructor(private httpService: HttpService) { }
 
@@ -17,6 +19,9 @@ export class AccountService {
     this.accountAddedSource.next(accountInfo);
   }
 
+  deleteAccount(accountInfo: AccountInfo) {
+    this.accountDeleteSource.next(accountInfo);
+  }
 
   // getAccountInfoList(): Observable<AccountInfo[]> {
   //   const result = this.httpService.get("/accounts/");

@@ -31,6 +31,10 @@ export class AccountTableComponent {
   constructor(private httpService: HttpService, private accountService: AccountService) {
     this.accountService.accountAdded.subscribe(accountInfo => {
       this.dataSource.addNewItem(accountInfo);
+    });
+
+    this.accountService.accountDeleted.subscribe(accountInfo => {
+      this.dataSource.removeItem(accountInfo);
       console.log(accountInfo);
     });
   }
@@ -103,7 +107,13 @@ export class AccountTableComponent {
   }
 
   onDeleteClicked() {
-
+    const clientId = this.selection.selected[0].id;
+    this.httpService.post("/client/delete", {clientId: clientId}).toPromise().then(response => {
+      this.accountService.deleteAccount(response.json());
+      this.selection.deselect(this.selection.selected[0]);
+    }, error => {
+      console.log(error)
+    });
   }
 
 }

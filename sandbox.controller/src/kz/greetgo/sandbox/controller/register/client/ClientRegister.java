@@ -2,12 +2,14 @@ package kz.greetgo.sandbox.controller.register.client;
 
 
 import kz.greetgo.sandbox.controller.model.AccountInfo;
+import kz.greetgo.sandbox.controller.model.Client;
 import kz.greetgo.sandbox.controller.model.ClientInfoModel;
 
 import java.util.Date;
 
 public interface ClientRegister {
   ClientInfoModel getClientInfo(int clientId);
+
   AccountInfo createNewClient(String name,
                               String surname,
                               String patronymic,
@@ -25,4 +27,6 @@ public interface ClientRegister {
                               String phoneMobile1,
                               String phoneMobile2,
                               String phoneMobile3);
+
+  AccountInfo deleteClient(int clientId);
 }

@@ -81,6 +81,20 @@ public class ClientRegisterStand implements ClientRegister {
     return newAccountInfo;
   }
 
+  @Override
+  public AccountInfo deleteClient(int clientId) {
+    Client client = db.get().clientStorage.get(clientId).toClient();
+    AccountInfo accountInfo = new AccountInfo();
+
+    if(client == null) {
+      throw new NullPointerException("client does not exist id:" + clientId);
+    }
+    db.get().clientStorage.remove(clientId);
+
+    accountInfo.id = clientId;
+    return accountInfo;
+  }
+
   private void addNewPhone(PhoneType type, String number, int clientId) {
     if(number == null || number.isEmpty() || clientId == DUMB_ID) {
       return;

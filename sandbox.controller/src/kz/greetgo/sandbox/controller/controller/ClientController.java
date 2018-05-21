@@ -65,5 +65,9 @@ public class ClientController implements Controller {
                                                   phoneMobile3);
   }
 
-
+  @ToJson()
+  @Mapping("/delete")
+  public AccountInfo deleteClient(@Par("clientId") int clientId) {
+    return clientRegister.get().deleteClient(clientId);
+  }
 }
