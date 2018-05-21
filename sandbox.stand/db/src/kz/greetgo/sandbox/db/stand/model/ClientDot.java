@@ -10,7 +10,7 @@ public class ClientDot {
   public String name;
   public String surname;
   public String patronymic;
-  public String gender;
+  public Gender gender;
   public Date birthDate;
   public int charmId;
 
@@ -19,8 +19,20 @@ public class ClientDot {
                       this.name,
                       this.surname,
                       this.patronymic,
-                      Gender.valueOf(this.gender),
+                      this.gender,
                       this.birthDate,
                       this.charmId);
+  }
+
+  public ClientDot() { }
+
+  public ClientDot(int id, String name, String surname, String patronymic, Gender gender, Date birthDate, int charmId) {
+    this.id = id;
+    this.name = name;
+    this.surname = surname;
+    this.patronymic = patronymic;
+    this.gender = gender;
+    this.birthDate = birthDate;
+    this.charmId = charmId;
   }
 }

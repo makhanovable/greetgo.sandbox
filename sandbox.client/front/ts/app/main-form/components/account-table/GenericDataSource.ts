@@ -27,6 +27,11 @@ export class GenericDataSource implements DataSource<any> {
 
   updateDateSource(updatedDataSource) {
     this.dataSubject.next(updatedDataSource);
+  }
 
+  addNewItem(newItem) {
+    const data = this.dataSubject.getValue();
+    data.push(newItem);
+    this.dataSubject.next(data);
   }
 }

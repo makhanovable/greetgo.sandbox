@@ -14,4 +14,15 @@ public class AddressDot {
   public Address toAddress() {
     return new Address(id,clientId,addressType,street,house,flat);
   }
+
+  public AddressDot() { }
+
+  public AddressDot(int id, int clientId, AddressType addressType, String street, String house, String flat) {
+    this.id = id;
+    this.clientId = clientId;
+    this.addressType = addressType;
+    this.street = street;
+    this.house = house;
+    this.flat = flat;
+  }
 }

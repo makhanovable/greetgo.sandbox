@@ -6,6 +6,7 @@ import {HttpService} from "../../../HttpService";
 import {GenericDataSource} from "./GenericDataSource";
 import {debounceTime, distinctUntilChanged, tap} from "rxjs/operators";
 import {fromEvent} from "rxjs/observable/fromEvent";
+import {AccountService} from "../../../services/AccountService";
 
 @Component({
   selector: 'table-basic-example',
@@ -27,7 +28,11 @@ export class AccountTableComponent {
   @Output() onAddAccount: EventEmitter<null> = new EventEmitter();
   @Output() onEditAccount: EventEmitter<AccountInfo> = new EventEmitter();
 
-  constructor(private httpService: HttpService) {}
+  constructor(private httpService: HttpService, private accountService: AccountService) {
+    this.accountService.accountAdded.subscribe(accountInfo => {
+      this.dataSource.addNewItem(accountInfo);
+    });
+  }
 
   ngOnInit() {
     this.dataSource = new GenericDataSource();

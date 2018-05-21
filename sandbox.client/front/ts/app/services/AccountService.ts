@@ -7,9 +7,15 @@ import {HttpService} from "../HttpService";
 @Injectable()
 export class AccountService {
 
-  value = new Subject;
+  private accountAddedSource = new Subject;
+
+  accountAdded = this.accountAddedSource.asObservable();
 
   constructor(private httpService: HttpService) { }
+
+  addNewAccount(accountInfo: AccountInfo) {
+    this.accountAddedSource.next(accountInfo);
+  }
 
 
   // getAccountInfoList(): Observable<AccountInfo[]> {
@@ -17,12 +23,12 @@ export class AccountService {
   //   console.log(result);
   //   return result;
   // }
-
-  setValue(value){
-    this.value = value;
-  }
-
-  getValue(): Observable<any>{
-    return this.value.asObservable();
-  }
+  //
+  // setValue(value){
+  //   this.value = value;
+  // }
+  //
+  // getValue(): Observable<any>{
+  //   return this.value.asObservable();
+  // }
 }
