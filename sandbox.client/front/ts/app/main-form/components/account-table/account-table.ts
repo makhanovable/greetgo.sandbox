@@ -35,7 +35,10 @@ export class AccountTableComponent {
 
     this.accountService.accountDeleted.subscribe(accountInfo => {
       this.dataSource.removeItem(accountInfo);
-      console.log(accountInfo);
+    });
+
+    this.accountService.accountUpdated.subscribe(accountInfo => {
+      this.dataSource.updateItem(accountInfo);
     });
   }
 

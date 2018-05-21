@@ -9,9 +9,11 @@ export class AccountService {
 
   private accountAddedSource = new Subject;
   private accountDeleteSource = new Subject;
+  private accountUpdateSource = new Subject;
 
   accountAdded = this.accountAddedSource.asObservable();
   accountDeleted = this.accountDeleteSource.asObservable();
+  accountUpdated = this.accountUpdateSource.asObservable();
 
   constructor(private httpService: HttpService) { }
 
@@ -21,6 +23,10 @@ export class AccountService {
 
   deleteAccount(accountInfo: AccountInfo) {
     this.accountDeleteSource.next(accountInfo);
+  }
+
+  updateAccount(accountInfo: AccountInfo) {
+    this.accountUpdateSource.next(accountInfo);
   }
 
   // getAccountInfoList(): Observable<AccountInfo[]> {

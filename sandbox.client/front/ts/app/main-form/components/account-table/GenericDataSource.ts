@@ -39,4 +39,17 @@ export class GenericDataSource implements DataSource<any> {
     const data = this.dataSubject.getValue().filter(item => item.id !== deletedItem.id);
     this.dataSubject.next(data);
   }
+
+  updateItem(updatedItem) {
+    const arr = this.dataSubject.getValue();
+    const data = [];
+    for(let i = 0; i < arr.length; i++) {
+      if(arr[i].id === updatedItem.id) {
+        data.push(updatedItem);
+      } else {
+        data.push(arr[i]);
+      }
+    }
+    this.dataSubject.next(data);
+  }
 }

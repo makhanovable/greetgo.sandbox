@@ -206,8 +206,7 @@ export class ModalInfoComponent implements OnInit {
     }).toPromise().then(response => {
 
       console.log(response.json());
-      // this.accountService.addNewAccount(response.json());
-      // TODO: add update table
+      this.accountService.updateAccount(response.json());
       this.dialogRef.close();
     }, error => {
       console.log(error);
