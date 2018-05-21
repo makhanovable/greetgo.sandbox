@@ -11,6 +11,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import static kz.greetgo.sandbox.stand.util.Constants.DUMB_ID;
@@ -91,6 +92,10 @@ public class ClientRegisterStand implements ClientRegister {
     }
     db.get().clientStorage.remove(clientId);
 
+    removeAllAccounts(clientId);
+    removeAllAddresses(clientId);
+    removeAllPhones(clientId);
+
     accountInfo.id = clientId;
     return accountInfo;
   }
@@ -116,6 +121,18 @@ public class ClientRegisterStand implements ClientRegister {
 
   private void addNewAddress(int id, int clientId, AddressType type, String street, String house, String flat) {
     db.get().addressStorage.put(id, new AddressDot(id, clientId, type, street, house, flat));
+  }
+
+  private void removeAllAddresses(int clientId) {
+    db.get().addressStorage.values().removeIf(address -> address.clientId == clientId);
+  }
+
+  private void removeAllPhones(int clientId) {
+    db.get().phoneStorage.values().removeIf(phone -> phone.clientId == clientId);
+  }
+
+  private void removeAllAccounts(int clientId) {
+    db.get().accountStorage.values().removeIf(account -> account.clientId == clientId);
   }
 
   private List<Charm> getCharmsDictionary() {
