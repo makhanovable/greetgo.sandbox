@@ -6,6 +6,7 @@ import {ClientInfoModel} from "../../../../model/ClientInfoModel";
 import {Gender} from "../../../../model/Gender";
 import {PhoneType} from "../../../../model/PhoneType";
 import {Charm} from "../../../../model/Charm";
+import {HttpService} from "../../../HttpService";
 
 @Component({
   selector: 'modal-info-component',
@@ -38,15 +39,32 @@ export class ModalInfoComponent implements OnInit {
 
   constructor(private fb: FormBuilder,
               @Inject(MAT_DIALOG_DATA) public data: any,
-              private dialogRef: MatDialogRef<MainFormComponent>) {
+              private dialogRef: MatDialogRef<MainFormComponent>,
+              private httpService: HttpService) {
 
-    this.charmsDictionary = data.clientInfoModel.charmsDictionary;
+
+    this.httpService.get("/client/info", {clientId: data.clientId}).toPromise().then(response => {
+      this.loadData(response);
+    }, error => {
+      console.log(error);
+    });
+  }
+
+  ngOnInit(): void {
+    this.loadForm();
+  }
+
+  private loadData(response) {
+    const clientInfoModel = response.json();
+
+    this.charmsDictionary = clientInfoModel.charmsDictionary;
     this.charmId = this.charmsDictionary[0].id;
 
-    if (data.clientInfoModel.clientInfo !== null) {
-      this.loadClientInfo(data.clientInfoModel);
-      console.log(data.clientInfoModel)
+    if (clientInfoModel.clientInfo !== null) {
+      this.loadClientInfo(clientInfoModel);
     }
+
+    this.loadForm();
   }
 
   private loadClientInfo(clientInfoModel) {
@@ -92,7 +110,7 @@ export class ModalInfoComponent implements OnInit {
     }
   }
 
-  ngOnInit(): void {
+  loadForm() {
     this.form = this.fb.group({
       name: [this.name],
       surname: [this.surname],
@@ -113,7 +131,6 @@ export class ModalInfoComponent implements OnInit {
       phoneMobile3: [this.phoneMobile3],
     });
   }
-
 
   save() {
     this.dialogRef.close(this.form.value);

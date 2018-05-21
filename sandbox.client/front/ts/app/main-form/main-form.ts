@@ -41,19 +41,11 @@ export class MainFormComponent implements OnDestroy {
     this.openModal(accountInfo.id);
   };
 
-  openModal(clientId) {
-    this.httpService.get("/client/info", {clientId: clientId}).toPromise().then(response => {
-      this.configureModal(response.json());
-    }, error => {
-      console.log(error);
-    });
-  }
-
-  configureModal(clientInfoModel) {
+  openModal(clientId,) {
     const dialogConfig = new MatDialogConfig();
     dialogConfig.disableClose = true;
     dialogConfig.autoFocus = true;
-    dialogConfig.data = {clientInfoModel: clientInfoModel};
+    dialogConfig.data = {clientId: clientId};
 
     const dialogRef = this.dialog.open(ModalInfoComponent, dialogConfig);
 
@@ -109,7 +101,6 @@ export class MainFormComponent implements OnDestroy {
       this.userInfo = null;
     });
   }
-
 
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
