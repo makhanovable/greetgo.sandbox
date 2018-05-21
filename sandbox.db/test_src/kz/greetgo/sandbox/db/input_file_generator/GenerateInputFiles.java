@@ -546,7 +546,7 @@ public class GenerateInputFiles {
     );
 
     if (errorType != ErrorType.NO_CHARM) {
-      tags.add("    <charm value=\"" + nextCharm() + "\"/>");
+      tags.add("    <charmId value=\"" + nextCharm() + "\"/>");
     }
 
     tags.add("    <gender value=\"" + (random.nextBoolean() ? "MALE" : "FEMALE") + "\"/>");

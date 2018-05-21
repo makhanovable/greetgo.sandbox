@@ -1,5 +1,5 @@
 <div>
-    <h2 mat-dialog-title>It is a tile</h2>
+    <h2 mat-dialog-title>Model info</h2>
 
     <mat-dialog-content [formGroup]="form" class="modal-form">
 
@@ -23,8 +23,7 @@
         <mat-form-field>
             <mat-select formControlName="charm">
                 <mat-option
-                    [value]="charm"
-                    *ngFor="let charm of charms" >{{ charm }}</mat-option>
+                    *ngFor="let charm of charmsDictionary" [value]="charm.id">{{ charm.name }}</mat-option>
             </mat-select>
         </mat-form-field>
 

@@ -8,5 +8,5 @@ export class ClientInfoModel {
   public factAddress: Address;
   public regAddress: Address;
   public phones: Phone[];
-  public charmDots: Charm[];
+  public charmsDictionary: Charm[];
 }

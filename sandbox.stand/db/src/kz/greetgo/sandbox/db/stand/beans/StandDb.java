@@ -160,7 +160,7 @@ public class StandDb implements HasAfterInject {
 //    AccountInfoDot acc = new AccountInfoDot();
 //    acc.id = Integer.parseInt(splitLine[1].trim());
 //    acc.fullName = splitLine[2].trim();
-//    acc.charm = splitLine[3].trim();
+//    acc.charmId = splitLine[3].trim();
 //    acc.age = Integer.parseInt(splitLine[4].trim());
 //    acc.totalAccBalance = Float.parseFloat(splitLine[5].trim());
 //    acc.maxAccBalance = Float.parseFloat(splitLine[6].trim());

@@ -7,5 +7,5 @@ export class Client {
   public patronymic: string;
   public gender: Gender;
   public birthDate: Date;
-  public charm: number;
+  public charmId: number;
 }

@@ -26,7 +26,7 @@ export class AccountInfo {
 // export interface AccountInfo {
 //   id: number;
 //   fullName: string;
-//   charm: string;
+//   charmId: string;
 //   age: number;
 //   totalAccBalance: number;
 //   maxAccBalance: number;

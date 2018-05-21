@@ -5,6 +5,7 @@ import {FormBuilder, FormGroup} from "@angular/forms";
 import {ClientInfoModel} from "../../../../model/ClientInfoModel";
 import {Gender} from "../../../../model/Gender";
 import {PhoneType} from "../../../../model/PhoneType";
+import {Charm} from "../../../../model/Charm";
 
 @Component({
   selector: 'modal-info-component',
@@ -20,7 +21,7 @@ export class ModalInfoComponent implements OnInit {
   surname: string = '';
   patronymic: string = '';
   gender: Gender = Gender.MALE;
-  charm: number = 0;
+  charmId: number = 0;
   streetFact: string = '';
   houseFact: string = '';
   flatFact: string = '';
@@ -33,7 +34,7 @@ export class ModalInfoComponent implements OnInit {
   phoneMobile2: string = '';
   phoneMobile3: string = '';
 
-  charms = [];
+  charmsDictionary: Charm[];
 
   constructor(private fb: FormBuilder,
               @Inject(MAT_DIALOG_DATA) public data: any,
@@ -46,7 +47,8 @@ export class ModalInfoComponent implements OnInit {
       this.surname = this.clientInfoModel.clientInfo.surname;
       this.patronymic = this.clientInfoModel.clientInfo.patronymic;
       this.gender = this.clientInfoModel.clientInfo.gender;
-      this.charm = this.clientInfoModel.clientInfo.charm;
+      this.charmId = this.clientInfoModel.clientInfo.charmId;
+      this.charmsDictionary = this.clientInfoModel.charmsDictionary;
 
       if (this.clientInfoModel.factAddress !== null) {
         this.streetFact = this.clientInfoModel.factAddress.street;
@@ -81,6 +83,8 @@ export class ModalInfoComponent implements OnInit {
           }
         }
       }
+
+      console.log(data.clientInfoModel)
     }
   }
 
@@ -90,7 +94,7 @@ export class ModalInfoComponent implements OnInit {
       surname: [this.surname],
       patronymic: [this.patronymic],
       gender: ['MALE'],
-      charm: [this.charms[1]],
+      charm: [this.charmId],
       streetFact: [this.streetFact],
       houseFact: [this.houseFact],
       flatFact: [this.flatFact],
