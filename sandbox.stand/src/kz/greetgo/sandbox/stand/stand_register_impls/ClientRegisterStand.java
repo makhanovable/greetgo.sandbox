@@ -47,31 +47,16 @@ public class ClientRegisterStand implements ClientRegister {
   @Override
   public AccountInfo createNewClient(ClientInfo clientInfo) {
 
-//    int newClientId = db.get().clientStorage.size() + 1;
-//    ClientDot newClient = new ClientDot(newClientId, name, surname, patronymic,
-//      Gender.valueOf(gender), new Date(birthDate), charmId);
-//
-//    db.get().clientStorage.put(newClientId, newClient);
-//
-//    addNewAddress(db.get().addressStorage.size() + 1, newClient.id, AddressType.FACT, streetFact, houseFact, flatFact);
-//    addNewAddress(db.get().addressStorage.size() + 1, newClient.id, AddressType.REG, streetReg, houseReg, flatReg);
-//
-//    addDefaultAccount(newClient.id);
-//
-//    createNewPhone(PhoneType.HOME, phoneHome, newClient.id);
-//    createNewPhone(PhoneType.WORK, phoneWork, newClient.id);
-//    createNewPhone(PhoneType.MOBILE, phoneMobile1, newClient.id);
-//    createNewPhone(PhoneType.MOBILE, phoneMobile2, newClient.id);
-//    createNewPhone(PhoneType.MOBILE, phoneMobile3, newClient.id);
-//
-//    AccountInfo newAccountInfo = new AccountInfo();
-//
-//    newAccountInfo.fullName = String.format("%s %s %s", name, surname, patronymic);
-//    newAccountInfo.charm = db.get().charmStorage.get(charmId).name;
-//    newAccountInfo.id = newClientId;
-//
-//    return newAccountInfo;
-    return null;
+    int newClientId = db.get().clientStorage.size() + 1;
+
+    addNewClient(newClientId, clientInfo.client);
+
+    addNewAddress(db.get().addressStorage.size() + 1, newClientId, clientInfo.factAddress);
+    addNewAddress(db.get().addressStorage.size() + 1, newClientId, clientInfo.regAddress);
+
+    addDefaultAccount(newClientId);
+
+    return accountRegister.get().getAccountInfo(newClientId);
   }
 
   @Override
@@ -163,8 +148,16 @@ public class ClientRegisterStand implements ClientRegister {
 
   }
 
-  private void addNewAddress(int id, int clientId, AddressType type, String street, String house, String flat) {
-    db.get().addressStorage.put(id, new AddressDot(id, clientId, type, street, house, flat));
+  private void addNewClient(int clientId, Client client) {
+    ClientDot newClientDot = new ClientDot(clientId, client.name, client.surname, client.patronymic,
+      client.gender, client.birthDate, client.charmId);
+
+    db.get().clientStorage.put(clientId, newClientDot);
+  }
+
+  private void addNewAddress(int id, int clientId, Address address) {
+    db.get().addressStorage.put(id, new AddressDot(id, clientId,
+      address.type, address.street, address.house, address.flat));
   }
 
   private void removeAllAddresses(int clientId) {
