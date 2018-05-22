@@ -8,6 +8,7 @@ import kz.greetgo.mvc.annotations.Par;
 import kz.greetgo.mvc.annotations.ToJson;
 import kz.greetgo.sandbox.controller.model.AccountInfo;
 import kz.greetgo.sandbox.controller.model.ClientInfoModel;
+import kz.greetgo.sandbox.controller.model.InfoForm;
 import kz.greetgo.sandbox.controller.register.client.ClientRegister;
 import kz.greetgo.sandbox.controller.util.Controller;
 
@@ -24,7 +25,7 @@ public class ClientController implements Controller {
   public ClientInfoModel getClientInfo(@Par("clientId") int clientId) {
     return clientRegister.get().getClientInfo(clientId);
   }
-
+// TODO: refactor
   @ToJson()
   @Mapping("/create")
   public AccountInfo createNewClient(
@@ -46,23 +47,7 @@ public class ClientController implements Controller {
     @Par("phoneMobile2") String phoneMobile2,
     @Par("phoneMobile3") String phoneMobile3) {
 
-    return clientRegister.get().createNewClient(name,
-                                                  surname,
-                                                  patronymic,
-                                                  gender,
-                                                  birthDate,
-                                                  charmId,
-                                                  streetFact,
-                                                  houseFact,
-                                                  flatFact,
-                                                  streetReg,
-                                                  houseReg,
-                                                  flatReg,
-                                                  phoneHome,
-                                                  phoneWork,
-                                                  phoneMobile1,
-                                                  phoneMobile2,
-                                                  phoneMobile3);
+    return clientRegister.get().createNewClient(new InfoForm());
   }
 
   @ToJson()
@@ -87,24 +72,7 @@ public class ClientController implements Controller {
     @Par("phoneMobile2") String phoneMobile2,
     @Par("phoneMobile3") String phoneMobile3) {
 
-    return clientRegister.get().editClient(clientId,
-                                            name,
-                                            surname,
-                                            patronymic,
-                                            gender,
-                                            birthDate,
-                                            charmId,
-                                            streetFact,
-                                            houseFact,
-                                            flatFact,
-                                            streetReg,
-                                            houseReg,
-                                            flatReg,
-                                            phoneHome,
-                                            phoneWork,
-                                            phoneMobile1,
-                                            phoneMobile2,
-                                            phoneMobile3);
+    return clientRegister.get().editClient(new InfoForm());
   }
 
   @ToJson()

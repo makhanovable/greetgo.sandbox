@@ -41,100 +41,67 @@ public class ClientRegisterStand implements ClientRegister {
       clientInfoModel.phones = getPhones(clientId);
     }
 
-    clientInfoModel.charmsDictionary = getCharmsDictionary();
-
     return clientInfoModel;
   }
 
   @Override
-  public AccountInfo createNewClient(String name,
-                                     String surname,
-                                     String patronymic,
-                                     String gender,
-                                     Long birthDate,
-                                     int charmId,
-                                     String streetFact,
-                                     String houseFact,
-                                     String flatFact,
-                                     String streetReg,
-                                     String houseReg,
-                                     String flatReg,
-                                     String phoneHome,
-                                     String phoneWork,
-                                     String phoneMobile1,
-                                     String phoneMobile2,
-                                     String phoneMobile3) {
+  public AccountInfo createNewClient(InfoForm createForm) {
 
-    int newClientId = db.get().clientStorage.size() + 1;
-    ClientDot newClient = new ClientDot(newClientId, name, surname, patronymic,
-      Gender.valueOf(gender), new Date(birthDate), charmId);
-
-    db.get().clientStorage.put(newClientId, newClient);
-
-    addNewAddress(db.get().addressStorage.size() + 1, newClient.id, AddressType.FACT, streetFact, houseFact, flatFact);
-    addNewAddress(db.get().addressStorage.size() + 1, newClient.id, AddressType.REG, streetReg, houseReg, flatReg);
-
-    addDefaultAccount(newClient.id);
-
-    createNewPhone(PhoneType.HOME, phoneHome, newClient.id);
-    createNewPhone(PhoneType.WORK, phoneWork, newClient.id);
-    createNewPhone(PhoneType.MOBILE, phoneMobile1, newClient.id);
-    createNewPhone(PhoneType.MOBILE, phoneMobile2, newClient.id);
-    createNewPhone(PhoneType.MOBILE, phoneMobile3, newClient.id);
-
-    AccountInfo newAccountInfo = new AccountInfo();
-
-    newAccountInfo.fullName = String.format("%s %s %s", name, surname, patronymic);
-    newAccountInfo.charm = db.get().charmStorage.get(charmId).name;
-    newAccountInfo.id = newClientId;
-
-    return newAccountInfo;
+//    int newClientId = db.get().clientStorage.size() + 1;
+//    ClientDot newClient = new ClientDot(newClientId, name, surname, patronymic,
+//      Gender.valueOf(gender), new Date(birthDate), charmId);
+//
+//    db.get().clientStorage.put(newClientId, newClient);
+//
+//    addNewAddress(db.get().addressStorage.size() + 1, newClient.id, AddressType.FACT, streetFact, houseFact, flatFact);
+//    addNewAddress(db.get().addressStorage.size() + 1, newClient.id, AddressType.REG, streetReg, houseReg, flatReg);
+//
+//    addDefaultAccount(newClient.id);
+//
+//    createNewPhone(PhoneType.HOME, phoneHome, newClient.id);
+//    createNewPhone(PhoneType.WORK, phoneWork, newClient.id);
+//    createNewPhone(PhoneType.MOBILE, phoneMobile1, newClient.id);
+//    createNewPhone(PhoneType.MOBILE, phoneMobile2, newClient.id);
+//    createNewPhone(PhoneType.MOBILE, phoneMobile3, newClient.id);
+//
+//    AccountInfo newAccountInfo = new AccountInfo();
+//
+//    newAccountInfo.fullName = String.format("%s %s %s", name, surname, patronymic);
+//    newAccountInfo.charm = db.get().charmStorage.get(charmId).name;
+//    newAccountInfo.id = newClientId;
+//
+//    return newAccountInfo;
+    return null;
   }
 
   @Override
-  public AccountInfo editClient(int clientId,
-                                String name,
-                                String surname,
-                                String patronymic,
-                                String gender,
-                                Long birthDate,
-                                int charmId,
-                                String streetFact,
-                                String houseFact,
-                                String flatFact,
-                                String streetReg,
-                                String houseReg,
-                                String flatReg,
-                                String phoneHome,
-                                String phoneWork,
-                                String phoneMobile1,
-                                String phoneMobile2,
-                                String phoneMobile3) {
+  public AccountInfo editClient(InfoForm editForm) {
 
-    ClientDot clientDot = db.get().clientStorage.get(clientId);
-    if (clientDot == null) {
-      throw new NullPointerException("no such client id:" + clientId);
-    }
-
-    clientDot.name = name;
-    clientDot.surname = surname;
-    clientDot.patronymic = patronymic;
-    clientDot.birthDate = new Date(birthDate);
-    clientDot.gender = Gender.valueOf(gender);
-    clientDot.charmId = charmId;
-
-    updateAddress(AddressType.FACT, clientId, streetFact, houseFact, flatFact);
-    updateAddress(AddressType.REG, clientId, streetReg, houseReg, flatReg);
-
-    updatePhone(PhoneType.HOME, clientId, phoneHome, -1);
-    updatePhone(PhoneType.WORK, clientId, phoneWork, -1);
-    updatePhone(PhoneType.MOBILE, clientId, phoneMobile1, 0);
-    updatePhone(PhoneType.MOBILE, clientId, phoneMobile2, 1);
-    updatePhone(PhoneType.MOBILE, clientId, phoneMobile3, 2);
-
-//  TODO: phone edit
-
-    return accountRegister.get().getAccountInfo(clientId);
+//    ClientDot clientDot = db.get().clientStorage.get(clientId);
+//    if (clientDot == null) {
+//      throw new NullPointerException("no such client id:" + clientId);
+//    }
+//
+//    clientDot.name = name;
+//    clientDot.surname = surname;
+//    clientDot.patronymic = patronymic;
+//    clientDot.birthDate = new Date(birthDate);
+//    clientDot.gender = Gender.valueOf(gender);
+//    clientDot.charmId = charmId;
+//
+//    updateAddress(AddressType.FACT, clientId, streetFact, houseFact, flatFact);
+//    updateAddress(AddressType.REG, clientId, streetReg, houseReg, flatReg);
+//
+//    updatePhone(PhoneType.HOME, clientId, phoneHome, -1);
+//    updatePhone(PhoneType.WORK, clientId, phoneWork, -1);
+//    updatePhone(PhoneType.MOBILE, clientId, phoneMobile1, 0);
+//    updatePhone(PhoneType.MOBILE, clientId, phoneMobile2, 1);
+//    updatePhone(PhoneType.MOBILE, clientId, phoneMobile3, 2);
+//
+////  TODO: phone edit
+//
+//    return accountRegister.get().getAccountInfo(clientId);
+    return null;
   }
 
   private void updatePhone(PhoneType type, int clientId, String number, int mobileIndex) {
@@ -212,15 +179,6 @@ public class ClientRegisterStand implements ClientRegister {
     db.get().accountStorage.values().removeIf(account -> account.clientId == clientId);
   }
 
-  private List<Charm> getCharmsDictionary() {
-    List<Charm> result = new ArrayList<>();
-
-    for (CharmDot charmDot : db.get().charmStorage.values()) {
-      result.add(charmDot.toCharm());
-    }
-
-    return result;
-  }
 
   private AddressDot getAddressDot(int clientId, AddressType addressType) {
     for (AddressDot addressDot : db.get().addressStorage.values()) {

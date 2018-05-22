@@ -50,6 +50,14 @@ export class ModalInfoComponent implements OnInit {
     this.actionType = data.actionType;
     this.clientId = data.clientId;
 
+    this.httpService.get("/charm/dictionary").toPromise().then(dictionary => {
+      this.charmsDictionary = dictionary.json();
+      this.charmId = this.charmsDictionary[0].id;
+      console.log(this.charmsDictionary);
+    }, error => {
+      console.log(error);
+    });
+
     this.httpService.get("/client/info", {clientId: this.clientId}).toPromise().then(response => {
       this.loadData(response);
     }, error => {
@@ -63,9 +71,6 @@ export class ModalInfoComponent implements OnInit {
 
   private loadData(response) {
     const clientInfoModel = response.json();
-
-    this.charmsDictionary = clientInfoModel.charmsDictionary;
-    this.charmId = this.charmsDictionary[0].id;
 
     if (this.actionType == ActionType.EDIT) {
       this.loadClientInfo(clientInfoModel);
@@ -98,7 +103,7 @@ export class ModalInfoComponent implements OnInit {
     let mobileCounter = 0;
     for (let i = 0; i < clientInfoModel.phones.length; i++) {
       const phone = clientInfoModel.phones[i];
-      console.log(phone);
+      // console.log(phone);
       if (phone.type == PhoneType.HOME) {
         this.phoneHome = phone.number;
       } else if (phone.type == PhoneType.WORK) {
@@ -117,11 +122,11 @@ export class ModalInfoComponent implements OnInit {
         }
       }
     }
-    console.log(this.phoneHome);
-    console.log(this.phoneWork);
-    console.log(this.phoneMobile1);
-    console.log(this.phoneMobile2);
-    console.log(this.phoneMobile3);
+    // console.log(this.phoneHome);
+    // console.log(this.phoneWork);
+    // console.log(this.phoneMobile1);
+    // console.log(this.phoneMobile2);
+    // console.log(this.phoneMobile3);
 
   }
 
