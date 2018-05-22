@@ -79,24 +79,21 @@
             <input matInput formControlName="phoneWork" />
         </mat-form-field>
 
-        <mat-form-field>
-            <mat-label>Mobile1</mat-label>
-            <input matInput formControlName="phoneMobile1" />
-        </mat-form-field>
-
-        <mat-form-field>
-            <mat-label>Mobile2</mat-label>
-            <input matInput formControlName="phoneMobile2" />
-        </mat-form-field>
-
-        <mat-form-field>
-            <mat-label>Mobile3</mat-label>
-            <input matInput formControlName="phoneMobile3" />
-        </mat-form-field>
+        <div formArrayName="mobiles">
+            <div *ngFor="let item of form.controls.mobiles.controls; let i = index;" [formGroupName]="i">
+                <mat-form-field>
+                    <mat-label>Mobile{{ i + 1 }}</mat-label>
+                    <input matInput formControlName="number" />
+                </mat-form-field>
+                <button mat-button color="primary" class="modal-button"
+                        *ngIf="form.controls.mobiles.controls.length > 1" (click)="deleteMobile(i)">Delete Mobile</button>
+            </div>
+        </div>
 
     </mat-dialog-content>
 
     <mat-dialog-actions class="modal-actions">
+        <button mat-button color="primary" class="modal-button" (click)="addMobile()">Add mobile</button>
         <button mat-button color="primary" class="modal-button" (click)="close()">Close</button>
         <button mat-button color="primary" class="modal-button" (click)="save()">Save</button>
     </mat-dialog-actions>

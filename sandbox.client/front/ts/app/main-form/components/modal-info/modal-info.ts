@@ -1,7 +1,7 @@
 import {Component, Inject, OnInit} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material";
 import {MainFormComponent} from "../../main-form";
-import {FormBuilder, FormGroup} from "@angular/forms";
+import {FormArray, FormBuilder, FormControl, FormGroup} from "@angular/forms";
 import {Gender} from "../../../../model/Gender";
 import {PhoneType} from "../../../../model/PhoneType";
 import {Charm} from "../../../../model/Charm";
@@ -41,9 +41,6 @@ export class ModalInfoComponent implements OnInit {
   flatReg: string = '';
   phoneHome: string = '';
   phoneWork: string = '';
-  phoneMobile1: string = '';
-  phoneMobile2: string = '';
-  phoneMobile3: string = '';
 
   charmsDictionary: Charm[];
 
@@ -106,28 +103,28 @@ export class ModalInfoComponent implements OnInit {
     }
 
 
-    let mobileCounter = 0;
-    for (let i = 0; i < clientInfoModel.phones.length; i++) {
-      const phone = clientInfoModel.phones[i];
-      // console.log(phone);
-      if (phone.type == PhoneType.HOME) {
-        this.phoneHome = phone.number;
-      } else if (phone.type == PhoneType.WORK) {
-        this.phoneWork = phone.number;
-      } else if (phone.type == PhoneType.MOBILE) {
-        switch (mobileCounter++) {
-          case 0:
-            this.phoneMobile1 = phone.number;
-            break;
-          case 1:
-            this.phoneMobile2 = phone.number;
-            break;
-          case 2:
-            this.phoneMobile3 = phone.number;
-            break;
-        }
-      }
-    }
+    // let mobileCounter = 0;
+    // for (let i = 0; i < clientInfoModel.phones.length; i++) {
+    //   const phone = clientInfoModel.phones[i];
+    //   // console.log(phone);
+    //   if (phone.type == PhoneType.HOME) {
+    //     this.phoneHome = phone.number;
+    //   } else if (phone.type == PhoneType.WORK) {
+    //     this.phoneWork = phone.number;
+    //   } else if (phone.type == PhoneType.MOBILE) {
+    //     switch (mobileCounter++) {
+    //       case 0:
+    //         this.phoneMobile1 = phone.number;
+    //         break;
+    //       case 1:
+    //         this.phoneMobile2 = phone.number;
+    //         break;
+    //       case 2:
+    //         this.phoneMobile3 = phone.number;
+    //         break;
+    //     }
+    //   }
+    // }
     // console.log(this.phoneHome);
     // console.log(this.phoneWork);
     // console.log(this.phoneMobile1);
@@ -152,10 +149,24 @@ export class ModalInfoComponent implements OnInit {
       flatReg: [this.flatReg],
       phoneHome: [this.phoneHome],
       phoneWork: [this.phoneWork],
-      phoneMobile1: [this.phoneMobile1],
-      phoneMobile2: [this.phoneMobile2],
-      phoneMobile3: [this.phoneMobile3],
+      mobiles: this.fb.array([this.createMobile()])
     });
+  }
+
+  createMobile(): FormGroup {
+    return this.fb.group({
+      number: ['']
+    });
+  }
+  
+  addMobile() {
+    const control = this.form.controls["mobiles"] as FormArray;
+    control.push(this.createMobile());
+  }
+
+  deleteMobile(index: number) {
+    const control = this.form.controls["mobiles"] as FormArray;
+    control.removeAt(index);
   }
 
   save() {
