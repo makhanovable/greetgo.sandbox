@@ -29,8 +29,10 @@ public class AccountRegisterStand implements AccountRegister {
     ArrayList<AccountInfo> accountInfoList = new ArrayList<>();
 
     for(ClientDot clientDot : db.get().clientStorage.values()) {
-      AccountInfo accountInfo = getAccountInfo(clientDot.id);
-      accountInfoList.add(accountInfo);
+      if(clientDot.isActive) {
+        AccountInfo accountInfo = getAccountInfo(clientDot.id);
+        accountInfoList.add(accountInfo);
+      }
     }
 
     return accountInfoList;
@@ -87,7 +89,7 @@ public class AccountRegisterStand implements AccountRegister {
     ArrayList<Account> accounts = new ArrayList<>();
 
     for(AccountDot accountDot: db.get().accountStorage.values()) {
-      if(accountDot.clientId == clientId) accounts.add(accountDot.toAccount());
+      if(accountDot.clientId == clientId && accountDot.isActive) accounts.add(accountDot.toAccount());
     }
 
     return accounts;

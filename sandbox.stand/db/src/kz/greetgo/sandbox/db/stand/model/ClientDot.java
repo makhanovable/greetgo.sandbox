@@ -14,6 +14,8 @@ public class ClientDot {
   public Date birthDate;
   public int charmId;
 
+  public boolean isActive = true;
+
   public Client toClient() {
     return new Client(this.id,
                       this.name,

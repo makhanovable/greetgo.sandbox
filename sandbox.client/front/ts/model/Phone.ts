@@ -4,8 +4,9 @@ export class Phone {
   public number : string;
   public type : string;
 
+  public isActive: boolean = true;
 
-  constructor(number: string, type: string) {
+  constructor(clientId: number, number: string, type: string) {
     this.number = number;
     this.type = type;
   }

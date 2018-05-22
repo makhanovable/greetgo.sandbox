@@ -8,6 +8,8 @@ public class Address {
   public String house;
   public String flat;
 
+  public boolean isActive = true;
+
   public Address() { }
 
   public Address(int id, int clientId, AddressType type, String street, String house, String flat) {

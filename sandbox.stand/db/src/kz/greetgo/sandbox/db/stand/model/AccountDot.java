@@ -12,6 +12,8 @@ public class AccountDot {
   public String number;
   public Timestamp registeredAt;
 
+  public boolean isActive = true;
+
   public Account toAccount() {
     return new Account(this.id,
                         this.clientId,

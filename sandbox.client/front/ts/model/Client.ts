@@ -9,6 +9,8 @@ export class Client {
   public birthDate: Date;
   public charmId: number;
 
+  public isActive: boolean = true;
+
   constructor(id: number, name: string, surname: string, patronymic: string, gender: Gender, birthDate: Date, charmId: number) {
     this.id = id;
     this.name = name;

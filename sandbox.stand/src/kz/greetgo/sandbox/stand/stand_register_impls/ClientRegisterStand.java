@@ -42,7 +42,6 @@ public class ClientRegisterStand implements ClientRegister {
         clientInfo.regAddress = regAddDot.toAddress();
       }
 
-      Collection df = db.get().phoneStorage.values();
       clientInfo.phones = getPhones(clientId);
     }
 
@@ -81,15 +80,8 @@ public class ClientRegisterStand implements ClientRegister {
     updateAddress(AddressType.FACT, clientDot.id, clientInfo.factAddress);
     updateAddress(AddressType.REG, clientDot.id, clientInfo.regAddress);
 
-//    updatePhone(PhoneType.HOME, clientId, phoneHome, -1);
-//    updatePhone(PhoneType.WORK, clientId, phoneWork, -1);
-//    updatePhone(PhoneType.MOBILE, clientId, phoneMobile1, 0);
-//    updatePhone(PhoneType.MOBILE, clientId, phoneMobile2, 1);
-//    updatePhone(PhoneType.MOBILE, clientId, phoneMobile3, 2);
-//
-////  TODO: phone edit
-//
-//    return accountRegister.get().getAccountInfo(clientId);
+    updatePhones(clientDot.id, clientInfo.phones);
+
     return accountRegister.get().getAccountInfo(clientDot.id);
   }
 
@@ -125,7 +117,7 @@ public class ClientRegisterStand implements ClientRegister {
     List<Phone> result = new ArrayList<>();
 
     for (PhoneDot phoneDot : db.get().phoneStorage.values()) {
-      if (phoneDot.clientId == clientId)
+      if (phoneDot.clientId == clientId && phoneDot.isActive)
         result.add(phoneDot.toPhone());
     }
 
@@ -181,35 +173,46 @@ public class ClientRegisterStand implements ClientRegister {
     addressDot.flat = address.flat;
   }
 
-  private void updatePhone(PhoneType type, int clientId, String number, int mobileIndex) {
-    PhoneDot phone = getPhoneDot(type, clientId, mobileIndex);
-    phone.number = number;
-  }
+  private void updatePhones(int clientId, List<Phone> phones) {
+    for(Phone phone : phones) {
+      PhoneDot phoneDot = getPhoneDot(phone.type, clientId, phone.number);
 
-  private PhoneDot getPhoneDot(PhoneType type, int clientId, int mobileIndex) {
-    if (type != PhoneType.MOBILE) {
-      for (PhoneDot phoneDot : db.get().phoneStorage.values()) {
-        if (phoneDot.clientId == clientId && phoneDot.type == type) {
+      if(phoneDot != null && !phoneDot.number.equals(phone.number)) {
 
-          return phoneDot;
-        }
-      }
-    } else {
-      int mobileCounter = 0;
-      for (PhoneDot phoneDot : getMobilePhoneDots(clientId, mobileIndex)) {
-        if (mobileCounter++ == mobileIndex) {
-          return phoneDot;
-        }
+        phoneDot.isActive = false;
+        createNewPhoneDot(phone.type, phone.number, clientId);
+
+      } else if(phoneDot == null) {
+        createNewPhoneDot(phone.type, phone.number, clientId);
       }
     }
-    throw new NullPointerException("no such phone. clientId" + clientId
-      + ", type:" + type + ", mobileIndex:" + mobileIndex);
+
+    // All other phones should be disabled
+    for(PhoneDot phoneDot : getPhoneDots(clientId)) {
+      if(!containsNumber(phones, phoneDot.number)) {
+        phoneDot.isActive = false;
+      }
+    }
   }
 
-  private List<PhoneDot> getMobilePhoneDots(int clientId, int mobileIndex) {
+  public boolean containsNumber(final List<Phone> list, final String number){
+    return list.stream().anyMatch(o -> o.number.equals(number));
+  }
+
+  private PhoneDot getPhoneDot(PhoneType type, int clientId, String number) {
+      for (PhoneDot phoneDot : db.get().phoneStorage.values()) {
+        if (phoneDot.clientId == clientId && phoneDot.type == type && phoneDot.number.equals(number)) {
+          return phoneDot;
+        }
+      }
+
+    return null;
+  }
+
+  private List<PhoneDot> getPhoneDots(int clientId) {
     List<PhoneDot> mobiles = new ArrayList<>();
     for (PhoneDot phoneDot : db.get().phoneStorage.values()) {
-      if (phoneDot.clientId == clientId && phoneDot.type == PhoneType.MOBILE) {
+      if (phoneDot.clientId == clientId) {
         mobiles.add(phoneDot);
       }
     }
@@ -218,14 +221,26 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private void removeAllAccounts(int clientId) {
-    db.get().accountStorage.values().removeIf(account -> account.clientId == clientId);
+    for(AccountDot accountDot: db.get().accountStorage.values()) {
+      if(accountDot.clientId == clientId) {
+        accountDot.isActive = false;
+      }
+    }
   }
 
   private void removeAllAddresses(int clientId) {
-    db.get().addressStorage.values().removeIf(address -> address.clientId == clientId);
+    for(AddressDot addressDot: db.get().addressStorage.values()) {
+      if(addressDot.clientId == clientId) {
+        addressDot.isActive = false;
+      }
+    }
   }
 
   private void removeAllPhones(int clientId) {
-    db.get().phoneStorage.values().removeIf(phone -> phone.clientId == clientId);
+    for(PhoneDot phoneDot: db.get().phoneStorage.values()) {
+      if(phoneDot.clientId == clientId) {
+        phoneDot.isActive = false;
+      }
+    }
   }
 }

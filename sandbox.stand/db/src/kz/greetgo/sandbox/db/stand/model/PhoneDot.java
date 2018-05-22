@@ -9,6 +9,8 @@ public class PhoneDot {
   public String number;
   public PhoneType type;
 
+  public boolean isActive = true;
+
   public Phone toPhone() {
     return new Phone(this.id,this.clientId, this.number, this.type);
   }

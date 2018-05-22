@@ -11,6 +11,8 @@ public class AddressDot {
   public String house;
   public String flat;
 
+  public boolean isActive = true;
+
   public Address toAddress() {
     return new Address(id,clientId,addressType,street,house,flat);
   }

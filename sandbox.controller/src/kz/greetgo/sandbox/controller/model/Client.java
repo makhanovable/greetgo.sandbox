@@ -11,6 +11,8 @@ public class Client {
   public Date birthDate;
   public int charmId;
 
+  public boolean isActive = true;
+
   public Client(int id, String name, String surname, String patronymic, Gender gender, Date birthDate, int charmId) {
     this.id = id;
     this.name = name;
