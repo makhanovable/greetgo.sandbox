@@ -84,6 +84,8 @@ export class ModalInfoComponent implements OnInit {
   }
 
   private loadClientInfo(clientInfoModel) {
+    console.log(clientInfoModel);
+
     this.name = clientInfoModel.client.name;
     this.surname = clientInfoModel.client.surname;
     this.patronymic = clientInfoModel.client.patronymic;
@@ -204,7 +206,7 @@ export class ModalInfoComponent implements OnInit {
 
     const factAddress = new Address(
       this.clientInfo.factAddress.id || null,
-      this.clientInfo.client.id,
+      this.clientInfo.client.id || null,
       AddressType.FACT,
       this.form.controls["streetFact"].value,
       this.form.controls["houseFact"].value,
@@ -212,7 +214,7 @@ export class ModalInfoComponent implements OnInit {
 
     const regAddress = new Address(
       this.clientInfo.regAddress.id || null,
-      this.clientInfo.client.id,
+      this.clientInfo.client.id || null,
       AddressType.REG,
       this.form.controls["streetReg"].value,
       this.form.controls["houseReg"].value,

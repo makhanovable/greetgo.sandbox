@@ -69,8 +69,8 @@ public class ClientRegisterStand implements ClientRegister {
 
     updateClient(clientDot, clientInfo.client);
 
-//    updateAddress(AddressType.FACT, clientId, streetFact, houseFact, flatFact);
-//    updateAddress(AddressType.REG, clientId, streetReg, houseReg, flatReg);
+    updateAddress(AddressType.FACT, clientDot.id, clientInfo.factAddress);
+    updateAddress(AddressType.REG, clientDot.id, clientInfo.regAddress);
 
 //    updatePhone(PhoneType.HOME, clientId, phoneHome, -1);
 //    updatePhone(PhoneType.WORK, clientId, phoneWork, -1);
@@ -99,18 +99,18 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
 
-  private void updateAddress(AddressType type, int clientId, String street, String house, String flat) {
+  private void updateAddress(AddressType type, int clientId, Address address) {
     AddressDot addressDot = getAddressDot(clientId, type);
 
     if (addressDot == null) {
-      addressDot = new AddressDot(db.get().addressStorage.size() + 1, clientId, type, street, house, flat);
+      addressDot = new AddressDot(db.get().addressStorage.size() + 1, clientId, type, address.street, address.house, address.flat);
       db.get().addressStorage.put(addressDot.id, addressDot);
       return;
     }
 
-    addressDot.street = street;
-    addressDot.house = house;
-    addressDot.flat = flat;
+    addressDot.street = address.street;
+    addressDot.house = address.house;
+    addressDot.flat = address.flat;
   }
 
 

@@ -17,9 +17,10 @@ CLIENT; 2; Михаил Юрьевич Лермонтов; MALE; 15-10-1814; 2
 #
 #            ADDRESSES
 #
-ADDRESS; 1; 1; FACT; Kabanbay Batyr, 145, 22
+ADDRESS; 1; 1; FACT; Kabanbay Batyr, 145
 ADDRESS; 2; 1; REG; Tole bi, 220, 54
 ADDRESS; 3; 2; FACT; Chernomorskaya, 2
+ADDRESS; 4; 2; REG; Abylaihan, 22, 44
 #
 #            PHONES
 #
