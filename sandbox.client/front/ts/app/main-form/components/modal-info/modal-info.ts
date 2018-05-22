@@ -222,8 +222,9 @@ export class ModalInfoComponent implements OnInit {
 
     const clientInfo = new ClientInfo(client, factAddress, regAddress, phones);
 
-    this.httpService.post("/client/create", {clientInfo: clientInfo}).toPromise().then(response => {
+    console.log("client info",clientInfo);
 
+    this.httpService.post("/client/create", {clientInfo: JSON.stringify(clientInfo)} ).toPromise().then(response => {
       this.accountService.addNewAccount(response.json());
       this.dialogRef.close();
     }, error => {

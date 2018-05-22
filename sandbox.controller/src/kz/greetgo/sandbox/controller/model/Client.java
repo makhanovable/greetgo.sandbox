@@ -20,4 +20,6 @@ public class Client {
     this.birthDate = birthDate;
     this.charmId = charmId;
   }
+
+  public Client() { }
 }

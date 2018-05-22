@@ -12,4 +12,6 @@ public class Phone {
     this.number = number;
     this.type = type;
   }
+
+  public Phone() { }
 }
