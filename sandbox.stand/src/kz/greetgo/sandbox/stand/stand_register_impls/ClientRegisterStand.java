@@ -27,8 +27,8 @@ public class ClientRegisterStand implements ClientRegister {
 
     if (clientId != DUMB_ID) {
       clientInfoModel.clientInfo = db.get().clientStorage.get(clientId).toClient();
-      clientInfoModel.factAddress = getAddress(clientId, AddressType.FACT);
-      clientInfoModel.regAddress = getAddress(clientId, AddressType.REG);
+      clientInfoModel.factAddress = getAddressDot(clientId, AddressType.FACT).toAddress();
+      clientInfoModel.regAddress = getAddressDot(clientId, AddressType.REG).toAddress();
       clientInfoModel.phones = getPhones(clientId);
     }
 
@@ -137,17 +137,17 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private void updateAddress(AddressType type, int clientId, String street, String house, String flat) {
-    Address address = getAddress(clientId, type);
+    AddressDot addressDot = getAddressDot(clientId, type);
 
-    if (address == null) {
-      AddressDot addressDot = new AddressDot(db.get().addressStorage.size() + 1, clientId, type, street, house, flat);
+    if (addressDot == null) {
+      addressDot = new AddressDot(db.get().addressStorage.size() + 1, clientId, type, street, house, flat);
       db.get().addressStorage.put(addressDot.id, addressDot);
       return;
     }
 
-    address.street = street;
-    address.house = house;
-    address.flat = flat;
+    addressDot.street = street;
+    addressDot.house = house;
+    addressDot.flat = flat;
   }
 
 
@@ -214,10 +214,10 @@ public class ClientRegisterStand implements ClientRegister {
     return result;
   }
 
-  private Address getAddress(int clientId, AddressType addressType) {
+  private AddressDot getAddressDot(int clientId, AddressType addressType) {
     for (AddressDot addressDot : db.get().addressStorage.values()) {
       if (addressDot.clientId == clientId && addressDot.addressType == addressType) {
-        return addressDot.toAddress();
+        return addressDot;
       }
     }
 
