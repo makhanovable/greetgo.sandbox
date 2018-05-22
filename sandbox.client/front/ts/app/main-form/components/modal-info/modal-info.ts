@@ -86,7 +86,7 @@ export class ModalInfoComponent implements OnInit {
       flatReg: [this.flatReg],
       phoneHome: [this.phoneHome],
       phoneWork: [this.phoneWork],
-      mobiles: this.fb.array([])
+      mobiles: this.fb.array([this.createMobile("")])
     });
   }
 
@@ -123,7 +123,8 @@ export class ModalInfoComponent implements OnInit {
       this.flatReg = clientInfoModel.regAddress.flat;
     }
 
-    let mobileCounter = 0;
+
+    this.deleteMobile(0);
     for (let i = 0; i < clientInfoModel.phones.length; i++) {
       const phone = clientInfoModel.phones[i];
 
