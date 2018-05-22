@@ -1,7 +1,7 @@
 import {Component, Inject, OnInit} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material";
 import {MainFormComponent} from "../../main-form";
-import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
 import {Gender} from "../../../../model/Gender";
 import {PhoneType} from "../../../../model/PhoneType";
 import {Charm} from "../../../../model/Charm";
@@ -25,25 +25,27 @@ export class ModalInfoComponent implements OnInit {
 
   form: FormGroup;
 
-  clientInfo: ClientInfo;
+  clientInfo: ClientInfo = new ClientInfo(null, null, null, null);
 
-  name: string = '';
-  surname: string = '';
-  patronymic: string = '';
+  name: string = 'test';
+  surname: string = 'test';
+  patronymic: string = 'test';
   gender: Gender = Gender.MALE;
-  birthDate: Date = null;
-  charmId: number = -1;
-  streetFact: string = '';
-  houseFact: string = '';
-  flatFact: string = '';
-  streetReg: string = '';
-  houseReg: string = '';
-  flatReg: string = '';
-  phoneHome: string = '';
-  phoneWork: string = '';
+  birthDate: Date = new Date();
+  charmId: number = 1;
+  streetFact: string = 'qwe';
+  houseFact: string = 'qwe';
+  flatFact: string = 'qwe';
+  streetReg: string = 'qwe';
+  houseReg: string = 'qwe';
+  flatReg: string = 'qwe';
+  phoneHome: string = 'qwe';
+  phoneWork: string = 'qwe';
   mobiles: FormGroup[] = [];
 
   charmsDictionary: Charm[];
+
+  DUMB_ID = -1;
 
   constructor(private fb: FormBuilder,
               @Inject(MAT_DIALOG_DATA) public data: any,
@@ -55,16 +57,17 @@ export class ModalInfoComponent implements OnInit {
     this.httpService.get("/charm/dictionary").toPromise().then(dictionary => {
       this.charmsDictionary = dictionary.json();
       this.charmId = this.charmsDictionary[0].id;
-      console.log(this.charmsDictionary);
     }, error => {
       console.log(error);
     });
 
-    this.httpService.get("/client/info", {clientId: data.clientId}).toPromise().then(response => {
-      this.loadData(response);
-    }, error => {
-      console.log(error);
-    });
+    if (data.clientId !== this.DUMB_ID) {
+      this.httpService.get("/client/info", {clientId: data.clientId}).toPromise().then(response => {
+        this.loadData(response);
+      }, error => {
+        console.log(error);
+      });
+    }
   }
 
   ngOnInit(): void {
@@ -101,8 +104,6 @@ export class ModalInfoComponent implements OnInit {
   }
 
   private loadClientInfo(clientInfoModel) {
-    console.log(clientInfoModel);
-
     this.name = clientInfoModel.client.name;
     this.surname = clientInfoModel.client.surname;
     this.patronymic = clientInfoModel.client.patronymic;
@@ -127,10 +128,8 @@ export class ModalInfoComponent implements OnInit {
       const phone = clientInfoModel.phones[i];
 
       if (phone.type == PhoneType.HOME) {
-
         this.phoneHome = phone.number;
       } else if (phone.type == PhoneType.WORK) {
-
         this.phoneWork = phone.number;
       } else if (phone.type == PhoneType.MOBILE) {
         const control = this.form.controls["mobiles"] as FormArray;
@@ -161,10 +160,10 @@ export class ModalInfoComponent implements OnInit {
 
   createMobile(number: string): FormGroup {
     return this.fb.group({
-      mobile: [number]
+      number: [number]
     });
   }
-  
+
   addMobile() {
     const control = this.form.controls["mobiles"] as FormArray;
     control.push(this.createMobile(""));
@@ -192,7 +191,9 @@ export class ModalInfoComponent implements OnInit {
 
   createNewClient() {
     const clientInfo = this.boxClientInfo();
-    this.httpService.post("/client/create", {clientInfo: JSON.stringify(clientInfo)} ).toPromise().then(response => {
+
+    console.log("check", clientInfo);
+    this.httpService.post("/client/create", {clientInfo: JSON.stringify(clientInfo)}).toPromise().then(response => {
       this.accountService.addNewAccount(response.json());
       this.dialogRef.close();
     }, error => {
@@ -202,7 +203,7 @@ export class ModalInfoComponent implements OnInit {
 
   private editClient() {
     const clientInfo = this.boxClientInfo();
-    this.httpService.post("/client/edit", {clientInfo: JSON.stringify(clientInfo)} ).toPromise().then(response => {
+    this.httpService.post("/client/edit", {clientInfo: JSON.stringify(clientInfo)}).toPromise().then(response => {
       console.log(response.json());
       this.accountService.updateAccount(response.json());
       this.dialogRef.close();
@@ -215,9 +216,9 @@ export class ModalInfoComponent implements OnInit {
     let clientId = -1;
     let factAddressId = -1;
     let regAddressId = -1;
-    if(this.clientInfo.client !== null) clientId = this.clientInfo.client.id;
-    if(this.clientInfo.factAddress !== null) factAddressId = this.clientInfo.factAddress.id;
-    if(this.clientInfo.regAddress !== null) regAddressId = this.clientInfo.regAddress.id;
+    if (this.clientInfo.client !== null) clientId = this.clientInfo.client.id;
+    if (this.clientInfo.factAddress !== null) factAddressId = this.clientInfo.factAddress.id;
+    if (this.clientInfo.regAddress !== null) regAddressId = this.clientInfo.regAddress.id;
 
     const client = new Client(
       clientId,
@@ -244,7 +245,15 @@ export class ModalInfoComponent implements OnInit {
       this.form.controls["houseReg"].value,
       this.form.controls["flatReg"].value);
 
-    const phones:Phone[] = [];
+    const phones: Phone[] = [];
+
+    phones.push(new Phone(this.form.controls["phoneHome"].value, PhoneType.HOME));
+    phones.push(new Phone(this.form.controls["phoneWork"].value, PhoneType.WORK));
+
+    const arr = (this.form.controls["mobiles"] as FormArray).controls;
+    for (let i = 0; i < arr.length; i++) {
+      phones.push(new Phone(arr[i].value.number, PhoneType.MOBILE));
+    }
 
     return new ClientInfo(client, factAddress, regAddress, phones);
   }

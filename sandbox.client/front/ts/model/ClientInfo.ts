@@ -1,6 +1,5 @@
 import {Address} from "./Address";
 import {Phone} from "./Phone";
-import {Charm} from "./Charm";
 import {Client} from "./Client";
 
 export class ClientInfo {
@@ -8,7 +7,6 @@ export class ClientInfo {
   public factAddress: Address;
   public regAddress: Address;
   public phones: Phone[];
-
 
   constructor(client: Client, factAddress: Address, regAddress: Address, phones: Phone[]) {
     this.client = client;

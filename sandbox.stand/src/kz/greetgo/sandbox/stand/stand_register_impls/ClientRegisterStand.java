@@ -6,10 +6,14 @@ import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.account.AccountRegister;
 import kz.greetgo.sandbox.controller.register.client.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
-import kz.greetgo.sandbox.db.stand.model.*;
+import kz.greetgo.sandbox.db.stand.model.AccountDot;
+import kz.greetgo.sandbox.db.stand.model.AddressDot;
+import kz.greetgo.sandbox.db.stand.model.ClientDot;
+import kz.greetgo.sandbox.db.stand.model.PhoneDot;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -29,15 +33,16 @@ public class ClientRegisterStand implements ClientRegister {
       clientInfo.client = db.get().clientStorage.get(clientId).toClient();
 
       AddressDot factAddDot = getAddressDot(clientId, AddressType.FACT);
-      if(factAddDot != null) {
+      if (factAddDot != null) {
         clientInfo.factAddress = factAddDot.toAddress();
       }
 
       AddressDot regAddDot = getAddressDot(clientId, AddressType.REG);
-      if(regAddDot != null) {
+      if (regAddDot != null) {
         clientInfo.regAddress = regAddDot.toAddress();
       }
 
+      Collection df = db.get().phoneStorage.values();
       clientInfo.phones = getPhones(clientId);
     }
 
@@ -55,6 +60,10 @@ public class ClientRegisterStand implements ClientRegister {
     createNewAddressDot(db.get().addressStorage.size() + 1, newClientId, clientInfo.regAddress);
 
     createDefaultAccountDot(newClientId);
+
+    for (Phone phone : clientInfo.phones) {
+      createNewPhoneDot(phone.type, phone.number, newClientId);
+    }
 
     return accountRegister.get().getAccountInfo(newClientId);
   }
@@ -144,12 +153,7 @@ public class ClientRegisterStand implements ClientRegister {
 
   }
 
-  private void createNewPhone(PhoneType type, String number, int clientId) {
-    if (number == null || number.isEmpty() || clientId == DUMB_ID) {
-      return;
-//      throw new NullPointerException("add number clientId:" + clientId);
-    }
-
+  private void createNewPhoneDot(PhoneType type, String number, int clientId) {
     int newPhoneId = db.get().phoneStorage.size() + 1;
     db.get().phoneStorage.put(newPhoneId, new PhoneDot(newPhoneId, clientId, number, type));
   }
@@ -183,7 +187,7 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private PhoneDot getPhoneDot(PhoneType type, int clientId, int mobileIndex) {
-    if(type != PhoneType.MOBILE) {
+    if (type != PhoneType.MOBILE) {
       for (PhoneDot phoneDot : db.get().phoneStorage.values()) {
         if (phoneDot.clientId == clientId && phoneDot.type == type) {
 
@@ -199,7 +203,7 @@ public class ClientRegisterStand implements ClientRegister {
       }
     }
     throw new NullPointerException("no such phone. clientId" + clientId
-      +", type:"+type+", mobileIndex:"+mobileIndex);
+      + ", type:" + type + ", mobileIndex:" + mobileIndex);
   }
 
   private List<PhoneDot> getMobilePhoneDots(int clientId, int mobileIndex) {
