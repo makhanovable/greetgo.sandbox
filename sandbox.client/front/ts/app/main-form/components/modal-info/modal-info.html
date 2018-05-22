@@ -4,15 +4,15 @@
     <mat-dialog-content [formGroup]="form" class="modal-form">
 
         <mat-form-field>
-            <input matInput placeholder="Name" formControlName="name" />
+            <input matInput placeholder="Name" formControlName="name" required />
         </mat-form-field>
 
         <mat-form-field>
-            <input matInput placeholder="Surname" formControlName="surname" />
+            <input matInput placeholder="Surname" formControlName="surname" required />
         </mat-form-field>
 
         <mat-form-field>
-            <input matInput placeholder="Patronymic" formControlName="patronymic" />
+            <input matInput placeholder="Patronymic" formControlName="patronymic" required />
         </mat-form-field>
 
         <mat-radio-group formControlName="gender">
@@ -21,7 +21,7 @@
         </mat-radio-group>
 
         <mat-form-field class="modal-datepicker">
-            <input matInput [matDatepicker]="picker" placeholder="Choose a date" formControlName="birthDate"/>
+            <input matInput [matDatepicker]="picker" placeholder="Choose a date" formControlName="birthDate" required />
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
         </mat-form-field>
@@ -29,7 +29,7 @@
         <mat-form-field>
             <mat-select formControlName="charm">
                 <mat-option
-                    *ngFor="let charm of charmsDictionary" [value]="charm.id">{{ charm.name }}</mat-option>
+                    *ngFor="let charm of charmsDictionary" required [value]="charm.id">{{ charm.name }}</mat-option>
             </mat-select>
         </mat-form-field>
 
@@ -55,11 +55,11 @@
             <br />
 
             <mat-form-field>
-                <input matInput placeholder="Street" formControlName="streetReg" />
+                <input matInput placeholder="Street" formControlName="streetReg" required />
             </mat-form-field>
 
             <mat-form-field>
-                <input matInput placeholder="House" formControlName="houseReg" />
+                <input matInput placeholder="House" formControlName="houseReg" required />
             </mat-form-field>
 
             <mat-form-field>
@@ -71,19 +71,19 @@
 
         <mat-form-field>
             <mat-label>Home</mat-label>
-            <input matInput formControlName="phoneHome" />
+            <input matInput formControlName="phoneHome" required />
         </mat-form-field>
 
         <mat-form-field>
             <mat-label>Work</mat-label>
-            <input matInput formControlName="phoneWork" />
+            <input matInput formControlName="phoneWork" required />
         </mat-form-field>
 
         <div formArrayName="mobiles">
             <div *ngFor="let item of form.controls.mobiles.controls; let i = index;" [formGroupName]="i">
                 <mat-form-field>
                     <mat-label>Mobile{{ i + 1 }}</mat-label>
-                    <input matInput formControlName="mobile" />
+                    <input matInput formControlName="mobile" required />
                 </mat-form-field>
                 <button mat-button color="primary" class="modal-button"
                         *ngIf="form.controls.mobiles.controls.length > 1" (click)="deleteMobile(i)">Delete Mobile</button>
@@ -94,7 +94,9 @@
 
     <mat-dialog-actions class="modal-actions">
         <button mat-button color="primary" class="modal-button" (click)="addMobile()">Add mobile</button>
-        <button mat-button color="primary" class="modal-button" (click)="close()">Close</button>
-        <button mat-button color="primary" class="modal-button" (click)="save()">Save</button>
+        <button mat-button color="primary" class="modal-button"
+                (click)="close()">Close</button>
+        <button mat-button color="primary" class="modal-button"
+                [disabled]="form.invalid" (click)="save()">Save</button>
     </mat-dialog-actions>
 </div>

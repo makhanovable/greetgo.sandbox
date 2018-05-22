@@ -1,7 +1,7 @@
 import {Component, Inject, OnInit} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material";
 import {MainFormComponent} from "../../main-form";
-import {FormArray, FormBuilder, FormControl, FormGroup} from "@angular/forms";
+import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 import {Gender} from "../../../../model/Gender";
 import {PhoneType} from "../../../../model/PhoneType";
 import {Charm} from "../../../../model/Charm";
@@ -92,6 +92,9 @@ export class ModalInfoComponent implements OnInit {
 
     if (this.actionType == ActionType.EDIT) {
       this.loadClientInfo(this.clientInfo);
+    } else {
+      const control = this.form.controls["mobiles"] as FormArray;
+      control.push(this.createMobile(""));
     }
 
     this.loadForm();
@@ -119,20 +122,19 @@ export class ModalInfoComponent implements OnInit {
       this.flatReg = clientInfoModel.regAddress.flat;
     }
 
-
     let mobileCounter = 0;
     for (let i = 0; i < clientInfoModel.phones.length; i++) {
       const phone = clientInfoModel.phones[i];
-      // console.log(phone);
+
       if (phone.type == PhoneType.HOME) {
+
         this.phoneHome = phone.number;
       } else if (phone.type == PhoneType.WORK) {
+
         this.phoneWork = phone.number;
       } else if (phone.type == PhoneType.MOBILE) {
-
         const control = this.form.controls["mobiles"] as FormArray;
         control.push(this.createMobile(phone.number));
-        console.log("added new control:" + phone.number)
       }
     }
   }
@@ -166,7 +168,6 @@ export class ModalInfoComponent implements OnInit {
   addMobile() {
     const control = this.form.controls["mobiles"] as FormArray;
     control.push(this.createMobile(""));
-    console.log(this.form.controls.mobiles)
   }
 
   deleteMobile(index: number) {
@@ -211,8 +212,15 @@ export class ModalInfoComponent implements OnInit {
   }
 
   private boxClientInfo(): ClientInfo {
+    let clientId = -1;
+    let factAddressId = -1;
+    let regAddressId = -1;
+    if(this.clientInfo.client !== null) clientId = this.clientInfo.client.id;
+    if(this.clientInfo.factAddress !== null) factAddressId = this.clientInfo.factAddress.id;
+    if(this.clientInfo.regAddress !== null) regAddressId = this.clientInfo.regAddress.id;
+
     const client = new Client(
-      this.clientInfo.client.id || null,
+      clientId,
       this.form.controls["name"].value,
       this.form.controls["surname"].value,
       this.form.controls["patronymic"].value,
@@ -221,16 +229,16 @@ export class ModalInfoComponent implements OnInit {
       this.form.controls["charm"].value);
 
     const factAddress = new Address(
-      this.clientInfo.factAddress.id || null,
-      this.clientInfo.client.id || null,
+      factAddressId,
+      clientId,
       AddressType.FACT,
       this.form.controls["streetFact"].value,
       this.form.controls["houseFact"].value,
       this.form.controls["flatFact"].value);
 
     const regAddress = new Address(
-      this.clientInfo.regAddress.id || null,
-      this.clientInfo.client.id || null,
+      regAddressId,
+      clientId,
       AddressType.REG,
       this.form.controls["streetReg"].value,
       this.form.controls["houseReg"].value,
