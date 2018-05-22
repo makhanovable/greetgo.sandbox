@@ -62,21 +62,16 @@ public class ClientRegisterStand implements ClientRegister {
   @Override
   public AccountInfo editClient(ClientInfo clientInfo) {
 
-//    ClientDot clientDot = db.get().clientStorage.get(clientId);
-//    if (clientDot == null) {
-//      throw new NullPointerException("no such client id:" + clientId);
-//    }
-//
-//    clientDot.name = name;
-//    clientDot.surname = surname;
-//    clientDot.patronymic = patronymic;
-//    clientDot.birthDate = new Date(birthDate);
-//    clientDot.gender = Gender.valueOf(gender);
-//    clientDot.charmId = charmId;
-//
+    ClientDot clientDot = db.get().clientStorage.get(clientInfo.client.id);
+    if (clientDot == null) {
+      throw new NullPointerException("no such client id:" + clientInfo.client.id);
+    }
+
+    updateClient(clientDot, clientInfo.client);
+
 //    updateAddress(AddressType.FACT, clientId, streetFact, houseFact, flatFact);
 //    updateAddress(AddressType.REG, clientId, streetReg, houseReg, flatReg);
-//
+
 //    updatePhone(PhoneType.HOME, clientId, phoneHome, -1);
 //    updatePhone(PhoneType.WORK, clientId, phoneWork, -1);
 //    updatePhone(PhoneType.MOBILE, clientId, phoneMobile1, 0);
@@ -86,7 +81,16 @@ public class ClientRegisterStand implements ClientRegister {
 ////  TODO: phone edit
 //
 //    return accountRegister.get().getAccountInfo(clientId);
-    return null;
+    return accountRegister.get().getAccountInfo(clientDot.id);
+  }
+
+  private void updateClient(ClientDot clientDot, Client client) {
+    clientDot.name = client.name;
+    clientDot.surname = client.surname;
+    clientDot.patronymic = client.patronymic;
+    clientDot.birthDate = client.birthDate;
+    clientDot.gender = client.gender;
+    clientDot.charmId = client.charmId;
   }
 
   private void updatePhone(PhoneType type, int clientId, String number, int mobileIndex) {

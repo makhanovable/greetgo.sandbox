@@ -9,8 +9,8 @@ export class Client {
   public birthDate: Date;
   public charmId: number;
 
-
-  constructor(name: string, surname: string, patronymic: string, gender: Gender, birthDate: Date, charmId: number) {
+  constructor(id: number, name: string, surname: string, patronymic: string, gender: Gender, birthDate: Date, charmId: number) {
+    this.id = id;
     this.name = name;
     this.surname = surname;
     this.patronymic = patronymic;
