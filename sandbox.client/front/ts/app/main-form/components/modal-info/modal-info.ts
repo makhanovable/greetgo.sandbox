@@ -8,6 +8,11 @@ import {Charm} from "../../../../model/Charm";
 import {HttpService} from "../../../HttpService";
 import {ActionType} from "../../../../model/ActionType";
 import {AccountService} from "../../../services/AccountService";
+import {Client} from "../../../../model/Client";
+import {Phone} from "../../../../model/Phone";
+import {Address} from "../../../../model/Address";
+import {AddressType} from "../../../../model/AddressType";
+import {ClientInfo} from "../../../../model/ClientInfo";
 
 @Component({
   selector: 'modal-info-component',
@@ -80,12 +85,12 @@ export class ModalInfoComponent implements OnInit {
   }
 
   private loadClientInfo(clientInfoModel) {
-    this.name = clientInfoModel.clientInfo.name;
-    this.surname = clientInfoModel.clientInfo.surname;
-    this.patronymic = clientInfoModel.clientInfo.patronymic;
-    this.gender = clientInfoModel.clientInfo.gender;
-    this.birthDate = new Date(clientInfoModel.clientInfo.birthDate);
-    this.charmId = clientInfoModel.clientInfo.charmId;
+    this.name = clientInfoModel.client.name;
+    this.surname = clientInfoModel.client.surname;
+    this.patronymic = clientInfoModel.client.patronymic;
+    this.gender = clientInfoModel.client.gender;
+    this.birthDate = new Date(clientInfoModel.client.birthDate);
+    this.charmId = clientInfoModel.client.charmId;
 
     if (clientInfoModel.factAddress !== null) {
       this.streetFact = clientInfoModel.factAddress.street;
@@ -168,25 +173,56 @@ export class ModalInfoComponent implements OnInit {
   }
 
   createNewClient() {
-    this.httpService.post("/client/create", {
-      name: this.form.controls["name"].value,
-      surname: this.form.controls["surname"].value,
-      patronymic: this.form.controls["patronymic"].value,
-      gender: this.form.controls["gender"].value,
-      birthDate: this.form.controls["birthDate"].value.getTime(),
-      charmId: this.form.controls["charm"].value,
-      streetFact: this.form.controls["streetFact"].value,
-      houseFact: this.form.controls["houseFact"].value,
-      flatFact: this.form.controls["flatFact"].value,
-      streetReg: this.form.controls["streetReg"].value,
-      houseReg: this.form.controls["houseReg"].value,
-      flatReg: this.form.controls["flatReg"].value,
-      phoneHome: this.form.controls["phoneHome"].value,
-      phoneWork: this.form.controls["phoneWork"].value,
-      phoneMobile1: this.form.controls["phoneMobile1"].value,
-      phoneMobile2: this.form.controls["phoneMobile2"].value,
-      phoneMobile3: this.form.controls["phoneMobile3"].value,
-    }).toPromise().then(response => {
+    // this.httpService.post("/client/create", {
+    //   name: this.form.controls["name"].value,
+    //   surname: this.form.controls["surname"].value,
+    //   patronymic: this.form.controls["patronymic"].value,
+    //   gender: this.form.controls["gender"].value,
+    //   birthDate: this.form.controls["birthDate"].value.getTime(),
+    //   charmId: this.form.controls["charm"].value,
+    //   streetFact: this.form.controls["streetFact"].value,
+    //   houseFact: this.form.controls["houseFact"].value,
+    //   flatFact: this.form.controls["flatFact"].value,
+    //   streetReg: this.form.controls["streetReg"].value,
+    //   houseReg: this.form.controls["houseReg"].value,
+    //   flatReg: this.form.controls["flatReg"].value,
+    //   phoneHome: this.form.controls["phoneHome"].value,
+    //   phoneWork: this.form.controls["phoneWork"].value,
+    //   phoneMobile1: this.form.controls["phoneMobile1"].value,
+    //   phoneMobile2: this.form.controls["phoneMobile2"].value,
+    //   phoneMobile3: this.form.controls["phoneMobile3"].value,
+    // }).toPromise().then(response => {
+    //
+    //   this.accountService.addNewAccount(response.json());
+    //   this.dialogRef.close();
+    // }, error => {
+    //   console.log(error);
+    // });
+    const client = new Client(
+      this.form.controls["name"].value,
+      this.form.controls["surname"].value,
+      this.form.controls["patronymic"].value,
+      this.form.controls["gender"].value,
+      this.form.controls["birthDate"].value.getTime(),
+      this.form.controls["charm"].value);
+
+    const factAddress = new Address(
+      this.clientId, AddressType.FACT,
+      this.form.controls["streetFact"].value,
+      this.form.controls["houseFact"].value,
+      this.form.controls["flatFact"].value);
+
+    const regAddress = new Address(
+      this.clientId, AddressType.REG,
+      this.form.controls["streetReg"].value,
+      this.form.controls["houseReg"].value,
+      this.form.controls["flatReg"].value);
+
+    const phones:Phone[] = [];
+
+    const clientInfo = new ClientInfo(client, factAddress, regAddress, phones);
+
+    this.httpService.post("/client/create", {clientInfo: clientInfo}).toPromise().then(response => {
 
       this.accountService.addNewAccount(response.json());
       this.dialogRef.close();

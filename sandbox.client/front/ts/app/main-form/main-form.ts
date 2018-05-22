@@ -5,7 +5,7 @@ import {PhoneType} from "../../model/PhoneType";
 import {Subscription} from "rxjs/Subscription";
 import {MatDialog, MatDialogConfig} from "@angular/material";
 import {ModalInfoComponent} from "./components/modal-info/modal-info";
-import {ClientInfo} from "../../model/ClientInfoModel";
+import {ClientInfo} from "../../model/ClientInfo";
 import {Client} from "../../model/Client";
 import {Address} from "../../model/Address";
 import {Phone} from "../../model/Phone";

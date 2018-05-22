@@ -2,15 +2,14 @@ package kz.greetgo.sandbox.controller.register.client;
 
 
 import kz.greetgo.sandbox.controller.model.AccountInfo;
-import kz.greetgo.sandbox.controller.model.ClientInfoModel;
-import kz.greetgo.sandbox.controller.model.InfoForm;
+import kz.greetgo.sandbox.controller.model.ClientInfo;
 
 public interface ClientRegister {
-  ClientInfoModel getClientInfo(int clientId);
+  ClientInfo getClientInfo(int clientId);
 
-  AccountInfo createNewClient(InfoForm createForm);
+  AccountInfo createNewClient(ClientInfo clientInfo);
 
-  AccountInfo editClient(InfoForm editform);
+  AccountInfo editClient(ClientInfo clientInfo);
 
   AccountInfo deleteClient(int clientId);
 }

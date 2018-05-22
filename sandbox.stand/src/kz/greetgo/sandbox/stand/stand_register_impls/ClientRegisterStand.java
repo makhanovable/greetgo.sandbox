@@ -22,30 +22,30 @@ public class ClientRegisterStand implements ClientRegister {
   public BeanGetter<AccountRegister> accountRegister;
 
   @Override
-  public ClientInfoModel getClientInfo(int clientId) {
-    ClientInfoModel clientInfoModel = new ClientInfoModel();
+  public ClientInfo getClientInfo(int clientId) {
+    ClientInfo clientInfo = new ClientInfo();
 
     if (clientId != DUMB_ID) {
-      clientInfoModel.clientInfo = db.get().clientStorage.get(clientId).toClient();
+      clientInfo.client = db.get().clientStorage.get(clientId).toClient();
 
       AddressDot factAddDot = getAddressDot(clientId, AddressType.FACT);
       if(factAddDot != null) {
-        clientInfoModel.factAddress = factAddDot.toAddress();
+        clientInfo.factAddress = factAddDot.toAddress();
       }
 
       AddressDot regAddDot = getAddressDot(clientId, AddressType.REG);
       if(regAddDot != null) {
-        clientInfoModel.regAddress = regAddDot.toAddress();
+        clientInfo.regAddress = regAddDot.toAddress();
       }
 
-      clientInfoModel.phones = getPhones(clientId);
+      clientInfo.phones = getPhones(clientId);
     }
 
-    return clientInfoModel;
+    return clientInfo;
   }
 
   @Override
-  public AccountInfo createNewClient(InfoForm createForm) {
+  public AccountInfo createNewClient(ClientInfo clientInfo) {
 
 //    int newClientId = db.get().clientStorage.size() + 1;
 //    ClientDot newClient = new ClientDot(newClientId, name, surname, patronymic,
@@ -75,7 +75,7 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public AccountInfo editClient(InfoForm editForm) {
+  public AccountInfo editClient(ClientInfo clientInfo) {
 
 //    ClientDot clientDot = db.get().clientStorage.get(clientId);
 //    if (clientDot == null) {
