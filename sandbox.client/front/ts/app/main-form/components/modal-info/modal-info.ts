@@ -82,6 +82,8 @@ export class ModalInfoComponent implements OnInit {
     this.birthDate = new Date(clientInfoModel.clientInfo.birthDate);
     this.charmId = clientInfoModel.clientInfo.charmId;
 
+    console.log(clientInfoModel.clientInfo.gender);
+
     if (clientInfoModel.factAddress !== null) {
       this.streetFact = clientInfoModel.factAddress.street;
       this.houseFact = clientInfoModel.factAddress.house;
@@ -122,7 +124,7 @@ export class ModalInfoComponent implements OnInit {
       name: [this.name],
       surname: [this.surname],
       patronymic: [this.patronymic],
-      gender: ['MALE'],
+      gender: [this.gender],
       birthDate: [this.birthDate],
       charm: [this.charmId],
       streetFact: [this.streetFact],
