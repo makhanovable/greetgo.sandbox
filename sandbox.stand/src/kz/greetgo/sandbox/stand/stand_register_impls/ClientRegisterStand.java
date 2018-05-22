@@ -49,12 +49,12 @@ public class ClientRegisterStand implements ClientRegister {
 
     int newClientId = db.get().clientStorage.size() + 1;
 
-    addNewClient(newClientId, clientInfo.client);
+    createNewClientDot(newClientId, clientInfo.client);
 
-    addNewAddress(db.get().addressStorage.size() + 1, newClientId, clientInfo.factAddress);
-    addNewAddress(db.get().addressStorage.size() + 1, newClientId, clientInfo.regAddress);
+    createNewAddressDot(db.get().addressStorage.size() + 1, newClientId, clientInfo.factAddress);
+    createNewAddressDot(db.get().addressStorage.size() + 1, newClientId, clientInfo.regAddress);
 
-    addDefaultAccount(newClientId);
+    createDefaultAccountDot(newClientId);
 
     return accountRegister.get().getAccountInfo(newClientId);
   }
@@ -84,36 +84,6 @@ public class ClientRegisterStand implements ClientRegister {
     return accountRegister.get().getAccountInfo(clientDot.id);
   }
 
-  private void updateClient(ClientDot clientDot, Client client) {
-    clientDot.name = client.name;
-    clientDot.surname = client.surname;
-    clientDot.patronymic = client.patronymic;
-    clientDot.birthDate = client.birthDate;
-    clientDot.gender = client.gender;
-    clientDot.charmId = client.charmId;
-  }
-
-  private void updatePhone(PhoneType type, int clientId, String number, int mobileIndex) {
-    PhoneDot phone = getPhoneDot(type, clientId, mobileIndex);
-    phone.number = number;
-  }
-
-
-  private void updateAddress(AddressType type, int clientId, Address address) {
-    AddressDot addressDot = getAddressDot(clientId, type);
-
-    if (addressDot == null) {
-      addressDot = new AddressDot(db.get().addressStorage.size() + 1, clientId, type, address.street, address.house, address.flat);
-      db.get().addressStorage.put(addressDot.id, addressDot);
-      return;
-    }
-
-    addressDot.street = address.street;
-    addressDot.house = address.house;
-    addressDot.flat = address.flat;
-  }
-
-
   @Override
   public AccountInfo deleteClient(int clientId) {
     Client client = db.get().clientStorage.get(clientId).toClient();
@@ -131,51 +101,6 @@ public class ClientRegisterStand implements ClientRegister {
     accountInfo.id = clientId;
     return accountInfo;
   }
-
-  private void createNewPhone(PhoneType type, String number, int clientId) {
-    if (number == null || number.isEmpty() || clientId == DUMB_ID) {
-      return;
-//      throw new NullPointerException("add number clientId:" + clientId);
-    }
-
-    int newPhoneId = db.get().phoneStorage.size() + 1;
-    db.get().phoneStorage.put(newPhoneId, new PhoneDot(newPhoneId, clientId, number, type));
-  }
-
-
-  private void addDefaultAccount(int clientId) {
-    int newAccountId = db.get().accountStorage.size() + 1;
-
-    db.get().accountStorage.put(newAccountId,
-      new AccountDot(newAccountId, clientId, 0f, "KZT!@#$",
-        new java.sql.Timestamp(Date.from(Instant.now()).getTime())));
-
-  }
-
-  private void addNewClient(int clientId, Client client) {
-    ClientDot newClientDot = new ClientDot(clientId, client.name, client.surname, client.patronymic,
-      client.gender, client.birthDate, client.charmId);
-
-    db.get().clientStorage.put(clientId, newClientDot);
-  }
-
-  private void addNewAddress(int id, int clientId, Address address) {
-    db.get().addressStorage.put(id, new AddressDot(id, clientId,
-      address.type, address.street, address.house, address.flat));
-  }
-
-  private void removeAllAddresses(int clientId) {
-    db.get().addressStorage.values().removeIf(address -> address.clientId == clientId);
-  }
-
-  private void removeAllPhones(int clientId) {
-    db.get().phoneStorage.values().removeIf(phone -> phone.clientId == clientId);
-  }
-
-  private void removeAllAccounts(int clientId) {
-    db.get().accountStorage.values().removeIf(account -> account.clientId == clientId);
-  }
-
 
   private AddressDot getAddressDot(int clientId, AddressType addressType) {
     for (AddressDot addressDot : db.get().addressStorage.values()) {
@@ -196,6 +121,65 @@ public class ClientRegisterStand implements ClientRegister {
     }
 
     return result;
+  }
+
+  private void createNewClientDot(int clientId, Client client) {
+    ClientDot newClientDot = new ClientDot(clientId, client.name, client.surname, client.patronymic,
+      client.gender, client.birthDate, client.charmId);
+
+    db.get().clientStorage.put(clientId, newClientDot);
+  }
+
+  private void createNewAddressDot(int id, int clientId, Address address) {
+    db.get().addressStorage.put(id, new AddressDot(id, clientId,
+      address.type, address.street, address.house, address.flat));
+  }
+
+  private void createDefaultAccountDot(int clientId) {
+    int newAccountId = db.get().accountStorage.size() + 1;
+
+    db.get().accountStorage.put(newAccountId,
+      new AccountDot(newAccountId, clientId, 0f, "KZT!@#$",
+        new java.sql.Timestamp(Date.from(Instant.now()).getTime())));
+
+  }
+
+  private void createNewPhone(PhoneType type, String number, int clientId) {
+    if (number == null || number.isEmpty() || clientId == DUMB_ID) {
+      return;
+//      throw new NullPointerException("add number clientId:" + clientId);
+    }
+
+    int newPhoneId = db.get().phoneStorage.size() + 1;
+    db.get().phoneStorage.put(newPhoneId, new PhoneDot(newPhoneId, clientId, number, type));
+  }
+
+  private void updateClient(ClientDot clientDot, Client client) {
+    clientDot.name = client.name;
+    clientDot.surname = client.surname;
+    clientDot.patronymic = client.patronymic;
+    clientDot.birthDate = client.birthDate;
+    clientDot.gender = client.gender;
+    clientDot.charmId = client.charmId;
+  }
+
+  private void updateAddress(AddressType type, int clientId, Address address) {
+    AddressDot addressDot = getAddressDot(clientId, type);
+
+    if (addressDot == null) {
+      addressDot = new AddressDot(db.get().addressStorage.size() + 1, clientId, type, address.street, address.house, address.flat);
+      db.get().addressStorage.put(addressDot.id, addressDot);
+      return;
+    }
+
+    addressDot.street = address.street;
+    addressDot.house = address.house;
+    addressDot.flat = address.flat;
+  }
+
+  private void updatePhone(PhoneType type, int clientId, String number, int mobileIndex) {
+    PhoneDot phone = getPhoneDot(type, clientId, mobileIndex);
+    phone.number = number;
   }
 
   private PhoneDot getPhoneDot(PhoneType type, int clientId, int mobileIndex) {
@@ -227,5 +211,17 @@ public class ClientRegisterStand implements ClientRegister {
     }
 
     return mobiles;
+  }
+
+  private void removeAllAccounts(int clientId) {
+    db.get().accountStorage.values().removeIf(account -> account.clientId == clientId);
+  }
+
+  private void removeAllAddresses(int clientId) {
+    db.get().addressStorage.values().removeIf(address -> address.clientId == clientId);
+  }
+
+  private void removeAllPhones(int clientId) {
+    db.get().phoneStorage.values().removeIf(phone -> phone.clientId == clientId);
   }
 }
