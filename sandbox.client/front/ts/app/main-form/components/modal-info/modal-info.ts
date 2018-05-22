@@ -82,8 +82,6 @@ export class ModalInfoComponent implements OnInit {
     this.birthDate = new Date(clientInfoModel.clientInfo.birthDate);
     this.charmId = clientInfoModel.clientInfo.charmId;
 
-    console.log(clientInfoModel.clientInfo.gender);
-
     if (clientInfoModel.factAddress !== null) {
       this.streetFact = clientInfoModel.factAddress.street;
       this.houseFact = clientInfoModel.factAddress.house;
@@ -96,9 +94,11 @@ export class ModalInfoComponent implements OnInit {
       this.flatReg = clientInfoModel.regAddress.flat;
     }
 
+
     let mobileCounter = 0;
     for (let i = 0; i < clientInfoModel.phones.length; i++) {
       const phone = clientInfoModel.phones[i];
+      console.log(phone);
       if (phone.type == PhoneType.HOME) {
         this.phoneHome = phone.number;
       } else if (phone.type == PhoneType.WORK) {
@@ -111,12 +111,18 @@ export class ModalInfoComponent implements OnInit {
           case 1:
             this.phoneMobile2 = phone.number;
             break;
-          case 3:
+          case 2:
             this.phoneMobile3 = phone.number;
             break;
         }
       }
     }
+    console.log(this.phoneHome);
+    console.log(this.phoneWork);
+    console.log(this.phoneMobile1);
+    console.log(this.phoneMobile2);
+    console.log(this.phoneMobile3);
+
   }
 
   loadForm() {

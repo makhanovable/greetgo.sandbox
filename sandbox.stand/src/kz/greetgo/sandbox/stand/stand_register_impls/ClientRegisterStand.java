@@ -27,8 +27,17 @@ public class ClientRegisterStand implements ClientRegister {
 
     if (clientId != DUMB_ID) {
       clientInfoModel.clientInfo = db.get().clientStorage.get(clientId).toClient();
-      clientInfoModel.factAddress = getAddressDot(clientId, AddressType.FACT).toAddress();
-      clientInfoModel.regAddress = getAddressDot(clientId, AddressType.REG).toAddress();
+
+      AddressDot factAddDot = getAddressDot(clientId, AddressType.FACT);
+      if(factAddDot != null) {
+        clientInfoModel.factAddress = factAddDot.toAddress();
+      }
+
+      AddressDot regAddDot = getAddressDot(clientId, AddressType.REG);
+      if(regAddDot != null) {
+        clientInfoModel.regAddress = regAddDot.toAddress();
+      }
+
       clientInfoModel.phones = getPhones(clientId);
     }
 
@@ -67,11 +76,11 @@ public class ClientRegisterStand implements ClientRegister {
 
     addDefaultAccount(newClient.id);
 
-    addNewPhone(PhoneType.HOME, phoneHome, newClient.id);
-    addNewPhone(PhoneType.WORK, phoneWork, newClient.id);
-    addNewPhone(PhoneType.MOBILE, phoneMobile1, newClient.id);
-    addNewPhone(PhoneType.MOBILE, phoneMobile2, newClient.id);
-    addNewPhone(PhoneType.MOBILE, phoneMobile3, newClient.id);
+    createNewPhone(PhoneType.HOME, phoneHome, newClient.id);
+    createNewPhone(PhoneType.WORK, phoneWork, newClient.id);
+    createNewPhone(PhoneType.MOBILE, phoneMobile1, newClient.id);
+    createNewPhone(PhoneType.MOBILE, phoneMobile2, newClient.id);
+    createNewPhone(PhoneType.MOBILE, phoneMobile3, newClient.id);
 
     AccountInfo newAccountInfo = new AccountInfo();
 
@@ -117,24 +126,22 @@ public class ClientRegisterStand implements ClientRegister {
     updateAddress(AddressType.FACT, clientId, streetFact, houseFact, flatFact);
     updateAddress(AddressType.REG, clientId, streetReg, houseReg, flatReg);
 
+    updatePhone(PhoneType.HOME, clientId, phoneHome, -1);
+    updatePhone(PhoneType.WORK, clientId, phoneWork, -1);
+    updatePhone(PhoneType.MOBILE, clientId, phoneMobile1, 0);
+    updatePhone(PhoneType.MOBILE, clientId, phoneMobile2, 1);
+    updatePhone(PhoneType.MOBILE, clientId, phoneMobile3, 2);
+
 //  TODO: phone edit
-//  TODO: birthdate edit
 
     return accountRegister.get().getAccountInfo(clientId);
   }
 
-  private void updatePhone(PhoneType type, int clientId, String number) {
-    Phone phone = getPhone(type, clientId);
-//    TODO: COMPLETE
-//
-//    if(phone== null) {
-//      PhoneDot phoneDot = new PhoneDot(db.get().phoneStorage.size() + 1,);
-//      phoneDot.id = ;
-//      db.get().phoneStorage.put(phoneDot.id, phoneDot);
-//
-//      phone = phoneDot.toPhone();
-//    }
+  private void updatePhone(PhoneType type, int clientId, String number, int mobileIndex) {
+    PhoneDot phone = getPhoneDot(type, clientId, mobileIndex);
+    phone.number = number;
   }
+
 
   private void updateAddress(AddressType type, int clientId, String street, String house, String flat) {
     AddressDot addressDot = getAddressDot(clientId, type);
@@ -169,7 +176,7 @@ public class ClientRegisterStand implements ClientRegister {
     return accountInfo;
   }
 
-  private void addNewPhone(PhoneType type, String number, int clientId) {
+  private void createNewPhone(PhoneType type, String number, int clientId) {
     if (number == null || number.isEmpty() || clientId == DUMB_ID) {
       return;
 //      throw new NullPointerException("add number clientId:" + clientId);
@@ -178,6 +185,7 @@ public class ClientRegisterStand implements ClientRegister {
     int newPhoneId = db.get().phoneStorage.size() + 1;
     db.get().phoneStorage.put(newPhoneId, new PhoneDot(newPhoneId, clientId, number, type));
   }
+
 
   private void addDefaultAccount(int clientId) {
     int newAccountId = db.get().accountStorage.size() + 1;
@@ -235,14 +243,34 @@ public class ClientRegisterStand implements ClientRegister {
     return result;
   }
 
-  private Phone getPhone(PhoneType type, int clientId) {
+  private PhoneDot getPhoneDot(PhoneType type, int clientId, int mobileIndex) {
+    if(type != PhoneType.MOBILE) {
+      for (PhoneDot phoneDot : db.get().phoneStorage.values()) {
+        if (phoneDot.clientId == clientId && phoneDot.type == type) {
+
+          return phoneDot;
+        }
+      }
+    } else {
+      int mobileCounter = 0;
+      for (PhoneDot phoneDot : getMobilePhoneDots(clientId, mobileIndex)) {
+        if (mobileCounter++ == mobileIndex) {
+          return phoneDot;
+        }
+      }
+    }
+    throw new NullPointerException("no such phone. clientId" + clientId
+      +", type:"+type+", mobileIndex:"+mobileIndex);
+  }
+
+  private List<PhoneDot> getMobilePhoneDots(int clientId, int mobileIndex) {
+    List<PhoneDot> mobiles = new ArrayList<>();
     for (PhoneDot phoneDot : db.get().phoneStorage.values()) {
-      if (phoneDot.clientId == clientId && phoneDot.type == type) {
-        return phoneDot.toPhone();
+      if (phoneDot.clientId == clientId && phoneDot.type == PhoneType.MOBILE) {
+        mobiles.add(phoneDot);
       }
     }
 
-    return null;
+    return mobiles;
   }
-
 }
