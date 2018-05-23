@@ -1,11 +1,11 @@
 export class AccountInfo {
-  public id: number;
+  public id: number/*int*/;
   public fullName: string;
   public charm: string;
-  public age: number;
-  public totalAccBalance: number;
-  public maxAccBalance: number;
-  public minAccBalance: number;
+  public age: number/*int*/;
+  public totalAccBalance: number /*float*/;
+  public maxAccBalance: number/*float*/;
+  public minAccBalance: number/*float*/;
 
   public assign(o: any): AccountInfo {
     this.fullName = o.fullName;

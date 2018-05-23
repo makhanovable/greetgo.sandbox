@@ -13,7 +13,7 @@ import {Phone} from "../../../../model/Phone";
 import {Address} from "../../../../model/Address";
 import {AddressType} from "../../../../model/AddressType";
 import {ClientInfo} from "../../../../model/ClientInfo";
-import {Constants} from "../../../../model/Constants";
+import {Constants} from "../../../../utils/Constants";
 
 @Component({
   selector: 'modal-info-component',

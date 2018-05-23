@@ -1,13 +1,13 @@
 import {Gender} from "./Gender";
 
 export class Client {
-  public id: number;
+  public id: number/*int*/;
   public name: string;
   public surname: string;
   public patronymic: string;
   public gender: Gender;
   public birthDate: Date;
-  public charmId: number;
+  public charmId: number/*int*/;
 
   public isActive: boolean = true;
 

@@ -1,8 +1,8 @@
 import {SortDirection} from "./SortDirection";
 
 export class TableRequestDetails {
-  public pageIndex: number = 1;
-  public pageSize: number = 3;
+  public pageIndex: number = 1/*int*/;
+  public pageSize: number = 3/*int*/;
   public sortBy: string = '';
   public sortDirection: SortDirection = SortDirection.ASC;
   public filter: string = '';
