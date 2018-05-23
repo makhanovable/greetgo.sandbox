@@ -11,6 +11,7 @@ import kz.greetgo.sandbox.db.stand.model.ClientDot;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Calendar.*;
 
@@ -33,6 +34,13 @@ public class AccountRegisterStand implements AccountRegister {
       }
     }
 
+    // Filtration
+    accountInfoList = accountInfoList.stream()
+      .filter(a -> a.fullName.replaceAll("\\s+", "").toLowerCase()
+        .contains(requestDetails.filter.replaceAll("\\s+", "").toLowerCase())
+      ).collect(Collectors.toCollection(ArrayList::new));
+
+    // Sorting
     if (requestDetails.sortBy == SortColumn.FIO) {
       accountInfoList.sort((AccountInfo a1, AccountInfo a2) -> a1.fullName.compareTo(a2.fullName));
     } else if (requestDetails.sortBy == SortColumn.AGE) {
