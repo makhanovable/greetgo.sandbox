@@ -119,7 +119,7 @@ export class ModalInfoComponent implements OnInit {
         patronymic: [this.patronymic],
         gender: [this.gender],
         birthDate: [this.birthDate],
-        charm: [new FormControl(this.charmId, [Validators.required])],
+        charm: [this.charmId],
         streetFact: [this.streetFact],
         houseFact: [this.houseFact],
         flatFact: [this.flatFact],
