@@ -107,31 +107,35 @@ export class ModalInfoComponent implements OnInit {
         birthDate: new FormControl(this.birthDate, [Validators.required]),
         charm: new FormControl('', [Validators.required]),
         streetFact: new FormControl(this.streetFact),
-        houseFact: new FormControl(this.houseFact),
-        flatFact: new FormControl(this.flatFact),
+        houseFact: new FormControl(this.houseFact, [Validators.pattern("^[0-9]*$")]),
+        flatFact: new FormControl(this.flatFact, [Validators.pattern("^[0-9]*$")]),
         streetReg: new FormControl(this.streetReg, [Validators.required]),
-        houseReg: new FormControl(this.houseReg, [Validators.required]),
-        flatReg: new FormControl(this.flatReg, [Validators.required]),
-        phoneHome: new FormControl(this.phoneHome, [Validators.required]),
-        phoneWork: new FormControl(this.phoneWork, [Validators.required]),
+        houseReg: new FormControl(this.houseReg,[Validators.required]),
+        flatReg: new FormControl(this.flatReg, [Validators.pattern("^[0-9]*$")]),
+        phoneHome: new FormControl(this.phoneHome,
+          [Validators.required, Validators.pattern("^[0-9]*$")]),
+        phoneWork: new FormControl(this.phoneWork,
+          [Validators.required, Validators.pattern("^[0-9]*$")]),
         mobiles: this.fb.array([this.createMobile("")]), // init with an empty control
       });
     } else if (action === Constants.FORM_LOAD) {
       this.form = this.fb.group({
-        name: [this.name],
-        surname: [this.surname],
-        patronymic: [this.patronymic],
-        gender: [this.gender],
-        birthDate: [this.birthDate],
-        charm: [this.charmId],
-        streetFact: [this.streetFact],
-        houseFact: [this.houseFact],
-        flatFact: [this.flatFact],
-        streetReg: [this.streetReg],
-        houseReg: [this.houseReg],
-        flatReg: [this.flatReg],
-        phoneHome: [this.phoneHome],
-        phoneWork: [this.phoneWork],
+        name: new FormControl(this.name, [Validators.required]),
+        surname: new FormControl(this.surname, [Validators.required]),
+        patronymic: new FormControl(this.patronymic, [Validators.required]),
+        gender: new FormControl(this.gender, [Validators.required]),
+        birthDate: new FormControl(this.birthDate, [Validators.required]),
+        charm: new FormControl(this.charmId, [Validators.required]),
+        streetFact: new FormControl(this.streetFact),
+        houseFact: new FormControl(this.houseFact, [Validators.pattern("^[0-9]*$")]),
+        flatFact: new FormControl(this.flatFact, [Validators.pattern("^[0-9]*$")]),
+        streetReg: new FormControl(this.streetReg, [Validators.required]),
+        houseReg: new FormControl(this.houseReg,[Validators.required]),
+        flatReg: new FormControl(this.flatReg, [Validators.pattern("^[0-9]*$")]),
+        phoneHome: new FormControl(this.phoneHome,
+          [Validators.required, Validators.pattern("^[0-9]*$")]),
+        phoneWork: new FormControl(this.phoneWork,
+          [Validators.required, Validators.pattern("^[0-9]*$")]),
         mobiles: this.form.controls.mobiles,
       });
     }
@@ -183,7 +187,11 @@ export class ModalInfoComponent implements OnInit {
 
   private createMobile(number: string): FormGroup {
     return this.fb.group({
-      number: new FormControl(number, [Validators.required])
+      number: new FormControl(number,
+        [Validators.required,
+          Validators.maxLength(10),
+          Validators.minLength(10),
+          Validators.pattern("^[0-9]*$")])
     });
   }
 
@@ -255,8 +263,8 @@ export class ModalInfoComponent implements OnInit {
       this.form.controls["patronymic"].value,
       this.form.controls["gender"].value,
       this.form.controls["birthDate"].value.getTime(),
-      -1);
-      // this.form.controls["charm"].value);
+      // -1);
+      this.form.controls["charm"].value);
 
     const factAddress = new Address(
       factAddressId,

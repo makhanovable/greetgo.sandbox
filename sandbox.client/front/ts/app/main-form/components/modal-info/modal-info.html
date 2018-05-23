@@ -83,8 +83,9 @@
         <div formArrayName="mobiles">
             <div *ngFor="let item of form.controls.mobiles.controls; let i = index;" [formGroupName]="i">
                 <mat-form-field>
-                    <mat-label>Mobile{{ i + 1 }}</mat-label>
-                    <input matInput formControlName="number" required />
+                    <span matPrefix>+7 &nbsp;</span>
+                    <mat-label>Mobile {{ i + 1 }}</mat-label>
+                    <input matInput formControlName="number" required placeholder="XXXXXXXXXX" maxlength="10"/>
                 </mat-form-field>
                 <button mat-button color="primary" class="modal-button"
                         *ngIf="form.controls.mobiles.controls.length > 1" (click)="deleteMobile(i)">Delete Mobile</button>
