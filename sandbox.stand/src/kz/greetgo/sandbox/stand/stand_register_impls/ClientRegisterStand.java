@@ -13,11 +13,8 @@ import kz.greetgo.sandbox.db.stand.model.PhoneDot;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-
-import static kz.greetgo.sandbox.stand.util.Constants.DUMB_ID;
 
 @Bean
 public class ClientRegisterStand implements ClientRegister {
@@ -29,21 +26,15 @@ public class ClientRegisterStand implements ClientRegister {
   public ClientInfo getClientInfo(int clientId) {
     ClientInfo clientInfo = new ClientInfo();
 
-    if (clientId != DUMB_ID) {
-      clientInfo.client = db.get().clientStorage.get(clientId).toClient();
+    clientInfo.client = db.get().clientStorage.get(clientId).toClient();
 
-      AddressDot factAddDot = getAddressDot(clientId, AddressType.FACT);
-      if (factAddDot != null) {
-        clientInfo.factAddress = factAddDot.toAddress();
-      }
+    AddressDot factAddDot = getAddressDot(clientId, AddressType.FACT);
+    if (factAddDot != null) clientInfo.factAddress = factAddDot.toAddress();
 
-      AddressDot regAddDot = getAddressDot(clientId, AddressType.REG);
-      if (regAddDot != null) {
-        clientInfo.regAddress = regAddDot.toAddress();
-      }
+    AddressDot regAddDot = getAddressDot(clientId, AddressType.REG);
+    if (regAddDot != null) clientInfo.regAddress = regAddDot.toAddress();
 
-      clientInfo.phones = getPhones(clientId);
-    }
+    clientInfo.phones = getPhones(clientId);
 
     return clientInfo;
   }
@@ -60,9 +51,8 @@ public class ClientRegisterStand implements ClientRegister {
 
     createDefaultAccountDot(newClientId);
 
-    for (Phone phone : clientInfo.phones) {
+    for (Phone phone : clientInfo.phones)
       createNewPhoneDot(phone.type, phone.number, newClientId);
-    }
 
     return accountRegister.get().getAccountInfo(newClientId);
   }
@@ -72,7 +62,7 @@ public class ClientRegisterStand implements ClientRegister {
 
     ClientDot clientDot = db.get().clientStorage.get(clientInfo.client.id);
     if (clientDot == null) {
-      throw new NullPointerException("no such client id:" + clientInfo.client.id);
+      throw new NullPointerException("no such client, id:" + clientInfo.client.id);
     }
 
     updateClient(clientDot, clientInfo.client);
@@ -88,19 +78,24 @@ public class ClientRegisterStand implements ClientRegister {
   @Override
   public AccountInfo deleteClient(int clientId) {
     Client client = db.get().clientStorage.get(clientId).toClient();
-    AccountInfo accountInfo = new AccountInfo();
 
     if (client == null) {
       throw new NullPointerException("client does not exist id:" + clientId);
     }
-    db.get().clientStorage.remove(clientId);
 
+    disableClientDot(clientId);
     removeAllAccounts(clientId);
     removeAllAddresses(clientId);
     removeAllPhones(clientId);
 
+    AccountInfo accountInfo = new AccountInfo();
     accountInfo.id = clientId;
     return accountInfo;
+  }
+
+  private void disableClientDot(int clientId) {
+    ClientDot clientDot = db.get().clientStorage.get(clientId);
+    clientDot.isActive = false;
   }
 
   private AddressDot getAddressDot(int clientId, AddressType addressType) {
@@ -125,24 +120,26 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private void createNewClientDot(int clientId, Client client) {
-    ClientDot newClientDot = new ClientDot(clientId, client.name, client.surname, client.patronymic,
-      client.gender, client.birthDate, client.charmId);
+    ClientDot newClientDot = new ClientDot(clientId, client.name,
+      client.surname, client.patronymic, client.gender, client.birthDate, client.charmId);
 
     db.get().clientStorage.put(clientId, newClientDot);
   }
 
   private void createNewAddressDot(int id, int clientId, Address address) {
-    db.get().addressStorage.put(id, new AddressDot(id, clientId,
-      address.type, address.street, address.house, address.flat));
+    if (address.house.isEmpty() && address.street.isEmpty() && address.flat.isEmpty())
+      return;
+    
+    db.get().addressStorage.put(id, new AddressDot(
+      id, clientId, address.type, address.street, address.house, address.flat));
   }
 
   private void createDefaultAccountDot(int clientId) {
     int newAccountId = db.get().accountStorage.size() + 1;
 
     db.get().accountStorage.put(newAccountId,
-      new AccountDot(newAccountId, clientId, 0f, "KZT!@#$",
-        new java.sql.Timestamp(Date.from(Instant.now()).getTime())));
-
+      new AccountDot(newAccountId, clientId,
+        0f, "KZT!@#$", new java.sql.Timestamp(Date.from(Instant.now()).getTime())));
   }
 
   private void createNewPhoneDot(PhoneType type, String number, int clientId) {
@@ -174,37 +171,37 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private void updatePhones(int clientId, List<Phone> phones) {
-    for(Phone phone : phones) {
+    for (Phone phone : phones) {
       PhoneDot phoneDot = getPhoneDot(phone.type, clientId, phone.number);
 
-      if(phoneDot != null && !phoneDot.number.equals(phone.number)) {
+      if (phoneDot != null && !phoneDot.number.equals(phone.number)) {
 
         phoneDot.isActive = false;
         createNewPhoneDot(phone.type, phone.number, clientId);
 
-      } else if(phoneDot == null) {
+      } else if (phoneDot == null) {
         createNewPhoneDot(phone.type, phone.number, clientId);
       }
     }
 
     // All other phones should be disabled
-    for(PhoneDot phoneDot : getPhoneDots(clientId)) {
-      if(!containsNumber(phones, phoneDot.number)) {
+    for (PhoneDot phoneDot : getPhoneDots(clientId)) {
+      if (!containsNumber(phones, phoneDot.number)) {
         phoneDot.isActive = false;
       }
     }
   }
 
-  public boolean containsNumber(final List<Phone> list, final String number){
+  private boolean containsNumber(final List<Phone> list, final String number) {
     return list.stream().anyMatch(o -> o.number.equals(number));
   }
 
   private PhoneDot getPhoneDot(PhoneType type, int clientId, String number) {
-      for (PhoneDot phoneDot : db.get().phoneStorage.values()) {
-        if (phoneDot.clientId == clientId && phoneDot.type == type && phoneDot.number.equals(number)) {
-          return phoneDot;
-        }
+    for (PhoneDot phoneDot : db.get().phoneStorage.values()) {
+      if (phoneDot.clientId == clientId && phoneDot.type == type && phoneDot.number.equals(number)) {
+        return phoneDot;
       }
+    }
 
     return null;
   }
@@ -221,24 +218,24 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private void removeAllAccounts(int clientId) {
-    for(AccountDot accountDot: db.get().accountStorage.values()) {
-      if(accountDot.clientId == clientId) {
+    for (AccountDot accountDot : db.get().accountStorage.values()) {
+      if (accountDot.clientId == clientId) {
         accountDot.isActive = false;
       }
     }
   }
 
   private void removeAllAddresses(int clientId) {
-    for(AddressDot addressDot: db.get().addressStorage.values()) {
-      if(addressDot.clientId == clientId) {
+    for (AddressDot addressDot : db.get().addressStorage.values()) {
+      if (addressDot.clientId == clientId) {
         addressDot.isActive = false;
       }
     }
   }
 
   private void removeAllPhones(int clientId) {
-    for(PhoneDot phoneDot: db.get().phoneStorage.values()) {
-      if(phoneDot.clientId == clientId) {
+    for (PhoneDot phoneDot : db.get().phoneStorage.values()) {
+      if (phoneDot.clientId == clientId) {
         phoneDot.isActive = false;
       }
     }
