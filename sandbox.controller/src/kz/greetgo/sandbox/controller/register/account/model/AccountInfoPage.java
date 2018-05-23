@@ -1,4 +1,6 @@
-package kz.greetgo.sandbox.controller.model;
+package kz.greetgo.sandbox.controller.register.account.model;
+
+import kz.greetgo.sandbox.controller.model.AccountInfo;
 
 import java.util.List;
 
