@@ -47,11 +47,11 @@ export class AccountTableComponent {
 
   ngOnInit() {
     this.dataSource = new GenericDataSource();
-    this.sort.sort(<MatSortable>{
-        id: "fio",
-        start: 'asc'
-      }
-    );
+    // this.sort.sort(<MatSortable>{
+    //     id: "fio",
+    //     start: 'asc'
+    //   }
+    // );
 
     this.paginator.pageSize = 3;
     this.loadAccountPage();
@@ -73,7 +73,6 @@ export class AccountTableComponent {
       this.loadAccountPage();
     });
 
-
     this.paginator.page
       .pipe(
         tap(() => this.loadAccountPage()
@@ -90,7 +89,7 @@ export class AccountTableComponent {
     let sortDirection = SortDirection.ASC;
     let sortColumn = SortColumn.NONE;
 
-    if (this.sort.direction == 'desc') sortDirection = SortDirection.DESC;
+    if (this.sort.direction == "desc") sortDirection = SortDirection.DESC;
     if (this.sort.active == "fio") sortColumn = SortColumn.FIO;
     else if (this.sort.active == "age") sortColumn = SortColumn.AGE;
     else if (this.sort.active == "total") sortColumn = SortColumn.TOTAL;
@@ -104,10 +103,8 @@ export class AccountTableComponent {
       sortDirection,
       this.filter.nativeElement.value);
 
-    console.log(this.sort.active);
 
     console.log(requestDetails.toString());
-
     this.loadAccountInfoList(requestDetails);
   }
 

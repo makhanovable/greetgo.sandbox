@@ -1,21 +1,16 @@
 package kz.greetgo.sandbox.stand.stand_register_impls;
 
+import com.google.common.collect.Lists;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.Account;
-import kz.greetgo.sandbox.controller.model.AccountInfo;
-import kz.greetgo.sandbox.controller.model.AccountInfoPage;
-import kz.greetgo.sandbox.controller.model.TableRequestDetails;
+import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.account.AccountRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.AccountDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static java.util.Calendar.*;
 
@@ -36,6 +31,22 @@ public class AccountRegisterStand implements AccountRegister {
         AccountInfo accountInfo = getAccountInfo(clientDot.id);
         accountInfoList.add(accountInfo);
       }
+    }
+
+    if (requestDetails.sortBy == SortColumn.FIO) {
+      accountInfoList.sort((AccountInfo a1, AccountInfo a2) -> a1.fullName.compareTo(a2.fullName));
+    } else if (requestDetails.sortBy == SortColumn.AGE) {
+      accountInfoList.sort((AccountInfo a1, AccountInfo a2) -> a1.age - a2.age);
+    } else if (requestDetails.sortBy == SortColumn.TOTAL) {
+      accountInfoList.sort((AccountInfo a1, AccountInfo a2) -> (int)(a1.totalAccBalance - a2.totalAccBalance));
+    } else if (requestDetails.sortBy == SortColumn.MIN) {
+      accountInfoList.sort((AccountInfo a1, AccountInfo a2) -> (int)(a1.minAccBalance - a2.minAccBalance));
+    } else if (requestDetails.sortBy == SortColumn.MAX) {
+      accountInfoList.sort((AccountInfo a1, AccountInfo a2) -> (int)(a1.maxAccBalance - a2.maxAccBalance));
+    }
+
+    if (requestDetails.sortDirection == SortDirection.DESC) {
+      Collections.reverse(accountInfoList);
     }
 
     // Paginagtion
