@@ -1,5 +1,5 @@
 import {Component, ElementRef, EventEmitter, Output, ViewChild} from '@angular/core';
-import {MatPaginator, MatSort, MatSortable} from "@angular/material";
+import {MatPaginator, MatSort} from "@angular/material";
 import {SelectionModel} from "@angular/cdk/collections";
 import {AccountInfo} from "../../../../model/AccountInfo";
 import {HttpService} from "../../../HttpService";

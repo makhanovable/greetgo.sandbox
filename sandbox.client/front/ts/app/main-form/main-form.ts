@@ -5,13 +5,6 @@ import {PhoneType} from "../../model/PhoneType";
 import {Subscription} from "rxjs/Subscription";
 import {MatDialog, MatDialogConfig} from "@angular/material";
 import {ModalInfoComponent} from "./components/modal-info/modal-info";
-import {ClientInfo} from "../../model/ClientInfo";
-import {Client} from "../../model/Client";
-import {Address} from "../../model/Address";
-import {Phone} from "../../model/Phone";
-import {AddressType} from "../../model/AddressType";
-import {Gender} from "../../model/Gender";
-import {AccountService} from "../services/AccountService";
 import {ActionType} from "../../model/ActionType";
 
 @Component({
