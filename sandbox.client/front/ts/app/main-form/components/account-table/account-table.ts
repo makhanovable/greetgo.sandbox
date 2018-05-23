@@ -10,6 +10,7 @@ import {AccountService} from "../../../services/AccountService";
 import {SortDirection} from "../../../../model/SortDirection";
 import {TableRequestDetails} from "../../../../model/TableRequestDetails";
 import {SortColumn} from "../../../../model/SortColumn";
+import {AccountInfoPage} from "../../../../model/AccountInfoPage";
 
 @Component({
   selector: 'table-basic-example',
@@ -48,7 +49,7 @@ export class AccountTableComponent {
   ngOnInit() {
     this.dataSource = new GenericDataSource();
     this.paginator.pageSize = 3;
-    this.loadAccountPage();
+    this.requestAccountInfoList();
   }
 
   ngAfterViewInit() {
@@ -58,18 +59,18 @@ export class AccountTableComponent {
         distinctUntilChanged(),
         tap(() => {
           this.paginator.pageIndex = 0;
-          this.loadAccountPage();
+          this.requestAccountInfoList();
         })
       ).subscribe();
 
     this.sort.sortChange.subscribe(() => {
       this.paginator.pageIndex = 0;
-      this.loadAccountPage();
+      this.requestAccountInfoList();
     });
 
     this.paginator.page
       .pipe(
-        tap(() => this.loadAccountPage()
+        tap(() => this.requestAccountInfoList()
         )
       ).subscribe();
   }
@@ -79,7 +80,8 @@ export class AccountTableComponent {
       this.selection.deselect(accountInfo) : this.selection.select(accountInfo);
   }
 
-  loadAccountPage() {
+
+  private getRequestDetails(): TableRequestDetails {
     let sortDirection = SortDirection.ASC;
     let sortColumn = SortColumn.NONE;
 
@@ -90,19 +92,17 @@ export class AccountTableComponent {
     else if (this.sort.active == "max") sortColumn = SortColumn.MAX;
     else if (this.sort.active == "min") sortColumn = SortColumn.MIN;
 
-
-    const requestDetails = new TableRequestDetails(this.paginator.pageIndex,
+    return new TableRequestDetails(this.paginator.pageIndex,
       this.paginator.pageSize,
       sortColumn,
       sortDirection,
       this.filter.nativeElement.value);
-
-
-    console.log(requestDetails.toString());
-    this.requestAccountInfoList(requestDetails);
   }
 
-  requestAccountInfoList(requestDetails: TableRequestDetails) {
+  requestAccountInfoList() {
+    const requestDetails = this.getRequestDetails();
+
+    console.log(requestDetails.toString());
     this.dataSource.startLoading();
 
     this.httpService.get("/accounts/", {requestDetails: JSON.stringify(requestDetails)}).toPromise().then(response => {
@@ -136,7 +136,10 @@ export class AccountTableComponent {
   }
 
   private requestClientDelete(clientId: number) {
-    this.httpService.post("/client/delete", {clientId: clientId}).toPromise().then(response => {
+    const requestDetails = this.getRequestDetails();
+
+    this.httpService.post("/client/delete",
+      {clientId: clientId, requestDetails: JSON.stringify(requestDetails)}).toPromise().then(response => {
       this.onClientDeleteSuccess(response);
     }, error => {
       console.log(error)
@@ -144,7 +147,10 @@ export class AccountTableComponent {
   }
 
   private onClientDeleteSuccess(response) {
-    this.accountService.deleteAccount(response.json());
-    this.selection.deselect(this.selection.selected[0]);
+    const accountInfoPage:AccountInfoPage = response.json();
+
+    this.responseLength = accountInfoPage.totalAccountInfo;
+
+    this.dataSource.updateDateSource(accountInfoPage.accountInfoList);
   }
 }

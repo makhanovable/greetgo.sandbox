@@ -3,6 +3,8 @@ package kz.greetgo.sandbox.controller.register.client;
 
 import kz.greetgo.sandbox.controller.model.AccountInfo;
 import kz.greetgo.sandbox.controller.model.ClientInfo;
+import kz.greetgo.sandbox.controller.model.TableRequestDetails;
+import kz.greetgo.sandbox.controller.register.account.model.AccountInfoPage;
 
 public interface ClientRegister {
   ClientInfo getClientInfo(int clientId);
@@ -11,5 +13,5 @@ public interface ClientRegister {
 
   AccountInfo editClient(ClientInfo clientInfo);
 
-  AccountInfo deleteClient(int clientId);
+  AccountInfoPage deleteClient(int clientId, TableRequestDetails requestDetails);
 }

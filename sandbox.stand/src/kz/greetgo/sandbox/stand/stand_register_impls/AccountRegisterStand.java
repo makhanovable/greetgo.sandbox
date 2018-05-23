@@ -77,6 +77,7 @@ public class AccountRegisterStand implements AccountRegister {
   private ArrayList<AccountInfo> paginate(ArrayList<AccountInfo> list, int pageIndex, int pageSize) {
     int fromIndex = pageIndex * pageSize;
     int toIndex = fromIndex + pageSize;
+    if (fromIndex > list.size()) fromIndex = 0;
     if (toIndex > list.size()) toIndex = list.size();
 
     return new ArrayList<>(list.subList(fromIndex, toIndex));

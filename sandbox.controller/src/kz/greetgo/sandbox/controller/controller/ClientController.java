@@ -5,6 +5,8 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
 import kz.greetgo.sandbox.controller.model.AccountInfo;
 import kz.greetgo.sandbox.controller.model.ClientInfo;
+import kz.greetgo.sandbox.controller.model.TableRequestDetails;
+import kz.greetgo.sandbox.controller.register.account.model.AccountInfoPage;
 import kz.greetgo.sandbox.controller.register.client.ClientRegister;
 import kz.greetgo.sandbox.controller.util.Controller;
 
@@ -34,7 +36,8 @@ public class ClientController implements Controller {
 
   @ToJson()
   @Mapping("/delete")
-  public AccountInfo deleteClient(@Par("clientId") int clientId) {
-    return clientRegister.get().deleteClient(clientId);
+  public AccountInfoPage deleteClient(@Par("clientId") int clientId,
+                                      @Json @Par("requestDetails") TableRequestDetails requestDetails) {
+    return clientRegister.get().deleteClient(clientId, requestDetails);
   }
 }

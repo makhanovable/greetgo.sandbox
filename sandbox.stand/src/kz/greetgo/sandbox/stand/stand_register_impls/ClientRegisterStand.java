@@ -4,6 +4,7 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.account.AccountRegister;
+import kz.greetgo.sandbox.controller.register.account.model.AccountInfoPage;
 import kz.greetgo.sandbox.controller.register.client.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.AccountDot;
@@ -76,7 +77,7 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   @Override
-  public AccountInfo deleteClient(int clientId) {
+  public AccountInfoPage deleteClient(int clientId, TableRequestDetails requestDetails) {
     Client client = db.get().clientStorage.get(clientId).toClient();
 
     if (client == null) {
@@ -88,9 +89,7 @@ public class ClientRegisterStand implements ClientRegister {
     removeAllAddresses(clientId);
     removeAllPhones(clientId);
 
-    AccountInfo accountInfo = new AccountInfo();
-    accountInfo.id = clientId;
-    return accountInfo;
+    return accountRegister.get().getAllAccountInfo(requestDetails);
   }
 
   private void disableClientDot(int clientId) {
