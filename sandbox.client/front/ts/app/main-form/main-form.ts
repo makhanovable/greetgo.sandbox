@@ -6,7 +6,6 @@ import {Subscription} from "rxjs/Subscription";
 import {MatDialog, MatDialogConfig} from "@angular/material";
 import {ModalInfoComponent} from "./components/modal-info/modal-info";
 import {ActionType} from "../../model/ActionType";
-import {Constants} from "../../Constants";
 
 @Component({
   selector: 'main-form-component',
@@ -27,7 +26,7 @@ export class MainFormComponent implements OnDestroy {
   }
 
   handleCreateAccClick = function () {
-    this.openModal(Constants.DUMB_ID, ActionType.CREATE);
+    this.openModal(null, ActionType.CREATE);
   };
 
   handleEditAccClick = function (accountInfo) {

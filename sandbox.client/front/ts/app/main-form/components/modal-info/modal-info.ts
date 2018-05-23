@@ -13,7 +13,7 @@ import {Phone} from "../../../../model/Phone";
 import {Address} from "../../../../model/Address";
 import {AddressType} from "../../../../model/AddressType";
 import {ClientInfo} from "../../../../model/ClientInfo";
-import {Constants} from "../../../../Constants";
+import {Constants} from "../../../../model/Constants";
 
 @Component({
   selector: 'modal-info-component',
@@ -46,7 +46,7 @@ export class ModalInfoComponent implements OnInit {
 
   charmsDictionary: Charm[];
 
-
+  DUMB_ID = 1;
 
   constructor(private fb: FormBuilder,
               @Inject(MAT_DIALOG_DATA) public data: any,
@@ -57,12 +57,14 @@ export class ModalInfoComponent implements OnInit {
 
     this.actionType = data.actionType;
 
-    if (data.clientId !== Constants.DUMB_ID) {
+    if (data.clientId !== null) {
       this.requestClientInfo(data.clientId);
     }
   }
 
-  ngOnInit(): void { this.initForm(Constants.FORM_INIT); }
+  ngOnInit(): void {
+    this.initForm(Constants.FORM_INIT);
+  }
 
   private requestCharmDictionary() {
     this.httpService.get("/charm/dictionary").toPromise().then(dictionary => {
@@ -231,9 +233,9 @@ export class ModalInfoComponent implements OnInit {
 
   private boxClientInfo(): ClientInfo {
     console.log(this.clientInfo);
-    let clientId = Constants.DUMB_ID;
-    let factAddressId = Constants.DUMB_ID;
-    let regAddressId = Constants.DUMB_ID;
+    let clientId = this.DUMB_ID;
+    let factAddressId = this.DUMB_ID;
+    let regAddressId = this.DUMB_ID;
     if (this.actionType == ActionType.EDIT) clientId = this.clientInfo.client.id;
     if (this.actionType == ActionType.EDIT) regAddressId = this.clientInfo.regAddress.id;
 
