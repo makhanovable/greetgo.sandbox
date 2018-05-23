@@ -1,7 +1,7 @@
 import {Component, Inject, OnInit} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material";
 import {MainFormComponent} from "../../main-form";
-import {FormArray, FormBuilder, FormGroup} from "@angular/forms";
+import {FormArray, FormBuilder, FormControl, FormGroup} from "@angular/forms";
 import {Gender} from "../../../../model/Gender";
 import {PhoneType} from "../../../../model/PhoneType";
 import {Charm} from "../../../../model/Charm";
@@ -13,6 +13,7 @@ import {Phone} from "../../../../model/Phone";
 import {Address} from "../../../../model/Address";
 import {AddressType} from "../../../../model/AddressType";
 import {ClientInfo} from "../../../../model/ClientInfo";
+import {Constants} from "../../../../Constants";
 
 @Component({
   selector: 'modal-info-component',
@@ -27,152 +28,157 @@ export class ModalInfoComponent implements OnInit {
 
   clientInfo: ClientInfo = new ClientInfo(null, null, null, null);
 
-  name: string = 'test';
-  surname: string = 'test';
-  patronymic: string = 'test';
+  name: string = '';
+  surname: string = '';
+  patronymic: string = '';
   gender: Gender = Gender.MALE;
   birthDate: Date = new Date();
   charmId: number = 1;
-  streetFact: string = 'qwe';
-  houseFact: string = 'qwe';
-  flatFact: string = 'qwe';
-  streetReg: string = 'qwe';
-  houseReg: string = 'qwe';
-  flatReg: string = 'qwe';
-  phoneHome: string = 'qwe';
-  phoneWork: string = 'qwe';
-  mobiles: FormGroup[] = [];
+  streetFact: string = '';
+  houseFact: string = '';
+  flatFact: string = '';
+  streetReg: string = '';
+  houseReg: string = '';
+  flatReg: string = '';
+  phoneHome: string = '';
+  phoneWork: string = '';
+  mobiles: FormControl[] = [];
 
   charmsDictionary: Charm[];
-
-  DUMB_ID = -1;
 
   constructor(private fb: FormBuilder,
               @Inject(MAT_DIALOG_DATA) public data: any,
               private dialogRef: MatDialogRef<MainFormComponent>,
               private httpService: HttpService, private accountService: AccountService) {
 
+    this.requestCharmDictionary();
+
     this.actionType = data.actionType;
 
+    if (data.clientId !== Constants.DUMB_ID) {
+      this.requestClientInfo(data.clientId);
+    }
+  }
+
+  ngOnInit(): void { this.initForm(Constants.FORM_INIT); }
+
+  private requestCharmDictionary() {
     this.httpService.get("/charm/dictionary").toPromise().then(dictionary => {
-      this.charmsDictionary = dictionary.json();
-      this.charmId = this.charmsDictionary[0].id;
+      this.onCharmRequestSuccess(dictionary);
     }, error => {
       console.log(error);
     });
+  }
 
-    if (data.clientId !== this.DUMB_ID) {
-      this.httpService.get("/client/info", {clientId: data.clientId}).toPromise().then(response => {
-        this.loadData(response);
-      }, error => {
-        console.log(error);
+  private onCharmRequestSuccess(dictionary) {
+    this.charmsDictionary = dictionary.json();
+    this.charmId = this.charmsDictionary[0].id;
+  }
+
+  private requestClientInfo(clientId: number) {
+    this.httpService.get("/client/info", {clientId: clientId}).toPromise().then(clientInfo => {
+      this.onClientInfoRequestSuccess(clientInfo);
+    }, error => {
+      console.log(error);
+    });
+  }
+
+  private onClientInfoRequestSuccess(clientInfo) {
+    this.clientInfo = clientInfo.json();
+
+    if (this.actionType == ActionType.EDIT) this.loadClientInfo();
+
+    this.initForm(Constants.FORM_LOAD);
+  }
+
+  initForm(action: number) {
+    if (action === Constants.FORM_INIT) {
+      this.form = this.fb.group({
+        name: [this.name],
+        surname: [this.surname],
+        patronymic: [this.patronymic],
+        gender: [this.gender],
+        birthDate: [this.birthDate],
+        charm: [this.charmId],
+        streetFact: [this.streetFact],
+        houseFact: [this.houseFact],
+        flatFact: [this.flatFact],
+        streetReg: [this.streetReg],
+        houseReg: [this.houseReg],
+        flatReg: [this.flatReg],
+        phoneHome: [this.phoneHome],
+        phoneWork: [this.phoneWork],
+        mobiles: this.fb.array([this.createMobile("")]), // init with an empty control
+      });
+    } else if (action === Constants.FORM_LOAD) {
+      this.form = this.fb.group({
+        name: [this.name],
+        surname: [this.surname],
+        patronymic: [this.patronymic],
+        gender: [this.gender],
+        birthDate: [this.birthDate],
+        charm: [this.charmId],
+        streetFact: [this.streetFact],
+        houseFact: [this.houseFact],
+        flatFact: [this.flatFact],
+        streetReg: [this.streetReg],
+        houseReg: [this.houseReg],
+        flatReg: [this.flatReg],
+        phoneHome: [this.phoneHome],
+        phoneWork: [this.phoneWork],
+        mobiles: this.form.controls.mobiles,
       });
     }
   }
 
-  ngOnInit(): void {
-    this.form = this.fb.group({
-      name: [this.name],
-      surname: [this.surname],
-      patronymic: [this.patronymic],
-      gender: [this.gender],
-      birthDate: [this.birthDate],
-      charm: [this.charmId],
-      streetFact: [this.streetFact],
-      houseFact: [this.houseFact],
-      flatFact: [this.flatFact],
-      streetReg: [this.streetReg],
-      houseReg: [this.houseReg],
-      flatReg: [this.flatReg],
-      phoneHome: [this.phoneHome],
-      phoneWork: [this.phoneWork],
-      mobiles: this.fb.array([this.createMobile("")])
-    });
-  }
+  private loadClientInfo() {
+    this.name = this.clientInfo.client.name;
+    this.surname = this.clientInfo.client.surname;
+    this.patronymic = this.clientInfo.client.patronymic;
+    this.gender = this.clientInfo.client.gender;
+    this.birthDate = new Date(this.clientInfo.client.birthDate);
+    this.charmId = this.clientInfo.client.charmId;
 
-  private loadData(response) {
-    this.clientInfo = response.json();
-
-    if (this.actionType == ActionType.EDIT) {
-      this.loadClientInfo(this.clientInfo);
-    } else {
-      const control = this.form.controls["mobiles"] as FormArray;
-      control.push(this.createMobile(""));
+    if (this.clientInfo.factAddress !== null) {
+      this.streetFact = this.clientInfo.factAddress.street;
+      this.houseFact = this.clientInfo.factAddress.house;
+      this.flatFact = this.clientInfo.factAddress.flat;
     }
 
-    this.loadForm();
-  }
-
-  private loadClientInfo(clientInfoModel) {
-    this.name = clientInfoModel.client.name;
-    this.surname = clientInfoModel.client.surname;
-    this.patronymic = clientInfoModel.client.patronymic;
-    this.gender = clientInfoModel.client.gender;
-    this.birthDate = new Date(clientInfoModel.client.birthDate);
-    this.charmId = clientInfoModel.client.charmId;
-
-    if (clientInfoModel.factAddress !== null) {
-      this.streetFact = clientInfoModel.factAddress.street;
-      this.houseFact = clientInfoModel.factAddress.house;
-      this.flatFact = clientInfoModel.factAddress.flat;
+    if (this.clientInfo.regAddress !== null) {
+      this.streetReg = this.clientInfo.regAddress.street;
+      this.houseReg = this.clientInfo.regAddress.house;
+      this.flatReg = this.clientInfo.regAddress.flat;
     }
 
-    if (clientInfoModel.regAddress !== null) {
-      this.streetReg = clientInfoModel.regAddress.street;
-      this.houseReg = clientInfoModel.regAddress.house;
-      this.flatReg = clientInfoModel.regAddress.flat;
-    }
-
-
-    this.deleteMobile(0);
-    for (let i = 0; i < clientInfoModel.phones.length; i++) {
-      const phone = clientInfoModel.phones[i];
+    this.deleteMobile(0); // Need to remove the first empty control
+    for (let i = 0; i < this.clientInfo.phones.length; i++) {
+      const phone = this.clientInfo.phones[i];
 
       if (phone.type == PhoneType.HOME) {
         this.phoneHome = phone.number;
       } else if (phone.type == PhoneType.WORK) {
         this.phoneWork = phone.number;
       } else if (phone.type == PhoneType.MOBILE) {
-        const control = this.form.controls["mobiles"] as FormArray;
-        control.push(this.createMobile(phone.number));
+        this.addMobile(phone.number);
       }
     }
-  }
-
-  loadForm() {
-    this.form = this.fb.group({
-      name: [this.name],
-      surname: [this.surname],
-      patronymic: [this.patronymic],
-      gender: [this.gender],
-      birthDate: [this.birthDate],
-      charm: [this.charmId],
-      streetFact: [this.streetFact],
-      houseFact: [this.houseFact],
-      flatFact: [this.flatFact],
-      streetReg: [this.streetReg],
-      houseReg: [this.houseReg],
-      flatReg: [this.flatReg],
-      phoneHome: [this.phoneHome],
-      phoneWork: [this.phoneWork],
-      mobiles: this.form.controls.mobiles
-    });
-  }
-
-  createMobile(number: string): FormGroup {
-    return this.fb.group({
-      number: [number]
-    });
-  }
-
-  addMobile() {
-    const control = this.form.controls["mobiles"] as FormArray;
-    control.push(this.createMobile(""));
   }
 
   deleteMobile(index: number) {
     const control = this.form.controls["mobiles"] as FormArray;
     control.removeAt(index);
+  }
+
+  addMobile(number: string) {
+    const control = this.form.controls["mobiles"] as FormArray;
+    control.push(this.createMobile(number));
+  }
+
+  private createMobile(number: string): FormGroup {
+    return this.fb.group({
+      number: [number]
+    });
   }
 
   save() {
@@ -190,27 +196,35 @@ export class ModalInfoComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  createNewClient() {
+  private createNewClient() {
     const clientInfo = this.boxClientInfo();
 
     console.log("check", clientInfo);
     this.httpService.post("/client/create", {clientInfo: JSON.stringify(clientInfo)}).toPromise().then(response => {
-      this.accountService.addNewAccount(response.json());
-      this.dialogRef.close();
+      this.onCreateClientSuccess(response);
     }, error => {
       console.log(error);
     });
   }
 
+  private onCreateClientSuccess(response) {
+    this.accountService.addNewAccount(response.json());
+    this.dialogRef.close();
+  }
+
   private editClient() {
     const clientInfo = this.boxClientInfo();
     this.httpService.post("/client/edit", {clientInfo: JSON.stringify(clientInfo)}).toPromise().then(response => {
-      console.log(response.json());
-      this.accountService.updateAccount(response.json());
-      this.dialogRef.close();
+      this.onEditClientSuccess(response);
     }, error => {
       console.log(error);
     });
+  }
+
+  private onEditClientSuccess(response) {
+    console.log(response.json());
+    this.accountService.updateAccount(response.json());
+    this.dialogRef.close();
   }
 
   private boxClientInfo(): ClientInfo {
