@@ -47,12 +47,6 @@ export class AccountTableComponent {
 
   ngOnInit() {
     this.dataSource = new GenericDataSource();
-    // this.sort.sort(<MatSortable>{
-    //     id: "fio",
-    //     start: 'asc'
-    //   }
-    // );
-
     this.paginator.pageSize = 3;
     this.loadAccountPage();
   }
@@ -105,22 +99,26 @@ export class AccountTableComponent {
 
 
     console.log(requestDetails.toString());
-    this.loadAccountInfoList(requestDetails);
+    this.requestAccountInfoList(requestDetails);
   }
 
-  loadAccountInfoList(requestDetails: TableRequestDetails) {
-
+  requestAccountInfoList(requestDetails: TableRequestDetails) {
     this.dataSource.startLoading();
-    this.httpService.get("/accounts/", {requestDetails: JSON.stringify(requestDetails)}).toPromise().then(response => {
-      const result = response.json();
-      this.responseLength = result.totalAccountInfo;
 
-      this.dataSource.updateDateSource(result.accountInfoList);
-      this.dataSource.stopLoading();
+    this.httpService.get("/accounts/", {requestDetails: JSON.stringify(requestDetails)}).toPromise().then(response => {
+      this.onAccountInfoListRequestSuccess(response);
     }, error => {
       console.log(error);
       this.dataSource.stopLoading()
     });
+  }
+
+  private onAccountInfoListRequestSuccess(response) {
+    const result = response.json();
+    this.responseLength = result.totalAccountInfo;
+
+    this.dataSource.updateDateSource(result.accountInfoList);
+    this.dataSource.stopLoading();
   }
 
   onAddClicked() {
@@ -133,12 +131,20 @@ export class AccountTableComponent {
 
   onDeleteClicked() {
     const clientId = this.selection.selected[0].id;
+
+    this.requestClientDelete(clientId);
+  }
+
+  private requestClientDelete(clientId: number) {
     this.httpService.post("/client/delete", {clientId: clientId}).toPromise().then(response => {
-      this.accountService.deleteAccount(response.json());
-      this.selection.deselect(this.selection.selected[0]);
+      this.onClientDeleteSuccess(response);
     }, error => {
       console.log(error)
     });
   }
 
+  private onClientDeleteSuccess(response) {
+    this.accountService.deleteAccount(response.json());
+    this.selection.deselect(this.selection.selected[0]);
+  }
 }
