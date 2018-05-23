@@ -229,12 +229,14 @@ export class ModalInfoComponent implements OnInit {
 
   private boxClientInfo(): ClientInfo {
     console.log(this.clientInfo);
-    let clientId = -1;
-    let factAddressId = -1;
-    let regAddressId = -1;
-    if (this.clientInfo.client !== null) clientId = this.clientInfo.client.id;
-    if (this.clientInfo.factAddress !== null) factAddressId = this.clientInfo.factAddress.id;
-    if (this.clientInfo.regAddress !== null) regAddressId = this.clientInfo.regAddress.id;
+    let clientId = Constants.DUMB_ID;
+    let factAddressId = Constants.DUMB_ID;
+    let regAddressId = Constants.DUMB_ID;
+    if (this.actionType == ActionType.EDIT) clientId = this.clientInfo.client.id;
+    if (this.actionType == ActionType.EDIT) regAddressId = this.clientInfo.regAddress.id;
+
+    if (this.actionType == ActionType.EDIT
+      && this.clientInfo.factAddress !== null) factAddressId = this.clientInfo.factAddress.id;
 
     const client = new Client(
       clientId,
@@ -263,12 +265,12 @@ export class ModalInfoComponent implements OnInit {
 
     const phones: Phone[] = [];
 
-    phones.push(new Phone(this.clientInfo.client.id, this.form.controls["phoneHome"].value, PhoneType.HOME));
-    phones.push(new Phone(this.clientInfo.client.id, this.form.controls["phoneWork"].value, PhoneType.WORK));
+    phones.push(new Phone(clientId, this.form.controls["phoneHome"].value, PhoneType.HOME));
+    phones.push(new Phone(clientId, this.form.controls["phoneWork"].value, PhoneType.WORK));
 
     const arr = (this.form.controls["mobiles"] as FormArray).controls;
     for (let i = 0; i < arr.length; i++) {
-      phones.push(new Phone(this.clientInfo.client.id, arr[i].value.number, PhoneType.MOBILE));
+      phones.push(new Phone(clientId, arr[i].value.number, PhoneType.MOBILE));
     }
 
     return new ClientInfo(client, factAddress, regAddress, phones);
