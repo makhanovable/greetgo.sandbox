@@ -48,6 +48,8 @@ export class ModalInfoComponent implements OnInit {
 
   DUMB_ID = 1;
 
+  errorMessage: string | null = null;
+
   constructor(private fb: FormBuilder,
               @Inject(MAT_DIALOG_DATA) public data: any,
               private dialogRef: MatDialogRef<MainFormComponent>,
@@ -204,10 +206,12 @@ export class ModalInfoComponent implements OnInit {
     const clientInfo = this.boxClientInfo();
 
     console.log("check", clientInfo);
-    this.httpService.post("/client/create", {clientInfo: JSON.stringify(clientInfo)}).toPromise().then(response => {
+    this.httpService.post("/client/create",
+      {clientInfo: JSON.stringify(clientInfo)}).toPromise().then(response => {
       this.onCreateClientSuccess(response);
     }, error => {
-      console.log(error);
+      alert(error._body);
+      this.errorMessage = error._body;
     });
   }
 
@@ -218,10 +222,12 @@ export class ModalInfoComponent implements OnInit {
 
   private editClient() {
     const clientInfo = this.boxClientInfo();
-    this.httpService.post("/client/edit", {clientInfo: JSON.stringify(clientInfo)}).toPromise().then(response => {
+    this.httpService.post("/client/edit",
+      {clientInfo: JSON.stringify(clientInfo)}).toPromise().then(response => {
       this.onEditClientSuccess(response);
     }, error => {
-      console.log(error);
+      alert(error._body);
+      this.errorMessage = error._body;
     });
   }
 
@@ -249,7 +255,8 @@ export class ModalInfoComponent implements OnInit {
       this.form.controls["patronymic"].value,
       this.form.controls["gender"].value,
       this.form.controls["birthDate"].value.getTime(),
-      this.form.controls["charm"].value);
+      -1);
+      // this.form.controls["charm"].value);
 
     const factAddress = new Address(
       factAddressId,

@@ -19,3 +19,11 @@
 .modal-phone-group {
     width: 100%;
 }
+
+.modal-alert {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    background-color: #f44336;
+    color: white;
+}

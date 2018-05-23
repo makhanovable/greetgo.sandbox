@@ -2,15 +2,13 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.sandbox.controller.errors.InvalidCharmError;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.account.AccountRegister;
 import kz.greetgo.sandbox.controller.register.account.model.AccountInfoPage;
 import kz.greetgo.sandbox.controller.register.client.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
-import kz.greetgo.sandbox.db.stand.model.AccountDot;
-import kz.greetgo.sandbox.db.stand.model.AddressDot;
-import kz.greetgo.sandbox.db.stand.model.ClientDot;
-import kz.greetgo.sandbox.db.stand.model.PhoneDot;
+import kz.greetgo.sandbox.db.stand.model.*;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -119,6 +117,9 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private void createNewClientDot(int clientId, Client client) {
+    CharmDot charmDot = db.get().charmStorage.get(client.charmId);
+    if(charmDot == null) throw new InvalidCharmError(404, "Invalid charm, please, choose another one");
+
     ClientDot newClientDot = new ClientDot(clientId, client.name,
       client.surname, client.patronymic, client.gender, client.birthDate, client.charmId);
 
@@ -147,6 +148,9 @@ public class ClientRegisterStand implements ClientRegister {
   }
 
   private void updateClient(ClientDot clientDot, Client client) {
+    CharmDot charmDot = db.get().charmStorage.get(client.charmId);
+    if(charmDot == null) throw new InvalidCharmError(404, "Invalid charm, please, choose another one");
+
     clientDot.name = client.name;
     clientDot.surname = client.surname;
     clientDot.patronymic = client.patronymic;
