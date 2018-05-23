@@ -9,7 +9,6 @@ import kz.greetgo.sandbox.db.stand.model.*;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -47,9 +46,6 @@ public class StandDb implements HasAfterInject {
           case "PERSON":
             appendPerson(splitLine, line, lineNo);
             break;
-//          case "ACCOUNT_INFO":
-//            appendAccountInfo(splitLine);
-//            break;
           case "CLIENT":
             appendClient(splitLine);
             break;
@@ -157,16 +153,4 @@ public class StandDb implements HasAfterInject {
     personStorage.put(p.id, p);
   }
 
-//  private void appendAccountInfo(String[] splitLine) {
-//    AccountInfoDot acc = new AccountInfoDot();
-//    acc.id = Integer.parseInt(splitLine[1].trim());
-//    acc.fullName = splitLine[2].trim();
-//    acc.charmId = splitLine[3].trim();
-//    acc.age = Integer.parseInt(splitLine[4].trim());
-//    acc.totalAccBalance = Float.parseFloat(splitLine[5].trim());
-//    acc.maxAccBalance = Float.parseFloat(splitLine[6].trim());
-//    acc.minAccBalance = Float.parseFloat(splitLine[7].trim());
-//
-//    accountInfoStorage.put(acc.id, acc);
-//  }
 }
