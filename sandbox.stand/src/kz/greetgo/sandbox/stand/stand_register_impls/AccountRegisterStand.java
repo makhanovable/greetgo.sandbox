@@ -31,11 +31,13 @@ public class AccountRegisterStand implements AccountRegister {
       }
     }
 
-    int totalAccountInfoCount = accountInfoList.size();
-
     accountInfoList = filter(accountInfoList, requestDetails.filter);
     accountInfoList = sort(accountInfoList, requestDetails.sortBy, requestDetails.sortDirection);
+
+    int totalAccountInfoCount = accountInfoList.size();
+
     accountInfoList = paginate(accountInfoList, requestDetails.pageIndex, requestDetails.pageSize);
+
 
     return new AccountInfoPage(accountInfoList, totalAccountInfoCount);
   }
