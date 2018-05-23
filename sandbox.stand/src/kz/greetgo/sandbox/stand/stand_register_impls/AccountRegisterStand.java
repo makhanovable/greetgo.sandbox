@@ -1,6 +1,5 @@
 package kz.greetgo.sandbox.stand.stand_register_impls;
 
-import com.google.common.collect.Lists;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
@@ -18,51 +17,66 @@ import static java.util.Calendar.*;
 @Bean
 public class AccountRegisterStand implements AccountRegister {
 
-//  private final Path storageDir = new File()
-
   public BeanGetter<StandDb> db;
 
   @Override
   public AccountInfoPage getAllAccountInfo(TableRequestDetails requestDetails) {
     ArrayList<AccountInfo> accountInfoList = new ArrayList<>();
 
-
-    for(ClientDot clientDot : db.get().clientStorage.values()) {
-      if(clientDot.isActive) {
+    for (ClientDot clientDot : db.get().clientStorage.values()) {
+      if (clientDot.isActive) {
         AccountInfo accountInfo = getAccountInfo(clientDot.id);
         accountInfoList.add(accountInfo);
       }
     }
 
-    // Filtration
-    accountInfoList = accountInfoList.stream()
+    int totalAccountInfoCount = accountInfoList.size();
+
+    accountInfoList = filter(accountInfoList, requestDetails.filter);
+    accountInfoList = sort(accountInfoList, requestDetails.sortBy, requestDetails.sortDirection);
+    accountInfoList = paginate(accountInfoList, requestDetails.pageIndex, requestDetails.pageSize);
+
+    return new AccountInfoPage(accountInfoList, totalAccountInfoCount);
+  }
+
+  private ArrayList<AccountInfo> filter(ArrayList<AccountInfo> list, String filterValue) {
+    return list.stream()
       .filter(a -> a.fullName.replaceAll("\\s+", "").toLowerCase()
-        .contains(requestDetails.filter.replaceAll("\\s+", "").toLowerCase())
+        .contains(filterValue.replaceAll("\\s+", "").toLowerCase())
       ).collect(Collectors.toCollection(ArrayList::new));
+  }
 
-    // Sorting
-    if (requestDetails.sortBy == SortColumn.FIO) {
-      accountInfoList.sort((AccountInfo a1, AccountInfo a2) -> a1.fullName.compareTo(a2.fullName));
-    } else if (requestDetails.sortBy == SortColumn.AGE) {
-      accountInfoList.sort((AccountInfo a1, AccountInfo a2) -> a1.age - a2.age);
-    } else if (requestDetails.sortBy == SortColumn.TOTAL) {
-      accountInfoList.sort((AccountInfo a1, AccountInfo a2) -> (int)(a1.totalAccBalance - a2.totalAccBalance));
-    } else if (requestDetails.sortBy == SortColumn.MIN) {
-      accountInfoList.sort((AccountInfo a1, AccountInfo a2) -> (int)(a1.minAccBalance - a2.minAccBalance));
-    } else if (requestDetails.sortBy == SortColumn.MAX) {
-      accountInfoList.sort((AccountInfo a1, AccountInfo a2) -> (int)(a1.maxAccBalance - a2.maxAccBalance));
+  private ArrayList<AccountInfo> sort(ArrayList<AccountInfo> list, SortColumn column, SortDirection direction) {
+
+    switch (column) {
+      case FIO:
+        list.sort(Comparator.comparing(a -> a.fullName));
+        break;
+      case AGE:
+        list.sort(Comparator.comparingInt(a -> a.age));
+        break;
+      case TOTAL:
+        list.sort((AccountInfo a1, AccountInfo a2) -> (int) (a1.totalAccBalance - a2.totalAccBalance));
+        break;
+      case MAX:
+        list.sort((AccountInfo a1, AccountInfo a2) -> (int) (a1.maxAccBalance - a2.maxAccBalance));
+        break;
+      case MIN:
+        list.sort((AccountInfo a1, AccountInfo a2) -> (int) (a1.minAccBalance - a2.minAccBalance));
+        break;
     }
 
-    if (requestDetails.sortDirection == SortDirection.DESC) {
-      Collections.reverse(accountInfoList);
-    }
+    if (column != SortColumn.NONE && direction == SortDirection.DESC) Collections.reverse(list);
 
-    // Paginagtion
-    int fromIndex = requestDetails.pageIndex * requestDetails.pageSize;
-    int toIndex = fromIndex + requestDetails.pageSize;
-    if(toIndex > accountInfoList.size()) toIndex = accountInfoList.size();
+    return list;
+  }
 
-    return new AccountInfoPage(accountInfoList.subList(fromIndex, toIndex), accountInfoList.size());
+  private ArrayList<AccountInfo> paginate(ArrayList<AccountInfo> list, int pageIndex, int pageSize) {
+    int fromIndex = pageIndex * pageSize;
+    int toIndex = fromIndex + pageSize;
+    if (toIndex > list.size()) toIndex = list.size();
+
+    return new ArrayList<>(list.subList(fromIndex, toIndex));
   }
 
   @Override
@@ -76,7 +90,7 @@ public class AccountRegisterStand implements AccountRegister {
     accountInfo.age = calculateYearDiff(clientDot.birthDate);
 
     ArrayList<Account> accounts = selectAccountsByClientId(accountInfo.id);
-    if(accounts.size() == 0) return null;
+    if (accounts.size() == 0) return null;
 
     accountInfo.totalAccBalance = getTotalAccBalance(accounts);
     accountInfo.minAccBalance = getMinAccBalance(accounts);
@@ -87,18 +101,18 @@ public class AccountRegisterStand implements AccountRegister {
 
   private float getMinAccBalance(ArrayList<Account> accounts) {
     float result = accounts.get(0).money;
-    for(int i = 1; i < accounts.size(); i++) {
+    for (int i = 1; i < accounts.size(); i++) {
       Account curAcc = accounts.get(i);
-      if(curAcc.money < result) result = curAcc.money;
+      if (curAcc.money < result) result = curAcc.money;
     }
     return result;
   }
 
   private float getMaxAccBalance(ArrayList<Account> accounts) {
     float result = accounts.get(0).money;
-    for(int i = 1; i < accounts.size(); i++) {
+    for (int i = 1; i < accounts.size(); i++) {
       Account curAcc = accounts.get(i);
-      if(curAcc.money > result) result = curAcc.money;
+      if (curAcc.money > result) result = curAcc.money;
     }
     return result;
   }
@@ -106,7 +120,7 @@ public class AccountRegisterStand implements AccountRegister {
 
   private float getTotalAccBalance(ArrayList<Account> accounts) {
     float result = 0f;
-    for(Account acc : accounts) {
+    for (Account acc : accounts) {
       result += acc.money;
     }
     return result;
@@ -115,8 +129,8 @@ public class AccountRegisterStand implements AccountRegister {
   private ArrayList<Account> selectAccountsByClientId(int clientId) {
     ArrayList<Account> accounts = new ArrayList<>();
 
-    for(AccountDot accountDot: db.get().accountStorage.values()) {
-      if(accountDot.clientId == clientId && accountDot.isActive) accounts.add(accountDot.toAccount());
+    for (AccountDot accountDot : db.get().accountStorage.values()) {
+      if (accountDot.clientId == clientId && accountDot.isActive) accounts.add(accountDot.toAccount());
     }
 
     return accounts;

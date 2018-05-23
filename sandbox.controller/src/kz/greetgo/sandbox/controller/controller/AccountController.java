@@ -6,13 +6,10 @@ import kz.greetgo.mvc.annotations.Json;
 import kz.greetgo.mvc.annotations.Mapping;
 import kz.greetgo.mvc.annotations.Par;
 import kz.greetgo.mvc.annotations.ToJson;
-import kz.greetgo.sandbox.controller.model.AccountInfo;
 import kz.greetgo.sandbox.controller.model.AccountInfoPage;
 import kz.greetgo.sandbox.controller.model.TableRequestDetails;
 import kz.greetgo.sandbox.controller.register.account.AccountRegister;
 import kz.greetgo.sandbox.controller.util.Controller;
-
-import java.util.List;
 
 @Bean
 @Mapping("/accounts")
