@@ -131,7 +131,6 @@ export class AccountTableComponent {
 
   onDeleteClicked() {
     const clientId = this.selection.selected[0].id;
-
     this.requestClientDelete(clientId);
   }
 
@@ -152,5 +151,6 @@ export class AccountTableComponent {
     this.responseLength = accountInfoPage.totalAccountInfo;
 
     this.dataSource.updateDateSource(accountInfoPage.accountInfoList);
+    this.selection.clear();
   }
 }
