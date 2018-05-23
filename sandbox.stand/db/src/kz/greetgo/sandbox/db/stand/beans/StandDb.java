@@ -126,7 +126,7 @@ public class StandDb implements HasAfterInject {
     c.charmId = Integer.parseInt(splitLine[5].trim());
 
     try {
-      c.birthDate = new SimpleDateFormat("dd-MM-yyyy").parse(splitLine[4].trim());
+      c.birthDate = new SimpleDateFormat("dd-MM-yyyy").parse(splitLine[4].trim()).getTime();
     } catch (ParseException e) {
       e.printStackTrace();
     }

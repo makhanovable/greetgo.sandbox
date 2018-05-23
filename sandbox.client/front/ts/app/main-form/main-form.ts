@@ -5,7 +5,7 @@ import {PhoneType} from "../../model/PhoneType";
 import {Subscription} from "rxjs/Subscription";
 import {MatDialog, MatDialogConfig} from "@angular/material";
 import {ModalInfoComponent} from "./components/modal-info/modal-info";
-import {ActionType} from "../../model/ActionType";
+import {ActionType} from "../../utils/ActionType";
 
 @Component({
   selector: 'main-form-component',

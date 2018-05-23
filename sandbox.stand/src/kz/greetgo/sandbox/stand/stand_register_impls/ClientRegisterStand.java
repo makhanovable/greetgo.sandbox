@@ -5,7 +5,7 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.errors.InvalidCharmError;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.account.AccountRegister;
-import kz.greetgo.sandbox.controller.register.account.model.AccountInfoPage;
+import kz.greetgo.sandbox.controller.model.AccountInfoPage;
 import kz.greetgo.sandbox.controller.register.client.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.*;

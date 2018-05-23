@@ -6,7 +6,7 @@ import {Gender} from "../../../../model/Gender";
 import {PhoneType} from "../../../../model/PhoneType";
 import {Charm} from "../../../../model/Charm";
 import {HttpService} from "../../../HttpService";
-import {ActionType} from "../../../../model/ActionType";
+import {ActionType} from "../../../../utils/ActionType";
 import {AccountService} from "../../../services/AccountService";
 import {Client} from "../../../../model/Client";
 import {Phone} from "../../../../model/Phone";

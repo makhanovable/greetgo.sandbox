@@ -8,12 +8,12 @@ public class Client {
   public String surname;
   public String patronymic;
   public Gender gender;
-  public Date birthDate;
+  public Long birthDate;
   public int charmId;
 
   public boolean isActive = true;
 
-  public Client(int id, String name, String surname, String patronymic, Gender gender, Date birthDate, int charmId) {
+  public Client(int id, String name, String surname, String patronymic, Gender gender, Long birthDate, int charmId) {
     this.id = id;
     this.name = name;
     this.surname = surname;

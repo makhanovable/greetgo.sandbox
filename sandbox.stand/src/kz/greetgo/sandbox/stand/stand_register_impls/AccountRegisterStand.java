@@ -5,7 +5,7 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.errors.InvalidCharmError;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.account.AccountRegister;
-import kz.greetgo.sandbox.controller.register.account.model.AccountInfoPage;
+import kz.greetgo.sandbox.controller.model.AccountInfoPage;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.AccountDot;
 import kz.greetgo.sandbox.db.stand.model.CharmDot;
@@ -93,7 +93,7 @@ public class AccountRegisterStand implements AccountRegister {
     accountInfo.id = clientDot.id;
     accountInfo.fullName = String.format("%s %s %s", clientDot.name, clientDot.surname, clientDot.patronymic);
     accountInfo.charm = getCharmById(clientDot.charmId);
-    accountInfo.age = calculateYearDiff(clientDot.birthDate);
+    accountInfo.age = calculateYearDiff(new Date(clientDot.birthDate));
 
     ArrayList<Account> accounts = selectAccountsByClientId(accountInfo.id);
     if (accounts.size() == 0) return null;

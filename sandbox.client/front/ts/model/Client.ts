@@ -6,12 +6,12 @@ export class Client {
   public surname: string;
   public patronymic: string;
   public gender: Gender;
-  public birthDate: Date;
+  public birthDate: number/*long*/;
   public charmId: number/*int*/;
 
   public isActive: boolean = true;
 
-  constructor(id: number, name: string, surname: string, patronymic: string, gender: Gender, birthDate: Date, charmId: number) {
+  constructor(id: number, name: string, surname: string, patronymic: string, gender: Gender, birthDate: number, charmId: number) {
     this.id = id;
     this.name = name;
     this.surname = surname;

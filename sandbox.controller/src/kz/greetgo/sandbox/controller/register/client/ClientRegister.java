@@ -4,7 +4,7 @@ package kz.greetgo.sandbox.controller.register.client;
 import kz.greetgo.sandbox.controller.model.AccountInfo;
 import kz.greetgo.sandbox.controller.model.ClientInfo;
 import kz.greetgo.sandbox.controller.model.TableRequestDetails;
-import kz.greetgo.sandbox.controller.register.account.model.AccountInfoPage;
+import kz.greetgo.sandbox.controller.model.AccountInfoPage;
 
 public interface ClientRegister {
   ClientInfo getClientInfo(int clientId);

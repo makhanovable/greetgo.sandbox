@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.controller.register.account.model;
+package kz.greetgo.sandbox.controller.model;
 
 import kz.greetgo.sandbox.controller.model.AccountInfo;
 
