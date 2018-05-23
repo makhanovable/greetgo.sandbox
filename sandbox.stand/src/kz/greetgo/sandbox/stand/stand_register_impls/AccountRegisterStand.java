@@ -4,6 +4,8 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.Account;
 import kz.greetgo.sandbox.controller.model.AccountInfo;
+import kz.greetgo.sandbox.controller.model.AccountInfoPage;
+import kz.greetgo.sandbox.controller.model.TableRequestDetails;
 import kz.greetgo.sandbox.controller.register.account.AccountRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.AccountDot;
@@ -25,8 +27,9 @@ public class AccountRegisterStand implements AccountRegister {
   public BeanGetter<StandDb> db;
 
   @Override
-  public List<AccountInfo> getAllAccountInfo() {
+  public AccountInfoPage getAllAccountInfo(TableRequestDetails requestDetails) {
     ArrayList<AccountInfo> accountInfoList = new ArrayList<>();
+
 
     for(ClientDot clientDot : db.get().clientStorage.values()) {
       if(clientDot.isActive) {
@@ -35,7 +38,12 @@ public class AccountRegisterStand implements AccountRegister {
       }
     }
 
-    return accountInfoList;
+    // Paginagtion
+    int fromIndex = requestDetails.pageIndex * requestDetails.pageSize;
+    int toIndex = fromIndex + requestDetails.pageSize;
+    if(toIndex > accountInfoList.size()) toIndex = accountInfoList.size();
+
+    return new AccountInfoPage(accountInfoList.subList(fromIndex, toIndex), accountInfoList.size());
   }
 
   @Override

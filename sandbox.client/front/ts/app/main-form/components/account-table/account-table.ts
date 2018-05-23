@@ -1,5 +1,5 @@
 import {Component, ElementRef, EventEmitter, Output, ViewChild} from '@angular/core';
-import {MatPaginator, MatSort} from "@angular/material";
+import {MatPaginator, MatSort, MatSortable} from "@angular/material";
 import {SelectionModel} from "@angular/cdk/collections";
 import {AccountInfo} from "../../../../model/AccountInfo";
 import {HttpService} from "../../../HttpService";
@@ -7,6 +7,9 @@ import {GenericDataSource} from "./GenericDataSource";
 import {debounceTime, distinctUntilChanged, tap} from "rxjs/operators";
 import {fromEvent} from "rxjs/observable/fromEvent";
 import {AccountService} from "../../../services/AccountService";
+import {SortDirection} from "../../../../model/SortDirection";
+import {TableRequestDetails} from "../../../../model/TableRequestDetails";
+import {SortColumn} from "../../../../model/SortColumn";
 
 @Component({
   selector: 'table-basic-example',
@@ -44,6 +47,13 @@ export class AccountTableComponent {
 
   ngOnInit() {
     this.dataSource = new GenericDataSource();
+    this.sort.sort(<MatSortable>{
+        id: "fio",
+        start: 'asc'
+      }
+    );
+
+    this.paginator.pageSize = 3;
     this.loadAccountPage();
   }
 
@@ -63,6 +73,7 @@ export class AccountTableComponent {
       this.loadAccountPage();
     });
 
+
     this.paginator.page
       .pipe(
         tap(() => this.loadAccountPage()
@@ -76,24 +87,38 @@ export class AccountTableComponent {
   }
 
   loadAccountPage() {
-    this.loadAccountInfoList(
-      this.paginator.pageIndex,
+    let sortDirection = SortDirection.ASC;
+    let sortColumn = SortColumn.NONE;
+
+    if (this.sort.direction == 'desc') sortDirection = SortDirection.DESC;
+    if (this.sort.active == "fio") sortColumn = SortColumn.FIO;
+    else if (this.sort.active == "age") sortColumn = SortColumn.AGE;
+    else if (this.sort.active == "total") sortColumn = SortColumn.TOTAL;
+    else if (this.sort.active == "max") sortColumn = SortColumn.MAX;
+    else if (this.sort.active == "min") sortColumn = SortColumn.MIN;
+
+
+    const requestDetails = new TableRequestDetails(this.paginator.pageIndex,
       this.paginator.pageSize,
-      this.sort.active,
-      this.sort.direction,
-      this.filter.nativeElement.value)
+      sortColumn,
+      sortDirection,
+      this.filter.nativeElement.value);
+
+    console.log(this.sort.active);
+
+    console.log(requestDetails.toString());
+
+    this.loadAccountInfoList(requestDetails);
   }
 
-  loadAccountInfoList(pageIndex = 0, pageSize = 3, sortBy = '', sortDirection = 'asc', filter = '') {
-
-    console.log("PageIndex:" + pageIndex + ", PageSize:" + pageSize + ", SortBy:" + sortBy + ", Sort:" + sortDirection + ", Filter:" + filter);
+  loadAccountInfoList(requestDetails: TableRequestDetails) {
 
     this.dataSource.startLoading();
-    this.httpService.get("/accounts/").toPromise().then(response => {
+    this.httpService.get("/accounts/", {requestDetails: JSON.stringify(requestDetails)}).toPromise().then(response => {
       const result = response.json();
-      this.responseLength = Object.keys(result).length;
+      this.responseLength = result.totalAccountInfo;
 
-      this.dataSource.updateDateSource(result);
+      this.dataSource.updateDateSource(result.accountInfoList);
       this.dataSource.stopLoading();
     }, error => {
       console.log(error);
