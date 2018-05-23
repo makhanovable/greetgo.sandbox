@@ -1,7 +1,7 @@
 import {Component, Inject, OnInit} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material";
 import {MainFormComponent} from "../../main-form";
-import {FormArray, FormBuilder, FormControl, FormGroup} from "@angular/forms";
+import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 import {Gender} from "../../../../model/Gender";
 import {PhoneType} from "../../../../model/PhoneType";
 import {Charm} from "../../../../model/Charm";
@@ -33,7 +33,7 @@ export class ModalInfoComponent implements OnInit {
   patronymic: string = '';
   gender: Gender = Gender.MALE;
   birthDate: Date = new Date();
-  charmId: number = 1;
+  charmId: number = -1;
   streetFact: string = '';
   houseFact: string = '';
   flatFact: string = '';
@@ -45,6 +45,8 @@ export class ModalInfoComponent implements OnInit {
   mobiles: FormControl[] = [];
 
   charmsDictionary: Charm[];
+
+
 
   constructor(private fb: FormBuilder,
               @Inject(MAT_DIALOG_DATA) public data: any,
@@ -99,7 +101,7 @@ export class ModalInfoComponent implements OnInit {
         patronymic: [this.patronymic],
         gender: [this.gender],
         birthDate: [this.birthDate],
-        charm: [this.charmId],
+        charm: new FormControl('', [Validators.required]),
         streetFact: [this.streetFact],
         houseFact: [this.houseFact],
         flatFact: [this.flatFact],
@@ -117,7 +119,7 @@ export class ModalInfoComponent implements OnInit {
         patronymic: [this.patronymic],
         gender: [this.gender],
         birthDate: [this.birthDate],
-        charm: [this.charmId],
+        charm: [new FormControl(this.charmId, [Validators.required])],
         streetFact: [this.streetFact],
         houseFact: [this.houseFact],
         flatFact: [this.flatFact],

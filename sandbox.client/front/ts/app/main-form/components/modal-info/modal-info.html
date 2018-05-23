@@ -26,10 +26,11 @@
             <mat-datepicker #picker></mat-datepicker>
         </mat-form-field>
 
-        <mat-form-field>
+        <mat-form-field required>
+            <mat-label>Please, choose a charm</mat-label>
             <mat-select formControlName="charm">
                 <mat-option
-                    *ngFor="let charm of charmsDictionary" required [value]="charm.id">{{ charm.name }}</mat-option>
+                    *ngFor="let charm of charmsDictionary" [value]="charm.id">{{ charm.name }}</mat-option>
             </mat-select>
         </mat-form-field>
 
