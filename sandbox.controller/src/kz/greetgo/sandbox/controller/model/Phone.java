@@ -6,8 +6,6 @@ public class Phone {
   public String number;
   public PhoneType type;
 
-  public boolean isActive = true;
-
   public Phone(int id, int clientId, String number, PhoneType type) {
     this.id = id;
     this.clientId = clientId;
