@@ -11,4 +11,9 @@ public class CharmDot {
   public Charm toCharm() {
     return new Charm(this.id,this.name,this.description,this.energy);
   }
+
+  public void showInfo() {
+    System.out.println(
+      String.format("----------: Init Charm { id:%2d, name:%s, energy:%2f }", this.id, this.name, this.energy));
+  }
 }

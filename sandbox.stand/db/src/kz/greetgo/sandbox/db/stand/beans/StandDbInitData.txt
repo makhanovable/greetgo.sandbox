@@ -3,9 +3,12 @@ PERSON; p2; lermontov 111 ; Михаил Юрьевич Лермонтов
 #
 #            CHARMS
 #
-CHARM; 1; FirstCharm; Here is its description; 100
-CHARM; 2; SecondCharm; Here is its description; 200
-CHARM; 3; ThirdCharm; Here is its description; 300
+CHARM; 1; Ambitious; I am driven to succeed. ; 100.00124
+CHARM; 2; Clever; I can juggle multiple tasks. ; 200.2540
+CHARM; 3; Devoted; I am committed to the company’s success. ; 4532.1235
+CHARM; 4; Meticulous; I pay attention to the small details. I am a perfectionist. ; 300.1147
+CHARM; 5; Perceptive; I can read people effortlessly. ; 300.12354
+CHARM; 6; Devoted; I work best with structure. ; 300.987542
 #
 #            CLIENTS
 #

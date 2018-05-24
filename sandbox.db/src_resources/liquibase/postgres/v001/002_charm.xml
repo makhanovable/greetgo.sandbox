@@ -8,7 +8,7 @@
       create table Charms (
         charmId serial primary key,
         name varchar(50) not null,
-        description test,
+        description text,
         energy float(4)
       )
     ]]></sql>
