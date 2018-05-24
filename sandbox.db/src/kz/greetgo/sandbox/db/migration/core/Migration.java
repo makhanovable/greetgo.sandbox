@@ -4,28 +4,27 @@ import kz.greetgo.sandbox.db.migration.interfaces.ConnectionConfig;
 import kz.greetgo.sandbox.db.migration.model.ClientXMLRecord;
 import kz.greetgo.sandbox.db.migration.util.ConnectionUtils;
 import kz.greetgo.sandbox.db.migration.util.TimeUtils;
+import kz.greetgo.util.RND;
 import org.xml.sax.SAXException;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static kz.greetgo.sandbox.db.migration.util.TimeUtils.recordsPerSecond;
 import static kz.greetgo.sandbox.db.migration.util.TimeUtils.showTime;
 
 
 public class Migration implements Closeable {
 
-  private final ConnectionConfig operConfig;
-  private final ConnectionConfig ciaConfig;
   private Connection operConnection = null, ciaConnection = null;
 
-  public Migration(ConnectionConfig operConfig, ConnectionConfig ciaConfig) {
-    this.operConfig = operConfig;
-    this.ciaConfig = ciaConfig;
+  public Migration(Connection connection) {
+    this.operConnection = connection;
+    this.ciaConnection = connection;
   }
 
   @Override
@@ -63,6 +62,9 @@ public class Migration implements Closeable {
 
   private String r(String sql) {
     sql = sql.replaceAll("TMP_CLIENT", tmpClientTable);
+    sql = sql.replaceAll("TMP_PHONE", tmpPhoneTable);
+    sql = sql.replaceAll("TMP_ACCOUNT", tmpAccountTable);
+    sql = sql.replaceAll("TMP_TRANSACTION", tmpTransactionTable);
     return sql;
   }
 
@@ -87,7 +89,8 @@ public class Migration implements Closeable {
   public int uploadMaxBatchSize = 50_000;
   public int showStatusPingMillis = 5000;
 
-  private String tmpClientTable;
+  private String tmpClientTable, tmpPhoneTable;
+  private String tmpAccountTable, tmpTransactionTable;
 
   public int migrate() throws Exception {
     long startedAt = System.nanoTime();
@@ -95,40 +98,89 @@ public class Migration implements Closeable {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
     Date nowDate = new Date();
     tmpClientTable = "cia_migration_client_" + sdf.format(nowDate);
+    tmpPhoneTable = "cia_migration_phone_" + sdf.format(nowDate);
+    tmpAccountTable = "cia_migration_account_" + sdf.format(nowDate);
+    tmpTransactionTable = "cia_migration_transaction_" + sdf.format(nowDate);
     info("TMP_CLIENT = " + tmpClientTable);
-
-    createOperConnection();
+    info("TMP_PHONE = " + tmpPhoneTable);
+    info("TMP_ACCOUNT = " + tmpAccountTable);
+    info("TMP_TRANSACTION = " + tmpTransactionTable);
 
     //language=PostgreSQL
     exec("create table TMP_CLIENT (\n" +
-      "  client_id int8,\n" +
+      "  client_id varchar(20),\n" +
       "  status int not null default 0,\n" +
       "  error varchar(300),\n" +
       "  \n" +
-      "  number bigint not null primary key,\n" +
+      "  number bigserial primary key,\n" +
+      "  id varchar(100) not null,\n" +
       "  cia_id varchar(100) not null,\n" +
       "  surname varchar(300),\n" +
       "  name varchar(300),\n" +
       "  patronymic varchar(300),\n" +
       "  charm varchar(300),\n" +
       "  gender varchar(300),\n" +
-      "  birth_date date\n" +
+      "  birth_date date,\n" +
+      "  rStreet varchar(100),\n" +
+      "  rHouse varchar(100),\n" +
+      "  rFlat varchar(100),\n" +
+      "  fStreet varchar(100),\n" +
+      "  fHouse varchar(100),\n" +
+      "  fFlat varchar(100)\n" +
       ")");
 
-    createCiaConnection();
+    //language=PostgreSQL
+    exec("create table TMP_PHONE (\n" +
+      "  status int not null default 0,\n" +
+      "  error varchar(300),\n" +
+      "  \n" +
+      "  cia_id varchar(100) not null,\n" +
+      "  tmp_client_id varchar(100) not null,\n" +
+      "  number varchar(100),\n" +
+      "  phoneType varchar(20),\n" +
+      "  client_id varchar(100)\n" +
+      ")");
 
-    int portionSize = download();
+    //language=PostgreSQL
+    exec("create table TMP_ACCOUNT (\n" +
+      "  status int not null default 0,\n" +
+      "  error varchar(300),\n" +
+      "  \n" +
+      "  number bigserial primary key,\n" +
+      "  account_number varchar(100),\n" +
+      "  registered_at timestamp,\n" +
+      "  client_id varchar(100)\n" +
+      ")");
+
+    //language=PostgreSQL
+    exec("create table TMP_TRANSACTION (\n" +
+      "  status int not null default 0,\n" +
+      "  error varchar(300),\n" +
+      "  \n" +
+      "  number bigserial primary key,\n" +
+      "  money float,\n" +
+      "  account_number varchar(100),\n" +
+      "  finished_at timestamp,\n" +
+      "  transaction_type varchar(300)\n" +
+      ")");
+
+//    int portionSize = downloadFromCIA();
 
     {
       long now = System.nanoTime();
-      info("Downloaded of portion " + portionSize + " finished for " + showTime(now, startedAt));
+      info("Downloaded of portion " + portionSize + " from CIA finished for " + showTime(now, startedAt));
+    }
+
+    int portionSize = downloadFromFRS();
+
+    {
+      long now = System.nanoTime();
+      info("Downloaded of portion " + portionSize + " from FRS finished for " + showTime(now, startedAt));
     }
 
     if (portionSize == 0) return 0;
 
-    closeCiaConnection();
-
-    migrateFromTmp();
+//    migrateFromTmp();
 
     {
       long now = System.nanoTime();
@@ -138,17 +190,7 @@ public class Migration implements Closeable {
     return portionSize;
   }
 
-  private void createOperConnection() throws Exception {
-//    operConnection = ConnectionUtils.create(operConfig);
-    operConnection = ConnectionUtils.getPostgresAdminConnection();
-  }
-
-  private void createCiaConnection() throws Exception {
-//    ciaConnection = ConnectionUtils.create(ciaConfig);
-    ciaConnection = ConnectionUtils.getPostgresAdminConnection();
-  }
-
-  private int download() throws SQLException, IOException, SAXException {
+  private int downloadFromCIA() throws SQLException, IOException, SAXException {
 
     final AtomicBoolean working = new AtomicBoolean(true);
     final AtomicBoolean showStatus = new AtomicBoolean(false);
@@ -170,283 +212,151 @@ public class Migration implements Closeable {
     });
     see.start();
 
-    try (PreparedStatement ciaPS = ciaConnection.prepareStatement(
-      "select * from transition_client where status='JUST_INSERTED' order by number limit ?")) {
+    Insert client_insert = new Insert("TMP_CLIENT");
+    client_insert.field(1, "cia_id", "?");
+    client_insert.field(2, "surname", "?");
+    client_insert.field(3, "name", "?");
+    client_insert.field(4, "patronymic", "?");
+    client_insert.field(5, "gender", "?");
+    client_insert.field(6, "charm", "?");
+    client_insert.field(7, "birth_date", "?");
+    client_insert.field(8, "id", "?");
+    client_insert.field(9, "rStreet", "?");
+    client_insert.field(10, "rHouse", "?");
+    client_insert.field(11, "rFlat", "?");
+    client_insert.field(12, "fStreet", "?");
+    client_insert.field(13, "fHouse", "?");
+    client_insert.field(14, "fFlat", "?");
 
-      info("Prepared statement for : select * from transition_client");
-
-      ciaPS.setInt(1, portionSize);
-
-      Insert insert = new Insert("TMP_CLIENT");
-      insert.field(1, "number", "?");
-      insert.field(2, "cia_id", "?");
-      insert.field(3, "surname", "?");
-      insert.field(4, "name", "?");
-      insert.field(5, "patronymic", "?");
-      insert.field(6, "gender", "?");
-      insert.field(7, "charm", "?");
-      insert.field(8, "birth_date", "?");
+    Insert phone_insert = new Insert("TMP_PHONE");
+    phone_insert.field(1, "cia_id", "?");
+    phone_insert.field(2, "number", "?");
+    phone_insert.field(3, "phoneType", "?");
+    phone_insert.field(4, "tmp_client_id", "?");
 
       operConnection.setAutoCommit(false);
-      try (PreparedStatement operPS = operConnection.prepareStatement(r(insert.toString()))) {
+      try (PreparedStatement clientPS = operConnection.prepareStatement(r(client_insert.toString()))) {
 
-        try (ResultSet ciaRS = ciaPS.executeQuery()) {
+        try (PreparedStatement phonePS = operConnection.prepareStatement(r(phone_insert.toString()))) {
 
-          info("Got result set for : select * from transition_client");
+          int recordsCount = 0;
 
-          int batchSize = 0, recordsCount = 0;
+          FromXMLParser fromXMLParser = new FromXMLParser();
 
-          long startedAt = System.nanoTime();
+          try {
+            File inputFile = new File("build/out_files/from_cia_2018-05-15-120656-1-300.xml");
 
-          while (ciaRS.next()) {
-            FromXMLParser parser = new FromXMLParser();
-            Long number = ciaRS.getLong("number");
-            ClientXMLRecord r = parser.parseRecordData(number, ciaRS.getString("record_data"));
+            fromXMLParser.execute(operConnection, clientPS, phonePS, downloadMaxBatchSize);
+            recordsCount =  fromXMLParser.parseRecordData(String.valueOf(inputFile), "file");
 
-            operPS.setLong(1, r.number);
-            operPS.setString(2, r.id);
-            operPS.setString(3, r.surname);
-            operPS.setString(4, r.name);
-            operPS.setString(5, r.patronymic);
-            operPS.setString(6, r.gender);
-            operPS.setString(7, r.charm);
-            operPS.setDate(8, r.birthDate);
-
-            operPS.addBatch();
-            batchSize++;
-            recordsCount++;
-
-            if (batchSize >= downloadMaxBatchSize) {
-              operPS.executeBatch();
-              operConnection.commit();
-              batchSize = 0;
-            }
-
-            if (showStatus.get()) {
-              showStatus.set(false);
-
-              long now = System.nanoTime();
-              info(" -- downloaded records " + recordsCount + " for " + showTime(now, startedAt)
-                + " : " + recordsPerSecond(recordsCount, now - startedAt));
-            }
-
+          } catch (Exception e) {
+            e.printStackTrace();
           }
 
-          if (batchSize > 0) {
-            operPS.executeBatch();
+          if (fromXMLParser.getClientBatchSize() > 0 || fromXMLParser.getPhoneBatchSize() > 0) {
+            phonePS.executeBatch();
+            clientPS.executeBatch();
             operConnection.commit();
-          }
-
-          {
-            long now = System.nanoTime();
-            info("TOTAL Downloaded records " + recordsCount + " for " + showTime(now, startedAt)
-              + " : " + recordsPerSecond(recordsCount, now - startedAt));
           }
 
           return recordsCount;
         }
+
       } finally {
         operConnection.setAutoCommit(true);
         working.set(false);
         see.interrupt();
       }
-    }
   }
-
-
-  private void uploadAndDropErrors() throws Exception {
-    info("uploadAndDropErrors goes : maxBatchSize = " + uploadMaxBatchSize);
+  private int downloadFromFRS() throws SQLException, IOException, SAXException {
 
     final AtomicBoolean working = new AtomicBoolean(true);
+    final AtomicBoolean showStatus = new AtomicBoolean(false);
 
-    createCiaConnection();
-    ciaConnection.setAutoCommit(false);
-    try {
+    final Thread see = new Thread(() -> {
 
-      try (PreparedStatement inPS = operConnection.prepareStatement(r(
-        "select number, error from TMP_CLIENT where error is not null"))) {
+      while (working.get()) {
 
-        info("Prepared statement for : select number, error from TMP_CLIENT where error is not null");
-
-        try (ResultSet inRS = inPS.executeQuery()) {
-          info("Query executed for : select number, error from TMP_CLIENT where error is not null");
-
-          try (PreparedStatement outPS = ciaConnection.prepareStatement(
-            "update transition_client set status = 'ERROR', error = ? where number = ?")) {
-
-            int batchSize = 0, recordsCount = 0;
-
-            final AtomicBoolean showStatus = new AtomicBoolean(false);
-
-            new Thread(() -> {
-
-              while (working.get()) {
-
-                try {
-                  Thread.sleep(showStatusPingMillis);
-                } catch (InterruptedException e) {
-                  break;
-                }
-
-                showStatus.set(true);
-
-              }
-
-            }).start();
-
-            long startedAt = System.nanoTime();
-
-            while (inRS.next()) {
-
-              outPS.setString(1, inRS.getString("error"));
-              outPS.setLong(2, inRS.getLong("number"));
-              outPS.addBatch();
-              batchSize++;
-              recordsCount++;
-
-              if (batchSize >= uploadMaxBatchSize) {
-                outPS.executeBatch();
-                ciaConnection.commit();
-                batchSize = 0;
-              }
-
-              if (showStatus.get()) {
-                showStatus.set(false);
-
-                long now = System.nanoTime();
-                info(" -- uploaded errors " + recordsCount + " for " + showTime(now, startedAt)
-                  + " : " + recordsPerSecond(recordsCount, now - startedAt));
-              }
-            }
-
-            if (batchSize > 0) {
-              outPS.executeBatch();
-              ciaConnection.commit();
-            }
-
-            {
-              long now = System.nanoTime();
-              info("TOTAL Uploaded errors " + recordsCount + " for " + showTime(now, startedAt)
-                + " : " + recordsPerSecond(recordsCount, now - startedAt));
-            }
-          }
+        try {
+          Thread.sleep(showStatusPingMillis);
+        } catch (InterruptedException e) {
+          break;
         }
+
+        showStatus.set(true);
+
+      }
+
+    });
+    see.start();
+
+    Insert account_insert = new Insert("TMP_ACCOUNT");
+    account_insert.field(1, "account_number", "?");
+    account_insert.field(2, "registered_at", "?");
+    account_insert.field(3, "client_id", "?");
+
+    Insert transaction_insert = new Insert("TMP_TRANSACTION");
+    transaction_insert.field(1, "money", "?");
+    transaction_insert.field(2, "account_number", "?");
+    transaction_insert.field(3, "finished_at", "?");
+    transaction_insert.field(4, "transaction_type", "?");
+
+    operConnection.setAutoCommit(false);
+    try (PreparedStatement accountPS = operConnection.prepareStatement(r(account_insert.toString()))) {
+
+      try (PreparedStatement transPS = operConnection.prepareStatement(r(transaction_insert.toString()))) {
+
+        int recordsCount = 0;
+
+        FromJSONParser fromJSONParser = new FromJSONParser();
+
+        try {
+          File inputFile = new File("build/out_files/from_frs_2018-05-24-095714-1-30005.json_row.txt");
+
+          fromJSONParser.execute(operConnection, accountPS, transPS, uploadMaxBatchSize);
+          recordsCount = fromJSONParser.parseRecordData(inputFile);
+
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+
+        return recordsCount;
       }
 
     } finally {
-      closeCiaConnection();
+      operConnection.setAutoCommit(true);
       working.set(false);
+      see.interrupt();
     }
-
-    //language=PostgreSQL
-    exec("delete from TMP_CLIENT where error is not null");
-  }
-
-  private void uploadAllOk() throws Exception {
-
-    info("uploadAllOk goes: maxBatchSize = " + uploadMaxBatchSize);
-
-    final AtomicBoolean working = new AtomicBoolean(true);
-
-    createCiaConnection();
-    ciaConnection.setAutoCommit(false);
-    try {
-
-      try (PreparedStatement inPS = operConnection.prepareStatement(r("select number from TMP_CLIENT"))) {
-
-        info("Prepared statement for : select number from TMP_CLIENT");
-
-        try (ResultSet inRS = inPS.executeQuery()) {
-          info("Query executed for : select number from TMP_CLIENT");
-
-          try (PreparedStatement outPS = ciaConnection.prepareStatement(
-            "update transition_client set status = 'OK' where number = ?")) {
-
-            int batchSize = 0, recordsCount = 0;
-
-            final AtomicBoolean showStatus = new AtomicBoolean(false);
-
-            new Thread(() -> {
-
-              while (true) {
-
-                if (!working.get()) break;
-
-                try {
-                  Thread.sleep(showStatusPingMillis);
-                } catch (InterruptedException e) {
-                  break;
-                }
-
-                showStatus.set(true);
-              }
-
-            }).start();
-
-            long startedAt = System.nanoTime();
-
-            while (inRS.next()) {
-
-              outPS.setLong(1, inRS.getLong("number"));
-              outPS.addBatch();
-              batchSize++;
-              recordsCount++;
-
-              if (batchSize >= uploadMaxBatchSize) {
-                outPS.executeBatch();
-                ciaConnection.commit();
-                batchSize = 0;
-              }
-
-              if (showStatus.get()) {
-                showStatus.set(false);
-
-                long now = System.nanoTime();
-                info(" -- uploaded ok records " + recordsCount + " for " + showTime(now, startedAt)
-                  + " : " + recordsPerSecond(recordsCount, now - startedAt));
-              }
-            }
-
-            if (batchSize > 0) {
-              outPS.executeBatch();
-              ciaConnection.commit();
-            }
-
-            {
-              long now = System.nanoTime();
-              info("TOTAL Uploaded ok records " + recordsCount + " for " + showTime(now, startedAt)
-                + " : " + recordsPerSecond(recordsCount, now - startedAt));
-            }
-          }
-        }
-      }
-
-    } finally {
-      closeCiaConnection();
-      working.set(false);
-    }
-
   }
 
   private void migrateFromTmp() throws Exception {
 
     //language=PostgreSQL
-    exec("update TMP_CLIENT set error = 'surname is not defined'\n" +
+    exec("update TMP_CLIENT set error = 'surname is not defined', status = 1\n" +
       "where error is null and surname is null");
     //language=PostgreSQL
-    exec("update TMP_CLIENT set error = 'name is not defined'\n" +
+    exec("update TMP_CLIENT set error = 'name is not defined', status = 1\n" +
       "where error is null and name is null");
     //language=PostgreSQL
-    exec("update TMP_CLIENT set error = 'birth_date is not defined'\n" +
+    exec("update TMP_CLIENT set error = 'birth_date is not defined', status = 1\n" +
       "where error is null and birth_date is null");
     //language=PostgreSQL
-    exec("update TMP_CLIENT set error = 'gender is not defined'\n" +
+    exec("update TMP_CLIENT set error = 'gender is not defined', status = 1\n" +
             "where error is null and gender is null");
     //language=PostgreSQL
-    exec("update TMP_CLIENT set error = 'charm is not defined'\n" +
+    exec("update TMP_CLIENT set error = 'charm is not defined', status = 1\n" +
             "where error is null and charm is null");
+    //language=PostgreSQL
+    exec("update TMP_PHONE set error = 'number is not defined', status = 1\n" +
+            "where error is null and number is null");
+    //language=PostgreSQL
+    exec("update TMP_PHONE set error = 'phoneType is not defined', status = 1\n" +
+            "where error is null and phoneType is null");
 
-    uploadAndDropErrors();
+    //language=PostgreSQL
+    exec("update TMP_PHONE ph set status = 1" +
+            " from TMP_CLIENT cl where cl.id = ph.tmp_client_id and cl.status = 1");
 
     //language=PostgreSQL
     exec("with num_ord as (\n" +
@@ -458,35 +368,89 @@ public class Migration implements Closeable {
       "where status = 0 and number in (select number from num_ord where ord > 1)");
 
     //language=PostgreSQL
+    exec("update TMP_PHONE ph set status = 2" +
+            " from TMP_CLIENT cl where cl.id = ph.tmp_client_id and cl.status = 2");
+
+    //language=PostgreSQL
     exec("update TMP_CLIENT t set client_id = c.id\n" +
-      "  from client c\n" +
+      "  from tmp_clients c\n" +
       "  where c.cia_id = t.cia_id\n");
+
+    //language=PostgreSQL
+    exec("update TMP_PHONE t set client_id = ph.client_id\n" +
+            "  from tmp_phones ph\n" +
+            "  where ph.cia_id = t.cia_id and ph.phonetype = t.phoneType\n");
 
     //language=PostgreSQL
     exec("update TMP_CLIENT set status = 3 where client_id is not null and status = 0");
 
     //language=PostgreSQL
-    exec("update TMP_CLIENT set client_id = nextval('s_client') where statu`s = 0");
+    exec("update TMP_CLIENT set client_id = nextval('s_client') where status = 0");
 
     //language=PostgreSQL
-    exec("insert into client (id, cia_id, surname, \"name\", patronymic, birth_date)\n" +
-      "select client_id, cia_id, surname, \"name\", patronymic, birth_date\n" +
+    exec("update TMP_PHONE set client_id = cl.client_id " +
+            "from TMP_CLIENT cl where cl.client_id is not null and tmp_client_id = cl.id" +
+            " and cl.status = 0 or cl.status = 3");
+
+    //language=PostgreSQL
+    exec("insert into tmp_clients (id, cia_id, surname, name, patronymic, birth_date, charm, gender)\n" +
+      "select client_id, cia_id, surname, name, patronymic, birth_date, charm, gender\n" +
       "from TMP_CLIENT where status = 0");
 
     //language=PostgreSQL
-    exec("update client c set surname = s.surname\n" +
-      "                 , \"name\" = s.\"name\"\n" +
+    exec("insert into tmp_phones (number, phoneType, client_id, cia_id)\n" +
+            "select number, phoneType, client_id, cia_id\n" +
+            "from TMP_PHONE where status = 0 " +
+            "on conflict do nothing");
+
+    //language=PostgreSQL
+    exec("update tmp_clients c set surname = s.surname\n" +
+      "                 , name = s.name\n" +
       "                 , patronymic = s.patronymic\n" +
       "                 , birth_date = s.birth_date\n" +
+      "                 , charm = s.charm\n" +
+      "                 , gender = s.gender\n" +
       "from TMP_CLIENT s\n" +
       "where c.id = s.client_id\n" +
       "and s.status = 3");
 
     //language=PostgreSQL
-    exec("update client set actual = 1 where id in (\n" +
+    exec("insert into tmp_adresses (street, house, flat, client_id)\n" +
+            "select  fStreet, fHouse, fFlat, client_id\n" +
+            "from TMP_CLIENT cl \n" +
+            "where cl.status = 0 and cl.fStreet is not null and cl.fHouse is not null and cl.fFlat is not null");
+    //language=PostgreSQL
+    exec("update tmp_adresses set adresstype = 'FACT'\n" +
+            "where adresstype = 'NONE'");
+    //language=PostgreSQL
+    exec("update tmp_adresses a set street = cl.fStreet,\n" +
+            "                            house = cl.fHouse,\n" +
+            "                            flat = cl.fFlat,\n" +
+            "                            client_id = cl.client_id,\n" +
+            "                            adresstype = 'FACT'\n" +
+            "from TMP_CLIENT cl \n" +
+            "where cl.status = 3 and cl.fStreet is not null and cl.fHouse is not null and cl.fFlat is not null");
+
+    //language=PostgreSQL
+    exec("insert into tmp_adresses (street, house, flat, client_id)\n" +
+            "select  rStreet, rHouse, rFlat, client_id\n" +
+            "from TMP_CLIENT cl \n" +
+            "where cl.status = 0 and cl.rStreet is not null and cl.rHouse is not null and cl.rFlat is not null");
+    //language=PostgreSQL
+    exec("update tmp_adresses set adresstype = 'REG'\n" +
+            "where adresstype = 'NONE'");
+    //language=PostgreSQL
+    exec("update tmp_adresses a set street = cl.rStreet,\n" +
+            "                            house = cl.rHouse,\n" +
+            "                            flat = cl.rFlat,\n" +
+            "                            client_id = cl.client_id,\n" +
+            "                            adresstype = 'REG'\n" +
+            "from TMP_CLIENT cl \n" +
+            "where cl.status = 3 and cl.rStreet is not null and cl.rHouse is not null and cl.rFlat is not null");
+
+    //language=PostgreSQL
+    exec("update tmp_clients set actual = 1 where id in (\n" +
       "  select client_id from TMP_CLIENT where status = 0\n" +
       ")");
-
-    uploadAllOk();
   }
 }

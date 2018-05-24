@@ -15,4 +15,10 @@
     ]]></sql>
   </changeSet>
 
+  <changeSet author="pompei" id="create-sequence-s_client">
+    <sql endDelimiter=";;"><![CDATA[
+      create sequence s_client start with 1000000
+    ]]></sql>
+  </changeSet>
+
 </databaseChangeLog>

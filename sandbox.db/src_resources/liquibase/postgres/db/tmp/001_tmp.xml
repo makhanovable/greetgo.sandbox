@@ -37,8 +37,8 @@
   <changeSet author="pompei" id="create-table-tmp_adresses">
     <sql endDelimiter=";;"><![CDATA[
       create table tmp_adresses (
-        id int not null primary key,
-        adressType varchar(10) not null,
+        id bigserial primary key,
+        adressType varchar(10) default 'NONE',
         street varchar(255) not null,
         house varchar(255) not null,
         flat varchar(255) not null,
@@ -53,7 +53,7 @@
   <changeSet author="pompei" id="create-table-tmp_phones">
     <sql endDelimiter=";;"><![CDATA[
       create table tmp_phones (
-        number varchar(20) not null primary key,
+        number varchar(100) not null primary key,
         phoneType varchar(10) not null,
         client_id varchar(50) references tmp_clients(id),
 
@@ -66,13 +66,11 @@
   <changeSet author="pompei" id="create-table-tmp_accounts">
     <sql endDelimiter=";;"><![CDATA[
       create table tmp_accounts (
-        number varchar(100) not null primary key,
+        id bigserial primary key,
+        number varchar(100) not null,
         money float default 0,
         registered_at timestamp not null,
-        client_id varchar(50) references tmp_clients(id),
-
-        actual smallint not null default 0,
-        cia_id varchar(100)
+        client_id varchar(50) references tmp_clients(id)
       )
     ]]></sql>
   </changeSet>
@@ -80,12 +78,9 @@
   <changeSet author="pompei" id="create-table-tmp_transaction_types">
     <sql endDelimiter=";;"><![CDATA[
       create table tmp_transaction_types (
-        id int not null primary key,
+        id bigserial primary key,
         code varchar(200),
-        name varchar(200),
-
-        actual smallint not null default 0,
-        cia_id varchar(100)
+        name varchar(200)
       )
     ]]></sql>
   </changeSet>
@@ -93,14 +88,11 @@
   <changeSet author="pompei" id="create-table-tmp_transactions">
     <sql endDelimiter=";;"><![CDATA[
       create table tmp_transactions (
-        id int not null primary key,
+        id bigserial primary key,
         money float,
         finished_at timestamp,
-        account_number varchar(100) references tmp_accounts(number),
-        transaction_type_id int references tmp_transaction_types(id),
-
-        actual smallint not null default 0,
-        cia_id varchar(100)
+        account_id bigint references tmp_accounts(id),
+        transaction_type_id bigint references tmp_transaction_types(id)
       )
     ]]></sql>
   </changeSet>
