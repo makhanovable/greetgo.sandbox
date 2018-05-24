@@ -1,19 +1,19 @@
 import {Component, Inject, OnInit} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material";
-import {MainFormComponent} from "../../main-form";
+import {MainFormComponent} from "../../../../main-form";
 import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
-import {Gender} from "../../../../model/Gender";
-import {PhoneType} from "../../../../model/PhoneType";
-import {Charm} from "../../../../model/Charm";
-import {HttpService} from "../../../HttpService";
-import {ActionType} from "../../../../utils/ActionType";
-import {AccountService} from "../../../services/AccountService";
-import {Client} from "../../../../model/Client";
-import {Phone} from "../../../../model/Phone";
-import {Address} from "../../../../model/Address";
-import {AddressType} from "../../../../model/AddressType";
-import {ClientInfo} from "../../../../model/ClientInfo";
-import {Constants} from "../../../../utils/Constants";
+import {Gender} from "../../../../../../model/Gender";
+import {PhoneType} from "../../../../../../model/PhoneType";
+import {Charm} from "../../../../../../model/Charm";
+import {HttpService} from "../../../../../HttpService";
+import {ActionType} from "../../../../../../utils/ActionType";
+import {AccountService} from "../../../../../services/AccountService";
+import {Client} from "../../../../../../model/Client";
+import {Phone} from "../../../../../../model/Phone";
+import {Address} from "../../../../../../model/Address";
+import {AddressType} from "../../../../../../model/AddressType";
+import {ClientInfo} from "../../../../../../model/ClientInfo";
+import {Constants} from "../../../../../../utils/Constants";
 
 @Component({
   selector: 'modal-info-component',

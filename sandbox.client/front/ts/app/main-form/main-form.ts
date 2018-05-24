@@ -1,50 +1,23 @@
-import {Component, EventEmitter, OnDestroy, Output} from "@angular/core";
+import {Component, EventEmitter, Output} from "@angular/core";
 import {UserInfo} from "../../model/UserInfo";
 import {HttpService} from "../HttpService";
 import {PhoneType} from "../../model/PhoneType";
-import {Subscription} from "rxjs/Subscription";
-import {MatDialog, MatDialogConfig} from "@angular/material";
-import {ModalInfoComponent} from "./components/modal-info/modal-info";
-import {ActionType} from "../../utils/ActionType";
 
 @Component({
   selector: 'main-form-component',
   template: require('./main-form.html'),
   styles: [require('./main-form.css')]
 })
-export class MainFormComponent implements OnDestroy {
+export class MainFormComponent {
 
   @Output() exit = new EventEmitter<void>();
-  subscription: Subscription;
 
   userInfo: UserInfo | null = null;
 
   loadUserInfoButtonEnabled: boolean = true;
   loadUserInfoError: string | null;
 
-  constructor(private httpService: HttpService, private dialog: MatDialog) {
-  }
-
-  handleCreateAccClick = function () {
-    this.openModal(null, ActionType.CREATE);
-  };
-
-  handleEditAccClick = function (accountInfo) {
-    this.openModal(accountInfo.id, ActionType.EDIT);
-  };
-
-  openModal(clientId: number, actionType: ActionType) {
-    const dialogConfig = new MatDialogConfig();
-    dialogConfig.disableClose = true;
-    dialogConfig.autoFocus = true;
-    dialogConfig.data = {clientId: clientId, actionType: actionType};
-
-    const dialogRef = this.dialog.open(ModalInfoComponent, dialogConfig);
-
-    dialogRef.afterClosed().subscribe(data => {
-      console.log(data);
-    })
-  }
+  constructor(private httpService: HttpService) {}
 
   loadUserInfoButtonClicked() {
     this.loadUserInfoButtonEnabled = false;
@@ -74,7 +47,4 @@ export class MainFormComponent implements OnDestroy {
     this.userInfo = null;
   }
 
-  ngOnDestroy(): void {
-    this.subscription.unsubscribe();
-  }
 }

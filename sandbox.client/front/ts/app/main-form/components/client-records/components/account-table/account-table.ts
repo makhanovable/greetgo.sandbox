@@ -1,23 +1,27 @@
-import {Component, ElementRef, EventEmitter, Output, ViewChild} from '@angular/core';
+import {Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild} from '@angular/core';
 import {MatPaginator, MatSort} from "@angular/material";
 import {SelectionModel} from "@angular/cdk/collections";
-import {AccountInfo} from "../../../../model/AccountInfo";
-import {HttpService} from "../../../HttpService";
+import {AccountInfo} from "../../../../../../model/AccountInfo";
+import {HttpService} from "../../../../../HttpService";
 import {GenericDataSource} from "./GenericDataSource";
 import {debounceTime, distinctUntilChanged, tap} from "rxjs/operators";
 import {fromEvent} from "rxjs/observable/fromEvent";
-import {AccountService} from "../../../services/AccountService";
-import {SortDirection} from "../../../../model/SortDirection";
-import {TableRequestDetails} from "../../../../model/TableRequestDetails";
-import {SortColumn} from "../../../../model/SortColumn";
-import {AccountInfoPage} from "../../../../model/AccountInfoPage";
+import {AccountService} from "../../../../../services/AccountService";
+import {SortDirection} from "../../../../../../model/SortDirection";
+import {TableRequestDetails} from "../../../../../../model/TableRequestDetails";
+import {SortColumn} from "../../../../../../model/SortColumn";
+import {AccountInfoPage} from "../../../../../../model/AccountInfoPage";
+import {Subject} from "rxjs/Subject";
+import 'rxjs/add/operator/takeUntil';
 
 @Component({
   selector: 'table-basic-example',
   styles: [require('./account-table.css')],
   template: require('./account-table.html'),
 })
-export class AccountTableComponent {
+export class AccountTableComponent implements OnDestroy {
+
+  private unsubscribe = new Subject<void>();
 
   dataSource: GenericDataSource;
   displayedColumns = ['select', 'fio', 'charm', 'age', 'total', 'max', 'min'];
@@ -33,15 +37,21 @@ export class AccountTableComponent {
   @Output() onEditAccount: EventEmitter<AccountInfo> = new EventEmitter();
 
   constructor(private httpService: HttpService, private accountService: AccountService) {
-    this.accountService.accountAdded.subscribe(accountInfo => {
+    this.accountService.accountAdded
+      .takeUntil(this.unsubscribe)
+      .subscribe(accountInfo => {
       this.dataSource.addNewItem(accountInfo);
     });
 
-    this.accountService.accountDeleted.subscribe(accountInfo => {
+    this.accountService.accountDeleted
+      .takeUntil(this.unsubscribe)
+      .subscribe(accountInfo => {
       this.dataSource.removeItem(accountInfo);
     });
 
-    this.accountService.accountUpdated.subscribe(accountInfo => {
+    this.accountService.accountUpdated
+      .takeUntil(this.unsubscribe)
+      .subscribe(accountInfo => {
       this.dataSource.updateItem(accountInfo);
     });
   }
@@ -152,5 +162,10 @@ export class AccountTableComponent {
 
     this.dataSource.updateDateSource(accountInfoPage.accountInfoList);
     this.selection.clear();
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe.next();
+    this.unsubscribe.complete();
   }
 }

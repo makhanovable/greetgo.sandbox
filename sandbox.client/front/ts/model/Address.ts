@@ -8,8 +8,6 @@ export class Address {
   public house: string;
   public flat: string;
 
-  public isActive: boolean = true;
-
   constructor(id: number, clientId: number, type: AddressType, street: string, house: string, flat: string) {
     this.id = id;
     this.clientId = clientId;
