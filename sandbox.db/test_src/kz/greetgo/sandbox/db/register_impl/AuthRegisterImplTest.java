@@ -56,6 +56,11 @@ public class AuthRegisterImplTest extends ParentTestNg {
     String personId = RND.str(10);
     String expectedValue = RND.str(10);
 
+    //Clear
+    //add test data
+    //register call
+    //assert
+
     //
     //
     authRegister.get().saveParam(personId, paramName, expectedValue);
