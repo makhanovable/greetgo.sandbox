@@ -80,16 +80,18 @@
             <input matInput formControlName="phoneWork" required />
         </mat-form-field>
 
-        <div formArrayName="mobiles">
+        <div formArrayName="mobiles" class="modal-mobiles">
             <div *ngFor="let item of form.controls.mobiles.controls; let i = index;" [formGroupName]="i">
                 <mat-form-field>
                     <span matPrefix>+7 &nbsp;</span>
                     <mat-label>Mobile {{ i + 1 }}</mat-label>
                     <input matInput formControlName="number" required placeholder="XXXXXXXXXX" maxlength="10"/>
                 </mat-form-field>
-                <button mat-button color="primary" class="modal-button"
-                        *ngIf="form.controls.mobiles.controls.length > 1" (click)="deleteMobile(i)">Delete Mobile</button>
+                <button mat-button class="modal-button modal-primary modal-delete"
+                        *ngIf="form.controls.mobiles.controls.length > 1" (click)="deleteMobile(i)">Remove</button>
             </div>
+
+            <button mat-button color="primary" class="modal-button modal-primary " (click)="addMobile('')">Add mobile</button>
         </div>
 
         <!--<div class="modal-alert" *ngIf="errorMessage">-->
@@ -98,11 +100,11 @@
 
     </mat-dialog-content>
 
+
     <mat-dialog-actions class="modal-actions">
-        <button mat-button color="primary" class="modal-button" (click)="addMobile('')">Add mobile</button>
-        <button mat-button color="primary" class="modal-button"
+        <button mat-button color="primary" class="modal-button modal-primary "
                 (click)="close()">Close</button>
-        <button mat-button color="primary" class="modal-button"
+        <button mat-button color="primary" class="modal-button modal-primary "
                 [disabled]="form.invalid" (click)="save()">Save</button>
     </mat-dialog-actions>
 </div>
