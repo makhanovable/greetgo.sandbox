@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface CharmRegister {
   List<Charm> getCharmDictionary();
+
+  Charm getCharm(int charmId);
 }

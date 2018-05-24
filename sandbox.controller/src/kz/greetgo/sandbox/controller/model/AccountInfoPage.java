@@ -1,7 +1,5 @@
 package kz.greetgo.sandbox.controller.model;
 
-import kz.greetgo.sandbox.controller.model.AccountInfo;
-
 import java.util.List;
 
 public class AccountInfoPage {

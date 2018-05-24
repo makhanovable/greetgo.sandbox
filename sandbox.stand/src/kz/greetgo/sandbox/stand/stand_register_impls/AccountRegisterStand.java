@@ -2,13 +2,11 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.errors.InvalidCharmError;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.account.AccountRegister;
-import kz.greetgo.sandbox.controller.model.AccountInfoPage;
+import kz.greetgo.sandbox.controller.register.charm.CharmRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.AccountDot;
-import kz.greetgo.sandbox.db.stand.model.CharmDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 
 import java.time.Instant;
@@ -21,6 +19,7 @@ import static java.util.Calendar.*;
 public class AccountRegisterStand implements AccountRegister {
 
   public BeanGetter<StandDb> db;
+  public BeanGetter<CharmRegister> charmRegister;
 
   @Override
   public AccountInfoPage getAllAccountInfo(TableRequestDetails requestDetails) {
@@ -92,7 +91,7 @@ public class AccountRegisterStand implements AccountRegister {
     AccountInfo accountInfo = new AccountInfo();
     accountInfo.id = clientDot.id;
     accountInfo.fullName = String.format("%s %s %s", clientDot.name, clientDot.surname, clientDot.patronymic);
-    accountInfo.charm = getCharmById(clientDot.charmId);
+    accountInfo.charm = charmRegister.get().getCharm(clientDot.charmId).name;
     accountInfo.age = calculateYearDiff(new Date(clientDot.birthDate));
 
     ArrayList<Account> accounts = selectAccountsByClientId(accountInfo.id);
@@ -140,16 +139,6 @@ public class AccountRegisterStand implements AccountRegister {
     }
 
     return accounts;
-  }
-
-  private String getCharmById(int charmId) {
-    CharmDot charmDot = db.get().charmStorage.get(charmId);
-
-    if(charmDot == null) {
-      throw new InvalidCharmError(404, "Invalid charm, please, choose another one");
-    }
-
-    return charmDot.name;
   }
 
   private int calculateYearDiff(Date date) {
