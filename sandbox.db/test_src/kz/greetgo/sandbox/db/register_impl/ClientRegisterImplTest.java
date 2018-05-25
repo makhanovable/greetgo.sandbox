@@ -31,11 +31,6 @@ import java.util.Date;
 import java.util.List;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-// TODO: TODO: ещё раз проверь все тесты и дополни
-
-//TODO: нужно больше тестов на пагинацию, скажи, когда приступишь. Разбирём все моменты
-
-//TODO: Нет тестов, проверяющих поведение регистров при неверном вводе. Добавить.
 public class ClientRegisterImplTest extends ParentTestNg {
 
     public BeanGetter<ClientRegister> clientRegister;
