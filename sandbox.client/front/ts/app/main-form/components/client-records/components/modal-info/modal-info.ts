@@ -11,8 +11,9 @@ import {AccountService} from "../../../../../services/AccountService";
 import {Phone} from "../../../../../../model/Phone";
 import {Address} from "../../../../../../model/Address";
 import {AddressType} from "../../../../../../model/AddressType";
-import {ClientInfo} from "../../../../../../model/ClientInfo";
+import {ClientToSave} from "../../../../../../model/ClientToSave";
 import {Constants} from "../../../../../../utils/Constants";
+import {ClientDetails} from "../../../../../../model/ClientDetails";
 
 @Component({
   selector: 'modal-info-component',
@@ -25,7 +26,7 @@ export class ModalInfoComponent implements OnInit {
 
   form: FormGroup;
 
-  clientInfo: ClientInfo = new ClientInfo();
+  clientDetails: ClientDetails = null;
 
   name: string = '';
   surname: string = '';
@@ -54,30 +55,12 @@ export class ModalInfoComponent implements OnInit {
               private dialogRef: MatDialogRef<MainFormComponent>,
               private httpService: HttpService, private accountService: AccountService) {
 
-    this.requestCharmDictionary();
-
     this.actionType = data.actionType;
-
-    if (data.clientId !== null) {
-      this.requestClientInfo(data.clientId);
-    }
+    this.requestClientInfo(data.clientId);
   }
 
   ngOnInit(): void {
     this.initForm(Constants.FORM_INIT);
-  }
-
-  private requestCharmDictionary() {
-    this.httpService.get("/charm/dictionary").toPromise().then(dictionary => {
-      this.onCharmRequestSuccess(dictionary);
-    }, error => {
-      console.log(error);
-    });
-  }
-
-  private onCharmRequestSuccess(dictionary) {
-    this.charmsDictionary = dictionary.json();
-    this.charmId = this.charmsDictionary[0].id;
   }
 
   private requestClientInfo(clientId: number) {
@@ -88,10 +71,13 @@ export class ModalInfoComponent implements OnInit {
     });
   }
 
-  private onClientInfoRequestSuccess(clientInfo) {
-    this.clientInfo = clientInfo.json();
+  private onClientInfoRequestSuccess(response) {
+    this.clientDetails = response.json();
+    this.charmsDictionary = this.clientDetails.charmsDictionary;
 
-    if (this.actionType == ActionType.EDIT) this.loadClientInfo();
+    console.log(response.json());
+
+    if (this.actionType == ActionType.EDIT) this.loadClientDetails();
 
     this.initForm(Constants.FORM_LOAD);
   }
@@ -140,29 +126,29 @@ export class ModalInfoComponent implements OnInit {
     }
   }
 
-  private loadClientInfo() {
-    this.name = this.clientInfo.name;
-    this.surname = this.clientInfo.surname;
-    this.patronymic = this.clientInfo.patronymic;
-    this.gender = this.clientInfo.gender;
-    this.birthDate = new Date(this.clientInfo.birthDate);
-    this.charmId = this.clientInfo.charmId;
+  private loadClientDetails() {
+    this.name = this.clientDetails.name;
+    this.surname = this.clientDetails.surname;
+    this.patronymic = this.clientDetails.patronymic;
+    this.gender = this.clientDetails.gender;
+    this.birthDate = new Date(this.clientDetails.birthDate);
+    this.charmId = this.clientDetails.charmId;
 
-    if (this.clientInfo.factAddress !== null) {
-      this.streetFact = this.clientInfo.factAddress.street;
-      this.houseFact = this.clientInfo.factAddress.house;
-      this.flatFact = this.clientInfo.factAddress.flat;
+    if (this.clientDetails.factAddress !== null) {
+      this.streetFact = this.clientDetails.factAddress.street;
+      this.houseFact = this.clientDetails.factAddress.house;
+      this.flatFact = this.clientDetails.factAddress.flat;
     }
 
-    if (this.clientInfo.regAddress !== null) {
-      this.streetReg = this.clientInfo.regAddress.street;
-      this.houseReg = this.clientInfo.regAddress.house;
-      this.flatReg = this.clientInfo.regAddress.flat;
+    if (this.clientDetails.regAddress !== null) {
+      this.streetReg = this.clientDetails.regAddress.street;
+      this.houseReg = this.clientDetails.regAddress.house;
+      this.flatReg = this.clientDetails.regAddress.flat;
     }
 
     this.deleteMobile(0); // Need to remove the first empty control
-    for (let i = 0; i < this.clientInfo.phones.length; i++) {
-      const phone = this.clientInfo.phones[i];
+    for (let i = 0; i < this.clientDetails.phones.length; i++) {
+      const phone = this.clientDetails.phones[i];
 
       if (phone.type == PhoneType.HOME) {
         this.phoneHome = phone.number;
@@ -210,10 +196,10 @@ export class ModalInfoComponent implements OnInit {
   }
 
   private createNewClient() {
-    const clientInfo = this.boxClientInfo();
+    const clientInfo = this.boxClientToSave();
 
     this.httpService.post("/client/create",
-      {clientInfo: JSON.stringify(clientInfo)}).toPromise().then(response => {
+      {clientToSave: JSON.stringify(clientInfo)}).toPromise().then(response => {
       this.onCreateClientSuccess(response);
     }, error => {
       alert(error._body);
@@ -227,9 +213,9 @@ export class ModalInfoComponent implements OnInit {
   }
 
   private editClient() {
-    const clientInfo = this.boxClientInfo();
+    const clientInfo = this.boxClientToSave();
     this.httpService.post("/client/edit",
-      {clientInfo: JSON.stringify(clientInfo)}).toPromise().then(response => {
+      {clientToSave: JSON.stringify(clientInfo)}).toPromise().then(response => {
       this.onEditClientSuccess(response);
     }, error => {
       alert(error._body);
@@ -243,12 +229,12 @@ export class ModalInfoComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  private boxClientInfo(): ClientInfo {
+  private boxClientToSave(): ClientToSave {
     let clientId = this.DUMB_ID;
 
-    if (this.actionType == ActionType.EDIT) clientId = this.clientInfo.id;
+    if (this.actionType == ActionType.EDIT) clientId = this.clientDetails.id;
 
-    const clientInfo = new ClientInfo();
+    const clientInfo = new ClientToSave();
 
     this.boxPersonalDetail(clientInfo, clientId);
     this.boxAddresses(clientInfo);
@@ -259,7 +245,7 @@ export class ModalInfoComponent implements OnInit {
     return clientInfo;
   }
 
-  private boxPersonalDetail(clientInfo: ClientInfo, clientId: number) {
+  private boxPersonalDetail(clientInfo: ClientToSave, clientId: number) {
     clientInfo.id = clientId;
     clientInfo.name = this.form.controls["name"].value;
     clientInfo.surname = this.form.controls["surname"].value;
@@ -269,7 +255,7 @@ export class ModalInfoComponent implements OnInit {
     clientInfo.charmId = this.form.controls["charm"].value;
   }
 
-  private boxAddresses(clientInfo: ClientInfo) {
+  private boxAddresses(clientInfo: ClientToSave) {
     const factAddress = new Address();
     factAddress.type = AddressType.FACT;
     factAddress.street = this.form.controls["streetFact"].value;
@@ -289,7 +275,7 @@ export class ModalInfoComponent implements OnInit {
       clientInfo.regAddress = regAddress;
   }
 
-  private boxPhones(clientInfo: ClientInfo) {
+  private boxPhones(clientInfo: ClientToSave) {
     clientInfo.phones = [];
 
     const phoneHome = new Phone();

@@ -2,7 +2,7 @@ package kz.greetgo.sandbox.controller.model;
 
 import java.util.List;
 
-public class ClientInfo {
+public class ClientToSave {
   public int id;
   public String name;
   public String surname;

@@ -22,35 +22,35 @@ public class AccountRegisterStand implements AccountRegister {
   public BeanGetter<CharmRegister> charmRegister;
 
   @Override
-  public AccountInfoPage getAllAccountInfo(TableRequestDetails requestDetails) {
-    ArrayList<AccountInfo> accountInfoList = new ArrayList<>();
+  public ClientAccountInfoPage getAllAccountInfo(TableRequestDetails requestDetails) {
+    ArrayList<ClientAccountInfo> clientAccountInfoList = new ArrayList<>();
 
     for (ClientDot clientDot : db.get().clientStorage.values()) {
       if (clientDot.isActive) {
-        AccountInfo accountInfo = getAccountInfo(clientDot.id);
-        accountInfoList.add(accountInfo);
+        ClientAccountInfo clientAccountInfo = getAccountInfo(clientDot.id);
+        clientAccountInfoList.add(clientAccountInfo);
       }
     }
 
-    accountInfoList = filter(accountInfoList, requestDetails.filter);
-    accountInfoList = sort(accountInfoList, requestDetails.sortBy, requestDetails.sortDirection);
+    clientAccountInfoList = filter(clientAccountInfoList, requestDetails.filter);
+    clientAccountInfoList = sort(clientAccountInfoList, requestDetails.sortBy, requestDetails.sortDirection);
 
-    int totalAccountInfoCount = accountInfoList.size();
+    int totalAccountInfoCount = clientAccountInfoList.size();
 
-    accountInfoList = paginate(accountInfoList, requestDetails.pageIndex, requestDetails.pageSize);
+    clientAccountInfoList = paginate(clientAccountInfoList, requestDetails.pageIndex, requestDetails.pageSize);
 
 
-    return new AccountInfoPage(accountInfoList, totalAccountInfoCount);
+    return new ClientAccountInfoPage(clientAccountInfoList, totalAccountInfoCount);
   }
 
-  private ArrayList<AccountInfo> filter(ArrayList<AccountInfo> list, String filterValue) {
+  private ArrayList<ClientAccountInfo> filter(ArrayList<ClientAccountInfo> list, String filterValue) {
     return list.stream()
       .filter(a -> a.fullName.replaceAll("\\s+", "").toLowerCase()
         .contains(filterValue.replaceAll("\\s+", "").toLowerCase())
       ).collect(Collectors.toCollection(ArrayList::new));
   }
 
-  private ArrayList<AccountInfo> sort(ArrayList<AccountInfo> list, SortColumn column, SortDirection direction) {
+  private ArrayList<ClientAccountInfo> sort(ArrayList<ClientAccountInfo> list, SortColumn column, SortDirection direction) {
 
     switch (column) {
       case FIO:
@@ -60,13 +60,13 @@ public class AccountRegisterStand implements AccountRegister {
         list.sort(Comparator.comparingInt(a -> a.age));
         break;
       case TOTAL:
-        list.sort((AccountInfo a1, AccountInfo a2) -> (int) (a1.totalAccBalance - a2.totalAccBalance));
+        list.sort((ClientAccountInfo a1, ClientAccountInfo a2) -> (int) (a1.totalAccBalance - a2.totalAccBalance));
         break;
       case MAX:
-        list.sort((AccountInfo a1, AccountInfo a2) -> (int) (a1.maxAccBalance - a2.maxAccBalance));
+        list.sort((ClientAccountInfo a1, ClientAccountInfo a2) -> (int) (a1.maxAccBalance - a2.maxAccBalance));
         break;
       case MIN:
-        list.sort((AccountInfo a1, AccountInfo a2) -> (int) (a1.minAccBalance - a2.minAccBalance));
+        list.sort((ClientAccountInfo a1, ClientAccountInfo a2) -> (int) (a1.minAccBalance - a2.minAccBalance));
         break;
     }
 
@@ -75,7 +75,7 @@ public class AccountRegisterStand implements AccountRegister {
     return list;
   }
 
-  private ArrayList<AccountInfo> paginate(ArrayList<AccountInfo> list, int pageIndex, int pageSize) {
+  private ArrayList<ClientAccountInfo> paginate(ArrayList<ClientAccountInfo> list, int pageIndex, int pageSize) {
     int fromIndex = pageIndex * pageSize;
     int toIndex = fromIndex + pageSize;
     if (fromIndex > list.size()) fromIndex = 0;
@@ -85,23 +85,23 @@ public class AccountRegisterStand implements AccountRegister {
   }
 
   @Override
-  public AccountInfo getAccountInfo(int clientId) {
+  public ClientAccountInfo getAccountInfo(int clientId) {
     ClientDot clientDot = db.get().clientStorage.get(clientId);
 
-    AccountInfo accountInfo = new AccountInfo();
-    accountInfo.id = clientDot.id;
-    accountInfo.fullName = String.format("%s %s %s", clientDot.name, clientDot.surname, clientDot.patronymic);
-    accountInfo.charm = charmRegister.get().getCharm(clientDot.charmId).name;
-    accountInfo.age = calculateYearDiff(new Date(clientDot.birthDate));
+    ClientAccountInfo clientAccountInfo = new ClientAccountInfo();
+    clientAccountInfo.id = clientDot.id;
+    clientAccountInfo.fullName = String.format("%s %s %s", clientDot.name, clientDot.surname, clientDot.patronymic);
+    clientAccountInfo.charm = charmRegister.get().getCharm(clientDot.charmId).name;
+    clientAccountInfo.age = calculateYearDiff(new Date(clientDot.birthDate));
 
-    ArrayList<Account> accounts = selectAccountsByClientId(accountInfo.id);
+    ArrayList<Account> accounts = selectAccountsByClientId(clientAccountInfo.id);
     if (accounts.size() == 0) return null;
 
-    accountInfo.totalAccBalance = getTotalAccBalance(accounts);
-    accountInfo.minAccBalance = getMinAccBalance(accounts);
-    accountInfo.maxAccBalance = getMaxAccBalance(accounts);
+    clientAccountInfo.totalAccBalance = getTotalAccBalance(accounts);
+    clientAccountInfo.minAccBalance = getMinAccBalance(accounts);
+    clientAccountInfo.maxAccBalance = getMaxAccBalance(accounts);
 
-    return accountInfo;
+    return clientAccountInfo;
   }
 
   private float getMinAccBalance(ArrayList<Account> accounts) {

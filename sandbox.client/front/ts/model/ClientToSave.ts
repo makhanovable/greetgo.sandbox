@@ -2,7 +2,7 @@ import {Address} from "./Address";
 import {Phone} from "./Phone";
 import {Gender} from "./Gender";
 
-export class ClientInfo {
+export class ClientToSave {
   public id: number/*int*/;
   public name: string;
   public surname: string;

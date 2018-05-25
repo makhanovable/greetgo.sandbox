@@ -85,7 +85,7 @@
                 <mat-form-field>
                     <span matPrefix>+7 &nbsp;</span>
                     <mat-label>Mobile {{ i + 1 }}</mat-label>
-                    <input matInput formControlName="number" required placeholder="XXXXXXXXXX" maxlength="10"/>
+                    <input type="num" matInput formControlName="number" required placeholder="XXXXXXXXXX" maxlength="10"/>
                 </mat-form-field>
                 <button mat-button class="modal-button modal-primary modal-delete"
                         *ngIf="form.controls.mobiles.controls.length > 1" (click)="deleteMobile(i)">Remove</button>

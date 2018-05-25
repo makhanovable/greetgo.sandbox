@@ -3,10 +3,7 @@ package kz.greetgo.sandbox.controller.controller;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
-import kz.greetgo.sandbox.controller.model.AccountInfo;
-import kz.greetgo.sandbox.controller.model.ClientInfo;
-import kz.greetgo.sandbox.controller.model.TableRequestDetails;
-import kz.greetgo.sandbox.controller.model.AccountInfoPage;
+import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.client.ClientRegister;
 import kz.greetgo.sandbox.controller.util.Controller;
 
@@ -18,26 +15,26 @@ public class ClientController implements Controller {
 
   @ToJson
   @Mapping("/info")
-  public ClientInfo getClientInfo(@Par("clientId") int clientId) {
-    return clientRegister.get().getClientInfo(clientId);
+  public ClientDetails getClientInfo(@Par("clientId") int clientId) {
+    return clientRegister.get().getClientDetails(clientId);
   }
 
   @ToJson()
   @Mapping("/create")
-  public AccountInfo createNewClient(@Json @Par("clientInfo") ClientInfo clientInfo) {
-    return clientRegister.get().createNewClient(clientInfo);
+  public ClientAccountInfo createNewClient(@Json @Par("clientToSave") ClientToSave clientToSave) {
+    return clientRegister.get().createNewClient(clientToSave);
   }
 
   @ToJson()
   @Mapping("/edit")
-  public AccountInfo editClient(@Json @Par("clientInfo") ClientInfo clientInfo) {
-    return clientRegister.get().editClient(clientInfo);
+  public ClientAccountInfo editClient(@Json @Par("clientToSave") ClientToSave clientToSave) {
+    return clientRegister.get().editClient(clientToSave);
   }
 
   @ToJson()
   @Mapping("/delete")
-  public AccountInfoPage deleteClient(@Par("clientId") int clientId,
-                                      @Json @Par("requestDetails") TableRequestDetails requestDetails) {
+  public ClientAccountInfoPage deleteClient(@Par("clientId") int clientId,
+                                            @Json @Par("requestDetails") TableRequestDetails requestDetails) {
     return clientRegister.get().deleteClient(clientId, requestDetails);
   }
 }

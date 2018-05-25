@@ -1,7 +1,7 @@
 import {Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild} from '@angular/core';
 import {MatPaginator, MatSort} from "@angular/material";
 import {SelectionModel} from "@angular/cdk/collections";
-import {AccountInfo} from "../../../../../../model/AccountInfo";
+import {ClientAccountInfo} from "../../../../../../model/ClientAccountInfo";
 import {HttpService} from "../../../../../HttpService";
 import {GenericDataSource} from "./GenericDataSource";
 import {debounceTime, distinctUntilChanged, tap} from "rxjs/operators";
@@ -10,7 +10,7 @@ import {AccountService} from "../../../../../services/AccountService";
 import {SortDirection} from "../../../../../../model/SortDirection";
 import {TableRequestDetails} from "../../../../../../model/TableRequestDetails";
 import {SortColumn} from "../../../../../../model/SortColumn";
-import {AccountInfoPage} from "../../../../../../model/AccountInfoPage";
+import {ClientAccountInfoPage} from "../../../../../../model/ClientAccountInfoPage";
 import {Subject} from "rxjs/Subject";
 import 'rxjs/add/operator/takeUntil';
 
@@ -25,7 +25,7 @@ export class AccountTableComponent implements OnDestroy {
 
   dataSource: GenericDataSource;
   displayedColumns = ['select', 'fio', 'charm', 'age', 'total', 'max', 'min'];
-  selection = new SelectionModel<AccountInfo>(false);
+  selection = new SelectionModel<ClientAccountInfo>(false);
 
   responseLength = 0;
 
@@ -34,7 +34,7 @@ export class AccountTableComponent implements OnDestroy {
   @ViewChild('filter') filter: ElementRef;
 
   @Output() onAddAccount: EventEmitter<null> = new EventEmitter();
-  @Output() onEditAccount: EventEmitter<AccountInfo> = new EventEmitter();
+  @Output() onEditAccount: EventEmitter<ClientAccountInfo> = new EventEmitter();
 
   constructor(private httpService: HttpService, private accountService: AccountService) {
     this.accountService.accountAdded
@@ -125,9 +125,9 @@ export class AccountTableComponent implements OnDestroy {
 
   private onAccountInfoListRequestSuccess(response) {
     const result = response.json();
-    this.responseLength = result.totalAccountInfo;
+    this.responseLength = result.totalItemsCount;
 
-    this.dataSource.updateDateSource(result.accountInfoList);
+    this.dataSource.updateDateSource(result.items);
     this.dataSource.stopLoading();
   }
 
@@ -156,11 +156,11 @@ export class AccountTableComponent implements OnDestroy {
   }
 
   private onClientDeleteSuccess(response) {
-    const accountInfoPage:AccountInfoPage = response.json();
+    const accountInfoPage:ClientAccountInfoPage = response.json();
 
-    this.responseLength = accountInfoPage.totalAccountInfo;
+    this.responseLength = accountInfoPage.totalItemsCount;
 
-    this.dataSource.updateDateSource(accountInfoPage.accountInfoList);
+    this.dataSource.updateDateSource(accountInfoPage.items);
     this.selection.clear();
   }
 
