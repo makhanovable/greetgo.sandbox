@@ -1,6 +1,5 @@
 package kz.greetgo.sandbox.db.migration.core;
 
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -43,6 +42,7 @@ public class FromJSONParser {
                     this.transPS.setTimestamp(3, Timestamp.valueOf(tstmp));
                     this.transPS.setString(4, obj.getString("transaction_type"));
 
+                    transPS.addBatch();
                     transBatchSize++;
 
                 } else
@@ -54,6 +54,7 @@ public class FromJSONParser {
                     this.accPS.setTimestamp(2, Timestamp.valueOf(tstmp));
                     this.accPS.setString(3, obj.getString("client_id"));
 
+                    accPS.addBatch();
                     accBatchSize++;
                 }
 
@@ -72,5 +73,8 @@ public class FromJSONParser {
 
         return recordsCount;
     }
+
+    public int getAccBatchSize() { return transBatchSize; }
+    public int getTransBatchSize() { return accBatchSize; }
 
 }

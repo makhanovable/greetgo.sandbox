@@ -1,10 +1,5 @@
 package kz.greetgo.sandbox.db.migration.core;
 
-import kz.greetgo.sandbox.db.migration.interfaces.ConnectionConfig;
-import kz.greetgo.sandbox.db.migration.model.ClientXMLRecord;
-import kz.greetgo.sandbox.db.migration.util.ConnectionUtils;
-import kz.greetgo.sandbox.db.migration.util.TimeUtils;
-import kz.greetgo.util.RND;
 import org.xml.sax.SAXException;
 
 import java.io.Closeable;
@@ -20,38 +15,25 @@ import static kz.greetgo.sandbox.db.migration.util.TimeUtils.showTime;
 
 public class Migration implements Closeable {
 
-  private Connection operConnection = null, ciaConnection = null;
+  private Connection connection = null;
 
   public Migration(Connection connection) {
-    this.operConnection = connection;
-    this.ciaConnection = connection;
+    this.connection = connection;
   }
 
   @Override
   public void close() {
     closeOperConnection();
-    closeCiaConnection();
-  }
-
-  private void closeCiaConnection() {
-    if (ciaConnection != null) {
-      try {
-        ciaConnection.close();
-      } catch (SQLException e) {
-        e.printStackTrace();
-      }
-      ciaConnection = null;
-    }
   }
 
   private void closeOperConnection() {
-    if (this.operConnection != null) {
+    if (this.connection != null) {
       try {
-        this.operConnection.close();
+        this.connection.close();
       } catch (SQLException e) {
         e.printStackTrace();
       }
-      this.operConnection = null;
+      this.connection = null;
     }
   }
 
@@ -72,7 +54,7 @@ public class Migration implements Closeable {
     String executingSql = r(sql);
 
     long startedAt = System.nanoTime();
-    try (Statement statement = operConnection.createStatement()) {
+    try (Statement statement = connection.createStatement()) {
       int updates = statement.executeUpdate(executingSql);
       info("Updated " + updates
         + " records for " + showTime(System.nanoTime(), startedAt)
@@ -149,6 +131,7 @@ public class Migration implements Closeable {
       "  number bigserial primary key,\n" +
       "  account_number varchar(100),\n" +
       "  registered_at timestamp,\n" +
+      "  client_cia_id varchar(100),\n" +
       "  client_id varchar(100)\n" +
       ")");
 
@@ -160,8 +143,10 @@ public class Migration implements Closeable {
       "  number bigserial primary key,\n" +
       "  money float,\n" +
       "  account_number varchar(100),\n" +
+      "  account_id bigint,\n" +
       "  finished_at timestamp,\n" +
-      "  transaction_type varchar(300)\n" +
+      "  transaction_type varchar(300),\n" +
+      "  transaction_type_id bigint\n" +
       ")");
 
 //    int portionSize = downloadFromCIA();
@@ -171,7 +156,7 @@ public class Migration implements Closeable {
       info("Downloaded of portion " + portionSize + " from CIA finished for " + showTime(now, startedAt));
     }
 
-    int portionSize = downloadFromFRS();
+//    portionSize = downloadFromFRS();
 
     {
       long now = System.nanoTime();
@@ -234,19 +219,19 @@ public class Migration implements Closeable {
     phone_insert.field(3, "phoneType", "?");
     phone_insert.field(4, "tmp_client_id", "?");
 
-      operConnection.setAutoCommit(false);
-      try (PreparedStatement clientPS = operConnection.prepareStatement(r(client_insert.toString()))) {
+      connection.setAutoCommit(false);
+      try (PreparedStatement clientPS = connection.prepareStatement(r(client_insert.toString()))) {
 
-        try (PreparedStatement phonePS = operConnection.prepareStatement(r(phone_insert.toString()))) {
+        try (PreparedStatement phonePS = connection.prepareStatement(r(phone_insert.toString()))) {
 
           int recordsCount = 0;
 
           FromXMLParser fromXMLParser = new FromXMLParser();
 
           try {
-            File inputFile = new File("build/out_files/from_cia_2018-05-15-120656-1-300.xml");
+            File inputFile = new File("build/out_files/from_cia_2018-05-24-095644-2-3000.xml");
 
-            fromXMLParser.execute(operConnection, clientPS, phonePS, downloadMaxBatchSize);
+            fromXMLParser.execute(connection, clientPS, phonePS, downloadMaxBatchSize);
             recordsCount =  fromXMLParser.parseRecordData(String.valueOf(inputFile), "file");
 
           } catch (Exception e) {
@@ -256,14 +241,14 @@ public class Migration implements Closeable {
           if (fromXMLParser.getClientBatchSize() > 0 || fromXMLParser.getPhoneBatchSize() > 0) {
             phonePS.executeBatch();
             clientPS.executeBatch();
-            operConnection.commit();
+            connection.commit();
           }
 
           return recordsCount;
         }
 
       } finally {
-        operConnection.setAutoCommit(true);
+        connection.setAutoCommit(true);
         working.set(false);
         see.interrupt();
       }
@@ -293,7 +278,7 @@ public class Migration implements Closeable {
     Insert account_insert = new Insert("TMP_ACCOUNT");
     account_insert.field(1, "account_number", "?");
     account_insert.field(2, "registered_at", "?");
-    account_insert.field(3, "client_id", "?");
+    account_insert.field(3, "client_cia_id", "?");
 
     Insert transaction_insert = new Insert("TMP_TRANSACTION");
     transaction_insert.field(1, "money", "?");
@@ -301,10 +286,10 @@ public class Migration implements Closeable {
     transaction_insert.field(3, "finished_at", "?");
     transaction_insert.field(4, "transaction_type", "?");
 
-    operConnection.setAutoCommit(false);
-    try (PreparedStatement accountPS = operConnection.prepareStatement(r(account_insert.toString()))) {
+    connection.setAutoCommit(false);
+    try (PreparedStatement accountPS = connection.prepareStatement(r(account_insert.toString()))) {
 
-      try (PreparedStatement transPS = operConnection.prepareStatement(r(transaction_insert.toString()))) {
+      try (PreparedStatement transPS = connection.prepareStatement(r(transaction_insert.toString()))) {
 
         int recordsCount = 0;
 
@@ -313,18 +298,24 @@ public class Migration implements Closeable {
         try {
           File inputFile = new File("build/out_files/from_frs_2018-05-24-095714-1-30005.json_row.txt");
 
-          fromJSONParser.execute(operConnection, accountPS, transPS, uploadMaxBatchSize);
+          fromJSONParser.execute(connection, accountPS, transPS, uploadMaxBatchSize);
           recordsCount = fromJSONParser.parseRecordData(inputFile);
 
         } catch (Exception e) {
           e.printStackTrace();
         }
 
+        if (fromJSONParser.getAccBatchSize() > 0 || fromJSONParser.getTransBatchSize() > 0) {
+          accountPS.executeBatch();
+          transPS.executeBatch();
+          connection.commit();
+        }
+
         return recordsCount;
       }
 
     } finally {
-      operConnection.setAutoCommit(true);
+      connection.setAutoCommit(true);
       working.set(false);
       see.interrupt();
     }
@@ -353,6 +344,18 @@ public class Migration implements Closeable {
     //language=PostgreSQL
     exec("update TMP_PHONE set error = 'phoneType is not defined', status = 1\n" +
             "where error is null and phoneType is null");
+    //language=PostgreSQL
+    exec("update TMP_TRANSACTION set error = 'transaction type is not defined', status = 1\n" +
+            "where error is null and transaction_type is null");
+    //language=PostgreSQL
+    exec("update TMP_TRANSACTION set error = 'account number is not defined', status = 1\n" +
+            "where error is null and account_number is null");
+    //language=PostgreSQL
+    exec("update TMP_ACCOUNT set error = 'client cia id is not defined', status = 1\n" +
+            "where error is null and client_cia_id is null");
+    //language=PostgreSQL
+    exec("update TMP_ACCOUNT set error = 'account number is not defined', status = 1\n" +
+            "where error is null and account_number is null");
 
     //language=PostgreSQL
     exec("update TMP_PHONE ph set status = 1" +
@@ -447,6 +450,39 @@ public class Migration implements Closeable {
             "                            adresstype = 'REG'\n" +
             "from TMP_CLIENT cl \n" +
             "where cl.status = 3 and cl.rStreet is not null and cl.rHouse is not null and cl.rFlat is not null");
+
+    //language=PostgreSQL
+    exec("update TMP_ACCOUNT tmp set client_id = c.id\n" +
+            "from tmp_clients c\n" +
+            "where tmp.client_cia_id = c.cia_id and tmp.status = 0");
+
+    //language=PostgreSQL
+    exec("insert into tmp_accounts (number, registered_at, client_id)\n" +
+            "select account_number, registered_at, client_id \n" +
+            "from TMP_ACCOUNT tmp\n" +
+            "where tmp.client_id is not null and tmp.status = 0");
+
+    //language=PostgreSQL
+    exec("insert into tmp_transaction_types (name)\n" +
+            "select transaction_type \n" +
+            "from TMP_TRANSACTION tmp\n" +
+            "where tmp.transaction_type not in (select name from tmp_transaction_types) and tmp.status = 0");
+
+    //language=PostgreSQL
+    exec("update TMP_TRANSACTION tmp set transaction_type_id = t.id\n" +
+            "from tmp_transaction_types t\n" +
+            "where tmp.transaction_type = t.name and tmp.status = 0");
+
+    //language=PostgreSQL
+    exec("update TMP_TRANSACTION tmp set account_id = acc.id\n" +
+            "from tmp_accounts acc\n" +
+            "where tmp.account_number = acc.number and tmp.status = 0");
+
+    //language=PostgreSQL
+    exec("insert into tmp_transactions (money, finished_at, account_id, transaction_type_id)\n" +
+            "select money, finished_at, account_id, transaction_type_id \n" +
+            "from TMP_TRANSACTION tmp\n" +
+            "where tmp.account_id is not null and tmp.transaction_type_id is not null and tmp.status = 0");
 
     //language=PostgreSQL
     exec("update tmp_clients set actual = 1 where id in (\n" +

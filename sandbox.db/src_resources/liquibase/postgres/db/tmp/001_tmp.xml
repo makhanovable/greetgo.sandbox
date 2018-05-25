@@ -70,7 +70,7 @@
         number varchar(100) not null,
         money float default 0,
         registered_at timestamp not null,
-        client_id varchar(50) references tmp_clients(id)
+        client_id varchar(100) references tmp_clients(id)
       )
     ]]></sql>
   </changeSet>
@@ -89,7 +89,7 @@
     <sql endDelimiter=";;"><![CDATA[
       create table tmp_transactions (
         id bigserial primary key,
-        money float,
+        money float default 0,
         finished_at timestamp,
         account_id bigint references tmp_accounts(id),
         transaction_type_id bigint references tmp_transaction_types(id)
