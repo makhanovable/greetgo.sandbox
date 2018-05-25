@@ -108,6 +108,8 @@ public class ClientController implements Controller {
         ReportParamsToSave reportParams = clientRegister.get().popReportParams(reportID);
 
         if ("PDF".equals(reportParams.report_type)) {
+            
+            // TODO: убирай такие выводы. Если нужно логирование, используй логирование. Для этого есть специальные библиотеки.
             System.out.println("Generating PDF document");
 
             String filename = reportParams.report_type + "-" + RND.intStr(10) + ".pdf";
