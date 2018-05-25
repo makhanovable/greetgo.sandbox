@@ -23,7 +23,7 @@ public class ClientsListReportPDFViewReal implements ClientsListReportView{
         }
 
         try {
-            bf = BaseFont.createFont("/Users/sanzharburumbay/Documents/Greetgo_Internship/greetgo.sandbox/sandbox.controller/src/kz/greetgo/sandbox/controller/report/Fonts/arial.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            bf = BaseFont.createFont("kz/greetgo/sandbox/controller/report/Fonts/arial.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
         } catch (DocumentException e) {
             e.printStackTrace();
         } catch (IOException e) {

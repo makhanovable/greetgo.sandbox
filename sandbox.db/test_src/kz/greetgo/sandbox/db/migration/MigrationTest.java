@@ -30,7 +30,7 @@ public class MigrationTest extends ParentTestNg{
 
 
     private void clearTables() throws Exception{
-        String sql = "delete ";
+        String sql = "";
 
         try (Statement st = connection.createStatement()) {
             st.execute(sql);
