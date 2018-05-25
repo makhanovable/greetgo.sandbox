@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.Date;
 
+//Переименуй, не понятно что за вьюшка
 public class ClientsListReportViewReal implements ClientsListReportView{
 
     private final OutputStream out;
