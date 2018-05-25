@@ -1,6 +1,6 @@
 import {Injectable} from "@angular/core";
 import {Subject} from "rxjs/Subject";
-import {AccountInfo} from "../../model/AccountInfo";
+import {ClientAccountInfo} from "../../model/ClientAccountInfo";
 import {HttpService} from "../HttpService";
 
 @Injectable()
@@ -16,15 +16,15 @@ export class AccountService {
 
   constructor(private httpService: HttpService) { }
 
-  addNewAccount(accountInfo: AccountInfo) {
+  addNewAccount(accountInfo: ClientAccountInfo) {
     this.accountAddedSource.next(accountInfo);
   }
 
-  deleteAccount(accountInfo: AccountInfo) {
+  deleteAccount(accountInfo: ClientAccountInfo) {
     this.accountDeleteSource.next(accountInfo);
   }
 
-  updateAccount(accountInfo: AccountInfo) {
+  updateAccount(accountInfo: ClientAccountInfo) {
     this.accountUpdateSource.next(accountInfo);
   }
 

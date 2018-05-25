@@ -1,9 +1,6 @@
 package kz.greetgo.sandbox.db.stand.model;
 
-import kz.greetgo.sandbox.controller.model.Client;
 import kz.greetgo.sandbox.controller.model.Gender;
-
-import java.util.Date;
 
 public class ClientDot {
   public int id;
@@ -15,16 +12,6 @@ public class ClientDot {
   public int charmId;
 
   public boolean isActive = true;
-
-  public Client toClient() {
-    return new Client(this.id,
-                      this.name,
-                      this.surname,
-                      this.patronymic,
-                      this.gender,
-                      this.birthDate,
-                      this.charmId);
-  }
 
   public ClientDot() { }
 

@@ -1,4 +1,4 @@
-export class AccountInfo {
+export class ClientAccountInfo {
   public id: number/*int*/;
   public fullName: string;
   public charm: string;
@@ -7,7 +7,7 @@ export class AccountInfo {
   public maxAccBalance: number/*float*/;
   public minAccBalance: number/*float*/;
 
-  public assign(o: any): AccountInfo {
+  public assign(o: any): ClientAccountInfo {
     this.fullName = o.fullName;
     this.charm = o.charm;
     this.age = o.age;
@@ -17,8 +17,8 @@ export class AccountInfo {
     return this;
   }
 
-  public static copy(a: any): AccountInfo {
-    let result = new AccountInfo();
+  public static copy(a: any): ClientAccountInfo {
+    let result = new ClientAccountInfo();
     result.assign(a);
     return result;
   }

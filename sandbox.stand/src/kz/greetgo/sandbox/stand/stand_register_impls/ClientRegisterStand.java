@@ -5,7 +5,8 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.errors.InvalidCharmError;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.account.AccountRegister;
-import kz.greetgo.sandbox.controller.model.AccountInfoPage;
+import kz.greetgo.sandbox.controller.model.ClientAccountInfoPage;
+import kz.greetgo.sandbox.controller.register.charm.CharmRegister;
 import kz.greetgo.sandbox.controller.register.client.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.*;
@@ -20,63 +21,75 @@ public class ClientRegisterStand implements ClientRegister {
 
   public BeanGetter<StandDb> db;
   public BeanGetter<AccountRegister> accountRegister;
+  public BeanGetter<CharmRegister> charmRegister;
 
   @Override
-  public ClientInfo getClientInfo(int clientId) {
-    ClientInfo clientInfo = new ClientInfo();
+  public ClientDetails getClientDetails(int clientId) {
+    ClientDetails clientDetails = new ClientDetails();
 
-    clientInfo.client = db.get().clientStorage.get(clientId).toClient();
+    clientDetails.charmsDictionary = charmRegister.get().getCharmDictionary();
+
+    ClientDot clientDot = db.get().clientStorage.get(clientId);
+    if(clientDot == null) return clientDetails;
+
+    clientDetails.id = clientDot.id;
+    clientDetails.name = clientDot.name;
+    clientDetails.surname = clientDot.surname;
+    clientDetails.patronymic = clientDot.patronymic;
+    clientDetails.gender = clientDot.gender;
+    clientDetails.birthDate = clientDot.birthDate;
+    clientDetails.charmId= clientDot.charmId;
 
     AddressDot factAddDot = getAddressDot(clientId, AddressType.FACT);
-    if (factAddDot != null) clientInfo.factAddress = factAddDot.toAddress();
+    if (factAddDot != null) clientDetails.factAddress = factAddDot.toAddress();
 
     AddressDot regAddDot = getAddressDot(clientId, AddressType.REG);
-    if (regAddDot != null) clientInfo.regAddress = regAddDot.toAddress();
+    if (regAddDot != null) clientDetails.regAddress = regAddDot.toAddress();
 
-    clientInfo.phones = getPhones(clientId);
+    clientDetails.phones = getPhones(clientId);
 
-    return clientInfo;
+    return clientDetails;
   }
 
   @Override
-  public AccountInfo createNewClient(ClientInfo clientInfo) {
+  public ClientAccountInfo createNewClient(ClientToSave clientToSave) {
 
     int newClientId = db.get().clientStorage.size() + 1;
 
-    createNewClientDot(newClientId, clientInfo.client);
+    createNewClientDot(newClientId, clientToSave);
 
-    createNewAddressDot(db.get().addressStorage.size() + 1, newClientId, clientInfo.factAddress);
-    createNewAddressDot(db.get().addressStorage.size() + 1, newClientId, clientInfo.regAddress);
+    createNewAddressDot(db.get().addressStorage.size() + 1, newClientId, clientToSave.factAddress);
+    createNewAddressDot(db.get().addressStorage.size() + 1, newClientId, clientToSave.regAddress);
 
     createDefaultAccountDot(newClientId);
 
-    for (Phone phone : clientInfo.phones)
+    for (Phone phone : clientToSave.phones)
       createNewPhoneDot(phone.type, phone.number, newClientId);
 
     return accountRegister.get().getAccountInfo(newClientId);
   }
 
   @Override
-  public AccountInfo editClient(ClientInfo clientInfo) {
+  public ClientAccountInfo editClient(ClientToSave clientToSave) {
 
-    ClientDot clientDot = db.get().clientStorage.get(clientInfo.client.id);
+    ClientDot clientDot = db.get().clientStorage.get(clientToSave.id);
     if (clientDot == null) {
-      throw new NullPointerException("no such client, id:" + clientInfo.client.id);
+      throw new NullPointerException("no such client, id:" + clientToSave.id);
     }
 
-    updateClient(clientDot, clientInfo.client);
+    updateClient(clientDot, clientToSave);
 
-    updateAddress(AddressType.FACT, clientDot.id, clientInfo.factAddress);
-    updateAddress(AddressType.REG, clientDot.id, clientInfo.regAddress);
+    updateAddress(AddressType.FACT, clientDot.id, clientToSave.factAddress);
+    updateAddress(AddressType.REG, clientDot.id, clientToSave.regAddress);
 
-    updatePhones(clientDot.id, clientInfo.phones);
+    updatePhones(clientDot.id, clientToSave.phones);
 
     return accountRegister.get().getAccountInfo(clientDot.id);
   }
 
   @Override
-  public AccountInfoPage deleteClient(int clientId, TableRequestDetails requestDetails) {
-    Client client = db.get().clientStorage.get(clientId).toClient();
+  public ClientAccountInfoPage deleteClient(int clientId, TableRequestDetails requestDetails) {
+    ClientDot client = db.get().clientStorage.get(clientId);
 
     if (client == null) {
       throw new NullPointerException("client does not exist id:" + clientId);
@@ -116,18 +129,18 @@ public class ClientRegisterStand implements ClientRegister {
     return result;
   }
 
-  private void createNewClientDot(int clientId, Client client) {
-    CharmDot charmDot = db.get().charmStorage.get(client.charmId);
+  private void createNewClientDot(int clientId, ClientToSave clientToSave) {
+    CharmDot charmDot = db.get().charmStorage.get(clientToSave.charmId);
     if(charmDot == null) throw new InvalidCharmError(404, "Invalid charm, please, choose another one");
 
-    ClientDot newClientDot = new ClientDot(clientId, client.name,
-      client.surname, client.patronymic, client.gender, client.birthDate, client.charmId);
+    ClientDot newClientDot = new ClientDot(clientId, clientToSave.name,
+      clientToSave.surname, clientToSave.patronymic, clientToSave.gender, clientToSave.birthDate, clientToSave.charmId);
 
     db.get().clientStorage.put(clientId, newClientDot);
   }
 
   private void createNewAddressDot(int id, int clientId, Address address) {
-    if (address.house.isEmpty() && address.street.isEmpty() && address.flat.isEmpty())
+    if (address == null || (address.house.isEmpty() && address.street.isEmpty() && address.flat.isEmpty()))
       return;
     
     db.get().addressStorage.put(id, new AddressDot(
@@ -147,16 +160,16 @@ public class ClientRegisterStand implements ClientRegister {
     db.get().phoneStorage.put(newPhoneId, new PhoneDot(newPhoneId, clientId, number, type));
   }
 
-  private void updateClient(ClientDot clientDot, Client client) {
-    CharmDot charmDot = db.get().charmStorage.get(client.charmId);
+  private void updateClient(ClientDot clientDot, ClientToSave clientToSave) {
+    CharmDot charmDot = db.get().charmStorage.get(clientToSave.charmId);
     if(charmDot == null) throw new InvalidCharmError(404, "Invalid charm, please, choose another one");
 
-    clientDot.name = client.name;
-    clientDot.surname = client.surname;
-    clientDot.patronymic = client.patronymic;
-    clientDot.birthDate = client.birthDate;
-    clientDot.gender = client.gender;
-    clientDot.charmId = client.charmId;
+    clientDot.name = clientToSave.name;
+    clientDot.surname = clientToSave.surname;
+    clientDot.patronymic = clientToSave.patronymic;
+    clientDot.birthDate = clientToSave.birthDate;
+    clientDot.gender = clientToSave.gender;
+    clientDot.charmId = clientToSave.charmId;
   }
 
   private void updateAddress(AddressType type, int clientId, Address address) {
