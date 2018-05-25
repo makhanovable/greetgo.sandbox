@@ -1,0 +1,41 @@
+.modal-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-datepicker {
+    margin-top: 20px;
+}
+
+.modal-button {
+    font-weight: bold;
+}
+
+.modal-primary {
+    border: 1px solid #3f51b5;
+}
+
+.modal-actions {
+    align-items: right;
+}
+
+.modal-phone-group {
+    width: 100%;
+}
+
+.modal-alert {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    background-color: #f44336;
+    color: white;
+}
+
+.modal-delete {
+    color: #f44336;
+}
+
+.modal-mobiles {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}

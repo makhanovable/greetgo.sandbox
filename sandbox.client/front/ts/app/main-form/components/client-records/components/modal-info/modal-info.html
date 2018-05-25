@@ -1,0 +1,110 @@
+<div>
+    <!--<h2 mat-dialog-title>Model info</h2>-->
+
+    <mat-dialog-content [formGroup]="form" class="modal-form">
+
+        <mat-form-field>
+            <input matInput placeholder="Name" formControlName="name" required />
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput placeholder="Surname" formControlName="surname" required />
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput placeholder="Patronymic" formControlName="patronymic" required />
+        </mat-form-field>
+
+        <mat-radio-group formControlName="gender">
+            <mat-radio-button value="MALE">Male</mat-radio-button>
+            <mat-radio-button value="FEMALE">Female</mat-radio-button>
+        </mat-radio-group>
+
+        <mat-form-field class="modal-datepicker">
+            <input matInput [matDatepicker]="picker" placeholder="Choose a date" formControlName="birthDate" required />
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field required>
+            <mat-label>Please, choose a charm</mat-label>
+            <mat-select formControlName="charm">
+                <mat-option
+                    *ngFor="let charm of charmsDictionary" [value]="charm.id">{{ charm.name }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <div>
+            <h4>Address of residence</h4>
+            <br />
+
+            <mat-form-field>
+                <input matInput placeholder="Street" formControlName="streetFact" />
+            </mat-form-field>
+
+            <mat-form-field>
+                <input matInput placeholder="House" formControlName="houseFact" />
+            </mat-form-field>
+
+            <mat-form-field>
+                <input matInput placeholder="Flat" formControlName="flatFact" />
+            </mat-form-field>
+        </div>
+
+        <div>
+            <h4>Address of registration</h4>
+            <br />
+
+            <mat-form-field>
+                <input matInput placeholder="Street" formControlName="streetReg" required />
+            </mat-form-field>
+
+            <mat-form-field>
+                <input matInput placeholder="House" formControlName="houseReg" required />
+            </mat-form-field>
+
+            <mat-form-field>
+                <input matInput placeholder="Flat" formControlName="flatReg" />
+            </mat-form-field>
+        </div>
+
+        <h4>Phones</h4>
+
+        <mat-form-field>
+            <mat-label>Home</mat-label>
+            <input matInput formControlName="phoneHome" required />
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>Work</mat-label>
+            <input matInput formControlName="phoneWork" required />
+        </mat-form-field>
+
+        <div formArrayName="mobiles" class="modal-mobiles">
+            <div *ngFor="let item of form.controls.mobiles.controls; let i = index;" [formGroupName]="i">
+                <mat-form-field>
+                    <span matPrefix>+7 &nbsp;</span>
+                    <mat-label>Mobile {{ i + 1 }}</mat-label>
+                    <input type="num" matInput formControlName="number" required placeholder="XXXXXXXXXX" maxlength="10"/>
+                </mat-form-field>
+                <button mat-button class="modal-button modal-primary modal-delete"
+                        *ngIf="form.controls.mobiles.controls.length > 1" (click)="deleteMobile(i)">Remove</button>
+            </div>
+
+            <button mat-button color="primary" class="modal-button modal-primary " (click)="addMobile('')">Add mobile</button>
+        </div>
+
+        <!--<div class="modal-alert" *ngIf="errorMessage">-->
+            <!--<strong>{{errorMessage}}</strong>-->
+        <!--</div>-->
+
+    </mat-dialog-content>
+
+
+    <mat-dialog-actions class="modal-actions">
+        <button mat-button color="primary" class="modal-button modal-primary "
+                (click)="close()">Close</button>
+        <button mat-button color="primary" class="modal-button modal-primary "
+                [disabled]="form.invalid" (click)="save()">Save</button>
+    </mat-dialog-actions>
+</div>

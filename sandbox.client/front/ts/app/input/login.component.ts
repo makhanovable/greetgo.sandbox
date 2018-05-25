@@ -60,6 +60,10 @@ export class LoginComponent {
         this.errorMessage = error;
       }
     });
+
+
+    //TODO delete example
+    // this.testService.setValue("asd");
   }
 
   registrationButtonClicked() {

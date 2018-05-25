@@ -72,7 +72,7 @@ export class HttpService {
     return ob;
   }
 
-  public post(urlSuffix: string, keyValue: { [key: string]: string | number | boolean | null }): Observable<Response> {
+  public post(urlSuffix: string, keyValue: { [key: string]: string | number | boolean | null}): Observable<Response> {
     let data = new URLSearchParams();
     for (let key in keyValue) {
       let value = keyValue[key];

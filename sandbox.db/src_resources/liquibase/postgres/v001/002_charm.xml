@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet author="nkabylbai" id="create-table-Charms">
+        <sql endDelimiter=";;"><![CDATA[
+      create table Charms (
+        charmId serial primary key,
+        name varchar(50) not null,
+        description text,
+        energy float(4)
+      )
+    ]]></sql>
+    </changeSet>
+
+</databaseChangeLog>

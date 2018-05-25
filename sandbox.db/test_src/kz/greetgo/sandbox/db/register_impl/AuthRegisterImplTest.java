@@ -7,9 +7,9 @@ import kz.greetgo.sandbox.controller.errors.NoPassword;
 import kz.greetgo.sandbox.controller.errors.NotFound;
 import kz.greetgo.sandbox.controller.model.AuthInfo;
 import kz.greetgo.sandbox.controller.model.UserInfo;
-import kz.greetgo.sandbox.controller.register.AuthRegister;
-import kz.greetgo.sandbox.controller.register.model.SessionInfo;
-import kz.greetgo.sandbox.controller.register.model.UserParamName;
+import kz.greetgo.sandbox.controller.register.auth.AuthRegister;
+import kz.greetgo.sandbox.controller.register.auth.model.SessionInfo;
+import kz.greetgo.sandbox.controller.register.auth.model.UserParamName;
 import kz.greetgo.sandbox.controller.security.SecurityError;
 import kz.greetgo.sandbox.db.errors.RedPoliceResponse;
 import kz.greetgo.sandbox.db.in_service.model.CheckPoliceResponse;
@@ -55,6 +55,11 @@ public class AuthRegisterImplTest extends ParentTestNg {
   public void saveParam_notNull_insert(UserParamName paramName) throws Exception {
     String personId = RND.str(10);
     String expectedValue = RND.str(10);
+
+    //Clear
+    //add test data
+    //register call
+    //assert
 
     //
     //

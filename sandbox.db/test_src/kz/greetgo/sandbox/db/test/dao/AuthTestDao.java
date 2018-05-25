@@ -1,6 +1,6 @@
 package kz.greetgo.sandbox.db.test.dao;
 
-import kz.greetgo.sandbox.controller.register.model.UserParamName;
+import kz.greetgo.sandbox.controller.register.auth.model.UserParamName;
 import kz.greetgo.sandbox.db.stand.model.PersonDot;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
