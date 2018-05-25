@@ -3,9 +3,4 @@ export class Phone {
   public clientId : number/*int*/;
   public number : string;
   public type : string;
-
-  constructor(clientId: number, number: string, type: string) {
-    this.number = number;
-    this.type = type;
-  }
 }

@@ -25,7 +25,14 @@ public class ClientRegisterStand implements ClientRegister {
   public ClientInfo getClientInfo(int clientId) {
     ClientInfo clientInfo = new ClientInfo();
 
-    clientInfo.client = db.get().clientStorage.get(clientId).toClient();
+    ClientDot clientDot = db.get().clientStorage.get(clientId);
+    clientInfo.id = clientDot.id;
+    clientInfo.name = clientDot.name;
+    clientInfo.surname = clientDot.surname;
+    clientInfo.patronymic = clientDot.patronymic;
+    clientInfo.gender = clientDot.gender;
+    clientInfo.birthDate = clientDot.birthDate;
+    clientInfo.charmId= clientDot.charmId;
 
     AddressDot factAddDot = getAddressDot(clientId, AddressType.FACT);
     if (factAddDot != null) clientInfo.factAddress = factAddDot.toAddress();
@@ -43,7 +50,7 @@ public class ClientRegisterStand implements ClientRegister {
 
     int newClientId = db.get().clientStorage.size() + 1;
 
-    createNewClientDot(newClientId, clientInfo.client);
+    createNewClientDot(newClientId, clientInfo);
 
     createNewAddressDot(db.get().addressStorage.size() + 1, newClientId, clientInfo.factAddress);
     createNewAddressDot(db.get().addressStorage.size() + 1, newClientId, clientInfo.regAddress);
@@ -59,12 +66,12 @@ public class ClientRegisterStand implements ClientRegister {
   @Override
   public AccountInfo editClient(ClientInfo clientInfo) {
 
-    ClientDot clientDot = db.get().clientStorage.get(clientInfo.client.id);
+    ClientDot clientDot = db.get().clientStorage.get(clientInfo.id);
     if (clientDot == null) {
-      throw new NullPointerException("no such client, id:" + clientInfo.client.id);
+      throw new NullPointerException("no such client, id:" + clientInfo.id);
     }
 
-    updateClient(clientDot, clientInfo.client);
+    updateClient(clientDot, clientInfo);
 
     updateAddress(AddressType.FACT, clientDot.id, clientInfo.factAddress);
     updateAddress(AddressType.REG, clientDot.id, clientInfo.regAddress);
@@ -76,7 +83,7 @@ public class ClientRegisterStand implements ClientRegister {
 
   @Override
   public AccountInfoPage deleteClient(int clientId, TableRequestDetails requestDetails) {
-    Client client = db.get().clientStorage.get(clientId).toClient();
+    ClientDot client = db.get().clientStorage.get(clientId);
 
     if (client == null) {
       throw new NullPointerException("client does not exist id:" + clientId);
@@ -116,18 +123,18 @@ public class ClientRegisterStand implements ClientRegister {
     return result;
   }
 
-  private void createNewClientDot(int clientId, Client client) {
-    CharmDot charmDot = db.get().charmStorage.get(client.charmId);
+  private void createNewClientDot(int clientId, ClientInfo clientInfo) {
+    CharmDot charmDot = db.get().charmStorage.get(clientInfo.charmId);
     if(charmDot == null) throw new InvalidCharmError(404, "Invalid charm, please, choose another one");
 
-    ClientDot newClientDot = new ClientDot(clientId, client.name,
-      client.surname, client.patronymic, client.gender, client.birthDate, client.charmId);
+    ClientDot newClientDot = new ClientDot(clientId, clientInfo.name,
+      clientInfo.surname, clientInfo.patronymic, clientInfo.gender, clientInfo.birthDate, clientInfo.charmId);
 
     db.get().clientStorage.put(clientId, newClientDot);
   }
 
   private void createNewAddressDot(int id, int clientId, Address address) {
-    if (address.house.isEmpty() && address.street.isEmpty() && address.flat.isEmpty())
+    if (address == null || (address.house.isEmpty() && address.street.isEmpty() && address.flat.isEmpty()))
       return;
     
     db.get().addressStorage.put(id, new AddressDot(
@@ -147,16 +154,16 @@ public class ClientRegisterStand implements ClientRegister {
     db.get().phoneStorage.put(newPhoneId, new PhoneDot(newPhoneId, clientId, number, type));
   }
 
-  private void updateClient(ClientDot clientDot, Client client) {
-    CharmDot charmDot = db.get().charmStorage.get(client.charmId);
+  private void updateClient(ClientDot clientDot, ClientInfo clientInfo) {
+    CharmDot charmDot = db.get().charmStorage.get(clientInfo.charmId);
     if(charmDot == null) throw new InvalidCharmError(404, "Invalid charm, please, choose another one");
 
-    clientDot.name = client.name;
-    clientDot.surname = client.surname;
-    clientDot.patronymic = client.patronymic;
-    clientDot.birthDate = client.birthDate;
-    clientDot.gender = client.gender;
-    clientDot.charmId = client.charmId;
+    clientDot.name = clientInfo.name;
+    clientDot.surname = clientInfo.surname;
+    clientDot.patronymic = clientInfo.patronymic;
+    clientDot.birthDate = clientInfo.birthDate;
+    clientDot.gender = clientInfo.gender;
+    clientDot.charmId = clientInfo.charmId;
   }
 
   private void updateAddress(AddressType type, int clientId, Address address) {
