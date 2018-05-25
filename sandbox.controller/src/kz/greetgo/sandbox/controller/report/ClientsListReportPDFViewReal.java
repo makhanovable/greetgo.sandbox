@@ -118,7 +118,7 @@ public class ClientsListReportPDFViewReal implements ClientsListReportView{
     }
 
     public static void main(String args[]) throws Exception {
-        OutputStream outf = new FileOutputStream(new File("/Users/sanzharburumbay/Downloads/test.pdf"));
+        OutputStream outf = new FileOutputStream(new File("build/out_files/test.pdf"));
 
         ClientsListReportPDFViewReal reportView = new ClientsListReportPDFViewReal(outf);
 
