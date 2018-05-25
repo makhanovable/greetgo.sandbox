@@ -78,6 +78,8 @@ public class ClientsListReportViewReal implements ClientsListReportView{
 
     public static void main(String args[]) throws Exception {
         String home = System.getProperty("user.home");
+        
+        //TODO: проставь адрес относительный. Пусть файл лежит в самом проекте
         File file = new File(home+"/Downloads/report.xlsx");
         OutputStream outf = new FileOutputStream(file);
 
