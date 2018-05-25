@@ -74,6 +74,8 @@ public class ClientsListReportPDFViewReal implements ClientsListReportView{
     }
 
     @Override
+    // TODO: есди записей будет очень много, то твая реализация сломается
+    // посмотри как itext решает проблему с большими данными
     public void append(ClientListRow clientListRow) {
         float[] columnWidths = {2,10,10,10,10,10,10};
         table = new PdfPTable(columnWidths);
