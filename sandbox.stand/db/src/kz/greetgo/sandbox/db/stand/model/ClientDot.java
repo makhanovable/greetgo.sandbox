@@ -8,13 +8,13 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class ClientDot {
-    public String id;
+    public int id;
     public String surname;
     public String name;
     public String patronymic;
     public String gender;
     public Date  birth_date;
-    public String charmID;
+    public int charm_id;
 
     public ClientDetails toClientDetails() {
         ClientDetails clientDetails = new ClientDetails();
@@ -26,7 +26,7 @@ public class ClientDot {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         clientDetails.birth_date = df.format(this.birth_date);
         clientDetails.gender = this.gender;
-        clientDetails.charmID = this.charmID;
+        clientDetails.charm_id = this.charm_id;
 
         return clientDetails;
     }

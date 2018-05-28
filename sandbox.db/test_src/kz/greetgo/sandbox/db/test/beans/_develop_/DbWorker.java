@@ -124,7 +124,7 @@ public class DbWorker {
   }
 
   public static Connection getPostgresAdminConnection() throws Exception {
-    Class.forName("org.postgresql.Driver");
+
     return DriverManager.getConnection(
       SysParams.pgAdminUrl(),
       SysParams.pgAdminUserid(),

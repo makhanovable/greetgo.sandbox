@@ -3,8 +3,8 @@ package kz.greetgo.sandbox.db.stand.model;
 import kz.greetgo.sandbox.controller.model.ClientDetails;
 
 public class AdressDot {
-    public String id;
-    public String clientID;
+    public int id;
+    public int clientID;
     public String adressType;
     public String street;
     public String house;

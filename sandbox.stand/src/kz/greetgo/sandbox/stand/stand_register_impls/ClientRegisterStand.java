@@ -6,6 +6,7 @@ import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.stand.beans.StandDb;
 import kz.greetgo.sandbox.db.stand.model.*;
+import kz.greetgo.util.RND;
 
 import java.util.*;
 
@@ -17,7 +18,7 @@ public class ClientRegisterStand  implements ClientRegister{
 
     @Override
     public ClientRecord addNewClient(ClientToSave clientInfo) {
-        CharmDot charmID = db.get().charmStorage.get(clientInfo.charmID);
+        CharmDot charmID = db.get().charmStorage.get(clientInfo.charm_id);
         if (charmID == null) {
             throw new RuntimeException("CharmExistenceError");
         }
@@ -31,7 +32,7 @@ public class ClientRegisterStand  implements ClientRegister{
     public ClientRecord updateClient(ClientToSave clientInfo) {
 //        db.get().charmStorage.values().remove(db.get().charmStorage.get(clientInfo.charmID));
 
-        CharmDot charmID = db.get().charmStorage.get(clientInfo.charmID);
+        CharmDot charmID = db.get().charmStorage.get(clientInfo.charm_id);
         if (charmID == null) {
             throw new RuntimeException("CharmExistenceError");
         }
@@ -59,7 +60,7 @@ public class ClientRegisterStand  implements ClientRegister{
         }
 
         for (PhoneDot phoneDot : db.get().phoneStorage.values()) {
-            if (phoneDot.clientID.equals(clientID)) {
+            if (phoneDot.clientID == Integer.parseInt(clientID)) {
                 phoneDot.toClientDetails(clientDetails);
             }
         }
@@ -68,7 +69,12 @@ public class ClientRegisterStand  implements ClientRegister{
     }
 
     @Override
-    public ClientToReturn getFilteredClientsInfo(String pageID, String filterStr, String sortBy, String sortOrder) {
+    public ClientToReturn getFilteredClientsInfo(ClientsListParams clientsListParams) {
+        String filterStr = clientsListParams.filterSortParams.filterStr;
+        String sortBy = clientsListParams.filterSortParams.sortBy;
+        String sortOrder = clientsListParams.filterSortParams.sortOrder;
+        int pageID = clientsListParams.pageID;
+
         ClientToReturn clientToReturn = new ClientToReturn();
 
         List<ClientDot> clients = new ArrayList<ClientDot>();
@@ -76,9 +82,9 @@ public class ClientRegisterStand  implements ClientRegister{
         if (filterStr != null) {
             for (ClientDot client : db.get().clientStorage.values()) {
                 if (client.name.toLowerCase().contains(filterStr.toLowerCase()) ||
-                    client.surname.toLowerCase().contains(filterStr.toLowerCase()) ||
-                    client.patronymic.toLowerCase().contains(filterStr.toLowerCase())) {
-                        clients.add(client);
+                        client.surname.toLowerCase().contains(filterStr.toLowerCase()) ||
+                        client.patronymic.toLowerCase().contains(filterStr.toLowerCase())) {
+                    clients.add(client);
                 }
             }
         } else {
@@ -87,13 +93,14 @@ public class ClientRegisterStand  implements ClientRegister{
 
         List<ClientRecord> clientRecords = new ArrayList<>();
         for (ClientDot client : clients) {
-            clientRecords.add(getClientRecord(client.id));
+//            System.out.println(client.id);
+            clientRecords.add(getClientRecord(String.valueOf(client.id)));
         }
         clientRecords = sort(clientRecords, sortBy, sortOrder);
 
         clientToReturn.pageCount = getPageNum(clients.size());
 
-        int l = (Integer.parseInt(pageID) - 1) * pageMax;
+        int l = (pageID - 1) * pageMax;
         int r = l + pageMax;
         int cnt = 0;
         for (ClientRecord client : clientRecords) {
@@ -117,6 +124,21 @@ public class ClientRegisterStand  implements ClientRegister{
         return charms;
     }
 
+    @Override
+    public void genClientListReport(ClientsListReportParams clientsListReportParams) {
+
+    }
+
+    @Override
+    public int saveReportParams(ReportParamsToSave reportParamsToSave) {
+        return 123;
+    }
+
+    @Override
+    public ReportParamsToSave popReportParams(int report_id) {
+        return null;
+    }
+
     private int getPageNum(int cnt) {
         int pageNum;
         if (cnt % pageMax == 0) {
@@ -128,22 +150,22 @@ public class ClientRegisterStand  implements ClientRegister{
         return pageNum;
     }
 
-    private float getTotalCash(String clientId) {
+    private float getTotalCash(int clientId) {
         float totalCash = 0;
 
         for (AccountDot accountDot : db.get().accountStorage.values()) {
-            if (Objects.equals(accountDot.clientID,clientId)) {
+            if (accountDot.clientID == clientId) {
                 totalCash += accountDot.money;
             }
         }
 
         return totalCash;
     }
-    private float getMinCash(String clientId) {
+    private float getMinCash(int clientId) {
         float minCash = -1;
 
         for (AccountDot acc : db.get().accountStorage.values()) {
-            if (Objects.equals(acc.clientID,clientId)) {
+            if (acc.clientID == clientId) {
                 if (minCash == -1) minCash = acc.money; else
                 if (acc.money < minCash) minCash = acc.money;
             }
@@ -152,11 +174,11 @@ public class ClientRegisterStand  implements ClientRegister{
         if (minCash == -1) minCash = 0;
         return minCash;
     }
-    private float getMaxCash(String clientId) {
+    private float getMaxCash(int clientId) {
         float maxCash = 0;
 
         for (AccountDot acc : db.get().accountStorage.values()) {
-            if (Objects.equals(acc.clientID,clientId)) {
+            if (acc.clientID == clientId) {
                 if (acc.money > maxCash) maxCash = acc.money;
             }
         }
@@ -164,9 +186,9 @@ public class ClientRegisterStand  implements ClientRegister{
         return maxCash;
     }
 
-    private String getCharm(String charmID) {
+    private String getCharm(int charmID) {
         for (CharmDot charmDot : db.get().charmStorage.values()) {
-            if (Objects.equals(charmDot.id, charmID)) {
+            if (charmDot.id == charmID) {
                 return charmDot.name;
             }
         }
@@ -175,7 +197,7 @@ public class ClientRegisterStand  implements ClientRegister{
     }
 
     public ClientRecord getClientRecord(String clientID) {
-        ClientDot client = db.get().clientStorage.get(clientID);
+        ClientDot client = db.get().clientStorage.get(Integer.parseInt(clientID));
 
         ClientRecord clientInfo = new ClientRecord();
         clientInfo.id = client.id;
@@ -184,7 +206,7 @@ public class ClientRegisterStand  implements ClientRegister{
         clientInfo.totalCash = getTotalCash(client.id);
         clientInfo.maxCash = getMaxCash(client.id);
         clientInfo.minCash = getMinCash(client.id);
-        clientInfo.charm = getCharm(client.charmID);
+        clientInfo.charm = getCharm(client.charm_id);
 
         return clientInfo;
     }

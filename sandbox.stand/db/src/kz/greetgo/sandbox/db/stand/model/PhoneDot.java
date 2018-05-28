@@ -4,7 +4,7 @@ import kz.greetgo.sandbox.controller.model.ClientDetails;
 import kz.greetgo.sandbox.controller.model.PhoneType;
 
 public class PhoneDot {
-    public String clientID;
+    public int clientID;
     public String number;
     public String phoneType;
 

@@ -67,6 +67,11 @@
                 </ul>
             </div>
         </div>
+        <div class="reportBar">
+            <p>Скачать:</p>
+            <button (click)="genPDFReport()">PDF</button>
+            <button (click)="genXLSXReport()">EXCEL</button>
+        </div>
     </div>
     <div class="modalForm" *ngIf="modalViewEnabled">
         <div class="modalBackdrop" (click)="closeModal()"></div>

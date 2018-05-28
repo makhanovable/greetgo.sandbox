@@ -5,7 +5,7 @@ export class ClientToSave {
     public patronymic : string;
     public gender : string;
     public birth_date : string;
-    public charmID : string;
+    public charm_id : string;
     public fAdressStreet : string;
     public fAdressHouse : string;
     public fAdressFlat : string;
@@ -26,7 +26,7 @@ export class ClientToSave {
         ret.patronymic = a.patronymic ;
         ret.gender = a.gender ;
         ret.birth_date = a.birth_date ;
-        ret.charmID = a.charmID;
+        ret.charm_id = a.charm_id;
         ret.fAdressStreet = a.fAdressStreet ;
         ret.fAdressHouse = a.fAdressHouse ;
         ret.fAdressFlat = a.fAdressFlat ;
@@ -47,7 +47,7 @@ export class ClientToSave {
         this.patronymic = "";
         this.gender = "";
         this.birth_date = "";
-        this.charmID = "";
+        this.charm_id = "";
         this.fAdressStreet = "";
         this.fAdressHouse = "";
         this.fAdressFlat = "";

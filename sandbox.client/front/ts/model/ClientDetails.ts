@@ -5,7 +5,7 @@ export class ClientDetails {
     public patronymic : string;
     public gender : string;
     public birth_date : string;
-    public charmID : string;
+    public charm_id : string;
     public charm: string;
     public fAdressStreet : string;
     public fAdressHouse : string;
@@ -27,7 +27,7 @@ export class ClientDetails {
         ret.patronymic = a.patronymic ;
         ret.gender = a.gender ;
         ret.birth_date = a.birth_date ;
-        ret.charmID = a.charmID ;
+        ret.charm_id = a.charm_id ;
         ret.fAdressStreet = a.fAdressStreet ;
         ret.fAdressHouse = a.fAdressHouse ;
         ret.fAdressFlat = a.fAdressFlat ;
@@ -47,7 +47,7 @@ export class ClientDetails {
         this.patronymic = "";
         this.gender = "";
         this.birth_date = "";
-        this.charmID = "";
+        this.charm_id = "";
         this.charm = "";
         this.fAdressStreet = "";
         this.fAdressHouse = "";

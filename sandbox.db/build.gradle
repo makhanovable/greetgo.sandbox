@@ -5,10 +5,12 @@ dependencies {
   compile "kz.greetgo:greetgo.conf:$greetgoConfVersion"
   compile "kz.greetgo.mvc:greetgo.mvc.security:$greetgoMvcVersion"
 
+
   compile group: 'org.postgresql', name: 'postgresql', version: '9.4-1202-jdbc42'
   compile group: 'org.mybatis', name: 'mybatis', version: '3.4.2'
   compile group: 'org.liquibase', name: 'liquibase-core', version: '3.5.1'
   compile group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.1.1'
+  compile 'org.json:json:20171018'
 
   testCompile "kz.greetgo.depinject:greetgo.depinject.testng:$depinjectVersion"
   testCompile project(':sandbox.stand:db').sourceSets.main.output

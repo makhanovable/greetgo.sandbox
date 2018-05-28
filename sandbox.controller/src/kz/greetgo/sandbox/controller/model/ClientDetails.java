@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClientDetails {
-  public String id;
+  public int id;
   public String name;
   public String surname;
   public String patronymic;
   public String gender;
   public String birth_date;
-  public String charmID;
+  public int charm_id;
   public String charm;
   public String fAdressStreet;
   public String fAdressHouse;

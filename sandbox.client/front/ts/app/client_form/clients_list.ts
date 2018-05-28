@@ -155,6 +155,7 @@ export class MainFormComponent {
           }
           this.closeModal();
       }, error => {
+          console.log(error);
           if (error._body.includes("CharmExistenceError")) {
               this.editForm.loadCharms();
               alert("Выбранного вами характера больше не существует. Выберите другой")
@@ -190,4 +191,34 @@ export class MainFormComponent {
       this.loadUserInfoButtonClicked();
     }
 
+    genPDFReport() {
+        this.httpService.post("/client/report", {
+            reportType: "PDF",
+            filterStr: this.filterText,
+            sortBy: this.sortBy,
+            sortOrder: this.sortOrder
+        }).toPromise().then(res => {
+            // console.log(res.json())
+            this.getClientListReport(res.json());
+        }, error => {
+            console.log(error);
+        })
+    }
+    genXLSXReport() {
+        this.httpService.post("/client/report", {
+            reportType: "XLSX",
+            filterStr: this.filterText,
+            sortBy: this.sortBy,
+            sortOrder: this.sortOrder
+        }).toPromise().then(res => {
+            // console.log(res.json())
+            this.getClientListReport(res.json());
+        }, error => {
+            console.log(error);
+        })
+    }
+    getClientListReport(reportId: number) {
+        let url = "http://localhost:8080/sandbox/api/client/report/" + reportId;
+        window.open(url, "_self");
+    }
 }
