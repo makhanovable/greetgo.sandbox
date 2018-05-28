@@ -30,37 +30,39 @@ public class ClientController implements Controller {
     public BeanGetter<AuthRegister> authRegister;
 
     @ToJson
-    @Mapping("/clientsInfo/{pageID}/{filterStr}/{sortBy}/{sortOrder}")
-    public ClientToReturn getFilteredClients(@ParPath("pageID") String pageID, @ParPath("filterStr") String filterStr,
-            @ParPath("sortBy") String sortBy, @ParPath("sortOrder") String sortOrder) {
+    @Mapping("/recordList")
+    public ClientToReturn getFilteredClientsInfo(@ParamsTo ClientsListParams clientsListParams,
+                                                 @ParamsTo FilterSortParams filterSortParams) {
 
-        FilterSortParams filterSortParams = new FilterSortParams(filterStr, sortBy, sortOrder);
-        ClientsListParams clientsListParams = new ClientsListParams(Integer.parseInt(pageID), filterSortParams);
+        if (filterSortParams.filterStr == null) { filterSortParams.filterStr = ""; }
+        if (filterSortParams.sortOrder == null) { filterSortParams.sortOrder = ""; }
+        if (filterSortParams.sortBy == null) { filterSortParams.sortBy = ""; }
+        clientsListParams.filterSortParams = filterSortParams;
 
         return clientRegister.get().getFilteredClientsInfo(clientsListParams);
     }
 
     @ToJson
-    @Mapping("/addNewClient")
+    @Mapping("/addNew")
     public ClientRecord addNewClient(@Par("clientToSave") @Json ClientToSave clientToSave) {
         return clientRegister.get().addNewClient(clientToSave);
     }
 
     @ToJson
-    @Mapping("/updateClient")
+    @Mapping("/update")
     public ClientRecord updateClient(@Par("clientToSave") @Json ClientToSave clientToSave) {
         return clientRegister.get().updateClient(clientToSave);
     }
 
     @AsIs
     @NoSecurity
-    @Mapping("/removeClient")
+    @Mapping("/remove")
     public String removeClient(@Par("clientID") String clientID) {
         return clientRegister.get().removeClient(clientID);
     }
 
     @ToJson
-    @Mapping("/clientDetails/{clientID}")
+    @Mapping("/details/{clientID}")
     public ClientDetails getEditableClientInfo(@ParPath("clientID") String clientID) {
         return clientRegister.get().getEditableClientInfo(clientID);
     }
@@ -73,29 +75,26 @@ public class ClientController implements Controller {
 
     @ToJson
     @Mapping("/report")
-    public int createReport(@Par("reportType") String reportType, @Par("filterStr") String filterStr,
-                             @ParSession("personId") String personId, @Par("sortBy") String sortBy,
-                             @Par("sortOrder") String sortOrder) {
-
-        System.out.print(reportType);
+    public int saveReportParams(@ParamsTo ReportParamsToSave reportParamsToSave,
+                                @ParSession("personId") String personId) {
 
         UserInfo user = authRegister.get().getUserInfo(personId);
         String username = user.surname + " " + user.name + " " + user.patronymic;
 
         int report_id = RND.plusInt(100) + 1;
 
-        if (filterStr == null) {
-            filterStr = "";
+        if (reportParamsToSave.filterStr == null) {
+            reportParamsToSave.filterStr = "";
         }
-        if (sortBy == null) {
-            sortBy = "";
+        if (reportParamsToSave.sortBy == null) {
+            reportParamsToSave.sortBy = "";
         }
-        if (sortOrder== null) {
-            sortOrder = "";
+        if (reportParamsToSave.sortOrder== null) {
+            reportParamsToSave.sortOrder = "";
         }
 
-        ReportParamsToSave reportParamsToSave = new ReportParamsToSave(report_id, username, reportType,
-                                                                        filterStr, sortBy, sortOrder);
+        reportParamsToSave.report_id = report_id;
+        reportParamsToSave.username = username;
 
         return clientRegister.get().saveReportParams(reportParamsToSave);
     }
@@ -120,7 +119,10 @@ public class ClientController implements Controller {
             OutputStream out = tunnel.getResponseOutputStream();
 
             ClientsListReportPDFViewReal view = new ClientsListReportPDFViewReal(out);
-            FilterSortParams filterSortParams = new FilterSortParams(reportParams.filterStr, reportParams.sortBy, reportParams.sortOrder);
+            FilterSortParams filterSortParams = new FilterSortParams();
+            filterSortParams.filterStr = reportParams.filterStr;
+            filterSortParams.sortBy = reportParams.sortBy;
+            filterSortParams.sortOrder = reportParams.sortOrder;
             ClientsListReportParams clientsListReportParams = new ClientsListReportParams(reportParams.username, view, filterSortParams);
 
             clientRegister.get().genClientListReport(clientsListReportParams);
@@ -135,7 +137,10 @@ public class ClientController implements Controller {
             OutputStream out = tunnel.getResponseOutputStream();
 
             ClientsListReportViewReal view = new ClientsListReportViewReal(out);
-            FilterSortParams filterSortParams = new FilterSortParams(reportParams.filterStr, reportParams.sortBy, reportParams.sortOrder);
+            FilterSortParams filterSortParams = new FilterSortParams();
+            filterSortParams.filterStr = reportParams.filterStr;
+            filterSortParams.sortBy = reportParams.sortBy;
+            filterSortParams.sortOrder = reportParams.sortOrder;
             ClientsListReportParams clientsListReportParams = new ClientsListReportParams(reportParams.username, view, filterSortParams);
 
             clientRegister.get().genClientListReport(clientsListReportParams);

@@ -34,7 +34,7 @@ export class ModalViewComponent {
         this.isRemovable = [true];
 
         if (this.actionType == "edit") {
-            let url = "/client/clientDetails/" + this.selectedID;
+            let url = "/client/details/" + this.selectedID;
             this.httpService.get(url).toPromise().then(result => {
                 this.clientDetails = ClientDetails.from(result.json() as ClientDetails);
                 if (this.clientDetails.homePhone.length == 0) {

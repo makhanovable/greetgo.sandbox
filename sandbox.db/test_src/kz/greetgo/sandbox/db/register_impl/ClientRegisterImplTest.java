@@ -335,8 +335,13 @@ public class ClientRegisterImplTest extends ParentTestNg {
             }
         });
 
-        FilterSortParams filterSortParams = new FilterSortParams("", "age", "up");
-        ClientsListParams clientsListParams = new ClientsListParams(5, filterSortParams);
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "age";
+        filterSortParams.sortOrder = "up";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 5;
+        clientsListParams.filterSortParams = filterSortParams;
 
         //
         //
@@ -391,8 +396,13 @@ public class ClientRegisterImplTest extends ParentTestNg {
             }
         });
 
-        FilterSortParams filterSortParams = new FilterSortParams("", "age", "down");
-        ClientsListParams clientsListParams = new ClientsListParams(5, filterSortParams);
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "age";
+        filterSortParams.sortOrder = "down";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 5;
+        clientsListParams.filterSortParams = filterSortParams;
 
         //
         //
@@ -445,8 +455,13 @@ public class ClientRegisterImplTest extends ParentTestNg {
             }
         });
 
-        FilterSortParams filterSortParams = new FilterSortParams("", "age", "up");
-        ClientsListParams clientsListParams = new ClientsListParams(10, filterSortParams);
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "age";
+        filterSortParams.sortOrder = "up";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 10;
+        clientsListParams.filterSortParams = filterSortParams;
 
         //
         //
@@ -499,8 +514,13 @@ public class ClientRegisterImplTest extends ParentTestNg {
             }
         });
 
-        FilterSortParams filterSortParams = new FilterSortParams("", "age", "down");
-        ClientsListParams clientsListParams = new ClientsListParams(10, filterSortParams);
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "age";
+        filterSortParams.sortOrder = "down";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 10;
+        clientsListParams.filterSortParams = filterSortParams;
 
         //
         //
@@ -533,8 +553,13 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
-        FilterSortParams filterSortParams = new FilterSortParams("Ал", "", "");
-        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "Ал";
+        filterSortParams.sortBy = "";
+        filterSortParams.sortOrder = "";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 1;
+        clientsListParams.filterSortParams = filterSortParams;
         ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
@@ -571,8 +596,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
-        FilterSortParams filterSortParams = new FilterSortParams("", "fio", "up");
-        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "fio";
+        filterSortParams.sortOrder = "up";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 1;
+        clientsListParams.filterSortParams = filterSortParams;
         ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
@@ -619,8 +650,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
-        FilterSortParams filterSortParams = new FilterSortParams("", "fio", "down");
-        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "fio";
+        filterSortParams.sortOrder = "down";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 1;
+        clientsListParams.filterSortParams = filterSortParams;
         ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
@@ -667,8 +704,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
-        FilterSortParams filterSortParams = new FilterSortParams("", "age", "up");
-        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "age";
+        filterSortParams.sortOrder = "up";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 1;
+        clientsListParams.filterSortParams = filterSortParams;
         ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
@@ -709,8 +752,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
-        FilterSortParams filterSortParams = new FilterSortParams("", "age", "down");
-        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "age";
+        filterSortParams.sortOrder = "down";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 1;
+        clientsListParams.filterSortParams = filterSortParams;
         ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
@@ -751,8 +800,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
-        FilterSortParams filterSortParams = new FilterSortParams("", "totalCash", "up");
-        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "totalCash";
+        filterSortParams.sortOrder = "up";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 1;
+        clientsListParams.filterSortParams = filterSortParams;
         ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
@@ -793,8 +848,14 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
-        FilterSortParams filterSortParams = new FilterSortParams("", "totalCash", "down");
-        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "totalCash";
+        filterSortParams.sortOrder = "down";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 1;
+        clientsListParams.filterSortParams = filterSortParams;
         ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
@@ -853,7 +914,13 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     @Test
     public void testGetReportParams() {
-        ReportParamsToSave reportParamsToSave = new ReportParamsToSave(1, "PDF", "Sanzhar", "","","");
+        ReportParamsToSave reportParamsToSave = new ReportParamsToSave();
+        reportParamsToSave.report_id = 1;
+        reportParamsToSave.report_type  = "PDF";
+        reportParamsToSave.username = "Sanzhar";
+        reportParamsToSave.filterStr = "";
+        reportParamsToSave.sortBy = "";
+        reportParamsToSave.sortOrder = "";
 
         //
         //
@@ -906,7 +973,12 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
-        FilterSortParams filterSortParams = new FilterSortParams("", "", "");
+
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "";
+        filterSortParams.sortOrder = "";
+
         ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Pushkin", view, filterSortParams);
         //
         //

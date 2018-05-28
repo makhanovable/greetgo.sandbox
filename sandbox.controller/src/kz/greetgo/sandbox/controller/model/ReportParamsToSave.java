@@ -8,16 +8,6 @@ public class ReportParamsToSave {
     public String sortBy;
     public String sortOrder;
 
-    public ReportParamsToSave(int report_id, String username, String report_type, String filterStr, String sortBy,
-                              String sortOrder) {
-        this.report_id = report_id;
-        this.username = username;
-        this.report_type = report_type;
-        this.filterStr = filterStr;
-        this.sortBy = sortBy;
-        this.sortOrder = sortOrder;
-    }
-
     public ReportParamsToSave() {
 
     }
