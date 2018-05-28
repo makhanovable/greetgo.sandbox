@@ -52,8 +52,6 @@ public class ClientRegisterImpl implements ClientRegister {
         try {
             client.birth_date = format.parse(clientInfo.birth_date);
         } catch (Exception e) {
-            //TODO: Молодец. Хоршое решение. Объяснишь, почему так сделал.
-            //TODO: Также, этот участок можно заменить на более компактный. Замени здесь и в других подобных местах.
             if (e instanceof RuntimeException) throw (RuntimeException) e;
             throw new RuntimeException("DateFormatError",e);
         }
@@ -63,7 +61,6 @@ public class ClientRegisterImpl implements ClientRegister {
         addNewPhones(clientInfo);
         addNewAdresses(clientInfo);
 
-        //TODO: Упрости нижние две строчки.
         return getClientRecord(client);
     }
     private void addNewPhones(ClientToSave clientToSave) {
@@ -175,7 +172,6 @@ public class ClientRegisterImpl implements ClientRegister {
     public ClientToReturn getFilteredClientsInfo(ClientsListParams clientsListParams) {
         ClientToReturn clientToReturn = new ClientToReturn();
 
-        //TODO: структура таблицы неверна
         int pageMax = configParamsDao.get().getPageMax();
 
         int pageID = clientsListParams.pageID;
