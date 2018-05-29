@@ -15,15 +15,20 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 public class FromXMLParser extends SaxHandler {
     ClientXMLRecord clientXMLRecord;
+    List<ClientXMLRecord> clientXMLRecords;
+
     Connection connection;
     PreparedStatement clientPS, phonePS;
+
     int clientBatchSize, phoneBatchSize;
     int MAX_BATCH_SIZE;
     int recordsCount;
+
     String id;
 
     public void execute(Connection connection, PreparedStatement clientPS, PreparedStatement phonePS, int batchSize) {
@@ -31,9 +36,10 @@ public class FromXMLParser extends SaxHandler {
         this.clientPS = clientPS;
         this.phonePS = phonePS;
         this.MAX_BATCH_SIZE = batchSize;
+        this.clientXMLRecords = new ArrayList<>();
     }
 
-    public int parseRecordData(String recordData, String recordType) throws SAXException, IOException {
+    public int parseRecordData(String recordData) throws SAXException, IOException {
         if (recordData == null) return 0;
 
         clientXMLRecord = new ClientXMLRecord();
@@ -41,12 +47,7 @@ public class FromXMLParser extends SaxHandler {
         XMLReader reader = XMLReaderFactory.createXMLReader();
         reader.setContentHandler(this);
 
-        if ("string".equals(recordType)) {
-            reader.parse(new InputSource(new StringReader(recordData)));
-        }
-        if ("file".equals(recordType)) {
-            reader.parse(new InputSource(recordData));
-        }
+        reader.parse(new InputSource(recordData));
 
         return recordsCount;
     }
@@ -57,6 +58,7 @@ public class FromXMLParser extends SaxHandler {
     public int getPhoneBatchSize() {
         return phoneBatchSize;
     }
+    public List<ClientXMLRecord> getClientXMLRecords() { return clientXMLRecords; }
 
     @Override
     protected void startingTag(Attributes attributes) throws Exception {
@@ -90,7 +92,7 @@ public class FromXMLParser extends SaxHandler {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                 clientXMLRecord.birthDate = new java.sql.Date(sdf.parse(attributes.getValue("value")).getTime());
             } catch (Exception e) {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
             return;
         }
@@ -127,37 +129,41 @@ public class FromXMLParser extends SaxHandler {
         }
 
         if ("/cia/client".equals(path)) {
-            id = RND.str(90);
+            if (clientPS != null) {
+                id = RND.str(90);
 
-            clientPS.setString(1, clientXMLRecord.id);
-            clientPS.setString(2, clientXMLRecord.surname);
-            clientPS.setString(3, clientXMLRecord.name);
-            clientPS.setString(4, clientXMLRecord.patronymic);
-            clientPS.setString(5, clientXMLRecord.gender);
-            clientPS.setString(6, clientXMLRecord.charm);
-            clientPS.setDate(7,clientXMLRecord.birthDate);
-            clientPS.setString(8, this.id);
-            clientPS.setString(9, clientXMLRecord.rStreet);
-            clientPS.setString(10, clientXMLRecord.rHouse);
-            clientPS.setString(11, clientXMLRecord.rFlat);
-            clientPS.setString(12, clientXMLRecord.fStreet);
-            clientPS.setString(13, clientXMLRecord.fHouse);
-            clientPS.setString(14, clientXMLRecord.fFlat);
+                clientPS.setString(1, clientXMLRecord.id);
+                clientPS.setString(2, clientXMLRecord.surname);
+                clientPS.setString(3, clientXMLRecord.name);
+                clientPS.setString(4, clientXMLRecord.patronymic);
+                clientPS.setString(5, clientXMLRecord.gender);
+                clientPS.setString(6, clientXMLRecord.charm);
+                clientPS.setDate(7,clientXMLRecord.birthDate);
+                clientPS.setString(8, this.id);
+                clientPS.setString(9, clientXMLRecord.rStreet);
+                clientPS.setString(10, clientXMLRecord.rHouse);
+                clientPS.setString(11, clientXMLRecord.rFlat);
+                clientPS.setString(12, clientXMLRecord.fStreet);
+                clientPS.setString(13, clientXMLRecord.fHouse);
+                clientPS.setString(14, clientXMLRecord.fFlat);
 
-            addPhones(clientXMLRecord.homePhones, "HOME");
-            addPhones(clientXMLRecord.mobilePhones, "MOBILE");
-            addPhones(clientXMLRecord.workPhones, "WORK");
+                addPhones(clientXMLRecord.homePhones, "HOME");
+                addPhones(clientXMLRecord.mobilePhones, "MOBILE");
+                addPhones(clientXMLRecord.workPhones, "WORK");
 
-            clientPS.addBatch();
-            clientBatchSize++;
-            recordsCount++;
+                clientPS.addBatch();
+                clientBatchSize++;
 
-            if (clientBatchSize >= MAX_BATCH_SIZE) {
-                clientPS.executeBatch();
-                connection.commit();
-                clientBatchSize = 0;
+                if (clientBatchSize >= MAX_BATCH_SIZE) {
+                    clientPS.executeBatch();
+                    connection.commit();
+                    clientBatchSize = 0;
+                }
+            } else {
+                clientXMLRecords.add(clientXMLRecord);
             }
 
+            recordsCount++;
             clientXMLRecord = new ClientXMLRecord();
 
             return;

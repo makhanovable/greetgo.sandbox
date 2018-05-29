@@ -151,7 +151,7 @@ public class ClientRegisterImpl implements ClientRegister {
     }
 
     @Override
-    public ClientDetails getEditableClientInfo(String clientID) {
+    public ClientDetails getClientDetails(String clientID) {
         Client client = clientDao.get().getClient(Integer.parseInt(clientID));
         ClientDetails clientDetails = client.toClientDetails();
 
@@ -169,7 +169,7 @@ public class ClientRegisterImpl implements ClientRegister {
     }
 
     @Override
-    public ClientToReturn getFilteredClientsInfo(ClientsListParams clientsListParams) {
+    public ClientToReturn getClientsRecordList(ClientsListParams clientsListParams) {
         ClientToReturn clientToReturn = new ClientToReturn();
 
         int pageMax = configParamsDao.get().getPageMax();

@@ -1,6 +1,5 @@
 package kz.greetgo.sandbox.controller.controller;
 
-import com.sun.net.httpserver.HttpContext;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
@@ -9,18 +8,14 @@ import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.AuthRegister;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.report.ClientsListReportPDFViewReal;
-import kz.greetgo.sandbox.controller.report.ClientsListReportView;
 import kz.greetgo.sandbox.controller.report.ClientsListReportViewReal;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
 import kz.greetgo.util.RND;
-import org.omg.PortableServer.Current;
 
 import java.io.*;
 import java.net.URLEncoder;
 import java.util.List;
-
-import static com.sun.prism.impl.PrismSettings.trace;
 
 @Bean
 @Mapping("/client")
@@ -30,39 +25,41 @@ public class ClientController implements Controller {
     public BeanGetter<AuthRegister> authRegister;
 
     @ToJson
-    @Mapping("/clientsInfo/{pageID}/{filterStr}/{sortBy}/{sortOrder}")
-    public ClientToReturn getFilteredClients(@ParPath("pageID") String pageID, @ParPath("filterStr") String filterStr,
-            @ParPath("sortBy") String sortBy, @ParPath("sortOrder") String sortOrder) {
+    @Mapping("/recordList")
+    public ClientToReturn getRecordList(@ParamsTo ClientsListParams clientsListParams,
+                                                 @ParamsTo FilterSortParams filterSortParams) {
 
-        FilterSortParams filterSortParams = new FilterSortParams(filterStr, sortBy, sortOrder);
-        ClientsListParams clientsListParams = new ClientsListParams(Integer.parseInt(pageID), filterSortParams);
+        if (filterSortParams.filterStr == null) { filterSortParams.filterStr = ""; }
+        if (filterSortParams.sortOrder == null) { filterSortParams.sortOrder = ""; }
+        if (filterSortParams.sortBy == null) { filterSortParams.sortBy = ""; }
+        clientsListParams.filterSortParams = filterSortParams;
 
-        return clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        return clientRegister.get().getClientsRecordList(clientsListParams);
     }
 
     @ToJson
-    @Mapping("/addNewClient")
+    @Mapping("/addNew")
     public ClientRecord addNewClient(@Par("clientToSave") @Json ClientToSave clientToSave) {
         return clientRegister.get().addNewClient(clientToSave);
     }
 
     @ToJson
-    @Mapping("/updateClient")
+    @Mapping("/update")
     public ClientRecord updateClient(@Par("clientToSave") @Json ClientToSave clientToSave) {
         return clientRegister.get().updateClient(clientToSave);
     }
 
     @AsIs
     @NoSecurity
-    @Mapping("/removeClient")
+    @Mapping("/remove")
     public String removeClient(@Par("clientID") String clientID) {
         return clientRegister.get().removeClient(clientID);
     }
 
     @ToJson
-    @Mapping("/clientDetails/{clientID}")
-    public ClientDetails getEditableClientInfo(@ParPath("clientID") String clientID) {
-        return clientRegister.get().getEditableClientInfo(clientID);
+    @Mapping("/details/{clientID}")
+    public ClientDetails getDetails(@ParPath("clientID") String clientID) {
+        return clientRegister.get().getClientDetails(clientID);
     }
 
     @ToJson
@@ -72,37 +69,34 @@ public class ClientController implements Controller {
     }
 
     @ToJson
-    @Mapping("/report")
-    public int createReport(@Par("reportType") String reportType, @Par("filterStr") String filterStr,
-                             @ParSession("personId") String personId, @Par("sortBy") String sortBy,
-                             @Par("sortOrder") String sortOrder) {
-
-        System.out.print(reportType);
+    @Mapping("/saveReportParams")
+    public int saveReportParams(@ParamsTo ReportParamsToSave reportParamsToSave,
+                                @ParSession("personId") String personId) {
 
         UserInfo user = authRegister.get().getUserInfo(personId);
         String username = user.surname + " " + user.name + " " + user.patronymic;
 
         int report_id = RND.plusInt(100) + 1;
 
-        if (filterStr == null) {
-            filterStr = "";
+        if (reportParamsToSave.filterStr == null) {
+            reportParamsToSave.filterStr = "";
         }
-        if (sortBy == null) {
-            sortBy = "";
+        if (reportParamsToSave.sortBy == null) {
+            reportParamsToSave.sortBy = "";
         }
-        if (sortOrder== null) {
-            sortOrder = "";
+        if (reportParamsToSave.sortOrder== null) {
+            reportParamsToSave.sortOrder = "";
         }
 
-        ReportParamsToSave reportParamsToSave = new ReportParamsToSave(report_id, username, reportType,
-                                                                        filterStr, sortBy, sortOrder);
+        reportParamsToSave.report_id = report_id;
+        reportParamsToSave.username = username;
 
         return clientRegister.get().saveReportParams(reportParamsToSave);
     }
 
     @AsIs
     @NoSecurity
-    @Mapping("/report/{reportID}")
+    @Mapping("/genReport/{reportID}")
     public void genClientListReport(@ParPath("reportID") int reportID, RequestTunnel tunnel) throws Exception {
 
         ReportParamsToSave reportParams = clientRegister.get().popReportParams(reportID);
@@ -120,7 +114,10 @@ public class ClientController implements Controller {
             OutputStream out = tunnel.getResponseOutputStream();
 
             ClientsListReportPDFViewReal view = new ClientsListReportPDFViewReal(out);
-            FilterSortParams filterSortParams = new FilterSortParams(reportParams.filterStr, reportParams.sortBy, reportParams.sortOrder);
+            FilterSortParams filterSortParams = new FilterSortParams();
+            filterSortParams.filterStr = reportParams.filterStr;
+            filterSortParams.sortBy = reportParams.sortBy;
+            filterSortParams.sortOrder = reportParams.sortOrder;
             ClientsListReportParams clientsListReportParams = new ClientsListReportParams(reportParams.username, view, filterSortParams);
 
             clientRegister.get().genClientListReport(clientsListReportParams);
@@ -135,7 +132,10 @@ public class ClientController implements Controller {
             OutputStream out = tunnel.getResponseOutputStream();
 
             ClientsListReportViewReal view = new ClientsListReportViewReal(out);
-            FilterSortParams filterSortParams = new FilterSortParams(reportParams.filterStr, reportParams.sortBy, reportParams.sortOrder);
+            FilterSortParams filterSortParams = new FilterSortParams();
+            filterSortParams.filterStr = reportParams.filterStr;
+            filterSortParams.sortBy = reportParams.sortBy;
+            filterSortParams.sortOrder = reportParams.sortOrder;
             ClientsListReportParams clientsListReportParams = new ClientsListReportParams(reportParams.username, view, filterSortParams);
 
             clientRegister.get().genClientListReport(clientsListReportParams);

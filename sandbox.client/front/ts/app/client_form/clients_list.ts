@@ -40,11 +40,26 @@ export class MainFormComponent {
     this.loadUserInfoButtonEnabled = false;
     this.loadUserInfoError = null;
 
-    let url = "/client/clientsInfo/" + this.currentIndex + "/" + this.filterText + "/" + this.sortBy + "/" + this.sortOrder;
-      this.httpService.get(url).toPromise().then(result => {
-          this.pageNumber = result.json().pageCount;
+    // let url = "/client/recordList/" + this.currentIndex + "/" + this.filterText + "/" + this.sortBy + "/" + this.sortOrder;
+    //   this.httpService.get(url).toPromise().then(result => {
+    //       this.pageNumber = result.json().pageCount;
+    //       this.addPages();
+    //       this.clientRecords = result.json().clientInfos;
+    //
+    //       console.log(this.clientRecords);
+    //   }, error => {
+    //       console.log(error);
+    //   });
+
+      this.httpService.post("/client/recordList", {
+          pageID: this.currentIndex,
+          filterStr: this.filterText,
+          sortBy: this.sortBy,
+          sortOrder: this.sortOrder
+      }).toPromise().then(res => {
+          this.pageNumber = res.json().pageCount;
           this.addPages();
-          this.clientRecords = result.json().clientInfos;
+          this.clientRecords = res.json().clientInfos;
 
           console.log(this.clientRecords);
       }, error => {
@@ -64,7 +79,7 @@ export class MainFormComponent {
 
   removeClientClicked() {
     if (this.selectedID != "") {
-      this.httpService.post("/client/removeClient", {
+      this.httpService.post("/client/remove", {
         clientID: this.selectedID
       }).toPromise().then(res => {
         this.clientRecords = this.clientRecords.filter(record => record.id !== this.selectedID);
@@ -125,7 +140,7 @@ export class MainFormComponent {
   addNewClient(clientDetails: ClientDetails) {
       this.clientToSave = ClientToSave.from(clientDetails as ClientToSave);
                                     
-      this.httpService.post("/client/addNewClient", {
+      this.httpService.post("/client/addNew", {
           clientToSave  : JSON.stringify(this.clientToSave)
       }).toPromise().then(res => {
           console.log(res.json());
@@ -142,7 +157,7 @@ export class MainFormComponent {
   updateClientInfo(clientDetails: ClientDetails) {
       this.clientToSave = ClientToSave.from(clientDetails as ClientToSave);
 
-      this.httpService.post("/client/updateClient", {
+      this.httpService.post("/client/update", {
           clientToSave  : JSON.stringify(this.clientToSave)
       }).toPromise().then(res => {
           // console.log(res.json());
@@ -192,8 +207,8 @@ export class MainFormComponent {
     }
 
     genPDFReport() {
-        this.httpService.post("/client/report", {
-            reportType: "PDF",
+        this.httpService.post("/client/saveReportParams", {
+            report_type: "PDF",
             filterStr: this.filterText,
             sortBy: this.sortBy,
             sortOrder: this.sortOrder
@@ -205,7 +220,7 @@ export class MainFormComponent {
         })
     }
     genXLSXReport() {
-        this.httpService.post("/client/report", {
+        this.httpService.post("/client/saveReportParams", {
             reportType: "XLSX",
             filterStr: this.filterText,
             sortBy: this.sortBy,
@@ -218,7 +233,7 @@ export class MainFormComponent {
         })
     }
     getClientListReport(reportId: number) {
-        let url = "http://localhost:8080/sandbox/api/client/report/" + reportId;
+        let url = "http://localhost:8080/sandbox/api/client/genReport/" + reportId;
         window.open(url, "_self");
     }
 }

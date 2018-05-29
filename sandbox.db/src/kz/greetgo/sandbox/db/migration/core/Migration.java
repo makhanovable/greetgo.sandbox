@@ -19,6 +19,17 @@ public class Migration implements Closeable {
 
   public Migration(Connection connection) {
     this.connection = connection;
+
+//    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+//    Date nowDate = new Date();
+    tmpClientTable = "cia_migration_client_";
+    tmpPhoneTable = "cia_migration_phone_";
+    tmpAccountTable = "cia_migration_account_";
+    tmpTransactionTable = "cia_migration_transaction_";
+    info("TMP_CLIENT = " + tmpClientTable);
+    info("TMP_PHONE = " + tmpPhoneTable);
+    info("TMP_ACCOUNT = " + tmpAccountTable);
+    info("TMP_TRANSACTION = " + tmpTransactionTable);
   }
 
   @Override
@@ -76,17 +87,6 @@ public class Migration implements Closeable {
 
   public int migrate() throws Exception {
     long startedAt = System.nanoTime();
-
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
-    Date nowDate = new Date();
-    tmpClientTable = "cia_migration_client_" + sdf.format(nowDate);
-    tmpPhoneTable = "cia_migration_phone_" + sdf.format(nowDate);
-    tmpAccountTable = "cia_migration_account_" + sdf.format(nowDate);
-    tmpTransactionTable = "cia_migration_transaction_" + sdf.format(nowDate);
-    info("TMP_CLIENT = " + tmpClientTable);
-    info("TMP_PHONE = " + tmpPhoneTable);
-    info("TMP_ACCOUNT = " + tmpAccountTable);
-    info("TMP_TRANSACTION = " + tmpTransactionTable);
 
     //language=PostgreSQL
     exec("create table TMP_CLIENT (\n" +
@@ -175,7 +175,7 @@ public class Migration implements Closeable {
     return portionSize;
   }
 
-  private int downloadFromCIA() throws SQLException, IOException, SAXException {
+  public int downloadFromCIA() throws SQLException, IOException, SAXException {
 
     final AtomicBoolean working = new AtomicBoolean(true);
     final AtomicBoolean showStatus = new AtomicBoolean(false);
@@ -232,7 +232,7 @@ public class Migration implements Closeable {
             File inputFile = new File("build/out_files/from_cia_2018-05-24-095644-2-3000.xml");
 
             fromXMLParser.execute(connection, clientPS, phonePS, downloadMaxBatchSize);
-            recordsCount =  fromXMLParser.parseRecordData(String.valueOf(inputFile), "file");
+            recordsCount =  fromXMLParser.parseRecordData(String.valueOf(inputFile));
 
           } catch (Exception e) {
             e.printStackTrace();
@@ -253,7 +253,7 @@ public class Migration implements Closeable {
         see.interrupt();
       }
   }
-  private int downloadFromFRS() throws SQLException, IOException, SAXException {
+  public int downloadFromFRS() throws SQLException, IOException, SAXException {
 
     final AtomicBoolean working = new AtomicBoolean(true);
     final AtomicBoolean showStatus = new AtomicBoolean(false);
@@ -321,7 +321,7 @@ public class Migration implements Closeable {
     }
   }
 
-  private void migrateFromTmp() throws Exception {
+  public void migrateFromTmp() throws Exception {
 
     //language=PostgreSQL
     exec("update TMP_CLIENT set error = 'surname is not defined', status = 1\n" +
@@ -341,9 +341,6 @@ public class Migration implements Closeable {
     //language=PostgreSQL
     exec("update TMP_PHONE set error = 'number is not defined', status = 1\n" +
             "where error is null and number is null");
-    //language=PostgreSQL
-    exec("update TMP_PHONE set error = 'phoneType is not defined', status = 1\n" +
-            "where error is null and phoneType is null");
     //language=PostgreSQL
     exec("update TMP_TRANSACTION set error = 'transaction type is not defined', status = 1\n" +
             "where error is null and transaction_type is null");

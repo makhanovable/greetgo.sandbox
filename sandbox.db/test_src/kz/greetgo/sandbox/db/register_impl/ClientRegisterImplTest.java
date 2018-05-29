@@ -1,8 +1,6 @@
 package kz.greetgo.sandbox.db.register_impl;
 
-import kz.greetgo.conf.SysParams;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.msoffice.docx.Run;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.report.*;
@@ -17,17 +15,11 @@ import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -285,7 +277,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         //
         //
-        ClientDetails clientDetails = clientRegister.get().getEditableClientInfo("1");
+        ClientDetails clientDetails = clientRegister.get().getClientDetails("1");
         //
         //
 
@@ -335,12 +327,17 @@ public class ClientRegisterImplTest extends ParentTestNg {
             }
         });
 
-        FilterSortParams filterSortParams = new FilterSortParams("", "age", "up");
-        ClientsListParams clientsListParams = new ClientsListParams(5, filterSortParams);
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "age";
+        filterSortParams.sortOrder = "up";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 5;
+        clientsListParams.filterSortParams = filterSortParams;
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         //
         //
 
@@ -391,12 +388,17 @@ public class ClientRegisterImplTest extends ParentTestNg {
             }
         });
 
-        FilterSortParams filterSortParams = new FilterSortParams("", "age", "down");
-        ClientsListParams clientsListParams = new ClientsListParams(5, filterSortParams);
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "age";
+        filterSortParams.sortOrder = "down";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 5;
+        clientsListParams.filterSortParams = filterSortParams;
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         //
         //
 
@@ -445,12 +447,17 @@ public class ClientRegisterImplTest extends ParentTestNg {
             }
         });
 
-        FilterSortParams filterSortParams = new FilterSortParams("", "age", "up");
-        ClientsListParams clientsListParams = new ClientsListParams(10, filterSortParams);
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "age";
+        filterSortParams.sortOrder = "up";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 10;
+        clientsListParams.filterSortParams = filterSortParams;
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         //
         //
 
@@ -499,12 +506,17 @@ public class ClientRegisterImplTest extends ParentTestNg {
             }
         });
 
-        FilterSortParams filterSortParams = new FilterSortParams("", "age", "down");
-        ClientsListParams clientsListParams = new ClientsListParams(10, filterSortParams);
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "age";
+        filterSortParams.sortOrder = "down";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 10;
+        clientsListParams.filterSortParams = filterSortParams;
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         //
         //
 
@@ -533,13 +545,18 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
-        FilterSortParams filterSortParams = new FilterSortParams("Ал", "", "");
-        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "Ал";
+        filterSortParams.sortBy = "";
+        filterSortParams.sortOrder = "";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 1;
+        clientsListParams.filterSortParams = filterSortParams;
         ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
@@ -571,13 +588,19 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
-        FilterSortParams filterSortParams = new FilterSortParams("", "fio", "up");
-        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "fio";
+        filterSortParams.sortOrder = "up";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 1;
+        clientsListParams.filterSortParams = filterSortParams;
         ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
@@ -619,13 +642,19 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
-        FilterSortParams filterSortParams = new FilterSortParams("", "fio", "down");
-        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "fio";
+        filterSortParams.sortOrder = "down";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 1;
+        clientsListParams.filterSortParams = filterSortParams;
         ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
@@ -667,13 +696,19 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
-        FilterSortParams filterSortParams = new FilterSortParams("", "age", "up");
-        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "age";
+        filterSortParams.sortOrder = "up";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 1;
+        clientsListParams.filterSortParams = filterSortParams;
         ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
@@ -709,13 +744,19 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
-        FilterSortParams filterSortParams = new FilterSortParams("", "age", "down");
-        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "age";
+        filterSortParams.sortOrder = "down";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 1;
+        clientsListParams.filterSortParams = filterSortParams;
         ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
@@ -751,13 +792,19 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
-        FilterSortParams filterSortParams = new FilterSortParams("", "totalCash", "up");
-        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "totalCash";
+        filterSortParams.sortOrder = "up";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 1;
+        clientsListParams.filterSortParams = filterSortParams;
         ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
@@ -793,13 +840,19 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
-        FilterSortParams filterSortParams = new FilterSortParams("", "totalCash", "down");
-        ClientsListParams clientsListParams = new ClientsListParams(1, filterSortParams);
+
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "totalCash";
+        filterSortParams.sortOrder = "down";
+        ClientsListParams clientsListParams = new ClientsListParams();
+        clientsListParams.pageID = 1;
+        clientsListParams.filterSortParams = filterSortParams;
         ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Пушкин", view, filterSortParams);
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
@@ -853,7 +906,13 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     @Test
     public void testGetReportParams() {
-        ReportParamsToSave reportParamsToSave = new ReportParamsToSave(1, "PDF", "Sanzhar", "","","");
+        ReportParamsToSave reportParamsToSave = new ReportParamsToSave();
+        reportParamsToSave.report_id = 1;
+        reportParamsToSave.report_type  = "PDF";
+        reportParamsToSave.username = "Sanzhar";
+        reportParamsToSave.filterStr = "";
+        reportParamsToSave.sortBy = "";
+        reportParamsToSave.sortOrder = "";
 
         //
         //
@@ -906,7 +965,12 @@ public class ClientRegisterImplTest extends ParentTestNg {
                 .forEach(accountTestDao.get()::insertAccount);
 
         TestView view = new TestView();
-        FilterSortParams filterSortParams = new FilterSortParams("", "", "");
+
+        FilterSortParams filterSortParams = new FilterSortParams();
+        filterSortParams.filterStr = "";
+        filterSortParams.sortBy = "";
+        filterSortParams.sortOrder = "";
+
         ClientsListReportParams clientsListReportParams = new ClientsListReportParams("Pushkin", view, filterSortParams);
         //
         //
