@@ -321,7 +321,7 @@ public class Migration implements Closeable {
     }
   }
 
-  private void migrateFromTmp() throws Exception {
+  public void migrateFromTmp() throws Exception {
 
     //language=PostgreSQL
     exec("update TMP_CLIENT set error = 'surname is not defined', status = 1\n" +
@@ -341,9 +341,6 @@ public class Migration implements Closeable {
     //language=PostgreSQL
     exec("update TMP_PHONE set error = 'number is not defined', status = 1\n" +
             "where error is null and number is null");
-    //language=PostgreSQL
-    exec("update TMP_PHONE set error = 'phoneType is not defined', status = 1\n" +
-            "where error is null and phoneType is null");
     //language=PostgreSQL
     exec("update TMP_TRANSACTION set error = 'transaction type is not defined', status = 1\n" +
             "where error is null and transaction_type is null");

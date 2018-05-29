@@ -207,7 +207,7 @@ export class MainFormComponent {
     }
 
     genPDFReport() {
-        this.httpService.post("/client/report", {
+        this.httpService.post("/client/saveReportParams", {
             report_type: "PDF",
             filterStr: this.filterText,
             sortBy: this.sortBy,
@@ -220,7 +220,7 @@ export class MainFormComponent {
         })
     }
     genXLSXReport() {
-        this.httpService.post("/client/report", {
+        this.httpService.post("/client/saveReportParams", {
             reportType: "XLSX",
             filterStr: this.filterText,
             sortBy: this.sortBy,
@@ -233,7 +233,7 @@ export class MainFormComponent {
         })
     }
     getClientListReport(reportId: number) {
-        let url = "http://localhost:8080/sandbox/api/client/report/" + reportId;
+        let url = "http://localhost:8080/sandbox/api/client/genReport/" + reportId;
         window.open(url, "_self");
     }
 }

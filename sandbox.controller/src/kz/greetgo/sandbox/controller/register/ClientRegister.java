@@ -12,9 +12,9 @@ public interface ClientRegister {
 
     String removeClient(String clientID);
 
-    ClientDetails getEditableClientInfo(String clientID);
+    ClientDetails getClientDetails(String clientID);
 
-    ClientToReturn getFilteredClientsInfo(ClientsListParams clientsListParams);
+    ClientToReturn getClientsRecordList(ClientsListParams clientsListParams);
 
     List<Charm> getCharms();
 

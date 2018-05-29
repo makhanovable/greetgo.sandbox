@@ -13,12 +13,6 @@ import org.apache.ibatis.annotations.Update;
 import java.util.List;
 
 public interface MigrationTestDao {
-//    @Update("TRUNCATE phones CASCADE;")
-//    void clearPhones();
-//
-//    @Insert("insert into phones (client_id, phoneType, number) " +
-//            "values (#{clientID}, #{phoneType}, #{number})")
-//    void insertPhone(PhoneDot phoneDot);
 
     @Select("Select table_name from information_schema.tables where table_name like 'cia_migration_%'")
     List<String> getCiaTableNames();
@@ -43,4 +37,23 @@ public interface MigrationTestDao {
             "account_number = #{account_number} and registered_at = #{registered_at} " +
             "and client_cia_id = #{client_id}")
     Long getCiaAccount(AccountJSONRecord accountJSONRecord);
+
+    @Select("Select status from cia_migration_client_ where " +
+            "cia_id = #{id} and name = #{name} and surname = #{surname} and gender = #{gender} and " +
+            "charm = #{charm} and birth_date = #{birthDate}")
+    Integer getCiaClientStatus(ClientXMLRecord clientXMLRecord);
+
+    @Select("Select status from cia_migration_phone_ where " +
+            "cia_id = #{id} and number = #{number} and phoneType = #{phoneType}")
+    Integer getCiaPhoneStatus(@Param("id") String id, @Param("number") String number, @Param("phoneType") String phoneType);
+
+    @Select("Select status from cia_migration_transaction_ where " +
+            "money = #{money} and account_number = #{account_number} and finished_at = #{finished_at} " +
+            "and transaction_type = #{transaction_type}")
+    Integer getCiaTransactionStatus(TransactionJSONRecord transactionJSONRecord);
+
+    @Select("Select status from cia_migration_account_ where " +
+            "account_number = #{account_number} and registered_at = #{registered_at} " +
+            "and client_cia_id = #{client_id}")
+    Integer getCiaAccountStatus(AccountJSONRecord accountJSONRecord);
 }

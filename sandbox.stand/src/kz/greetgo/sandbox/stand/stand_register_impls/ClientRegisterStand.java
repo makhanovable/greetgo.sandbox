@@ -49,7 +49,7 @@ public class ClientRegisterStand  implements ClientRegister{
     }
 
     @Override
-    public ClientDetails getEditableClientInfo(String clientID) {
+    public ClientDetails getClientDetails(String clientID) {
         ClientDetails clientDetails = db.get().clientStorage.get(clientID).toClientDetails();
 //        clientDetails.charm = db.get().charmStorage.get(db.get().clientStorage.get(clientID).charmID).name;
 
@@ -69,7 +69,7 @@ public class ClientRegisterStand  implements ClientRegister{
     }
 
     @Override
-    public ClientToReturn getFilteredClientsInfo(ClientsListParams clientsListParams) {
+    public ClientToReturn getClientsRecordList(ClientsListParams clientsListParams) {
         String filterStr = clientsListParams.filterSortParams.filterStr;
         String sortBy = clientsListParams.filterSortParams.sortBy;
         String sortOrder = clientsListParams.filterSortParams.sortOrder;

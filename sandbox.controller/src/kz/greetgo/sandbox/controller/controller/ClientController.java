@@ -1,6 +1,5 @@
 package kz.greetgo.sandbox.controller.controller;
 
-import com.sun.net.httpserver.HttpContext;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
@@ -9,18 +8,14 @@ import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.AuthRegister;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.report.ClientsListReportPDFViewReal;
-import kz.greetgo.sandbox.controller.report.ClientsListReportView;
 import kz.greetgo.sandbox.controller.report.ClientsListReportViewReal;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
 import kz.greetgo.util.RND;
-import org.omg.PortableServer.Current;
 
 import java.io.*;
 import java.net.URLEncoder;
 import java.util.List;
-
-import static com.sun.prism.impl.PrismSettings.trace;
 
 @Bean
 @Mapping("/client")
@@ -31,7 +26,7 @@ public class ClientController implements Controller {
 
     @ToJson
     @Mapping("/recordList")
-    public ClientToReturn getFilteredClientsInfo(@ParamsTo ClientsListParams clientsListParams,
+    public ClientToReturn getRecordList(@ParamsTo ClientsListParams clientsListParams,
                                                  @ParamsTo FilterSortParams filterSortParams) {
 
         if (filterSortParams.filterStr == null) { filterSortParams.filterStr = ""; }
@@ -39,7 +34,7 @@ public class ClientController implements Controller {
         if (filterSortParams.sortBy == null) { filterSortParams.sortBy = ""; }
         clientsListParams.filterSortParams = filterSortParams;
 
-        return clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        return clientRegister.get().getClientsRecordList(clientsListParams);
     }
 
     @ToJson
@@ -63,8 +58,8 @@ public class ClientController implements Controller {
 
     @ToJson
     @Mapping("/details/{clientID}")
-    public ClientDetails getEditableClientInfo(@ParPath("clientID") String clientID) {
-        return clientRegister.get().getEditableClientInfo(clientID);
+    public ClientDetails getDetails(@ParPath("clientID") String clientID) {
+        return clientRegister.get().getClientDetails(clientID);
     }
 
     @ToJson
@@ -74,7 +69,7 @@ public class ClientController implements Controller {
     }
 
     @ToJson
-    @Mapping("/report")
+    @Mapping("/saveReportParams")
     public int saveReportParams(@ParamsTo ReportParamsToSave reportParamsToSave,
                                 @ParSession("personId") String personId) {
 
@@ -101,7 +96,7 @@ public class ClientController implements Controller {
 
     @AsIs
     @NoSecurity
-    @Mapping("/report/{reportID}")
+    @Mapping("/genReport/{reportID}")
     public void genClientListReport(@ParPath("reportID") int reportID, RequestTunnel tunnel) throws Exception {
 
         ReportParamsToSave reportParams = clientRegister.get().popReportParams(reportID);

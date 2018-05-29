@@ -161,9 +161,8 @@ public class MigrationTest extends ParentTestNg{
     }
 
     @Test
-    public void TestMigrateFromTmp() throws Exception{
+    public void TestMigrateFromTmp() throws Exception {
 
-        int expectedRecordsCount = 0;
         List<TransactionJSONRecord> transactionJSONRecords = null;
         List<AccountJSONRecord> accountJSONRecords = null;
         try {
@@ -171,7 +170,7 @@ public class MigrationTest extends ParentTestNg{
 
             FromJSONParser fromJSONParser = new FromJSONParser();
             fromJSONParser.execute(connection, null, null, 0);
-            expectedRecordsCount = fromJSONParser.parseRecordData(inputFile);
+            fromJSONParser.parseRecordData(inputFile);
 
             transactionJSONRecords = fromJSONParser.getTransactionJSONRecords();
             accountJSONRecords = fromJSONParser.getAccountJSONRecords();
@@ -187,14 +186,58 @@ public class MigrationTest extends ParentTestNg{
 
             FromXMLParser fromXMLParser = new FromXMLParser();
             fromXMLParser.execute(connection, null, null, 0);
-            expectedRecordsCount = fromXMLParser.parseRecordData(String.valueOf(inputFile));
+            fromXMLParser.parseRecordData(String.valueOf(inputFile));
             clientXMLRecords = fromXMLParser.getClientXMLRecords();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+        //
+        //
+        migration.migrateFromTmp();
+        //
+        //
 
+        for (ClientXMLRecord clientXMLRecord : clientXMLRecords) {
+            if (clientXMLRecord.name == null || clientXMLRecord.surname == null || clientXMLRecord.birthDate == null ||
+                    clientXMLRecord.gender == null || clientXMLRecord.charm == null) {
+                Integer status = migrationTestDao.get().getCiaClientStatus(clientXMLRecord);
+                assertThat(status).isEqualTo(1);
+
+                checkPhonesForErrors(clientXMLRecord.id, clientXMLRecord.mobilePhones, "MOBILE");
+                checkPhonesForErrors(clientXMLRecord.id, clientXMLRecord.homePhones, "HOME");
+                checkPhonesForErrors(clientXMLRecord.id, clientXMLRecord.workPhones, "WORK");
+
+                continue;
+            }
+
+            checkPhonesForErrors(clientXMLRecord.id, clientXMLRecord.mobilePhones, "MOBILE");
+            checkPhonesForErrors(clientXMLRecord.id, clientXMLRecord.homePhones, "HOME");
+            checkPhonesForErrors(clientXMLRecord.id, clientXMLRecord.workPhones, "WORK");
+        }
+
+        for (TransactionJSONRecord transactionJSONRecord : transactionJSONRecords) {
+            if (transactionJSONRecord.account_number == null || transactionJSONRecord.transaction_type == null) {
+                Integer status = migrationTestDao.get().getCiaTransactionStatus(transactionJSONRecord);
+                assertThat(status).isEqualTo(1);
+            }
+        }
+
+        for (AccountJSONRecord accountJSONRecord : accountJSONRecords) {
+            if (accountJSONRecord.client_id == null || accountJSONRecord.account_number == null) {
+                Integer status = migrationTestDao.get().getCiaAccountStatus(accountJSONRecord);
+                assertThat(status).isEqualTo(1);
+            }
+        }
+    }
+    private void checkPhonesForErrors(String clientID, List<String> phones, String phoneType) {
+        for (String number : phones) {
+            if (number == null) {
+                Integer status = migrationTestDao.get().getCiaPhoneStatus(clientID, number, phoneType);
+                assertThat(status).isEqualTo(1);
+            }
+        }
     }
 
     private void clearTables() throws Exception{

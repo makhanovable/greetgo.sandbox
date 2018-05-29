@@ -1,8 +1,6 @@
 package kz.greetgo.sandbox.db.register_impl;
 
-import kz.greetgo.conf.SysParams;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.msoffice.docx.Run;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.report.*;
@@ -17,17 +15,11 @@ import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -285,7 +277,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         //
         //
-        ClientDetails clientDetails = clientRegister.get().getEditableClientInfo("1");
+        ClientDetails clientDetails = clientRegister.get().getClientDetails("1");
         //
         //
 
@@ -345,7 +337,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         //
         //
 
@@ -406,7 +398,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         //
         //
 
@@ -465,7 +457,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         //
         //
 
@@ -524,7 +516,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         //
         //
 
@@ -564,7 +556,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
@@ -608,7 +600,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
@@ -662,7 +654,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
@@ -716,7 +708,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
@@ -764,7 +756,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
@@ -812,7 +804,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
@@ -860,7 +852,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         //
         //
-        ClientToReturn clients = clientRegister.get().getFilteredClientsInfo(clientsListParams);
+        ClientToReturn clients = clientRegister.get().getClientsRecordList(clientsListParams);
         clientRegister.get().genClientListReport(clientsListReportParams);
         //
         //
