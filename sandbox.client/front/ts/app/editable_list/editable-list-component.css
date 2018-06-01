@@ -1,0 +1,45 @@
+.makhan-list-div {
+    width: 80%;
+    margin: 10% auto;
+    position: relative;
+}
+
+table {
+    width: 100%;
+}
+
+.mat-form-field {
+    font-size: 14px;
+    width: 95%;
+}
+
+.makhan-btn {
+    position: absolute;
+    bottom: 0px;
+    right: -50px;
+    display: flex;
+    align-items: center;
+}
+
+.makhan-btn ul {
+    list-style: none;
+}
+
+.makhan-btn button {
+    margin-bottom: 4px;
+}
+
+.makhan-filter {
+    margin-left: 20px;
+    margin-top: 5px;
+}
+
+.mat-row.selected {
+    background: #dddddd;
+}
+.mat-row:hover {
+    background-color: #dddddd;
+}
+.mat-row{
+    cursor: pointer;
+}

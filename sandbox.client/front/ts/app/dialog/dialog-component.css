@@ -1,0 +1,21 @@
+.example-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.example-container > * {
+    width: 100%;
+}
+mat-form-field {
+    width: 90px;
+    margin-left: 1px;
+    margin-right: 1px;
+}
+/*.makhan-cont{*/
+    /*padding-bottom: 15px;*/
+/*}*/
+.makhan-hint{
+    font-size: xx-small;
+    margin-top: -1px;
+}
+

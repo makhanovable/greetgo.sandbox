@@ -1,0 +1,100 @@
+<div class="example-container dialog makhan-cont">
+    <div class="example-container">
+
+        <mat-form-field>
+            <input matInput [(ngModel)]="surname" placeholder="Фамилия" required="true">
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput [(ngModel)]="name" placeholder="Имя" required="true">
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput [(ngModel)]="patronymic" placeholder="Отчество" required="true">
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-select placeholder="Пол"  [(ngModel)]="gender" required="true">
+                <mat-option value="MALE">Мужчина</mat-option>
+                <mat-option value="FEMALE">Женщина</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput [matDatepicker]="picker" placeholder="Дата рождения" [(ngModel)]="date">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker [(ngModel)]="date" ngDefaultControl></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-select placeholder="Характер" [(ngModel)]="charm" required="true">
+                <mat-option value="charm1">Характер 1</mat-option>
+                <mat-option value="charm2">Характер 2</mat-option>
+                <mat-option value="charm3">Характер 3</mat-option>
+                <mat-option value="charm4">Характер 4</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+    </div>
+
+    <div>
+
+        <mat-form-field>
+            <input matInput [(ngModel)]="addrFactStreet" placeholder="Улица">
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput [(ngModel)]="addrFactHome" placeholder="Дом">
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput [(ngModel)]="addrFactFlat" placeholder="Квартира">
+        </mat-form-field>
+
+    </div>
+    <mat-hint class="makhan-hint">Адрес проживания (фактический)</mat-hint>
+
+    <div>
+        <mat-form-field>
+            <input matInput [(ngModel)]="addrRegStreet" placeholder="Улица">
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput [(ngModel)]="addrRegHome" placeholder="Дом">
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput [(ngModel)]="addrRegFlat" placeholder="Квартира">
+        </mat-form-field>
+
+    </div>
+    <mat-hint class="makhan-hint">Адрес регистрации *</mat-hint>
+
+    <div>
+
+        <mat-form-field>
+            <input matInput [(ngModel)]="phoneHome" placeholder="Домашний">
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput [(ngModel)]="phoneWork" placeholder="Рабочий">
+        </mat-form-field>
+
+        <mat-form-field>
+                <input matInput [(ngModel)]="phoneMob1" placeholder="Мобильный №1">
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput [(ngModel)]="phoneMob2" placeholder="Мобильный №1">
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput [(ngModel)]="phoneMob3" placeholder="Мобильный №1">
+        </mat-form-field>
+    </div>
+    <mat-hint class="makhan-hint">Телефоны * (один мобильный обязателен)</mat-hint>
+    <mat-dialog-actions>
+        <button mat-raised-button mat-dialog-close>Отмена</button>
+        <button mat-raised-button mat-dialog-close (click)="start()">Сохранить</button>
+    </mat-dialog-actions>
+</div>
