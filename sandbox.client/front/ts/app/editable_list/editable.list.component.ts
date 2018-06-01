@@ -16,6 +16,7 @@ export class EditableListComponent implements OnInit {
 
     dataSource;
     displayedColumns = ['name', 'charm', 'age', 'total', 'max', 'min'];
+
     selection = new SelectionModel<Client>(false, null);
     clientId: string;
     ELEMENTS: Client[] = [];
@@ -101,15 +102,6 @@ export class EditableListComponent implements OnInit {
             this.dataSource.sort = this.sort;
         }).catch(error => {
         })
-    }
-
-
-    addElement() { // TODO test
-        this.ELEMENTS.push({
-            id: 'fewds', name: 'rdwf', charm: 'vwdfcw', age: 'vwdfcw', total_account_balance: 'vtef',
-            max_balance: 'fewdewd', min_balance: 'vrdfcwd'
-        });
-        this.dataSource = new MatTableDataSource(this.ELEMENTS);
     }
 
 }

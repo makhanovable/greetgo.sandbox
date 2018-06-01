@@ -10,6 +10,7 @@ import {HttpService} from "./HttpService";
 import {
     MatButtonModule, MatFormFieldModule, MatInputModule, MatSlideToggleModule,
     MatTableModule, MatPaginatorModule, MatSelectModule, MatDatepickerModule, MatNativeDateModule,
+    MatProgressSpinnerModule,
     MatSortModule
 } from "@angular/material";
 import {EditableListComponent} from "./editable_list/editable.list.component";
@@ -35,7 +36,7 @@ import {AreYouSureDialogComponent} from "./are_you_sure_dialog/are.you.sure.dial
         MatNativeDateModule,
         MatDatepickerModule,
         MatSortModule,
-
+        MatProgressSpinnerModule
     ],
     declarations: [
         RootComponent, LoginComponent, MainFormComponent, EditableListComponent,

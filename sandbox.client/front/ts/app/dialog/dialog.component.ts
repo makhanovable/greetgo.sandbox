@@ -82,7 +82,6 @@ export class DialogComponent {
         this.http.get("/client/get_client_info_by_id", {
             clientId: clientId
         }).toPromise().then(result => {
-            alert(JSON.stringify(result.json()));
             this.clientInfo = {
                 name: JSON.stringify(result.json().name).replace(/["]+/g, ''),
                 surname: JSON.stringify(result.json().surname).replace(/["]+/g, ''),
@@ -123,7 +122,7 @@ export class DialogComponent {
         })
     }
 
-    add() { // TODO get from field and update list
+    add() {
         this.http.post("/client/add_new_client", {
             surname: this.surname,
             name: this.name,
