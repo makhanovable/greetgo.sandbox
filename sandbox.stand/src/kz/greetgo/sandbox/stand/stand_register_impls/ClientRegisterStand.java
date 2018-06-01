@@ -3,9 +3,11 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.controller.register.model.ClientInfoResponseTest;
 import kz.greetgo.sandbox.controller.register.model.ClientResponseTest;
 import kz.greetgo.sandbox.db.stand.beans.ClientStandDb;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
+import kz.greetgo.sandbox.db.stand.model.ClientInfoDot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,10 +36,10 @@ public class ClientRegisterStand implements ClientRegister {
 
     @Override
     public void addNewClient(String surname, String name, String patronymic, String gender,
-                               String birth_date, String charm, String addrFactStreet,
-                               String addrFactHome, String addrFactFlat, String addrRegStreet,
-                               String addrRegHome, String addrRegFlat, String phoneHome, String phoneWork,
-                               String phoneMob1, String phoneMob2, String phoneMob3) {
+                             String birth_date, String charm, String addrFactStreet,
+                             String addrFactHome, String addrFactFlat, String addrRegStreet,
+                             String addrRegHome, String addrRegFlat, String phoneHome, String phoneWork,
+                             String phoneMob1, String phoneMob2, String phoneMob3) {
         db.get().insert(surname, name, patronymic, gender,
                 birth_date, charm, addrFactStreet,
                 addrFactHome, addrFactFlat, addrRegStreet,
@@ -57,5 +59,30 @@ public class ClientRegisterStand implements ClientRegister {
                 addrFactHome, addrFactFlat, addrRegStreet,
                 addrRegHome, addrRegFlat, phoneHome, phoneWork,
                 phoneMob1, phoneMob2, phoneMob3);
+    }
+
+    @Override
+    public ClientInfoResponseTest getClientById(String clientId) {
+        ClientInfoResponseTest info = new ClientInfoResponseTest();
+        System.out.println(clientId);
+        ClientInfoDot dot = db.get().clientInfoDotStorage.get(Integer.parseInt(clientId));
+        info.name = dot.name;
+        info.surname = dot.surname;
+        info.patronymic = dot.patronymic;
+        info.gender = dot.gender;
+        info.birth_date = dot.birth_date;
+        info.charm = dot.charm;
+        info.addrFactStreet = dot.addrFactStreet;
+        info.addrFactHome = dot.addrFactHome;
+        info.addrFactFlat = dot.addrFactFlat;
+        info.addrRegStreet = dot.addrRegStreet;
+        info.addrRegHome = dot.addrRegHome;
+        info.addrRegFlat = dot.addrRegFlat;
+        info.phoneHome = dot.phoneHome;
+        info.phoneWork = dot.phoneWork;
+        info.phoneMob1 = dot.phoneMob1;
+        info.phoneMob2 = dot.phoneMob2;
+        info.phoneMob3 = dot.phoneMob3;
+        return info;
     }
 }

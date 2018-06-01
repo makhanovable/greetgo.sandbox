@@ -6,6 +6,7 @@ import kz.greetgo.mvc.annotations.Mapping;
 import kz.greetgo.mvc.annotations.Par;
 import kz.greetgo.mvc.annotations.ToJson;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.controller.register.model.ClientInfoResponseTest;
 import kz.greetgo.sandbox.controller.register.model.ClientResponseTest;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
@@ -66,6 +67,13 @@ public class ClientController implements Controller {
         clientRegister.get().editClient(clientId, surname, name, patronymic, gender, birth_date, charm,
                 addrFactStreet, addrFactHome, addrFactFlat, addrRegStreet, addrRegHome, addrRegFlat,
                 phoneHome, phoneWork, phoneMob1, phoneMob2, phoneMob3);
+    }
+
+    @ToJson
+    @NoSecurity
+    @Mapping("/get_client_info_by_id")
+    public ClientInfoResponseTest getClientById(@Par("clientId") String clientId) {
+        return clientRegister.get().getClientById(clientId);
     }
 
 }

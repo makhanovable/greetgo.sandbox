@@ -1,5 +1,6 @@
 package kz.greetgo.sandbox.controller.register;
 
+import kz.greetgo.sandbox.controller.register.model.ClientInfoResponseTest;
 import kz.greetgo.sandbox.controller.register.model.ClientResponseTest;
 
 import java.util.List;
@@ -19,4 +20,6 @@ public interface ClientRegister {
                     String addrFactHome, String addrFactFlat, String addrRegStreet,
                     String addrRegHome, String addrRegFlat, String phoneHome,
                     String phoneWork, String phoneMob1, String phoneMob2, String phoneMob3);
+
+    ClientInfoResponseTest getClientById(String clientId);
 }
