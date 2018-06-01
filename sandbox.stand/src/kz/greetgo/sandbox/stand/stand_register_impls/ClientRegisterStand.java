@@ -13,49 +13,58 @@ import java.util.List;
 @Bean
 public class ClientRegisterStand implements ClientRegister {
 
-    public BeanGetter<ClientStandDb> db;
+  public BeanGetter<ClientStandDb> db;
 
-    @Override
-    public List<ClientResponseTest> getClientsList() {
-        List<ClientResponseTest> list = new ArrayList<>();
-        for (ClientDot dot : db.get().clientStorage) {
-            ClientResponseTest clients = new ClientResponseTest();
-            clients.id = dot.id;
-            clients.name = dot.name;
-            clients.charm = dot.charm;
-            clients.age = dot.age;
-            clients.total = dot.total;
-            clients.max = dot.max;
-            clients.min = dot.min;
-            list.add(clients);
-        }
-        return list;
+  @Override
+  public List<ClientResponseTest> getClientsList() {
+    List<ClientResponseTest> list = new ArrayList<>();
+    for (ClientDot dot : db.get().clientStorage) {
+      ClientResponseTest clients = new ClientResponseTest();
+      clients.id = dot.id;
+      clients.name = dot.name;
+      clients.charm = dot.charm;
+      clients.age = dot.age;
+      clients.total = dot.total;
+      clients.max = dot.max;
+      clients.min = dot.min;
+      list.add(clients);
     }
+    return list;
+  }
 
-    @Override
-    public void addNewClient(String surname, String name, String patronymic, String gender,
-                               String birth_date, String charm, String addrFactStreet,
-                               String addrFactHome, String addrFactFlat, String addrRegStreet,
-                               String addrRegHome, String addrRegFlat, String phoneHome, String phoneWork,
-                               String phoneMob1, String phoneMob2, String phoneMob3) {
-        db.get().insert(surname, name, patronymic, gender,
-                birth_date, charm, addrFactStreet,
-                addrFactHome, addrFactFlat, addrRegStreet,
-                addrRegHome, addrRegFlat, phoneHome, phoneWork,
-                phoneMob1, phoneMob2, phoneMob3);// TODO all
-    }
+  @Override
+  public void addNewClient(String surname, String name, String patronymic, String gender,
+                           String birth_date, String charm, String addrFactStreet,
+                           String addrFactHome, String addrFactFlat, String addrRegStreet,
+                           String addrRegHome, String addrRegFlat, String phoneHome, String phoneWork,
+                           String phoneMob1, String phoneMob2, String phoneMob3) {
 
-    @Override
-    public void delClient(String clientId) {
-        db.get().remove(clientId);
-    }
+    //TODO перенеси все эти входящие параметры в модель и назови эту модель понятно
 
-    @Override
-    public void editClient(String clientId, String surname, String name, String patronymic, String gender, String birth_date, String charm, String addrFactStreet, String addrFactHome, String addrFactFlat, String addrRegStreet, String addrRegHome, String addrRegFlat, String phoneHome, String phoneWork, String phoneMob1, String phoneMob2, String phoneMob3) {
-        db.get().edit(clientId, surname, name, patronymic, gender,
-                birth_date, charm, addrFactStreet,
-                addrFactHome, addrFactFlat, addrRegStreet,
-                addrRegHome, addrRegFlat, phoneHome, phoneWork,
-                phoneMob1, phoneMob2, phoneMob3);
-    }
+    db.get().insert(surname, name, patronymic, gender,
+      birth_date, charm, addrFactStreet,
+      addrFactHome, addrFactFlat, addrRegStreet,
+      addrRegHome, addrRegFlat, phoneHome, phoneWork,
+      phoneMob1, phoneMob2, phoneMob3);// TODO all
+    //TODO insert модель, которая придет в addNewClient(Какая-то модель = SomeModel)
+  }
+
+  @Override
+  public void delClient(String clientId) {
+    db.get().remove(clientId);
+  }
+
+  @Override
+  public void editClient(String clientId, String surname, String name, String patronymic, String gender, String birth_date, String charm, String addrFactStreet, String addrFactHome, String addrFactFlat, String addrRegStreet, String addrRegHome, String addrRegFlat, String phoneHome, String phoneWork, String phoneMob1, String phoneMob2, String phoneMob3) {
+
+    //TODO перенеси все эти входящие параметры в модель и назови эту модель понятно
+
+    db.get().edit(clientId, surname, name, patronymic, gender,
+      birth_date, charm, addrFactStreet,
+      addrFactHome, addrFactFlat, addrRegStreet,
+      addrRegHome, addrRegFlat, phoneHome, phoneWork,
+      phoneMob1, phoneMob2, phoneMob3);
+    //TODO edit модель, которая придет в editClient(Какая-то модель = SomeModel)
+
+  }
 }
