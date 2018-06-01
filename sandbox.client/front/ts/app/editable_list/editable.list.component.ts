@@ -42,6 +42,7 @@ export class EditableListComponent implements OnInit {
     }
 
     openDialog(whichDialogNeeded): void {
+        console.log(this.clientId + " clientId");
         if (whichDialogNeeded != 1) {
             if (this.clientId == null) {
                 this.openErrorDialog();
@@ -58,11 +59,18 @@ export class EditableListComponent implements OnInit {
             let dialogRef = this.dialog.open(AreYouSureDialogComponent, {
                 data: {clientId: this.clientId}
             });
+            dialogRef.afterClosed().subscribe(result => {
+                this.get();
+            });
+
         } else {
             let dialogRef = this.dialog.open(DialogComponent, {
                 width: '550px',
                 height: '500px',
                 data: {whichDialogNeeded: whichDialogNeeded, clientId: this.clientId}
+            });
+            dialogRef.afterClosed().subscribe(result => {
+                this.get();
             });
         }
     }
@@ -75,6 +83,7 @@ export class EditableListComponent implements OnInit {
         this.http.get("/client/get_all_clients").toPromise().then(result => {
 
             // alert(JSON.stringify(result.json()));
+            this.ELEMENTS = [];
             for (let i = 0; i < Number(JSON.stringify(result.json().length)); i++) {
                 let Client = {
                     id: JSON.stringify(result.json()[i].id).replace(/["]+/g, ''),

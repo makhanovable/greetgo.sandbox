@@ -18,7 +18,7 @@ public class ClientRegisterStand implements ClientRegister {
     @Override
     public List<ClientResponseTest> getClientsList() {
         List<ClientResponseTest> list = new ArrayList<>();
-        for (ClientDot dot : db.get().clientStorage.values()) {
+        for (ClientDot dot : db.get().clientStorage) {
             ClientResponseTest clients = new ClientResponseTest();
             clients.id = dot.id;
             clients.name = dot.name;
@@ -43,5 +43,19 @@ public class ClientRegisterStand implements ClientRegister {
                 addrFactHome, addrFactFlat, addrRegStreet,
                 addrRegHome, addrRegFlat, phoneHome, phoneWork,
                 phoneMob1, phoneMob2, phoneMob3);// TODO all
+    }
+
+    @Override
+    public void delClient(String clientId) {
+        db.get().remove(clientId);
+    }
+
+    @Override
+    public void editClient(String clientId, String surname, String name, String patronymic, String gender, String birth_date, String charm, String addrFactStreet, String addrFactHome, String addrFactFlat, String addrRegStreet, String addrRegHome, String addrRegFlat, String phoneHome, String phoneWork, String phoneMob1, String phoneMob2, String phoneMob3) {
+        db.get().edit(clientId, surname, name, patronymic, gender,
+                birth_date, charm, addrFactStreet,
+                addrFactHome, addrFactFlat, addrRegStreet,
+                addrRegHome, addrRegFlat, phoneHome, phoneWork,
+                phoneMob1, phoneMob2, phoneMob3);
     }
 }

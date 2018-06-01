@@ -19,14 +19,13 @@ export class AreYouSureDialogComponent {
     }
 
     del() { // TODO update list
-
-        // this.http.post("/client/del_client", {
-        //     clientId: clientId
-        // }).toPromise().then(res => {
-        //     // alert(res.json())
-        // }, error => {
-        //     alert("error");
-        // });
+        this.http.post("/client/del_client", {
+            clientId: this.clientId
+        }).toPromise().then(res => {
+            // alert(res.json())
+        }, error => {
+            alert("error");
+        });
     }
 
 }
