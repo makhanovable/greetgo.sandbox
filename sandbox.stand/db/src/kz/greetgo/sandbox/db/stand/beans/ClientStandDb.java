@@ -2,10 +2,7 @@ package kz.greetgo.sandbox.db.stand.beans;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.HasAfterInject;
-import kz.greetgo.sandbox.controller.model.Charm;
-import kz.greetgo.sandbox.controller.model.Client;
-import kz.greetgo.sandbox.controller.model.ClientAddr;
-import kz.greetgo.sandbox.controller.model.ClientPhone;
+import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 
 import java.security.SecureRandom;
@@ -16,6 +13,7 @@ public class ClientStandDb implements HasAfterInject {
     private SecureRandom random = new SecureRandom();
     public List<ClientDot> clientStorage = new ArrayList<>();
     public List<Charm> charmsStorage = new ArrayList<>();
+    private String[] g = new String[]{"MALE", "FEMALE"};
 
     @Override
     public void afterInject() {
@@ -37,22 +35,22 @@ public class ClientStandDb implements HasAfterInject {
             c.min = (float) 1.3 * random.nextInt(5000);
 
             c.charm = random.nextInt(10); // TODO edit
-            c.gender = randomString(); // TODO edit
+            c.gender = g[random.nextInt(2)]; // TODO edit
             c.birth_date = randomString(); // TODO edit
             c.addrFactStreet = randomString();
             c.addrFactHome = Integer.toString(random.nextInt(100));
             c.addrFactFlat = Integer.toString(random.nextInt(100));
 
-            c.clientId = i + "";
+            c.clientId = i;
 
             c.addrRegStreet = randomString();
             c.addrRegHome = Integer.toString(random.nextInt(100));
             c.addrRegFlat = Integer.toString(random.nextInt(100));
-            c.phoneHome = "+" + random.nextInt(10) + random.nextInt(899) + 100 + "" + random.nextInt(8999999) + 1000000;
-            c.phoneWork = "+" + random.nextInt(10) + random.nextInt(899) + 100 + "" + random.nextInt(8999999) + 1000000;
-            c.phoneMob1 = "+" + random.nextInt(10) + random.nextInt(899) + 100 + "" + random.nextInt(8999999) + 1000000;
-            c.phoneMob2 = "+" + random.nextInt(10) + random.nextInt(899) + 100 + "" + random.nextInt(8999999) + 1000000;
-            c.phoneMob3 = "+" + random.nextInt(10) + random.nextInt(899) + 100 + "" + random.nextInt(8999999) + 1000000;
+            c.phoneHome = "+" + random.nextInt(10) + random.nextInt(899) + 100 + "" + (random.nextInt(8999999) + 1000000);
+            c.phoneWork = "+" + random.nextInt(10) + random.nextInt(899) + 100 + "" + (random.nextInt(8999999) + 1000000);
+            c.phoneMob1 = "+" + random.nextInt(10) + random.nextInt(899) + 100 + "" + (random.nextInt(8999999) + 1000000);
+            c.phoneMob2 = "+" + random.nextInt(10) + random.nextInt(899) + 100 + "" + (random.nextInt(8999999) + 1000000);
+            c.phoneMob3 = "+" + random.nextInt(10) + random.nextInt(899) + 100 + "" + (random.nextInt(8999999) + 1000000);
 
             appendPerson(c);
         }
@@ -74,12 +72,13 @@ public class ClientStandDb implements HasAfterInject {
         c.max = (float) 1.3 * random.nextInt(5000);
         c.min = (float) 1.3 * random.nextInt(5000);
         c.charm = client.charm; // TODO edit
-        c.gender = "MALE"; // TODO edit
+        c.gender = client.gender.equals(Gender.MALE) ? "MALE" : "FEMALE"; // TODO edit
         c.birth_date = client.birth_date; // TODO edit
+        System.out.println(client.birth_date);
         c.addrFactStreet = addrs.get(0).street;
         c.addrFactHome = addrs.get(0).house;
         c.addrFactFlat = addrs.get(0).flat;
-        c.clientId = id + "";
+        c.clientId = id;
         c.addrRegStreet = addrs.get(1).street;
         c.addrRegHome = addrs.get(1).house;
         c.addrRegFlat = addrs.get(1).flat;
@@ -111,7 +110,7 @@ public class ClientStandDb implements HasAfterInject {
         c.addrFactStreet = addrs.get(0).street;
         c.addrFactHome = addrs.get(0).house;
         c.addrFactFlat = addrs.get(0).flat;
-        c.clientId = client.id + "";
+        c.clientId = client.id;
         c.addrRegStreet = addrs.get(1).street;
         c.addrRegHome = addrs.get(1).house;
         c.addrRegFlat = addrs.get(1).flat;
@@ -132,17 +131,19 @@ public class ClientStandDb implements HasAfterInject {
     }
 
     private ClientDot changeIndex(ClientDot dot, int index) {
-        dot.clientId = Integer.toString(index);
+        dot.clientId = index;
         return dot;
     }
 
     private String randomString() {
-        String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        String AB = "abcdefghijklmnopqrstuvwxyz";
         int len = 7;
         StringBuilder sb = new StringBuilder(len);
         for (int i = 0; i < len; i++)
             sb.append(AB.charAt(random.nextInt(AB.length())));
-        return sb.toString();
+        String out = (AB.charAt(random.nextInt(AB.length())) + "").toUpperCase()
+                + sb.toString();
+        return out;
     }
 
 }

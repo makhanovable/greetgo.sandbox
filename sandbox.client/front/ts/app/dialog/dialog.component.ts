@@ -2,8 +2,10 @@ import {MAT_DIALOG_DATA, MatDialogRef, MatTableDataSource} from "@angular/materi
 import {Component, Inject} from "@angular/core";
 import {HttpService} from "../HttpService";
 import {Client} from "../models/client";
-import {ClientInfo} from "../models/client.info";
 import {Charm} from "../models/charm";
+import {CharmService} from "../services/charm.service";
+import {ClientsInfoService} from "../services/clients.info.service";
+import {FormControl} from "@angular/forms";
 
 @Component({
     selector: 'course-dialog',
@@ -13,8 +15,11 @@ import {Charm} from "../models/charm";
 export class DialogComponent {
 
     constructor(public dialogRef: MatDialogRef<DialogComponent>,
-                @Inject(MAT_DIALOG_DATA) public data: any, private http: HttpService) {
+                @Inject(MAT_DIALOG_DATA) public data: any, private http: HttpService,
+                private charmsService: CharmService, private clientInfoService: ClientsInfoService) {
     }
+
+    client: Client;
 
     surname: string;
     name: string;
@@ -31,15 +36,14 @@ export class DialogComponent {
     phoneMob2: string;
     phoneMob3: string;
 
-    date: string;
-    charm: string;
+    mydate: string;
+    charm_selected: number;
     gender: string;
 
-    clientInfo: ClientInfo;
     charmList: Charm[] = [];
 
     ngOnInit() {
-        this.getCharms();
+        this.charmList = this.charmsService.list;
 
         if (this.data.whichDialogNeeded == 2) {
             this.getClientInfoById(this.data.clientId);
@@ -55,15 +59,14 @@ export class DialogComponent {
     }
 
     edit(clientId) {
-
         this.http.post("/client/edit_client", {
             clientId: clientId,
             surname: this.surname,
             name: this.name,
             patronymic: this.patronymic,
             gender: this.gender,
-            birth_date: this.date,
-            charm: 2,
+            birth_date: this.mydate,
+            charm_selected: this.charm_selected,
             addrFactStreet: this.addrFactStreet,
             addrFactHome: this.addrFactHome,
             addrFactFlat: this.addrFactFlat,
@@ -83,57 +86,35 @@ export class DialogComponent {
     }
 
     getClientInfoById(clientId) {
-        this.http.get("/client/get_client_info_by_id", {
-            clientId: clientId
-        }).toPromise().then(result => {
-            this.clientInfo = {
-                name: JSON.stringify(result.json().name).replace(/["]+/g, ''),
-                surname: JSON.stringify(result.json().surname).replace(/["]+/g, ''),
-                patronymic: result.json().patronymic.replace(/["]+/g, ''),
-                gender: JSON.stringify(result.json().gender).replace(/["]+/g, ''),
-                birth_date: JSON.stringify(result.json().birth_date).replace(/["]+/g, ''),
-                charm: JSON.stringify(result.json().charm).replace(/["]+/g, ''),
-                addrFactStreet: JSON.stringify(result.json().addrFactStreet).replace(/["]+/g, ''),
-                addrFactHome: JSON.stringify(result.json().addrFactHome).replace(/["]+/g, ''),
-                addrFactFlat: JSON.stringify(result.json().addrFactFlat).replace(/["]+/g, ''),
-                addrRegStreet: JSON.stringify(result.json().addrRegStreet).replace(/["]+/g, ''),
-                addrRegHome: JSON.stringify(result.json().addrRegHome).replace(/["]+/g, ''),
-                addrRegFlat: JSON.stringify(result.json().addrRegFlat).replace(/["]+/g, ''),
-                phoneHome: JSON.stringify(result.json().phoneHome).replace(/["]+/g, ''),
-                phoneWork: JSON.stringify(result.json().phoneWork).replace(/["]+/g, ''),
-                phoneMob1: JSON.stringify(result.json().phoneMob1).replace(/["]+/g, ''),
-                phoneMob2: JSON.stringify(result.json().phoneMob2).replace(/["]+/g, ''),
-                phoneMob3: JSON.stringify(result.json().phoneMob3).replace(/["]+/g, '')
-            };
-            this.name = this.clientInfo.name;
-            this.surname = this.clientInfo.surname;
-            this.patronymic = this.clientInfo.patronymic;
-            this.gender = this.clientInfo.gender;
-            // this.date= this.clientInfo.birth_date;
-            this.charm = this.clientInfo.charm;
-            this.addrFactStreet = this.clientInfo.addrFactStreet;
-            this.addrFactHome = this.clientInfo.addrFactHome;
-            this.addrFactFlat = this.clientInfo.addrFactFlat;
-            this.addrRegStreet = this.clientInfo.addrRegStreet;
-            this.addrRegHome = this.clientInfo.addrRegHome;
-            this.addrRegFlat = this.clientInfo.addrRegFlat;
-            this.phoneHome = this.clientInfo.phoneHome;
-            this.phoneWork = this.clientInfo.phoneWork;
-            this.phoneMob1 = this.clientInfo.phoneMob1;
-            this.phoneMob2 = this.clientInfo.phoneMob2;
-            this.phoneMob3 = this.clientInfo.phoneMob3;
-        }).catch(error => {
-        })
+        this.client = this.clientInfoService.getClientById(clientId);
+        this.name = this.client.name;
+        this.surname = this.client.surname;
+        this.patronymic = this.client.patronymic;
+        this.gender = this.client.gender;
+        this.mydate= '27/03/1999';
+        this.charm_selected = this.client.charm_id;
+        this.addrFactStreet = this.client.addrFactStreet;
+        this.addrFactHome = this.client.addrFactHome;
+        this.addrFactFlat = this.client.addrFactFlat;
+        this.addrRegStreet = this.client.addrRegStreet;
+        this.addrRegHome = this.client.addrRegHome;
+        this.addrRegFlat = this.client.addrRegFlat;
+        this.phoneHome = this.client.phoneHome;
+        this.phoneWork = this.client.phoneWork;
+        this.phoneMob1 = this.client.phoneMob1;
+        this.phoneMob2 = this.client.phoneMob2;
+        this.phoneMob3 = this.client.phoneMob3;
     }
 
     add() {
+        console.log(this.mydate);
         this.http.post("/client/add_new_client", {
             surname: this.surname,
             name: this.name,
             patronymic: this.patronymic,
-            gender: this.gender + "",
-            birth_date: this.date,
-            charm: 5,
+            gender: this.gender,
+            birth_date: this.mydate,
+            charm: this.charm_selected,
             addrFactStreet: this.addrFactStreet,
             addrFactHome: this.addrFactHome,
             addrFactFlat: this.addrFactFlat,
@@ -147,21 +128,6 @@ export class DialogComponent {
             phoneMob3: this.phoneMob3
         }).toPromise().then(res => {
             // alert(res.json())
-        }, error => {
-            alert("error");
-        });
-    }
-
-    getCharms() {
-        this.http.get("/client/get_charms").toPromise().then(result => {
-            // alert(JSON.stringify(result.json()));
-            for (let i = 0; i < Number(JSON.stringify(result.json().length)); i++) {
-                let Charm = {
-                    id: Number(JSON.stringify(result.json()[i].id)),
-                    name: JSON.stringify(result.json()[i].name).replace(/["]+/g, ''),
-                };
-                this.charmList.push(Charm);
-            }
         }, error => {
             alert("error");
         });

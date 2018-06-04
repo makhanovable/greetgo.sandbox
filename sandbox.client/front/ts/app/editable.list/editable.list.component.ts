@@ -11,6 +11,8 @@ import {fromEvent} from 'rxjs/observable/fromEvent';
 import {merge, of as observableOf} from 'rxjs';
 import {catchError, map, startWith, switchMap} from 'rxjs/operators';
 import {ClientDataSource} from "../client.data.source";
+import {CharmService} from "../services/charm.service";
+import {ClientsInfoService} from "../services/clients.info.service";
 
 @Component({
     selector: 'editable-list',
@@ -34,17 +36,20 @@ export class EditableListComponent implements OnInit {
     @ViewChild('input') input: ElementRef;
 
     constructor(private dialog: MatDialog,
-                private http: HttpService) {
+                private http: HttpService,
+                private charmService: CharmService,
+                private clientInfo: ClientsInfoService) {
     }
 
     ngOnInit() {
+        this.charmService.getCharms();
         this.selection.onChange.subscribe((a) => {
             if (a.added[0]) {
                 this.clientId = a.added[0].id;
                 console.log('clicked client id = ' + this.clientId);
             }
         });
-        this.exampleDatabase = new ClientDataSource(this.http);
+        this.exampleDatabase = new ClientDataSource(this.http, this.charmService, this.clientInfo);
 
         fromEvent(this.input.nativeElement, 'keyup')
             .pipe(
@@ -116,6 +121,7 @@ export class EditableListComponent implements OnInit {
             });
             dialogRef.afterClosed().subscribe(result => {
                 this.ngOnInit();
+                this.clientId = null;
             });
 
         } else {
@@ -126,6 +132,7 @@ export class EditableListComponent implements OnInit {
             });
             dialogRef.afterClosed().subscribe(result => {
                 this.ngOnInit();
+                this.clientId = null;
             });
         }
     }

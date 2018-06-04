@@ -30,18 +30,34 @@ public class ClientRegisterStand implements ClientRegister {
         for (ClientDot dot : db.get().clientStorage) {
             ResponseClientList clients = new ResponseClientList();
             clients.id = dot.clientId;
-            clients.name = dot.surname + " " + dot.name + " " + dot.patronymic;
-            clients.charm = dot.charm + "";
             clients.age = dot.age;
             clients.total = dot.total;
             clients.max = dot.max;
             clients.min = dot.min;
+            clients.name = dot.name;
+            clients.surname = dot.surname;
+            clients.patronymic = dot.patronymic;
+            clients.gender = dot.gender;
+            clients.birth_date = dot.birth_date;
+            clients.charm = dot.charm;
+            clients.addrFactStreet = dot.addrFactStreet;
+            clients.addrFactHome = dot.addrFactHome;
+            clients.addrFactFlat = dot.addrFactFlat;
+            clients.addrRegStreet = dot.addrRegStreet;
+            clients.addrRegHome = dot.addrRegHome;
+            clients.addrRegFlat = dot.addrRegFlat;
+            clients.phoneHome = dot.phoneHome;
+            clients.phoneWork = dot.phoneWork;
+            clients.phoneMob1 = dot.phoneMob1;
+            clients.phoneMob2 = dot.phoneMob2;
+            clients.phoneMob3 = dot.phoneMob3;
             list.add(clients);
         }
         System.out.println(filter + " - " + sort + " - " + order + " - " + pageNumber + " - " + pageSize);
 
         if (filter != null && !filter.isEmpty()) {
             for (ResponseClientList aList : list) {
+                //System.out.println(aList.name);
                 String name = aList.name.replace(" ", "").toLowerCase();
                 if (name.matches("(?i).*" + filter.toLowerCase() + ".*"))
                     filtered.add(aList);

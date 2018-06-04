@@ -20,6 +20,8 @@ import {DialogComponent} from "./dialog/dialog.component";
 import {ErrorDialogComponent} from "./error.dialog/error.dialog.component";
 import {HttpClientModule} from '@angular/common/http';
 import {AreYouSureDialogComponent} from "./are.you.sure.dialog/are.you.sure.dialog.component";
+import {CharmService} from "./services/charm.service";
+import {ClientsInfoService} from "./services/clients.info.service";
 
 @NgModule({
     imports: [
@@ -47,7 +49,7 @@ import {AreYouSureDialogComponent} from "./are.you.sure.dialog/are.you.sure.dial
         DialogComponent, ErrorDialogComponent, AreYouSureDialogComponent
     ],
     bootstrap: [RootComponent],
-    providers: [HttpService],
+    providers: [HttpService, CharmService, ClientsInfoService],
     entryComponents: [DialogComponent, ErrorDialogComponent, AreYouSureDialogComponent],
 })
 export class AppModule {

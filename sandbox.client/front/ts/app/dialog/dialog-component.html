@@ -21,13 +21,13 @@
         </mat-form-field>
 
         <mat-form-field>
-            <input matInput [matDatepicker]="picker" placeholder="Дата рождения" [(ngModel)]="date">
+            <input matInput [matDatepicker]="picker" placeholder="Дата рождения" [(ngModel)]="mydate">
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker [(ngModel)]="date" ngDefaultControl></mat-datepicker>
+            <mat-datepicker #picker [(ngModel)]="mydate" ngDefaultControl></mat-datepicker>
         </mat-form-field>
 
         <mat-form-field>
-            <mat-select placeholder="Характер" [(ngModel)]="charm" required="true">
+            <mat-select placeholder="Характер" [(ngModel)]="charm_selected" required="true">
                 <mat-option [value]="charm.id" *ngFor="let charm of charmList">
                     {{charm.name}}
                 </mat-option>
