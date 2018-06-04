@@ -2,6 +2,7 @@ package kz.greetgo.sandbox.db.stand.beans;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.HasAfterInject;
+import kz.greetgo.sandbox.controller.model.Charm;
 import kz.greetgo.sandbox.controller.model.Client;
 import kz.greetgo.sandbox.controller.model.ClientAddr;
 import kz.greetgo.sandbox.controller.model.ClientPhone;
@@ -14,9 +15,17 @@ import java.util.*;
 public class ClientStandDb implements HasAfterInject {
     private SecureRandom random = new SecureRandom();
     public List<ClientDot> clientStorage = new ArrayList<>();
+    public List<Charm> charmsStorage = new ArrayList<>();
 
     @Override
     public void afterInject() {
+        for (int i = 0; i < 100; i++) {
+            Charm charm = new Charm();
+            charm.id = i;
+            charm.name = randomString();
+            charmsStorage.add(charm);
+        }
+
         for (int i = 0; i < 100; i++) {
             ClientDot c = new ClientDot();
             c.name = randomString();

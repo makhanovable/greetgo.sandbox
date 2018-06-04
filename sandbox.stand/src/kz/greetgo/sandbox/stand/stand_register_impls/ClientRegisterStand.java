@@ -2,6 +2,7 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.sandbox.controller.model.Charm;
 import kz.greetgo.sandbox.controller.model.Client;
 import kz.greetgo.sandbox.controller.model.ClientAddr;
 import kz.greetgo.sandbox.controller.model.ClientPhone;
@@ -85,7 +86,6 @@ public class ClientRegisterStand implements ClientRegister {
                 out.add(filtered.get(start));
                 start++;
             } catch (Exception ex) {
-                ex.printStackTrace();
                 break;
             }
         }
@@ -133,6 +133,11 @@ public class ClientRegisterStand implements ClientRegister {
         info.phoneMob2 = dot.phoneMob2;
         info.phoneMob3 = dot.phoneMob3;
         return info;
+    }
+
+    @Override
+    public List<Charm> getCharms() {
+        return db.get().charmsStorage;
     }
 
 }

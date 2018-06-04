@@ -26,7 +26,7 @@ export class EditableListComponent implements OnInit {
     resultsLength = 0;
     isLoadingResults = true;
     isRateLimitReached = false;
-    clientId: string;
+    clientId: number;
     selection = new SelectionModel<Client>(false, null);
 
     @ViewChild(MatPaginator) paginator: MatPaginator;

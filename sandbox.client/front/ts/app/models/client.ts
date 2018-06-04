@@ -1,9 +1,9 @@
 export interface Client {
-    id: string;
+    id: number;
     name: string;
-    charm: string;
-    age: string;
-    total_account_balance: string;
-    max_balance: string;
-    min_balance: string;
+    charm: number;
+    age: number;
+    total_account_balance: number;
+    max_balance: number;
+    min_balance: number;
 }

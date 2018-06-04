@@ -22,13 +22,13 @@ export class ClientDataSource {
                 this.ELEMENTS = [];
                 for (let i = 0; i < Number(JSON.stringify(result.json().items.length)); i++) {
                     let Client = {
-                        id: JSON.stringify(result.json().items[i].id).replace(/["]+/g, ''),
+                        id: Number(JSON.stringify(result.json().items[i].id)),
                         name: JSON.stringify(result.json().items[i].name).replace(/["]+/g, ''),
-                        charm: JSON.stringify(result.json().items[i].charm).replace(/["]+/g, ''),
-                        age: JSON.stringify(result.json().items[i].age).replace(/["]+/g, ''),
-                        total_account_balance: JSON.stringify(result.json().items[i].total).replace(/["]+/g, ''),
-                        max_balance: JSON.stringify(result.json().items[i].max).replace(/["]+/g, ''),
-                        min_balance: JSON.stringify(result.json().items[i].min).replace(/["]+/g, '')
+                        charm: Number(JSON.stringify(result.json().items[i].charm)),
+                        age: Number(JSON.stringify(result.json().items[i].age)),
+                        total_account_balance: Number(JSON.stringify(result.json().items[i].total)),
+                        max_balance: Number(JSON.stringify(result.json().items[i].max)),
+                        min_balance: Number(JSON.stringify(result.json().items[i].min))
                     };
                     this.ELEMENTS.push(Client);
                 }

@@ -118,4 +118,11 @@ public class ClientController implements Controller {
         return clientRegister.get().getClientById(clientId);
     }
 
+    @ToJson
+    @NoSecurity
+    @Mapping("/get_charms")
+    public List<Charm> getCharms() {
+        return clientRegister.get().getCharms();
+    }
+
 }

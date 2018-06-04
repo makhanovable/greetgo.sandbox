@@ -1,5 +1,6 @@
 package kz.greetgo.sandbox.controller.register;
 
+import kz.greetgo.sandbox.controller.model.Charm;
 import kz.greetgo.sandbox.controller.model.Client;
 import kz.greetgo.sandbox.controller.model.ClientAddr;
 import kz.greetgo.sandbox.controller.model.ClientPhone;
@@ -20,4 +21,6 @@ public interface ClientRegister {
     void editClient(Client client, List<ClientAddr> addrs, List<ClientPhone> phones);
 
     ClientInfoResponseTest getClientById(String clientId);
+
+    List<Charm> getCharms();
 }

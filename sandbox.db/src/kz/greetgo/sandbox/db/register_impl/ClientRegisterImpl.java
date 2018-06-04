@@ -1,6 +1,7 @@
 package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.Bean;
+import kz.greetgo.sandbox.controller.model.Charm;
 import kz.greetgo.sandbox.controller.model.Client;
 import kz.greetgo.sandbox.controller.model.ClientAddr;
 import kz.greetgo.sandbox.controller.model.ClientPhone;
@@ -36,6 +37,11 @@ public class ClientRegisterImpl implements ClientRegister {
 
     @Override
     public ClientInfoResponseTest getClientById(String clientId) {
+        return null;
+    }
+
+    @Override
+    public List<Charm> getCharms() {
         return null;
     }
 

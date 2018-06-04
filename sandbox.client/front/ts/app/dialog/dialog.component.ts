@@ -3,6 +3,7 @@ import {Component, Inject} from "@angular/core";
 import {HttpService} from "../HttpService";
 import {Client} from "../models/client";
 import {ClientInfo} from "../models/client.info";
+import {Charm} from "../models/charm";
 
 @Component({
     selector: 'course-dialog',
@@ -35,8 +36,11 @@ export class DialogComponent {
     gender: string;
 
     clientInfo: ClientInfo;
+    charmList: Charm[] = [];
 
     ngOnInit() {
+        this.getCharms();
+
         if (this.data.whichDialogNeeded == 2) {
             this.getClientInfoById(this.data.clientId);
         }
@@ -59,7 +63,7 @@ export class DialogComponent {
             patronymic: this.patronymic,
             gender: this.gender,
             birth_date: this.date,
-            charm: this.charm,
+            charm: 2,
             addrFactStreet: this.addrFactStreet,
             addrFactHome: this.addrFactHome,
             addrFactFlat: this.addrFactFlat,
@@ -129,7 +133,7 @@ export class DialogComponent {
             patronymic: this.patronymic,
             gender: this.gender + "",
             birth_date: this.date,
-            charm: this.charm,
+            charm: 5,
             addrFactStreet: this.addrFactStreet,
             addrFactHome: this.addrFactHome,
             addrFactFlat: this.addrFactFlat,
@@ -143,6 +147,21 @@ export class DialogComponent {
             phoneMob3: this.phoneMob3
         }).toPromise().then(res => {
             // alert(res.json())
+        }, error => {
+            alert("error");
+        });
+    }
+
+    getCharms() {
+        this.http.get("/client/get_charms").toPromise().then(result => {
+            // alert(JSON.stringify(result.json()));
+            for (let i = 0; i < Number(JSON.stringify(result.json().length)); i++) {
+                let Charm = {
+                    id: Number(JSON.stringify(result.json()[i].id)),
+                    name: JSON.stringify(result.json()[i].name).replace(/["]+/g, ''),
+                };
+                this.charmList.push(Charm);
+            }
         }, error => {
             alert("error");
         });
