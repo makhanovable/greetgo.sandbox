@@ -1,11 +1,36 @@
-.makhan-list-div {
+table {
+    width: 100%;
+}
+
+.list-div-container {
     width: 80%;
     margin: 10% auto;
     position: relative;
 }
 
-table {
-    width: 100%;
+.example-loading-shade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 56px;
+    right: 0;
+    background: rgba(0, 0, 0, 0.15);
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.example-rate-limit-reached {
+    color: #980000;
+    max-width: 360px;
+    text-align: center;
+}
+
+.example-table-container {
+    position: relative;
+    max-height: 400px;
+    overflow: auto;
 }
 
 .mat-form-field {
@@ -52,4 +77,14 @@ table {
 
 .spinner-container mat-spinner {
     margin: 130px auto 0 auto;
+}
+
+/* Column Widths */
+.mat-column-number,
+.mat-column-state {
+    max-width: 64px;
+}
+
+.mat-column-created {
+    max-width: 124px;
 }

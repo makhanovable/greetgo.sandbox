@@ -5,7 +5,8 @@ import {BrowserModule} from "@angular/platform-browser";
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {RootComponent} from "./root.component";
 import {LoginComponent} from "./input/login.component";
-import {MainFormComponent} from "./main_form/main_form.component";
+import {MainFormComponent} from "./main.form/main.form.component";
+import {MatToolbarModule} from '@angular/material/toolbar';
 import {HttpService} from "./HttpService";
 import {
     MatButtonModule, MatFormFieldModule, MatInputModule, MatSlideToggleModule,
@@ -13,11 +14,12 @@ import {
     MatProgressSpinnerModule,
     MatSortModule
 } from "@angular/material";
-import {EditableListComponent} from "./editable_list/editable.list.component";
+import {EditableListComponent} from "./editable.list/editable.list.component";
 import {MatDialogModule} from "@angular/material";
 import {DialogComponent} from "./dialog/dialog.component";
-import {ErrorDialogComponent} from "./error_dialog/error.dialog.component";
-import {AreYouSureDialogComponent} from "./are_you_sure_dialog/are.you.sure.dialog.component";
+import {ErrorDialogComponent} from "./error.dialog/error.dialog.component";
+import {HttpClientModule} from '@angular/common/http';
+import {AreYouSureDialogComponent} from "./are.you.sure.dialog/are.you.sure.dialog.component";
 
 @NgModule({
     imports: [
@@ -27,6 +29,7 @@ import {AreYouSureDialogComponent} from "./are_you_sure_dialog/are.you.sure.dial
         MatSlideToggleModule,
         MatDialogModule,
         ReactiveFormsModule,
+        MatToolbarModule,
         MatFormFieldModule,
         MatInputModule,
         MatButtonModule,
@@ -36,7 +39,8 @@ import {AreYouSureDialogComponent} from "./are_you_sure_dialog/are.you.sure.dial
         MatNativeDateModule,
         MatDatepickerModule,
         MatSortModule,
-        MatProgressSpinnerModule
+        MatProgressSpinnerModule,
+        HttpClientModule
     ],
     declarations: [
         RootComponent, LoginComponent, MainFormComponent, EditableListComponent,

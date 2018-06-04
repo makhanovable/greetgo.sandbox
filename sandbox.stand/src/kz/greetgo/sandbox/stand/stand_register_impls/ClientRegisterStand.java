@@ -5,12 +5,12 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.register.model.ClientInfoResponseTest;
 import kz.greetgo.sandbox.controller.register.model.ClientResponseTest;
+import kz.greetgo.sandbox.controller.register.model.ClientResponseTestWrapper;
 import kz.greetgo.sandbox.db.stand.beans.ClientStandDb;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
 import kz.greetgo.sandbox.db.stand.model.ClientInfoDot;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Bean
 public class ClientRegisterStand implements ClientRegister {
@@ -18,8 +18,12 @@ public class ClientRegisterStand implements ClientRegister {
     public BeanGetter<ClientStandDb> db;
 
     @Override
-    public List<ClientResponseTest> getClientsList() {
+    public ClientResponseTestWrapper getClientsList(String filter, String sort, String order,
+                                                    String pageNumber, String pageSize) {
+        ClientResponseTestWrapper wrapper = new ClientResponseTestWrapper();
         List<ClientResponseTest> list = new ArrayList<>();
+        List<ClientResponseTest> out = new ArrayList<>();
+        List<ClientResponseTest> filtered = new ArrayList<>();
         for (ClientDot dot : db.get().clientStorage) {
             ClientResponseTest clients = new ClientResponseTest();
             clients.id = dot.id;
@@ -31,7 +35,62 @@ public class ClientRegisterStand implements ClientRegister {
             clients.min = dot.min;
             list.add(clients);
         }
-        return list;
+        System.out.println(filter + " - " + sort + " - " + order + " - " + pageNumber + " - " + pageSize);
+
+        if (filter != null && !filter.isEmpty()) {
+            for (ClientResponseTest aList : list) {
+                String name = aList.name.replace(" ", "").toLowerCase();
+                if (name.matches("(?i).*" + filter.toLowerCase() + ".*"))
+                    filtered.add(aList);
+            }
+        } else
+            filtered = list;
+
+        if (sort != null && order != null && !sort.isEmpty() && !order.isEmpty()) {
+            switch (sort) {
+                case "name":
+                    filtered.sort(Comparator.comparing(o -> o.name));
+                    break;
+                case "age":
+                    filtered.sort(Comparator.comparing(o -> o.age));
+                    break;
+                case "total":
+                    filtered.sort(Comparator.comparing(o -> o.total));
+                    break;
+                case "max":
+                    filtered.sort(Comparator.comparing(o -> o.max));
+                    break;
+                case "min":
+                    filtered.sort(Comparator.comparing(o -> o.min));
+                    break;
+            }
+            if (order.equals("desc"))
+                Collections.reverse(filtered);
+        }
+
+        int number, size;
+        if (pageNumber == null)
+            number = 0;
+        else
+            number = Integer.parseInt(pageNumber);
+        if (pageSize == null)
+            size = 0;
+        else
+            size = Integer.parseInt(pageSize);
+        int start = number * size;
+        for (int i = 0; i < size; i++) {
+            try {
+                out.add(filtered.get(start));
+                start++;
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                break;
+            }
+        }
+
+        wrapper.total_count = filtered.size();
+        wrapper.items = out;
+        return wrapper;
     }
 
     @Override

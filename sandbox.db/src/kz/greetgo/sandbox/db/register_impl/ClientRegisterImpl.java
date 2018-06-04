@@ -4,14 +4,16 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.register.model.ClientInfoResponseTest;
 import kz.greetgo.sandbox.controller.register.model.ClientResponseTest;
+import kz.greetgo.sandbox.controller.register.model.ClientResponseTestWrapper;
 
 import java.util.List;
 
 @Bean
 public class ClientRegisterImpl implements ClientRegister {
 
+
     @Override
-    public List<ClientResponseTest> getClientsList() {
+    public ClientResponseTestWrapper getClientsList(String filter, String sort, String order, String page, String size) {
         return null;
     }
 

@@ -1,0 +1,12 @@
+mat-toolbar {
+    position: fixed;
+    top: 0;
+    background-color: #607d8b;
+}
+
+button {
+    position: fixed;
+    right: 20px;
+    background-color: #fefefe;
+    color: #607d8b;
+}

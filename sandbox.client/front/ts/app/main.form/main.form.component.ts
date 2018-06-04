@@ -5,8 +5,8 @@ import {PhoneType} from "../../model/PhoneType";
 
 @Component({
     selector: 'main-form-component',
-    template: `
-        <editable-list></editable-list>`,
+    template: require('./main.form.component.html'),
+    styles: [require('./main.form.component.css')],
 })
 export class MainFormComponent {
     // @Output() exit = new EventEmitter<void>();

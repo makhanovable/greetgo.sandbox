@@ -21,6 +21,7 @@ public class ClientStandDb implements HasAfterInject {
             for (int j = 0; j < 23; j++) {
                 split[j] = Integer.toString(random.nextInt(5000));
             }
+            split[0] = Integer.toString(i);
             appendPerson(split);
         }
     }
@@ -30,10 +31,10 @@ public class ClientStandDb implements HasAfterInject {
         ClientDot c = new ClientDot();
         c.name = splitLine[0].trim();
         c.charm = splitLine[1].trim();
-        c.age = splitLine[2].trim();
-        c.total = splitLine[3].trim();
-        c.max = splitLine[4].trim();
-        c.min = splitLine[5].trim();
+        c.age = Integer.parseInt(splitLine[2].trim());
+        c.total = Integer.parseInt(splitLine[3].trim());
+        c.max = Integer.parseInt(splitLine[4].trim());
+        c.min = Integer.parseInt(splitLine[5].trim());
         c.id = Integer.toString(clientStorage.size());
         clientStorage.add(c);
 
@@ -144,10 +145,10 @@ public class ClientStandDb implements HasAfterInject {
         ClientDot c = new ClientDot();
         c.name = splitLine[0].trim();
         c.charm = splitLine[1].trim();
-        c.age = splitLine[2].trim();
-        c.total = splitLine[3].trim();
-        c.max = splitLine[4].trim();
-        c.min = splitLine[5].trim();
+        c.age = Integer.parseInt(splitLine[2].trim());
+        c.total = Integer.parseInt(splitLine[3].trim());
+        c.max = Integer.parseInt(splitLine[4].trim());
+        c.min = Integer.parseInt(splitLine[5].trim());
         c.id = clientId;
         return c;
     }

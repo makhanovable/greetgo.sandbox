@@ -8,6 +8,7 @@ import kz.greetgo.mvc.annotations.ToJson;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.register.model.ClientInfoResponseTest;
 import kz.greetgo.sandbox.controller.register.model.ClientResponseTest;
+import kz.greetgo.sandbox.controller.register.model.ClientResponseTestWrapper;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
 
@@ -22,8 +23,10 @@ public class ClientController implements Controller {
     @ToJson
     @NoSecurity
     @Mapping("/get_all_clients")
-    public List<ClientResponseTest> getAllClients() {
-        return clientRegister.get().getClientsList();
+    public ClientResponseTestWrapper getAllClients(@Par("filter") String filter, @Par("sort") String sort,
+                                                   @Par("order") String order, @Par("page") String page,
+                                                   @Par("size") String size) {
+        return clientRegister.get().getClientsList(filter, sort, order, page, size);
     }
 
     @ToJson

@@ -1,8 +1,8 @@
 import {MAT_DIALOG_DATA, MatDialogRef, MatTableDataSource} from "@angular/material";
 import {Component, Inject} from "@angular/core";
 import {HttpService} from "../HttpService";
-import {Client} from "../models/Client";
-import {ClientInfo} from "../models/ClientInfo";
+import {Client} from "../models/client";
+import {ClientInfo} from "../models/client.info";
 
 @Component({
     selector: 'course-dialog',
