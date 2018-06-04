@@ -2,99 +2,84 @@ package kz.greetgo.sandbox.db.stand.beans;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.HasAfterInject;
-import kz.greetgo.sandbox.controller.register.model.ClientInfoResponseTest;
+import kz.greetgo.sandbox.controller.model.Client;
+import kz.greetgo.sandbox.controller.model.ClientAddr;
+import kz.greetgo.sandbox.controller.model.ClientPhone;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
-import kz.greetgo.sandbox.db.stand.model.ClientInfoDot;
 
+import java.security.SecureRandom;
 import java.util.*;
 
 @Bean
 public class ClientStandDb implements HasAfterInject {
+    private SecureRandom random = new SecureRandom();
     public List<ClientDot> clientStorage = new ArrayList<>();
-    public List<ClientInfoDot> clientInfoDotStorage = new ArrayList<>();
 
     @Override
     public void afterInject() {
-        Random random = new Random();
         for (int i = 0; i < 100; i++) {
-            String[] split = new String[23];
-            for (int j = 0; j < 23; j++) {
-                split[j] = Integer.toString(random.nextInt(5000));
-            }
-            split[0] = Integer.toString(i);
-            appendPerson(split);
+            ClientDot c = new ClientDot();
+            c.name = randomString();
+            c.surname = randomString();
+            c.patronymic = randomString();
+            c.age = random.nextInt(90) + 10;
+            c.total = (float) 1.3 * random.nextInt(5000);
+            c.max = (float) 1.3 * random.nextInt(5000);
+            c.min = (float) 1.3 * random.nextInt(5000);
+
+            c.charm = random.nextInt(10); // TODO edit
+            c.gender = randomString(); // TODO edit
+            c.birth_date = randomString(); // TODO edit
+            c.addrFactStreet = randomString();
+            c.addrFactHome = Integer.toString(random.nextInt(100));
+            c.addrFactFlat = Integer.toString(random.nextInt(100));
+
+            c.clientId = i + "";
+
+            c.addrRegStreet = randomString();
+            c.addrRegHome = Integer.toString(random.nextInt(100));
+            c.addrRegFlat = Integer.toString(random.nextInt(100));
+            c.phoneHome = "+" + random.nextInt(10) + random.nextInt(899) + 100 + "" + random.nextInt(8999999) + 1000000;
+            c.phoneWork = "+" + random.nextInt(10) + random.nextInt(899) + 100 + "" + random.nextInt(8999999) + 1000000;
+            c.phoneMob1 = "+" + random.nextInt(10) + random.nextInt(899) + 100 + "" + random.nextInt(8999999) + 1000000;
+            c.phoneMob2 = "+" + random.nextInt(10) + random.nextInt(899) + 100 + "" + random.nextInt(8999999) + 1000000;
+            c.phoneMob3 = "+" + random.nextInt(10) + random.nextInt(899) + 100 + "" + random.nextInt(8999999) + 1000000;
+
+            appendPerson(c);
         }
     }
 
     @SuppressWarnings("unused")
-    private void appendPerson(String[] splitLine) {
-        ClientDot c = new ClientDot();
-        c.name = splitLine[0].trim();
-        c.charm = splitLine[1].trim();
-        c.age = Integer.parseInt(splitLine[2].trim());
-        c.total = Integer.parseInt(splitLine[3].trim());
-        c.max = Integer.parseInt(splitLine[4].trim());
-        c.min = Integer.parseInt(splitLine[5].trim());
-        c.id = Integer.toString(clientStorage.size());
+    private void appendPerson(ClientDot c) {
         clientStorage.add(c);
-
-
-        ClientInfoDot clientInfoDot = new ClientInfoDot();
-        clientInfoDot.name = splitLine[6].trim();
-        clientInfoDot.surname = splitLine[7].trim();
-        clientInfoDot.patronymic = splitLine[8].trim();
-        clientInfoDot.gender = splitLine[9].trim();
-        clientInfoDot.birth_date = splitLine[10].trim();
-        clientInfoDot.charm = splitLine[11].trim();
-        clientInfoDot.addrFactStreet = splitLine[12].trim();
-        clientInfoDot.addrFactHome = splitLine[13].trim();
-        clientInfoDot.addrFactFlat = splitLine[14].trim();
-        clientInfoDot.addrRegStreet = splitLine[15].trim();
-        clientInfoDot.addrRegHome = splitLine[16].trim();
-        clientInfoDot.addrRegFlat = splitLine[17].trim();
-        clientInfoDot.phoneHome = splitLine[18].trim();
-        clientInfoDot.phoneWork = splitLine[19].trim();
-        clientInfoDot.phoneMob1 = splitLine[20].trim();
-        clientInfoDot.phoneMob2 = splitLine[21].trim();
-        clientInfoDot.phoneMob3 = splitLine[22].trim();
-        clientInfoDot.clientId = Integer.toString(clientInfoDotStorage.size());
-        clientInfoDotStorage.add(clientInfoDot);
     }
 
-    public void insert(
-            String surname, String name, String patronymic, String gender,
-            String birth_date, String charm, String addrFactStreet,
-            String addrFactHome, String addrFactFlat, String addrRegStreet,
-            String addrRegHome, String addrRegFlat, String phoneHome, String phoneWork,
-            String phoneMob1, String phoneMob2, String phoneMob3
-    ) {
-        Random random = new Random();
-        String[] split = new String[23];
-        split[0] = surname + " " + name + " " + patronymic;
-        split[1] = charm + "";
-        split[2] = birth_date + "";
-        split[3] = Integer.toString(random.nextInt(500000));
-        split[4] = Integer.toString(random.nextInt(500000));
-        split[5] = Integer.toString(random.nextInt(500000));
-
-        split[6] = name + "";
-        split[7] = surname + "";
-        split[8] = patronymic + "";
-        split[9] = gender + "";
-        split[10] = birth_date + "";
-        split[11] = charm + "";
-        split[12] = addrFactStreet + "";
-        split[13] = addrFactHome + "";
-        split[14] = addrFactFlat + "";
-        split[15] = addrRegStreet + "";
-        split[16] = addrRegHome + "";
-        split[17] = addrRegFlat + "";
-        split[18] = phoneHome + "";
-        split[19] = phoneWork + "";
-        split[20] = phoneMob1 + "";
-        split[21] = phoneMob2 + "";
-        split[22] = phoneMob3 + "";
-        appendPerson(split);
+    public void insert(Client client, List<ClientAddr> addrs, List<ClientPhone> phones) {
+        int id = clientStorage.size();
+        ClientDot c = new ClientDot();
+        c.name = client.name;
+        c.surname = client.surname;
+        c.patronymic = client.patronymic;
+        c.age = random.nextInt(90) + 10; // TODO calculate age
+        c.total = (float) 1.3 * random.nextInt(5000);
+        c.max = (float) 1.3 * random.nextInt(5000);
+        c.min = (float) 1.3 * random.nextInt(5000);
+        c.charm = client.charm; // TODO edit
+        c.gender = "MALE"; // TODO edit
+        c.birth_date = client.birth_date; // TODO edit
+        c.addrFactStreet = addrs.get(0).street;
+        c.addrFactHome = addrs.get(0).house;
+        c.addrFactFlat = addrs.get(0).flat;
+        c.clientId = id + "";
+        c.addrRegStreet = addrs.get(1).street;
+        c.addrRegHome = addrs.get(1).house;
+        c.addrRegFlat = addrs.get(1).flat;
+        c.phoneHome = phones.get(0).number;
+        c.phoneWork = phones.get(0).number;
+        c.phoneMob1 = phones.get(0).number;
+        c.phoneMob2 = phones.get(0).number;
+        c.phoneMob3 = phones.get(0).number;
+        appendPerson(c);
     }
 
     public void remove(String id) {
@@ -102,98 +87,53 @@ public class ClientStandDb implements HasAfterInject {
         correct();
     }
 
-    public void edit(
-            String clientId,
-            String surname, String name, String patronymic, String gender,
-            String birth_date, String charm, String addrFactStreet,
-            String addrFactHome, String addrFactFlat, String addrRegStreet,
-            String addrRegHome, String addrRegFlat, String phoneHome, String phoneWork,
-            String phoneMob1, String phoneMob2, String phoneMob3
-
-    ) {
-        Random random = new Random();
-        String[] split = new String[23];
-        split[0] = surname + " " + name + " " + patronymic;
-        split[1] = charm + "";
-        split[2] = birth_date + "";
-        split[3] = Integer.toString(random.nextInt(500000));
-        split[4] = Integer.toString(random.nextInt(500000));
-        split[5] = Integer.toString(random.nextInt(500000));
-
-        split[6] = name + "";
-        split[7] = surname + "";
-        split[8] = patronymic + "";
-        split[9] = gender + "";
-        split[10] = birth_date + "";
-        split[11] = charm + "";
-        split[12] = addrFactStreet + "";
-        split[13] = addrFactHome + "";
-        split[14] = addrFactFlat + "";
-        split[15] = addrRegStreet + "";
-        split[16] = addrRegHome + "";
-        split[17] = addrRegFlat + "";
-        split[18] = phoneHome + "";
-        split[19] = phoneWork + "";
-        split[20] = phoneMob1 + "";
-        split[21] = phoneMob2 + "";
-        split[22] = phoneMob3 + "";
-        clientStorage.set(Integer.parseInt(clientId), createUser(split, clientId));
-        clientInfoDotStorage.set(Integer.parseInt(clientId), createUserInfo(split, clientId));
-    }
-
-    private ClientDot createUser(String[] splitLine, String clientId) {
+    public void edit(Client client, List<ClientAddr> addrs, List<ClientPhone> phones) {
         ClientDot c = new ClientDot();
-        c.name = splitLine[0].trim();
-        c.charm = splitLine[1].trim();
-        c.age = Integer.parseInt(splitLine[2].trim());
-        c.total = Integer.parseInt(splitLine[3].trim());
-        c.max = Integer.parseInt(splitLine[4].trim());
-        c.min = Integer.parseInt(splitLine[5].trim());
-        c.id = clientId;
-        return c;
+        c.name = client.name;
+        c.surname = client.surname;
+        c.patronymic = client.patronymic;
+        c.age = random.nextInt(90) + 10; // TODO calculate age
+        c.total = (float) 1.3 * random.nextInt(5000);
+        c.max = (float) 1.3 * random.nextInt(5000);
+        c.min = (float) 1.3 * random.nextInt(5000);
+        c.charm = client.charm; // TODO edit
+        c.gender = "MALE"; // TODO edit
+        c.birth_date = client.birth_date; // TODO edit
+        c.addrFactStreet = addrs.get(0).street;
+        c.addrFactHome = addrs.get(0).house;
+        c.addrFactFlat = addrs.get(0).flat;
+        c.clientId = client.id + "";
+        c.addrRegStreet = addrs.get(1).street;
+        c.addrRegHome = addrs.get(1).house;
+        c.addrRegFlat = addrs.get(1).flat;
+        c.phoneHome = phones.get(0).number;
+        c.phoneWork = phones.get(0).number;
+        c.phoneMob1 = phones.get(0).number;
+        c.phoneMob2 = phones.get(0).number;
+        c.phoneMob3 = phones.get(0).number;
+
+        clientStorage.set(client.id, c);
     }
 
-    private ClientInfoDot createUserInfo(String[] splitLine, String clientId) {
-        ClientInfoDot clientInfoDot = new ClientInfoDot();
-        clientInfoDot.name = splitLine[6].trim();
-        clientInfoDot.surname = splitLine[7].trim();
-        clientInfoDot.patronymic = splitLine[8].trim();
-        clientInfoDot.gender = splitLine[9].trim();
-        clientInfoDot.birth_date = splitLine[10].trim();
-        clientInfoDot.charm = splitLine[11].trim();
-        clientInfoDot.addrFactStreet = splitLine[12].trim();
-        clientInfoDot.addrFactHome = splitLine[13].trim();
-        clientInfoDot.addrFactFlat = splitLine[14].trim();
-        clientInfoDot.addrRegStreet = splitLine[15].trim();
-        clientInfoDot.addrRegHome = splitLine[16].trim();
-        clientInfoDot.addrRegFlat = splitLine[17].trim();
-        clientInfoDot.phoneHome = splitLine[18].trim();
-        clientInfoDot.phoneWork = splitLine[19].trim();
-        clientInfoDot.phoneMob1 = splitLine[20].trim();
-        clientInfoDot.phoneMob2 = splitLine[21].trim();
-        clientInfoDot.phoneMob3 = splitLine[22].trim();
-        clientInfoDot.clientId = clientId;
-        return clientInfoDot;
-    }
 
     private void correct() {
         for (int i = 0; i < clientStorage.size(); i++) {
             clientStorage.set(i, changeIndex(clientStorage.get(i), i));
         }
-        for (int i = 0; i < clientInfoDotStorage.size(); i++) {
-            clientInfoDotStorage.set(i, changeIndex(clientInfoDotStorage.get(i), i));
-        }
     }
 
     private ClientDot changeIndex(ClientDot dot, int index) {
-        dot.id = Integer.toString(index);
-        return dot;
-    }
-
-    private ClientInfoDot changeIndex(ClientInfoDot dot, int index) {
         dot.clientId = Integer.toString(index);
         return dot;
     }
 
+    private String randomString() {
+        String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        int len = 7;
+        StringBuilder sb = new StringBuilder(len);
+        for (int i = 0; i < len; i++)
+            sb.append(AB.charAt(random.nextInt(AB.length())));
+        return sb.toString();
+    }
 
 }

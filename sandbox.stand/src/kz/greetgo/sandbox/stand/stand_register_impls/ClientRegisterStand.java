@@ -2,13 +2,15 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.sandbox.controller.model.Client;
+import kz.greetgo.sandbox.controller.model.ClientAddr;
+import kz.greetgo.sandbox.controller.model.ClientPhone;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.register.model.ClientInfoResponseTest;
-import kz.greetgo.sandbox.controller.register.model.ClientResponseTest;
-import kz.greetgo.sandbox.controller.register.model.ClientResponseTestWrapper;
+import kz.greetgo.sandbox.controller.register.model.ResponseClientList;
+import kz.greetgo.sandbox.controller.register.model.ResponseClientListWrapper;
 import kz.greetgo.sandbox.db.stand.beans.ClientStandDb;
 import kz.greetgo.sandbox.db.stand.model.ClientDot;
-import kz.greetgo.sandbox.db.stand.model.ClientInfoDot;
 
 import java.util.*;
 
@@ -18,17 +20,17 @@ public class ClientRegisterStand implements ClientRegister {
     public BeanGetter<ClientStandDb> db;
 
     @Override
-    public ClientResponseTestWrapper getClientsList(String filter, String sort, String order,
+    public ResponseClientListWrapper getClientsList(String filter, String sort, String order,
                                                     String pageNumber, String pageSize) {
-        ClientResponseTestWrapper wrapper = new ClientResponseTestWrapper();
-        List<ClientResponseTest> list = new ArrayList<>();
-        List<ClientResponseTest> out = new ArrayList<>();
-        List<ClientResponseTest> filtered = new ArrayList<>();
+        ResponseClientListWrapper wrapper = new ResponseClientListWrapper();
+        List<ResponseClientList> list = new ArrayList<>();
+        List<ResponseClientList> out = new ArrayList<>();
+        List<ResponseClientList> filtered = new ArrayList<>();
         for (ClientDot dot : db.get().clientStorage) {
-            ClientResponseTest clients = new ClientResponseTest();
-            clients.id = dot.id;
-            clients.name = dot.name;
-            clients.charm = dot.charm;
+            ResponseClientList clients = new ResponseClientList();
+            clients.id = dot.clientId;
+            clients.name = dot.surname + " " + dot.name + " " + dot.patronymic;
+            clients.charm = dot.charm + "";
             clients.age = dot.age;
             clients.total = dot.total;
             clients.max = dot.max;
@@ -38,7 +40,7 @@ public class ClientRegisterStand implements ClientRegister {
         System.out.println(filter + " - " + sort + " - " + order + " - " + pageNumber + " - " + pageSize);
 
         if (filter != null && !filter.isEmpty()) {
-            for (ClientResponseTest aList : list) {
+            for (ResponseClientList aList : list) {
                 String name = aList.name.replace(" ", "").toLowerCase();
                 if (name.matches("(?i).*" + filter.toLowerCase() + ".*"))
                     filtered.add(aList);
@@ -94,16 +96,8 @@ public class ClientRegisterStand implements ClientRegister {
     }
 
     @Override
-    public void addNewClient(String surname, String name, String patronymic, String gender,
-                             String birth_date, String charm, String addrFactStreet,
-                             String addrFactHome, String addrFactFlat, String addrRegStreet,
-                             String addrRegHome, String addrRegFlat, String phoneHome, String phoneWork,
-                             String phoneMob1, String phoneMob2, String phoneMob3) {
-        db.get().insert(surname, name, patronymic, gender,
-                birth_date, charm, addrFactStreet,
-                addrFactHome, addrFactFlat, addrRegStreet,
-                addrRegHome, addrRegFlat, phoneHome, phoneWork,
-                phoneMob1, phoneMob2, phoneMob3);// TODO all
+    public void addNewClient(Client client, List<ClientAddr> addrs, List<ClientPhone> phones) {
+        db.get().insert(client, addrs, phones);
     }
 
     @Override
@@ -112,25 +106,21 @@ public class ClientRegisterStand implements ClientRegister {
     }
 
     @Override
-    public void editClient(String clientId, String surname, String name, String patronymic, String gender, String birth_date, String charm, String addrFactStreet, String addrFactHome, String addrFactFlat, String addrRegStreet, String addrRegHome, String addrRegFlat, String phoneHome, String phoneWork, String phoneMob1, String phoneMob2, String phoneMob3) {
-        db.get().edit(clientId, surname, name, patronymic, gender,
-                birth_date, charm, addrFactStreet,
-                addrFactHome, addrFactFlat, addrRegStreet,
-                addrRegHome, addrRegFlat, phoneHome, phoneWork,
-                phoneMob1, phoneMob2, phoneMob3);
+    public void editClient(Client client, List<ClientAddr> addrs, List<ClientPhone> phones) {
+        db.get().edit(client, addrs, phones);
     }
 
     @Override
     public ClientInfoResponseTest getClientById(String clientId) {
         ClientInfoResponseTest info = new ClientInfoResponseTest();
         System.out.println(clientId);
-        ClientInfoDot dot = db.get().clientInfoDotStorage.get(Integer.parseInt(clientId));
+        ClientDot dot = db.get().clientStorage.get(Integer.parseInt(clientId));
         info.name = dot.name;
         info.surname = dot.surname;
         info.patronymic = dot.patronymic;
         info.gender = dot.gender;
         info.birth_date = dot.birth_date;
-        info.charm = dot.charm;
+        info.charm = dot.charm + "";
         info.addrFactStreet = dot.addrFactStreet;
         info.addrFactHome = dot.addrFactHome;
         info.addrFactFlat = dot.addrFactFlat;
@@ -144,4 +134,5 @@ public class ClientRegisterStand implements ClientRegister {
         info.phoneMob3 = dot.phoneMob3;
         return info;
     }
+
 }

@@ -14,7 +14,7 @@ export class ClientDataSource {
         console.log(filter + " - " + sort + " - " + order + " - " + page + " - " + size);
         if (size == null)
             size = 5;
-        return this.http.post("/client/get_all_clients", {
+        return this.http.post("/client/get_clients_list", {
             filter: filter, sort: sort, order: order, page: page, size: size
         }).map(
             (result) => {
