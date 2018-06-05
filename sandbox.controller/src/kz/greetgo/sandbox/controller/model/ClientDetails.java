@@ -1,12 +1,13 @@
-package kz.greetgo.sandbox.controller.register.model;
+package kz.greetgo.sandbox.controller.model;
 
-public class ClientInfoResponseTest {
+public class ClientDetails {
+    public int id;
     public String name;
     public String surname;
     public String patronymic;
     public String gender;
     public String birth_date;
-    public String charm;
+    public int charm;
     public String addrFactStreet;
     public String addrFactHome;
     public String addrFactFlat;

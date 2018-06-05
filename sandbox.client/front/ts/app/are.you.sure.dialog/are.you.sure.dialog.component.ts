@@ -18,14 +18,14 @@ export class AreYouSureDialogComponent {
         this.clientId = this.data.clientId;
     }
 
-    del() { // TODO update list
+    del() {
         this.http.post("/client/del_client", {
             clientId: this.clientId
         }).toPromise().then(res => {
-            // alert(res.json())
         }, error => {
             alert("error");
         });
+        this.dialogRef.close();
     }
 
 }

@@ -2,136 +2,249 @@ package kz.greetgo.sandbox.db.stand.beans;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.HasAfterInject;
-import kz.greetgo.sandbox.controller.model.*;
-import kz.greetgo.sandbox.db.stand.model.ClientDot;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.Options;
+import kz.greetgo.sandbox.db.stand.model.CharmDot;
+import kz.greetgo.sandbox.db.stand.model.ClientDetailsDot;
+import kz.greetgo.sandbox.db.stand.model.ClientRecordDot;
 
 import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
 import java.util.*;
 
 @Bean
 public class ClientStandDb implements HasAfterInject {
+
     private SecureRandom random = new SecureRandom();
-    public List<ClientDot> clientStorage = new ArrayList<>();
-    public List<Charm> charmsStorage = new ArrayList<>();
-    private String[] g = new String[]{"MALE", "FEMALE"};
+    private String[] genders = new String[]{"MALE", "FEMALE"};
+
+    private List<ClientRecordDot> clientRecordStorage = new ArrayList<>();
+    private List<ClientDetailsDot> clientDetailsStorage = new ArrayList<>();
+    public List<CharmDot> charmsStorage = new ArrayList<>();
+    public List<ClientRecordDot> out;
+    private int ID;
 
     @Override
     public void afterInject() {
-        for (int i = 0; i < 100; i++) {
-            Charm charm = new Charm();
+        for (int i = 0; i < 5; i++) {
+            CharmDot charm = new CharmDot();
             charm.id = i;
             charm.name = randomString();
             charmsStorage.add(charm);
         }
 
         for (int i = 0; i < 100; i++) {
-            ClientDot c = new ClientDot();
-            c.name = randomString();
-            c.surname = randomString();
-            c.patronymic = randomString();
-            c.age = random.nextInt(90) + 10;
-            c.total = (float) 1.3 * random.nextInt(5000);
-            c.max = (float) 1.3 * random.nextInt(5000);
-            c.min = (float) 1.3 * random.nextInt(5000);
+            ClientDetailsDot clientDetailsDot = new ClientDetailsDot();
+            ClientRecordDot clientRecordDot = new ClientRecordDot();
 
-            c.charm = random.nextInt(10); // TODO edit
-            c.gender = g[random.nextInt(2)]; // TODO edit
-            c.birth_date = randomString(); // TODO edit
-            c.addrFactStreet = randomString();
-            c.addrFactHome = Integer.toString(random.nextInt(100));
-            c.addrFactFlat = Integer.toString(random.nextInt(100));
+            clientDetailsDot.id = i;
+            clientDetailsDot.name = randomString();
+            clientDetailsDot.surname = randomString();
+            clientDetailsDot.patronymic = randomString();
+            clientDetailsDot.gender = genders[random.nextInt(2)];
+            clientDetailsDot.birth_date = (random.nextInt(12) + 1) + "/"
+                    + (random.nextInt(28) + 1) + "/"
+                    + (random.nextInt(1001) + 1018);
+            clientDetailsDot.charm = random.nextInt(charmsStorage.size());
+            clientDetailsDot.addrFactStreet = randomString();
+            clientDetailsDot.addrFactHome = Integer.toString(random.nextInt(100));
+            clientDetailsDot.addrFactFlat = Integer.toString(random.nextInt(100));
+            clientDetailsDot.addrRegStreet = randomString();
+            clientDetailsDot.addrRegHome = Integer.toString(random.nextInt(100));
+            clientDetailsDot.addrRegFlat = Integer.toString(random.nextInt(100));
+            clientDetailsDot.phoneHome = "+" + random.nextInt(10) + "" + (random.nextInt(899) + 100);
+            clientDetailsDot.phoneWork = "+" + random.nextInt(10) + "" + (random.nextInt(899) + 100);
+            clientDetailsDot.phoneMob1 = "+" + random.nextInt(10) + "" + (random.nextInt(899) + 100);
+            clientDetailsDot.phoneMob2 = "+" + random.nextInt(10) + "" + (random.nextInt(899) + 100);
+            clientDetailsDot.phoneMob3 = "+" + random.nextInt(10) + "" + (random.nextInt(899) + 100);
+            clientDetailsStorage.add(clientDetailsDot);
 
-            c.clientId = i;
+            clientRecordDot.id = i;
+            clientRecordDot.name = clientDetailsDot.surname + " " + clientDetailsDot.name
+                    + " " + clientDetailsDot.patronymic;
+            clientRecordDot.charm = getCharmById(clientDetailsDot.charm);
+            clientRecordDot.age = calculateAge(clientDetailsDot.birth_date);
+            clientRecordDot.total = (float) 1.3 * random.nextInt(5000);
+            clientRecordDot.max = (float) 1.3 * random.nextInt(5000);
+            clientRecordDot.min = (float) 1.3 * random.nextInt(5000);
+            clientRecordStorage.add(clientRecordDot);
+        }
+        ID = clientRecordStorage.size();
+    }
 
-            c.addrRegStreet = randomString();
-            c.addrRegHome = Integer.toString(random.nextInt(100));
-            c.addrRegFlat = Integer.toString(random.nextInt(100));
-            c.phoneHome = "+" + random.nextInt(10) + random.nextInt(899) + 100 + "" + (random.nextInt(8999999) + 1000000);
-            c.phoneWork = "+" + random.nextInt(10) + random.nextInt(899) + 100 + "" + (random.nextInt(8999999) + 1000000);
-            c.phoneMob1 = "+" + random.nextInt(10) + random.nextInt(899) + 100 + "" + (random.nextInt(8999999) + 1000000);
-            c.phoneMob2 = "+" + random.nextInt(10) + random.nextInt(899) + 100 + "" + (random.nextInt(8999999) + 1000000);
-            c.phoneMob3 = "+" + random.nextInt(10) + random.nextInt(899) + 100 + "" + (random.nextInt(8999999) + 1000000);
+    public List<ClientRecordDot> getClientRecordStorage(Options options) {
+        List<ClientRecordDot> returned = new ArrayList<>();
+        out = new ArrayList<>();
 
-            appendPerson(c);
+        System.out.println(options.filter + " - " + options.sort
+                + " - " + options.order + " - " + options.page + " - " + options.size);
+
+        if (options.filter != null && !options.filter.isEmpty()) {
+            for (ClientRecordDot aList : clientRecordStorage) {
+                String name = aList.name.replace(" ", "").toLowerCase();
+                if (name.matches("(?i).*" + options.filter.replace(" ", "")
+                        .toLowerCase() + ".*"))
+                    out.add(aList);
+            }
+        } else
+            out = clientRecordStorage;
+
+        if (options.sort != null && options.order != null &&
+                !options.sort.isEmpty() && !options.order.isEmpty()) {
+            switch (options.sort) {
+                case "name":
+                    out.sort(Comparator.comparing(o -> o.name));
+                    break;
+                case "age":
+                    out.sort(Comparator.comparing(o -> o.age));
+                    break;
+                case "total":
+                    out.sort(Comparator.comparing(o -> o.total));
+                    break;
+                case "max":
+                    out.sort(Comparator.comparing(o -> o.max));
+                    break;
+                case "min":
+                    out.sort(Comparator.comparing(o -> o.min));
+                    break;
+            }
+            if (options.order.equals("desc"))
+                Collections.reverse(out);
+        }
+
+        int number, size;
+        if (options.page == null)
+            number = 0;
+        else
+            number = Integer.parseInt(options.page);
+        if (options.size == null)
+            size = 0;
+        else
+            size = Integer.parseInt(options.size);
+        int start = number * size;
+        for (int i = 0; i < size; i++) {
+            try {
+                returned.add(out.get(start));
+                start++;
+            } catch (Exception ex) {
+                break;
+            }
+        }
+        return returned;
+    }
+
+    public void deleteClientInfo(int id) {
+        System.out.println("deleting id = " + id);
+        for (int i = 0; i < clientDetailsStorage.size(); i++) {
+            if (clientDetailsStorage.get(i).id == id || clientRecordStorage.get(i).id == id) {
+                System.out.println("found " + clientDetailsStorage.get(i).name);
+                clientDetailsStorage.remove(i);
+                clientRecordStorage.remove(i);
+            }
         }
     }
 
-    @SuppressWarnings("unused")
-    private void appendPerson(ClientDot c) {
-        clientStorage.add(c);
+    public ClientRecordDot addNewClientRecord(ClientDetails details) {
+        int id = ID;
+        ID++;
+        ClientDetailsDot clientDetailsDot = new ClientDetailsDot();
+        ClientRecordDot clientRecordDot = new ClientRecordDot();
+
+        clientDetailsDot.id = id;
+        clientDetailsDot.name = details.name;
+        clientDetailsDot.surname = details.surname;
+        clientDetailsDot.patronymic = details.patronymic;
+        clientDetailsDot.gender = details.gender;
+        clientDetailsDot.birth_date = details.birth_date;
+        clientDetailsDot.charm = details.charm;
+        if (details.addrFactStreet != null) clientDetailsDot.addrFactStreet = details.addrFactStreet;
+        else clientDetailsDot.addrFactStreet = "";
+        if (details.addrFactHome != null) clientDetailsDot.addrFactHome = details.addrFactHome;
+        else clientDetailsDot.addrFactHome = "";
+        if (details.addrFactFlat != null) clientDetailsDot.addrFactFlat = details.addrFactFlat;
+        else clientDetailsDot.addrFactFlat = "";
+        clientDetailsDot.addrRegStreet = details.addrRegStreet;
+        clientDetailsDot.addrRegHome = details.addrRegHome;
+        clientDetailsDot.addrRegFlat = details.addrRegFlat;
+        clientDetailsDot.phoneHome = details.phoneHome;
+        if (details.phoneWork != null) clientDetailsDot.phoneWork = details.phoneWork;
+        else clientDetailsDot.phoneWork = "";
+        if (details.phoneMob1 != null) clientDetailsDot.phoneMob1 = details.phoneMob1;
+        else clientDetailsDot.phoneMob1 = "";
+        if (details.phoneMob2 != null) clientDetailsDot.phoneMob2 = details.phoneMob2;
+        else clientDetailsDot.phoneMob2 = "";
+        if (details.phoneMob3 != null) clientDetailsDot.phoneMob3 = details.phoneMob3;
+        else clientDetailsDot.phoneMob3 = "";
+        clientDetailsStorage.add(clientDetailsDot);
+
+        clientRecordDot.id = id;
+        clientRecordDot.name = clientDetailsDot.surname + " " + clientDetailsDot.name
+                + " " + clientDetailsDot.patronymic;
+        clientRecordDot.charm = getCharmById(clientDetailsDot.charm);
+        clientRecordDot.age = calculateAge(clientDetailsDot.birth_date);
+        clientRecordDot.total = (float) 1.3 * random.nextInt(5000);
+        clientRecordDot.max = (float) 1.3 * random.nextInt(5000);
+        clientRecordDot.min = (float) 1.3 * random.nextInt(5000);
+        clientRecordStorage.add(clientRecordDot);
+
+        return clientRecordDot;
     }
 
-    public void insert(Client client, List<ClientAddr> addrs, List<ClientPhone> phones) {
-        int id = clientStorage.size();
-        ClientDot c = new ClientDot();
-        c.name = client.name;
-        c.surname = client.surname;
-        c.patronymic = client.patronymic;
-        c.age = random.nextInt(90) + 10; // TODO calculate age
-        c.total = (float) 1.3 * random.nextInt(5000);
-        c.max = (float) 1.3 * random.nextInt(5000);
-        c.min = (float) 1.3 * random.nextInt(5000);
-        c.charm = client.charm; // TODO edit
-        c.gender = client.gender.equals(Gender.MALE) ? "MALE" : "FEMALE"; // TODO edit
-        c.birth_date = client.birth_date; // TODO edit
-        System.out.println(client.birth_date);
-        c.addrFactStreet = addrs.get(0).street;
-        c.addrFactHome = addrs.get(0).house;
-        c.addrFactFlat = addrs.get(0).flat;
-        c.clientId = id;
-        c.addrRegStreet = addrs.get(1).street;
-        c.addrRegHome = addrs.get(1).house;
-        c.addrRegFlat = addrs.get(1).flat;
-        c.phoneHome = phones.get(0).number;
-        c.phoneWork = phones.get(0).number;
-        c.phoneMob1 = phones.get(0).number;
-        c.phoneMob2 = phones.get(0).number;
-        c.phoneMob3 = phones.get(0).number;
-        appendPerson(c);
+    public ClientRecordDot editClientRecord(ClientDetails details) {
+        ClientDetailsDot clientDetailsDot = new ClientDetailsDot();
+        ClientRecordDot clientRecordDot = new ClientRecordDot();
+
+        clientDetailsDot.id = details.id;
+        clientDetailsDot.name = details.name;
+        clientDetailsDot.surname = details.surname;
+        clientDetailsDot.patronymic = details.patronymic;
+        clientDetailsDot.gender = details.gender;
+        clientDetailsDot.birth_date = details.birth_date;
+        clientDetailsDot.charm = details.charm;
+        if (details.addrFactStreet != null) clientDetailsDot.addrFactStreet = details.addrFactStreet;
+        else clientDetailsDot.addrFactStreet = "";
+        if (details.addrFactHome != null) clientDetailsDot.addrFactHome = details.addrFactHome;
+        else clientDetailsDot.addrFactHome = "";
+        if (details.addrFactFlat != null) clientDetailsDot.addrFactFlat = details.addrFactFlat;
+        else clientDetailsDot.addrFactFlat = "";
+        clientDetailsDot.addrRegStreet = details.addrRegStreet;
+        clientDetailsDot.addrRegHome = details.addrRegHome;
+        clientDetailsDot.addrRegFlat = details.addrRegFlat;
+        clientDetailsDot.phoneHome = details.phoneHome;
+        if (details.phoneWork != null) clientDetailsDot.phoneWork = details.phoneWork;
+        else clientDetailsDot.phoneWork = "";
+        if (details.phoneMob1 != null) clientDetailsDot.phoneMob1 = details.phoneMob1;
+        else clientDetailsDot.phoneMob1 = "";
+        if (details.phoneMob2 != null) clientDetailsDot.phoneMob2 = details.phoneMob2;
+        else clientDetailsDot.phoneMob2 = "";
+        if (details.phoneMob3 != null) clientDetailsDot.phoneMob3 = details.phoneMob3;
+        else clientDetailsDot.phoneMob3 = "";
+
+        clientRecordDot.id = details.id;
+        clientRecordDot.name = clientDetailsDot.surname + " " + clientDetailsDot.name
+                + " " + clientDetailsDot.patronymic;
+        clientRecordDot.charm = getCharmById(clientDetailsDot.charm);
+        clientRecordDot.age = calculateAge(clientDetailsDot.birth_date);
+        clientRecordDot.total = (float) 1.3 * random.nextInt(5000);
+        clientRecordDot.max = (float) 1.3 * random.nextInt(5000);
+        clientRecordDot.min = (float) 1.3 * random.nextInt(5000);
+        deleteClientInfo(details.id);
+        clientRecordStorage.add(clientRecordDot);
+        clientDetailsStorage.add(clientDetailsDot);
+
+        return clientRecordDot;
     }
 
-    public void remove(String id) {
-        clientStorage.remove(Integer.parseInt(id));
-        correct();
-    }
-
-    public void edit(Client client, List<ClientAddr> addrs, List<ClientPhone> phones) {
-        ClientDot c = new ClientDot();
-        c.name = client.name;
-        c.surname = client.surname;
-        c.patronymic = client.patronymic;
-        c.age = random.nextInt(90) + 10; // TODO calculate age
-        c.total = (float) 1.3 * random.nextInt(5000);
-        c.max = (float) 1.3 * random.nextInt(5000);
-        c.min = (float) 1.3 * random.nextInt(5000);
-        c.charm = client.charm; // TODO edit
-        c.gender = "MALE"; // TODO edit
-        c.birth_date = client.birth_date; // TODO edit
-        c.addrFactStreet = addrs.get(0).street;
-        c.addrFactHome = addrs.get(0).house;
-        c.addrFactFlat = addrs.get(0).flat;
-        c.clientId = client.id;
-        c.addrRegStreet = addrs.get(1).street;
-        c.addrRegHome = addrs.get(1).house;
-        c.addrRegFlat = addrs.get(1).flat;
-        c.phoneHome = phones.get(0).number;
-        c.phoneWork = phones.get(0).number;
-        c.phoneMob1 = phones.get(0).number;
-        c.phoneMob2 = phones.get(0).number;
-        c.phoneMob3 = phones.get(0).number;
-
-        clientStorage.set(client.id, c);
-    }
-
-
-    private void correct() {
-        for (int i = 0; i < clientStorage.size(); i++) {
-            clientStorage.set(i, changeIndex(clientStorage.get(i), i));
+    public ClientDetailsDot getClientDetailById(int clientId) {
+        ClientDetailsDot dot = null;
+        for (ClientDetailsDot aClientDetailsStorage : clientDetailsStorage) {
+            if (aClientDetailsStorage.id == clientId) {
+                dot = aClientDetailsStorage;
+                break;
+            }
         }
-    }
-
-    private ClientDot changeIndex(ClientDot dot, int index) {
-        dot.clientId = index;
         return dot;
     }
 
@@ -141,9 +254,35 @@ public class ClientStandDb implements HasAfterInject {
         StringBuilder sb = new StringBuilder(len);
         for (int i = 0; i < len; i++)
             sb.append(AB.charAt(random.nextInt(AB.length())));
-        String out = (AB.charAt(random.nextInt(AB.length())) + "").toUpperCase()
+        return (AB.charAt(random.nextInt(AB.length())) + "").toUpperCase()
                 + sb.toString();
-        return out;
+    }
+
+    private int calculateAge(String date) {
+        String[] split = date.split("/");
+        LocalDate birthDate;
+        try {
+            birthDate = LocalDate.of(Integer.parseInt(split[2]), Integer.parseInt(split[0]), Integer.parseInt(split[1]));
+        } catch (Exception e) {
+            birthDate = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            ;
+        }
+        Date input = new Date();
+        LocalDate currentDate = input.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        if ((currentDate != null)) {
+            return Period.between(birthDate, currentDate).getYears();
+        } else {
+            return 0;
+        }
+    }
+
+    private String getCharmById(int id) {
+        for (CharmDot aCharmsStorage : charmsStorage) {
+            if (aCharmsStorage.id == id) {
+                return aCharmsStorage.name;
+            }
+        }
+        return "";
     }
 
 }

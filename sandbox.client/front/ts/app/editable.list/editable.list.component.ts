@@ -2,17 +2,17 @@ import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {DialogComponent} from "../dialog/dialog.component";
 import {MatDialog, MatPaginator, MatSort} from "@angular/material";
 import {HttpService} from "../HttpService";
-import {Client} from '../models/client';
+import {Client} from '../models/client.record';
 import {SelectionModel} from '@angular/cdk/collections';
 import {ErrorDialogComponent} from "../error.dialog/error.dialog.component";
 import {AreYouSureDialogComponent} from "../are.you.sure.dialog/are.you.sure.dialog.component";
-import {debounceTime, distinctUntilChanged, tap} from 'rxjs/operators';
 import {fromEvent} from 'rxjs/observable/fromEvent';
 import {merge, of as observableOf} from 'rxjs';
+import {Observable} from "rxjs/index";
 import {catchError, map, startWith, switchMap} from 'rxjs/operators';
-import {ClientDataSource} from "../client.data.source";
+import {ClientDataSource} from "../services/client.data.source";
 import {CharmService} from "../services/charm.service";
-import {ClientsInfoService} from "../services/clients.info.service";
+import {ClientWrapper} from "../models/client.wrapper";
 
 @Component({
     selector: 'editable-list',
@@ -25,11 +25,16 @@ export class EditableListComponent implements OnInit {
     exampleDatabase: ClientDataSource | null;
 
     data: Client[] = [];
+    temp: Client[] = [];
     resultsLength = 0;
     isLoadingResults = true;
     isRateLimitReached = false;
     clientId: number;
     selection = new SelectionModel<Client>(false, null);
+
+    mustLoadFromNet: boolean = true;
+
+    displayedList: Observable<ClientWrapper>;
 
     @ViewChild(MatPaginator) paginator: MatPaginator;
     @ViewChild(MatSort) sort: MatSort;
@@ -37,19 +42,13 @@ export class EditableListComponent implements OnInit {
 
     constructor(private dialog: MatDialog,
                 private http: HttpService,
-                private charmService: CharmService,
-                private clientInfo: ClientsInfoService) {
+                private charmService: CharmService) {
     }
 
     ngOnInit() {
         this.charmService.getCharms();
-        this.selection.onChange.subscribe((a) => {
-            if (a.added[0]) {
-                this.clientId = a.added[0].id;
-                console.log('clicked client id = ' + this.clientId);
-            }
-        });
-        this.exampleDatabase = new ClientDataSource(this.http, this.charmService, this.clientInfo);
+        this.exampleDatabase = new ClientDataSource(this.http, this.charmService);
+        this.sort.sortChange.subscribe(() => this.paginator.pageIndex = 0);
 
         fromEvent(this.input.nativeElement, 'keyup')
             .pipe(
@@ -57,7 +56,7 @@ export class EditableListComponent implements OnInit {
                 switchMap(() => {
                     this.isLoadingResults = true;
                     this.paginator.pageIndex = 0;
-                    return this.exampleDatabase!.getClients(this.input.nativeElement.value,
+                    return this.displayedList = this.exampleDatabase!.getClients(this.input.nativeElement.value,
                         this.sort.active, this.sort.direction, this.paginator.pageIndex,
                         this.paginator.pageSize);
                 }),
@@ -75,21 +74,38 @@ export class EditableListComponent implements OnInit {
                 })
             ).subscribe(data => this.data = data);
 
-        this.sort.sortChange.subscribe(() => this.paginator.pageIndex = 0);
+        this.loadData();
+        this.selection.onChange.subscribe((a) => {
+            if (a.added[0]) {
+                this.clientId = a.added[0].id;
+                console.log('clicked client id = ' + this.clientId);
+            }
+        });
+    }
 
+    loadData(): void {
         merge(this.sort.sortChange, this.paginator.page)
             .pipe(
                 startWith({}),
                 switchMap(() => {
                     this.isLoadingResults = true;
-                    return this.exampleDatabase!.getClients(this.input.nativeElement.value,
-                        this.sort.active, this.sort.direction, this.paginator.pageIndex,
-                        this.paginator.pageSize);
+                    if (this.mustLoadFromNet) {
+                        console.log('loading data from net');
+                        this.displayedList = this.exampleDatabase!.getClients(this.input.nativeElement.value,
+                            this.sort.active, this.sort.direction, this.paginator.pageIndex,
+                            this.paginator.pageSize);
+                        return this.displayedList;
+                    } else {
+                        console.log('loading data NOT from net');
+                        this.mustLoadFromNet = true;
+                        return this.displayedList;
+                    }
                 }),
                 map(data => {
                     this.isLoadingResults = false;
                     this.isRateLimitReached = false;
                     this.resultsLength = data.total_count;
+                    console.log(data.items.length + " data length");
 
                     return data.items;
                 }),
@@ -120,10 +136,19 @@ export class EditableListComponent implements OnInit {
                 data: {clientId: this.clientId}
             });
             dialogRef.afterClosed().subscribe(result => {
-                this.ngOnInit();
+                this.loadData();
                 this.clientId = null;
             });
 
+        } else if (whichDialogNeeded == 1) {
+            let dialogRef = this.dialog.open(DialogComponent, {
+                width: '550px',
+                height: '500px',
+                data: {whichDialogNeeded: whichDialogNeeded, clientId: this.clientId}
+            });
+            dialogRef.afterClosed().subscribe(result => {
+                this.addRowToList(result);
+            });
         } else {
             let dialogRef = this.dialog.open(DialogComponent, {
                 width: '550px',
@@ -131,14 +156,60 @@ export class EditableListComponent implements OnInit {
                 data: {whichDialogNeeded: whichDialogNeeded, clientId: this.clientId}
             });
             dialogRef.afterClosed().subscribe(result => {
-                this.ngOnInit();
-                this.clientId = null;
+                this.editRowOnList(result);
             });
         }
     }
 
     openErrorDialog(): void {
         let dialogRef = this.dialog.open(ErrorDialogComponent, {});
+    }
+
+    addRowToList(result) {
+        if (result != null && result != '') {
+            console.log(this.data.length);
+            for (let i = 0; i < this.data.length; i++) {
+                this.temp.push(this.data[i]);
+            }
+            this.temp.push(result);
+            let ClientWrapper = {
+                items: this.temp,
+                total_count: this.resultsLength + 1
+            };
+            this.temp = [];
+            this.displayedList = observableOf(ClientWrapper);
+            this.mustLoadFromNet = false;
+            this.loadData();
+        }
+    }
+
+    editRowOnList(result) {
+        if (result != null && result != '') {
+            let row: number = 0;
+            for (let i = 0; i < this.data.length; i++) {
+                if (this.data[i].id == result.id) {
+                    row = i;
+                    break;
+                }
+            }
+            for (let i = 0; i < this.data.length; i++) {
+                if (i == row) {
+                    this.temp.push(result);
+                }
+                else {
+                    this.temp.push(this.data[i])
+                }
+            }
+            let ClientWrapper = {
+                items: this.temp,
+                total_count: this.resultsLength
+            };
+            this.temp = [];
+            this.displayedList = observableOf(ClientWrapper);
+            this.mustLoadFromNet = false;
+            this.loadData();
+            this.clientId = null;
+        }
     }
 
 }
