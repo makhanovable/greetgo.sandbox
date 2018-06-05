@@ -1,26 +1,25 @@
 package kz.greetgo.sandbox.controller.register;
 
 import kz.greetgo.sandbox.controller.model.Charm;
-import kz.greetgo.sandbox.controller.model.Client;
-import kz.greetgo.sandbox.controller.model.ClientAddr;
-import kz.greetgo.sandbox.controller.model.ClientPhone;
-import kz.greetgo.sandbox.controller.register.model.ClientInfoResponseTest;
-import kz.greetgo.sandbox.controller.register.model.ResponseClientListWrapper;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientRecordWrapper;
+import kz.greetgo.sandbox.controller.model.Options;
 
 import java.util.List;
 
 public interface ClientRegister {
 
-    ResponseClientListWrapper getClientsList(String filter, String sort, String order,
-                                             String page, String size);
+    ClientRecordWrapper getClientRecords(Options options);
 
-    void addNewClient(Client client, List<ClientAddr> addrs, List<ClientPhone> phones);
+    void deleteClient(int clientId);
 
-    void delClient(String clientId);
+    ClientRecord addNewClient(ClientDetails details);
 
-    void editClient(Client client, List<ClientAddr> addrs, List<ClientPhone> phones);
+    ClientRecord editClient(ClientDetails details);
 
-    ClientInfoResponseTest getClientById(String clientId);
+    ClientDetails getClientById(int clientId);
 
     List<Charm> getCharms();
+
 }

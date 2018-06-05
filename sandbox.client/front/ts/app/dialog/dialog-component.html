@@ -23,7 +23,7 @@
         <mat-form-field>
             <input matInput [matDatepicker]="picker" placeholder="Дата рождения" [(ngModel)]="mydate">
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker [(ngModel)]="mydate" ngDefaultControl></mat-datepicker>
+            <mat-datepicker #picker ngDefaultControl></mat-datepicker>
         </mat-form-field>
 
         <mat-form-field>
@@ -94,6 +94,6 @@
     <mat-hint class="makhan-hint">Телефоны * (один мобильный обязателен)</mat-hint>
     <mat-dialog-actions>
         <button mat-raised-button mat-dialog-close>Отмена</button>
-        <button mat-raised-button mat-dialog-close (click)="start()">Сохранить</button>
+        <button mat-raised-button (click)="start()">Сохранить</button>
     </mat-dialog-actions>
 </div>

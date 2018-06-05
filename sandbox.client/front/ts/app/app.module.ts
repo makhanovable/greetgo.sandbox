@@ -21,7 +21,7 @@ import {ErrorDialogComponent} from "./error.dialog/error.dialog.component";
 import {HttpClientModule} from '@angular/common/http';
 import {AreYouSureDialogComponent} from "./are.you.sure.dialog/are.you.sure.dialog.component";
 import {CharmService} from "./services/charm.service";
-import {ClientsInfoService} from "./services/clients.info.service";
+import {ClientDataSource} from "./services/client.data.source";
 
 @NgModule({
     imports: [
@@ -46,10 +46,10 @@ import {ClientsInfoService} from "./services/clients.info.service";
     ],
     declarations: [
         RootComponent, LoginComponent, MainFormComponent, EditableListComponent,
-        DialogComponent, ErrorDialogComponent, AreYouSureDialogComponent
+        DialogComponent, ErrorDialogComponent, AreYouSureDialogComponent,
     ],
     bootstrap: [RootComponent],
-    providers: [HttpService, CharmService, ClientsInfoService],
+    providers: [HttpService, CharmService, ClientDataSource],
     entryComponents: [DialogComponent, ErrorDialogComponent, AreYouSureDialogComponent],
 })
 export class AppModule {

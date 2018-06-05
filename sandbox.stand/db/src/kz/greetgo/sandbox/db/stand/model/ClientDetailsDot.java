@@ -1,12 +1,7 @@
-package kz.greetgo.sandbox.controller.register.model;
+package kz.greetgo.sandbox.db.stand.model;
 
-public class ResponseClientList {
+public class ClientDetailsDot {
     public int id;
-    public int age;
-    public float total;
-    public float max;
-    public float min;
-
     public String name;
     public String surname;
     public String patronymic;

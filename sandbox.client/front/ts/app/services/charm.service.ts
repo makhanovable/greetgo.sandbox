@@ -17,6 +17,7 @@ export class CharmService {
         console.log("/client/get_charms");
         this.http.get("/client/get_charms").toPromise().then(result => {
             //alert(JSON.stringify(result.json()));
+            this.list = [];
             for (let i = 0; i < Number(JSON.stringify(result.json().length)); i++) {
                 let Charm = {
                     id: Number(JSON.stringify(result.json()[i].id)),
@@ -38,7 +39,7 @@ export class CharmService {
         }
         this.name = this.temp;
         this.temp = 'UNKNOWN';
-        if (this.name == 'UNKNOWN' && this.attempt < 5) {
+        if (this.name == 'UNKNOWN' && this.attempt < 10) {
             this.getCharms();
             this.attempt++;
             return this.getCharmNameById(id);

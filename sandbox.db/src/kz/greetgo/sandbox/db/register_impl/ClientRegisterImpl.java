@@ -2,41 +2,39 @@ package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.sandbox.controller.model.Charm;
-import kz.greetgo.sandbox.controller.model.Client;
-import kz.greetgo.sandbox.controller.model.ClientAddr;
-import kz.greetgo.sandbox.controller.model.ClientPhone;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.controller.register.model.ClientInfoResponseTest;
-import kz.greetgo.sandbox.controller.register.model.ResponseClientListWrapper;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientRecordWrapper;
+import kz.greetgo.sandbox.controller.model.Options;
 
 import java.util.List;
 
 @Bean
 public class ClientRegisterImpl implements ClientRegister {
 
-
     @Override
-    public ResponseClientListWrapper getClientsList(String filter, String sort, String order, String page, String size) {
+    public ClientRecordWrapper getClientRecords(Options options) {
         return null;
     }
 
     @Override
-    public void addNewClient(Client client, List<ClientAddr> addrs, List<ClientPhone> phones) {
+    public void deleteClient(int clientId) {
 
     }
 
     @Override
-    public void delClient(String clientId) {
-
+    public ClientRecord addNewClient(ClientDetails details) {
+        return null;
     }
 
     @Override
-    public void editClient(Client client, List<ClientAddr> addrs, List<ClientPhone> phones) {
-
+    public ClientRecord editClient(ClientDetails details) {
+        return null;
     }
 
     @Override
-    public ClientInfoResponseTest getClientById(String clientId) {
+    public ClientDetails getClientById(int clientId) {
         return null;
     }
 
@@ -44,5 +42,4 @@ public class ClientRegisterImpl implements ClientRegister {
     public List<Charm> getCharms() {
         return null;
     }
-
 }

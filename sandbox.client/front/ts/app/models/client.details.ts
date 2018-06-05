@@ -1,11 +1,5 @@
-export interface Client {
+export interface ClientDetails {
     id: number;
-    charm: string;
-    age: number;
-    total_account_balance: number;
-    max_balance: number;
-    min_balance: number;
-
     name: string;
     surname: string;
     patronymic: string;

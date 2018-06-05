@@ -3,15 +3,15 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.Charm;
-import kz.greetgo.sandbox.controller.model.Client;
-import kz.greetgo.sandbox.controller.model.ClientAddr;
-import kz.greetgo.sandbox.controller.model.ClientPhone;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.controller.register.model.ClientInfoResponseTest;
-import kz.greetgo.sandbox.controller.register.model.ResponseClientList;
-import kz.greetgo.sandbox.controller.register.model.ResponseClientListWrapper;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientRecordWrapper;
+import kz.greetgo.sandbox.controller.model.Options;
 import kz.greetgo.sandbox.db.stand.beans.ClientStandDb;
-import kz.greetgo.sandbox.db.stand.model.ClientDot;
+import kz.greetgo.sandbox.db.stand.model.CharmDot;
+import kz.greetgo.sandbox.db.stand.model.ClientDetailsDot;
+import kz.greetgo.sandbox.db.stand.model.ClientRecordDot;
 
 import java.util.*;
 
@@ -21,139 +21,93 @@ public class ClientRegisterStand implements ClientRegister {
     public BeanGetter<ClientStandDb> db;
 
     @Override
-    public ResponseClientListWrapper getClientsList(String filter, String sort, String order,
-                                                    String pageNumber, String pageSize) {
-        ResponseClientListWrapper wrapper = new ResponseClientListWrapper();
-        List<ResponseClientList> list = new ArrayList<>();
-        List<ResponseClientList> out = new ArrayList<>();
-        List<ResponseClientList> filtered = new ArrayList<>();
-        for (ClientDot dot : db.get().clientStorage) {
-            ResponseClientList clients = new ResponseClientList();
-            clients.id = dot.clientId;
-            clients.age = dot.age;
-            clients.total = dot.total;
-            clients.max = dot.max;
-            clients.min = dot.min;
-            clients.name = dot.name;
-            clients.surname = dot.surname;
-            clients.patronymic = dot.patronymic;
-            clients.gender = dot.gender;
-            clients.birth_date = dot.birth_date;
-            clients.charm = dot.charm;
-            clients.addrFactStreet = dot.addrFactStreet;
-            clients.addrFactHome = dot.addrFactHome;
-            clients.addrFactFlat = dot.addrFactFlat;
-            clients.addrRegStreet = dot.addrRegStreet;
-            clients.addrRegHome = dot.addrRegHome;
-            clients.addrRegFlat = dot.addrRegFlat;
-            clients.phoneHome = dot.phoneHome;
-            clients.phoneWork = dot.phoneWork;
-            clients.phoneMob1 = dot.phoneMob1;
-            clients.phoneMob2 = dot.phoneMob2;
-            clients.phoneMob3 = dot.phoneMob3;
-            list.add(clients);
+    public ClientRecordWrapper getClientRecords(Options options) {
+        ClientRecordWrapper wrapper = new ClientRecordWrapper();
+        List<ClientRecord> out = new ArrayList<>();
+        for (ClientRecordDot dot : db.get().getClientRecordStorage(options)) {
+            ClientRecord clientRecord = new ClientRecord();
+            clientRecord.id = dot.id;
+            clientRecord.name = dot.name;
+            clientRecord.charm = dot.charm;
+            clientRecord.age = dot.age;
+            clientRecord.total = dot.total;
+            clientRecord.max = dot.max;
+            clientRecord.min = dot.min;
+            out.add(clientRecord);
         }
-        System.out.println(filter + " - " + sort + " - " + order + " - " + pageNumber + " - " + pageSize);
-
-        if (filter != null && !filter.isEmpty()) {
-            for (ResponseClientList aList : list) {
-                //System.out.println(aList.name);
-                String name = aList.name.replace(" ", "").toLowerCase();
-                if (name.matches("(?i).*" + filter.toLowerCase() + ".*"))
-                    filtered.add(aList);
-            }
-        } else
-            filtered = list;
-
-        if (sort != null && order != null && !sort.isEmpty() && !order.isEmpty()) {
-            switch (sort) {
-                case "name":
-                    filtered.sort(Comparator.comparing(o -> o.name));
-                    break;
-                case "age":
-                    filtered.sort(Comparator.comparing(o -> o.age));
-                    break;
-                case "total":
-                    filtered.sort(Comparator.comparing(o -> o.total));
-                    break;
-                case "max":
-                    filtered.sort(Comparator.comparing(o -> o.max));
-                    break;
-                case "min":
-                    filtered.sort(Comparator.comparing(o -> o.min));
-                    break;
-            }
-            if (order.equals("desc"))
-                Collections.reverse(filtered);
-        }
-
-        int number, size;
-        if (pageNumber == null)
-            number = 0;
-        else
-            number = Integer.parseInt(pageNumber);
-        if (pageSize == null)
-            size = 0;
-        else
-            size = Integer.parseInt(pageSize);
-        int start = number * size;
-        for (int i = 0; i < size; i++) {
-            try {
-                out.add(filtered.get(start));
-                start++;
-            } catch (Exception ex) {
-                break;
-            }
-        }
-
-        wrapper.total_count = filtered.size();
+        wrapper.total_count = db.get().out.size();
         wrapper.items = out;
         return wrapper;
     }
 
     @Override
-    public void addNewClient(Client client, List<ClientAddr> addrs, List<ClientPhone> phones) {
-        db.get().insert(client, addrs, phones);
+    public void deleteClient(int clientId) {
+        db.get().deleteClientInfo(clientId);
     }
 
     @Override
-    public void delClient(String clientId) {
-        db.get().remove(clientId);
+    public ClientRecord addNewClient(ClientDetails details) {
+        ClientRecord clientRecord = new ClientRecord();
+        ClientRecordDot dot = db.get().addNewClientRecord(details);
+        clientRecord.id = dot.id;
+        clientRecord.name = dot.name;
+        clientRecord.charm = dot.charm;
+        clientRecord.age = dot.age;
+        clientRecord.total = dot.total;
+        clientRecord.max = dot.max;
+        clientRecord.min = dot.min;
+        return clientRecord;
     }
 
     @Override
-    public void editClient(Client client, List<ClientAddr> addrs, List<ClientPhone> phones) {
-        db.get().edit(client, addrs, phones);
+    public ClientRecord editClient(ClientDetails details) {
+        ClientRecord clientRecord = new ClientRecord();
+        ClientRecordDot dot = db.get().editClientRecord(details);
+        clientRecord.id = dot.id;
+        clientRecord.name = dot.name;
+        clientRecord.charm = dot.charm;
+        clientRecord.age = dot.age;
+        clientRecord.total = dot.total;
+        clientRecord.max = dot.max;
+        clientRecord.min = dot.min;
+        return clientRecord;
     }
 
     @Override
-    public ClientInfoResponseTest getClientById(String clientId) {
-        ClientInfoResponseTest info = new ClientInfoResponseTest();
-        System.out.println(clientId);
-        ClientDot dot = db.get().clientStorage.get(Integer.parseInt(clientId));
-        info.name = dot.name;
-        info.surname = dot.surname;
-        info.patronymic = dot.patronymic;
-        info.gender = dot.gender;
-        info.birth_date = dot.birth_date;
-        info.charm = dot.charm + "";
-        info.addrFactStreet = dot.addrFactStreet;
-        info.addrFactHome = dot.addrFactHome;
-        info.addrFactFlat = dot.addrFactFlat;
-        info.addrRegStreet = dot.addrRegStreet;
-        info.addrRegHome = dot.addrRegHome;
-        info.addrRegFlat = dot.addrRegFlat;
-        info.phoneHome = dot.phoneHome;
-        info.phoneWork = dot.phoneWork;
-        info.phoneMob1 = dot.phoneMob1;
-        info.phoneMob2 = dot.phoneMob2;
-        info.phoneMob3 = dot.phoneMob3;
-        return info;
+    public ClientDetails getClientById(int clientId) {
+        ClientDetails clientDetails = new ClientDetails();
+        ClientDetailsDot dot = db.get().getClientDetailById(clientId);
+        clientDetails.id = dot.id;
+        clientDetails.name = dot.name;
+        clientDetails.surname = dot.surname;
+        clientDetails.patronymic = dot.patronymic;
+        clientDetails.gender = dot.gender;
+        clientDetails.birth_date = dot.birth_date;
+        clientDetails.charm = dot.charm;
+        clientDetails.addrFactStreet = dot.addrFactStreet;
+        clientDetails.addrFactHome = dot.addrFactHome;
+        clientDetails.addrFactFlat = dot.addrFactFlat;
+        clientDetails.addrRegStreet = dot.addrRegStreet;
+        clientDetails.addrRegHome = dot.addrRegHome;
+        clientDetails.addrRegFlat = dot.addrRegFlat;
+        clientDetails.phoneHome = dot.phoneHome;
+        clientDetails.phoneWork = dot.phoneWork;
+        clientDetails.phoneMob1 = dot.phoneMob1;
+        clientDetails.phoneMob2 = dot.phoneMob2;
+        clientDetails.phoneMob3 = dot.phoneMob3;
+        return clientDetails;
     }
 
     @Override
     public List<Charm> getCharms() {
-        return db.get().charmsStorage;
+        List<Charm> out = new ArrayList<>();
+        for (CharmDot dot : db.get().charmsStorage) {
+            Charm charm = new Charm();
+            charm.id = dot.id;
+            charm.name = dot.name;
+            out.add(charm);
+        }
+        return out;
     }
 
 }

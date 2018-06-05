@@ -16,7 +16,7 @@
 
             <ng-container matColumnDef="name">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>ФИО</th>
-                <td mat-cell *matCellDef="let client">{{client.name + " "+client.surname +" "+ client.patronymic}}</td>
+                <td mat-cell *matCellDef="let client">{{client.name}}</td>
             </ng-container>
 
             <ng-container matColumnDef="charm">
