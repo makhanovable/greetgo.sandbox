@@ -14,14 +14,13 @@ import {
     MatProgressSpinnerModule,
     MatSortModule
 } from "@angular/material";
-import {EditableListComponent} from "./editable.list/editable.list.component";
+import {ClientListComponent} from "./client.list/client.list.component";
 import {MatDialogModule} from "@angular/material";
-import {DialogComponent} from "./dialog/dialog.component";
+import {DialogComponent} from "./edit.dialog/edit.dialog.component";
 import {ErrorDialogComponent} from "./error.dialog/error.dialog.component";
 import {HttpClientModule} from '@angular/common/http';
-import {AreYouSureDialogComponent} from "./are.you.sure.dialog/are.you.sure.dialog.component";
-import {CharmService} from "./services/charm.service";
-import {ClientDataSource} from "./services/client.data.source";
+import {DeleteDialogComponent} from "./delete.dialog/delete.dialog.component";
+import {DataSourceService} from "./services/data.source.service";
 
 @NgModule({
     imports: [
@@ -45,12 +44,12 @@ import {ClientDataSource} from "./services/client.data.source";
         HttpClientModule
     ],
     declarations: [
-        RootComponent, LoginComponent, MainFormComponent, EditableListComponent,
-        DialogComponent, ErrorDialogComponent, AreYouSureDialogComponent,
+        RootComponent, LoginComponent, MainFormComponent, ClientListComponent,
+        DialogComponent, ErrorDialogComponent, DeleteDialogComponent,
     ],
     bootstrap: [RootComponent],
-    providers: [HttpService, CharmService, ClientDataSource],
-    entryComponents: [DialogComponent, ErrorDialogComponent, AreYouSureDialogComponent],
+    providers: [HttpService, DataSourceService],
+    entryComponents: [DialogComponent, ErrorDialogComponent, DeleteDialogComponent],
 })
 export class AppModule {
 }

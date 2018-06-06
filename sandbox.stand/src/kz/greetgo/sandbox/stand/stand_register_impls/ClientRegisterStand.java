@@ -6,7 +6,7 @@ import kz.greetgo.sandbox.controller.model.Charm;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.model.ClientDetails;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.controller.model.ClientRecordWrapper;
+import kz.greetgo.sandbox.controller.model.ClientRecordInfo;
 import kz.greetgo.sandbox.controller.model.Options;
 import kz.greetgo.sandbox.db.stand.beans.ClientStandDb;
 import kz.greetgo.sandbox.db.stand.model.CharmDot;
@@ -21,8 +21,8 @@ public class ClientRegisterStand implements ClientRegister {
     public BeanGetter<ClientStandDb> db;
 
     @Override
-    public ClientRecordWrapper getClientRecords(Options options) {
-        ClientRecordWrapper wrapper = new ClientRecordWrapper();
+    public ClientRecordInfo getClientRecords(Options options) {
+        ClientRecordInfo wrapper = new ClientRecordInfo();
         List<ClientRecord> out = new ArrayList<>();
         for (ClientRecordDot dot : db.get().getClientRecordStorage(options)) {
             ClientRecord clientRecord = new ClientRecord();

@@ -1,0 +1,106 @@
+<div class="example-container dialog makhan-cont">
+    <div class="example-container">
+
+        <div [(ngModel)]="clientDetail" ngDefaultControl></div>
+        <mat-form-field>
+            <input matInput [(ngModel)]="clientDetail.surname" placeholder="Фамилия" required="true">
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput [(ngModel)]="clientDetail.name" placeholder="Имя" required="true">
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput [(ngModel)]="clientDetail.patronymic" placeholder="Отчество">
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-select placeholder="Пол" [(ngModel)]="clientDetail.gender" required="true">
+                <mat-option value="MALE">Мужчина</mat-option>
+                <mat-option value="FEMALE">Женщина</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput [matDatepicker]="picker" placeholder="Дата рождения MM/DD/YYYY" [(ngModel)]="date"
+                   required="true">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker ngDefaultControl></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-select placeholder="Характер" [(ngModel)]="clientDetail.charm" required="true">
+                <mat-option [value]="charm.id" *ngFor="let charm of charmList">
+                    {{charm.name}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+
+    </div>
+
+    <div>
+
+        <mat-form-field>
+            <input matInput [(ngModel)]="clientDetail.addrFactStreet" placeholder="Улица">
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput [(ngModel)]="clientDetail.addrFactHome" placeholder="Дом">
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput [(ngModel)]="clientDetail.addrFactFlat" placeholder="Квартира">
+        </mat-form-field>
+
+    </div>
+    <mat-hint class="makhan-hint">Адрес проживания (фактический)</mat-hint>
+
+    <div>
+        <mat-form-field>
+            <input matInput [(ngModel)]="clientDetail.addrRegStreet" required="true" placeholder="Улица">
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput [(ngModel)]="clientDetail.addrRegHome" required="true" placeholder="Дом">
+        </mat-form-field>
+
+        <mat-form-field>
+            <input matInput [(ngModel)]="clientDetail.addrRegFlat" required="true" placeholder="Квартира">
+        </mat-form-field>
+
+    </div>
+    <mat-hint class="makhan-hint">Адрес регистрации *</mat-hint>
+
+    <div>
+
+        <mat-form-field>
+            <!--<span matPrefix>+ &nbsp;</span>-->
+            <input matInput type="tel" [(ngModel)]="clientDetail.phoneHome" minlength="5" placeholder="Домашний" required="true">
+        </mat-form-field>
+
+        <mat-form-field>
+            <!--<span matPrefix>+ &nbsp;</span>-->
+            <input matInput type="tel" [(ngModel)]="clientDetail.phoneWork" minlength="5" placeholder="Рабочий">
+        </mat-form-field>
+
+        <mat-form-field>
+            <!--<span matPrefix>+ &nbsp;</span>-->
+            <input matInput type="tel" [(ngModel)]="clientDetail.phoneMob1" minlength="5" placeholder="Мобильный №1">
+        </mat-form-field>
+
+        <mat-form-field>
+            <!--<span matPrefix>+ &nbsp;</span>-->
+            <input matInput type="tel" [(ngModel)]="clientDetail.phoneMob2" minlength="5" placeholder="Мобильный №2">
+        </mat-form-field>
+
+        <mat-form-field>
+            <!--<span matPrefix>+ &nbsp;</span>-->
+            <input matInput type="tel" [(ngModel)]="clientDetail.phoneMob3" minlength="5" placeholder="Мобильный №3">
+        </mat-form-field>
+    </div>
+    <mat-hint class="makhan-hint">Телефоны * (один мобильный обязателен)</mat-hint>
+    <mat-dialog-actions>
+        <button mat-raised-button mat-dialog-close>Отмена</button>
+        <button mat-raised-button (click)="start()">Сохранить</button>
+    </mat-dialog-actions>
+</div>
