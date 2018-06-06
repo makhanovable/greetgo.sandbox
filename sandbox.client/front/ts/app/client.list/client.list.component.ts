@@ -1,70 +1,76 @@
 import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {DialogComponent} from "../dialog/dialog.component";
+import {DialogComponent} from "../edit.dialog/edit.dialog.component";
 import {MatDialog, MatPaginator, MatSort} from "@angular/material";
 import {HttpService} from "../HttpService";
-import {Client} from '../models/client.record';
 import {SelectionModel} from '@angular/cdk/collections';
 import {ErrorDialogComponent} from "../error.dialog/error.dialog.component";
-import {AreYouSureDialogComponent} from "../are.you.sure.dialog/are.you.sure.dialog.component";
+import {DeleteDialogComponent} from "../delete.dialog/delete.dialog.component";
 import {fromEvent} from 'rxjs/observable/fromEvent';
 import {merge, of as observableOf} from 'rxjs';
 import {Observable} from "rxjs/index";
 import {catchError, map, startWith, switchMap} from 'rxjs/operators';
-import {ClientDataSource} from "../services/client.data.source";
-import {CharmService} from "../services/charm.service";
-import {ClientWrapper} from "../models/client.wrapper";
+import {ClientRecord} from "../models/client.record";
+import {ClientInfo} from "../models/client.info";
+import {Options} from "../models/options";
+import {DataSourceService} from "../services/data.source.service";
 
 @Component({
-    selector: 'editable-list',
-    template: require('./editable.list.component.html'),
-    styles: [require('./editable.list.component.css')],
+    selector: 'client-list',
+    template: require('./client.list.component.html'),
+    styles: [require('./client.list.component.css')],
 })
-export class EditableListComponent implements OnInit {
+export class ClientListComponent implements OnInit {
+
+    GET_CLIENTS_URL: string = "/client/get_clients_list";
 
     displayedColumns = ['name', 'charm', 'age', 'total', 'max', 'min'];
-    exampleDatabase: ClientDataSource | null;
 
-    data: Client[] = [];
-    temp: Client[] = [];
+    data: ClientRecord[] = [];
+    temp: ClientRecord[] = [];
+
     resultsLength = 0;
     isLoadingResults = true;
     isRateLimitReached = false;
     clientId: number;
-    selection = new SelectionModel<Client>(false, null);
+    selection = new SelectionModel<ClientRecord>(false, null);
 
     mustLoadFromNet: boolean = true;
+    options: Options;
 
-    displayedList: Observable<ClientWrapper>;
+    displayedList: Observable<ClientInfo>;
 
     @ViewChild(MatPaginator) paginator: MatPaginator;
     @ViewChild(MatSort) sort: MatSort;
     @ViewChild('input') input: ElementRef;
 
     constructor(private dialog: MatDialog,
-                private http: HttpService,
-                private charmService: CharmService) {
+                private http: HttpService, private dataSource: DataSourceService) {
     }
 
     ngOnInit() {
-        this.charmService.getCharms();
-        this.exampleDatabase = new ClientDataSource(this.http, this.charmService);
+        this.options = new Options();
         this.sort.sortChange.subscribe(() => this.paginator.pageIndex = 0);
 
-        fromEvent(this.input.nativeElement, 'keyup')
+        fromEvent(this.input.nativeElement, 'keyup') // TODO edit
             .pipe(
                 startWith({}),
                 switchMap(() => {
                     this.isLoadingResults = true;
                     this.paginator.pageIndex = 0;
-                    return this.displayedList = this.exampleDatabase!.getClients(this.input.nativeElement.value,
-                        this.sort.active, this.sort.direction, this.paginator.pageIndex,
-                        this.paginator.pageSize);
+                    this.options.filter = this.input.nativeElement.value;
+                    this.options.sort = this.sort.active;
+                    this.options.order = this.sort.direction;
+                    this.options.page = this.paginator.pageIndex;
+                    if (this.paginator.pageSize == null)
+                        this.options.size = 5;
+                    else
+                        this.options.size = this.paginator.pageSize;
+                    return this.displayedList = this.dataSource!.getClients(this.GET_CLIENTS_URL, this.options);
                 }),
                 map(data => {
                     this.isLoadingResults = false;
                     this.isRateLimitReached = false;
                     this.resultsLength = data.total_count;
-
                     return data.items;
                 }),
                 catchError(() => {
@@ -91,9 +97,16 @@ export class EditableListComponent implements OnInit {
                     this.isLoadingResults = true;
                     if (this.mustLoadFromNet) {
                         console.log('loading data from net');
-                        this.displayedList = this.exampleDatabase!.getClients(this.input.nativeElement.value,
-                            this.sort.active, this.sort.direction, this.paginator.pageIndex,
-                            this.paginator.pageSize);
+                        this.options = new Options();
+                        this.options.filter = this.input.nativeElement.value;
+                        this.options.sort = this.sort.active;
+                        this.options.order = this.sort.direction;
+                        this.options.page = this.paginator.pageIndex;
+                        if (this.paginator.pageSize == null)
+                            this.options.size = 5;
+                        else
+                            this.options.size = this.paginator.pageSize;
+                        this.displayedList = this.dataSource!.getClients(this.GET_CLIENTS_URL, this.options);
                         return this.displayedList;
                     } else {
                         console.log('loading data NOT from net');
@@ -105,8 +118,6 @@ export class EditableListComponent implements OnInit {
                     this.isLoadingResults = false;
                     this.isRateLimitReached = false;
                     this.resultsLength = data.total_count;
-                    console.log(data.items.length + " data length");
-
                     return data.items;
                 }),
                 catchError(() => {
@@ -130,20 +141,28 @@ export class EditableListComponent implements OnInit {
         }
     }
 
-    formDialog(whichDialogNeeded): void {
+    formDialog(whichDialogNeeded): void { // TODO edit
         if (whichDialogNeeded == 0) {
-            let dialogRef = this.dialog.open(AreYouSureDialogComponent, {
+            let dialogRef = this.dialog.open(DeleteDialogComponent, {
                 data: {clientId: this.clientId}
             });
             dialogRef.afterClosed().subscribe(result => {
-                this.loadData();
-                this.clientId = null;
+                if (result == 'yes') {
+                    this.http.post("/client/del_client", {
+                        clientId: this.clientId
+                    }).toPromise().then(res => {
+                        this.loadData();
+                        this.clientId = null;
+                    }, error => {
+                        alert("Error " + error);
+                    });
+                }
             });
 
         } else if (whichDialogNeeded == 1) {
             let dialogRef = this.dialog.open(DialogComponent, {
-                width: '550px',
-                height: '500px',
+                width: '600px',
+                height: '600px',
                 data: {whichDialogNeeded: whichDialogNeeded, clientId: this.clientId}
             });
             dialogRef.afterClosed().subscribe(result => {
@@ -151,8 +170,8 @@ export class EditableListComponent implements OnInit {
             });
         } else {
             let dialogRef = this.dialog.open(DialogComponent, {
-                width: '550px',
-                height: '500px',
+                width: '600px',
+                height: '600px',
                 data: {whichDialogNeeded: whichDialogNeeded, clientId: this.clientId}
             });
             dialogRef.afterClosed().subscribe(result => {

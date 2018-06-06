@@ -3,14 +3,14 @@ package kz.greetgo.sandbox.controller.register;
 import kz.greetgo.sandbox.controller.model.Charm;
 import kz.greetgo.sandbox.controller.model.ClientDetails;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.controller.model.ClientRecordWrapper;
+import kz.greetgo.sandbox.controller.model.ClientRecordInfo;
 import kz.greetgo.sandbox.controller.model.Options;
 
 import java.util.List;
 
 public interface ClientRegister {
 
-    ClientRecordWrapper getClientRecords(Options options);
+    ClientRecordInfo getClientRecords(Options options);
 
     void deleteClient(int clientId);
 

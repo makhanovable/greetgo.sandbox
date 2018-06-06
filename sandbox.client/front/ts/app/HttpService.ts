@@ -3,106 +3,116 @@ import {Observable} from "rxjs";
 import {Headers, Http, Request, RequestOptionsArgs, Response} from "@angular/http";
 
 class OptionsBuilder {
-  private appendingHeaders: { [key: string]: string }[] = [];
+    private appendingHeaders: { [key: string]: string }[] = [];
 
-  public appendHeader(key: string, value: string | null): void {
-    if (value) this.appendingHeaders.push({key: key, value: value});
-  }
+    public appendHeader(key: string, value: string | null): void {
+        if (value) this.appendingHeaders.push({key: key, value: value});
+    }
 
-  private get headers(): Headers {
-    let ret = new Headers();
-    this.appendingHeaders.forEach(h => ret.append(h['key'], h['value']));
-    return ret;
-  }
+    private get headers(): Headers {
+        let ret = new Headers();
+        this.appendingHeaders.forEach(h => ret.append(h['key'], h['value']));
+        return ret;
+    }
 
-  public get(): RequestOptionsArgs | undefined {
-    if (this.appendingHeaders.length == 0) return undefined;
-    return {headers: this.headers};
-  }
+    public get(): RequestOptionsArgs | undefined {
+        if (this.appendingHeaders.length == 0) return undefined;
+        return {headers: this.headers};
+    }
 }
 
 @Injectable()
 export class HttpService {
 
-  public pageSize:number = 10;
+    public pageSize: number = 10;
 
-  constructor(private http: Http) {}
+    constructor(private http: Http) {
+    }
 
-  private prefix(): string {
-    return (<any>window).urlPrefix;
-  }
+    private prefix(): string {
+        return (<any>window).urlPrefix;
+    }
 
-  public get token(): string | null {
-    return sessionStorage.getItem("token");
-  }
+    public get token(): string | null {
+        return sessionStorage.getItem("token");
+    }
 
-  public set token(value: string | null) {
-    if (value) sessionStorage.setItem("token", value);
-    else sessionStorage.removeItem("token")
-  }
+    public set token(value: string | null) {
+        if (value) sessionStorage.setItem("token", value);
+        else sessionStorage.removeItem("token")
+    }
 
-  public url(urlSuffix: string): string {
-    return this.prefix() + urlSuffix;
-  }
+    public url(urlSuffix: string): string {
+        return this.prefix() + urlSuffix;
+    }
 
-  public get(urlSuffix: string, keyValue?: { [key: string]: string | number | null }): Observable<Response> {
-    let post: string = '';
+    public get(urlSuffix: string, keyValue?: { [key: string]: string | number | null }): Observable<Response> {
+        let post: string = '';
 
-    if (keyValue) {
+        if (keyValue) {
 
-      let data = new URLSearchParams();
-      let appended = false;
-      for (let key in keyValue) {
-        let value = keyValue[key];
-        if (value) {
-          data.append(key, value as string);
-          appended = true;
+            let data = new URLSearchParams();
+            let appended = false;
+            for (let key in keyValue) {
+                let value = keyValue[key];
+                if (value) {
+                    data.append(key, value as string);
+                    appended = true;
+                }
+            }
+
+            if (appended) post = '?' + data.toString();
         }
-      }
 
-      if (appended) post = '?' + data.toString();
+        return this.http.get(this.url(urlSuffix) + post, this.newOptionsBuilder().get());
     }
 
-    return this.http.get(this.url(urlSuffix) + post, this.newOptionsBuilder().get());
-  }
-
-  private newOptionsBuilder(): OptionsBuilder {
-    let ob = new OptionsBuilder();
-    if (this.token) ob.appendHeader('Token', this.token);
-    return ob;
-  }
-
-  public post(urlSuffix: string, keyValue: { [key: string]: string | number | boolean | null }): Observable<Response> {
-    let data = new URLSearchParams();
-    for (let key in keyValue) {
-      let value = keyValue[key];
-      if (value) data.append(key, value as string);
+    private newOptionsBuilder(): OptionsBuilder {
+        let ob = new OptionsBuilder();
+        if (this.token) ob.appendHeader('Token', this.token);
+        return ob;
     }
 
-    let ob = this.newOptionsBuilder();
-    ob.appendHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-    return this.http.post(this.url(urlSuffix), data.toString(), ob.get());
-  }
-
-  public delete(urlSuffix: string, keyValue?: { [key: string]: string | number | boolean | null }): Observable<Response> {
-    let post: string = '';
-
-    if (keyValue) {
-
-      let data = new URLSearchParams();
-      let appended = false;
-      for (let key in keyValue) {
-        let value = keyValue[key];
-        if (value) {
-          data.append(key, value as string);
-          appended = true;
+    public post(urlSuffix: string, keyValue: { [key: string]: string | number | boolean | null | Object }): Observable<Response> {
+        let data = new URLSearchParams();
+        for (let key in keyValue) {
+            let value = keyValue[key];
+            if (value instanceof Object) {
+                Object.keys(value).forEach(function (k) {
+                    let v = value[k];
+                    if (v) {
+                        data.append(k, v as string);
+                    }
+                });
+            } else {
+                if (value) data.append(key, value as string);
+            }
         }
-      }
 
-      if (appended) post = '?' + data.toString();
+        let ob = this.newOptionsBuilder();
+        ob.appendHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        return this.http.post(this.url(urlSuffix), data.toString(), ob.get());
     }
 
-    return this.http.delete(this.url(urlSuffix) + post, this.newOptionsBuilder().get());
-  }
+    public delete(urlSuffix: string, keyValue?: { [key: string]: string | number | boolean | null }): Observable<Response> {
+        let post: string = '';
+
+        if (keyValue) {
+
+            let data = new URLSearchParams();
+            let appended = false;
+            for (let key in keyValue) {
+                let value = keyValue[key];
+                if (value) {
+                    data.append(key, value as string);
+                    appended = true;
+                }
+            }
+
+            if (appended) post = '?' + data.toString();
+        }
+
+        return this.http.delete(this.url(urlSuffix) + post, this.newOptionsBuilder().get());
+    }
 }

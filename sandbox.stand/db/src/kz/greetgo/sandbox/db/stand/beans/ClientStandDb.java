@@ -54,11 +54,11 @@ public class ClientStandDb implements HasAfterInject {
             clientDetailsDot.addrRegStreet = randomString();
             clientDetailsDot.addrRegHome = Integer.toString(random.nextInt(100));
             clientDetailsDot.addrRegFlat = Integer.toString(random.nextInt(100));
-            clientDetailsDot.phoneHome = "+" + random.nextInt(10) + "" + (random.nextInt(899) + 100);
-            clientDetailsDot.phoneWork = "+" + random.nextInt(10) + "" + (random.nextInt(899) + 100);
-            clientDetailsDot.phoneMob1 = "+" + random.nextInt(10) + "" + (random.nextInt(899) + 100);
-            clientDetailsDot.phoneMob2 = "+" + random.nextInt(10) + "" + (random.nextInt(899) + 100);
-            clientDetailsDot.phoneMob3 = "+" + random.nextInt(10) + "" + (random.nextInt(899) + 100);
+            clientDetailsDot.phoneHome = random.nextInt(10) + "" + (random.nextInt(899) + 100);
+            clientDetailsDot.phoneWork = random.nextInt(10) + "" + (random.nextInt(899) + 100);
+            clientDetailsDot.phoneMob1 = random.nextInt(10) + "" + (random.nextInt(899) + 100);
+            clientDetailsDot.phoneMob2 = random.nextInt(10) + "" + (random.nextInt(899) + 100);
+            clientDetailsDot.phoneMob3 = random.nextInt(10) + "" + (random.nextInt(899) + 100);
             clientDetailsStorage.add(clientDetailsDot);
 
             clientRecordDot.id = i;
@@ -91,27 +91,31 @@ public class ClientStandDb implements HasAfterInject {
         } else
             out = clientRecordStorage;
 
-        if (options.sort != null && options.order != null &&
-                !options.sort.isEmpty() && !options.order.isEmpty()) {
-            switch (options.sort) {
-                case "name":
-                    out.sort(Comparator.comparing(o -> o.name));
-                    break;
-                case "age":
-                    out.sort(Comparator.comparing(o -> o.age));
-                    break;
-                case "total":
-                    out.sort(Comparator.comparing(o -> o.total));
-                    break;
-                case "max":
-                    out.sort(Comparator.comparing(o -> o.max));
-                    break;
-                case "min":
-                    out.sort(Comparator.comparing(o -> o.min));
-                    break;
+        try {
+            if (options.sort != null && options.order != null &&
+                    !options.sort.isEmpty() && !options.order.isEmpty()) {
+                switch (options.sort) {
+                    case "name":
+                        out.sort(Comparator.comparing(o -> o.name));
+                        break;
+                    case "age":
+                        out.sort(Comparator.comparing(o -> o.age));
+                        break;
+                    case "total":
+                        out.sort(Comparator.comparing(o -> o.total));
+                        break;
+                    case "max":
+                        out.sort(Comparator.comparing(o -> o.max));
+                        break;
+                    case "min":
+                        out.sort(Comparator.comparing(o -> o.min));
+                        break;
+                }
+                if (options.order.equals("desc"))
+                    Collections.reverse(out);
             }
-            if (options.order.equals("desc"))
-                Collections.reverse(out);
+        } catch (Exception ex) {
+            System.out.println("ConcurrentModificationException");
         }
 
         int number, size;
@@ -142,8 +146,18 @@ public class ClientStandDb implements HasAfterInject {
                 System.out.println("found " + clientDetailsStorage.get(i).name);
                 clientDetailsStorage.remove(i);
                 clientRecordStorage.remove(i);
+                break;
             }
         }
+    }
+
+    private ClientRecordDot getDeletingClientRecord(int id) {
+        for (ClientRecordDot aClientRecordStorage : clientRecordStorage) {
+            if (aClientRecordStorage.id == id) {
+                return aClientRecordStorage;
+            }
+        }
+        return null;
     }
 
     public ClientRecordDot addNewClientRecord(ClientDetails details) {
@@ -155,7 +169,8 @@ public class ClientStandDb implements HasAfterInject {
         clientDetailsDot.id = id;
         clientDetailsDot.name = details.name;
         clientDetailsDot.surname = details.surname;
-        clientDetailsDot.patronymic = details.patronymic;
+        if (details.patronymic != null) clientDetailsDot.patronymic = details.patronymic;
+        else clientDetailsDot.patronymic = "";
         clientDetailsDot.gender = details.gender;
         clientDetailsDot.birth_date = details.birth_date;
         clientDetailsDot.charm = details.charm;
@@ -199,7 +214,8 @@ public class ClientStandDb implements HasAfterInject {
         clientDetailsDot.id = details.id;
         clientDetailsDot.name = details.name;
         clientDetailsDot.surname = details.surname;
-        clientDetailsDot.patronymic = details.patronymic;
+        if (details.patronymic != null) clientDetailsDot.patronymic = details.patronymic;
+        else clientDetailsDot.patronymic = "";
         clientDetailsDot.gender = details.gender;
         clientDetailsDot.birth_date = details.birth_date;
         clientDetailsDot.charm = details.charm;
@@ -227,9 +243,13 @@ public class ClientStandDb implements HasAfterInject {
                 + " " + clientDetailsDot.patronymic;
         clientRecordDot.charm = getCharmById(clientDetailsDot.charm);
         clientRecordDot.age = calculateAge(clientDetailsDot.birth_date);
-        clientRecordDot.total = (float) 1.3 * random.nextInt(5000);
-        clientRecordDot.max = (float) 1.3 * random.nextInt(5000);
-        clientRecordDot.min = (float) 1.3 * random.nextInt(5000);
+
+        ClientRecordDot deletingClientRecord = getDeletingClientRecord(details.id);
+
+        assert deletingClientRecord != null;
+        clientRecordDot.total = deletingClientRecord.total;
+        clientRecordDot.max = deletingClientRecord.max;
+        clientRecordDot.min = deletingClientRecord.min;
         deleteClientInfo(details.id);
         clientRecordStorage.add(clientRecordDot);
         clientDetailsStorage.add(clientDetailsDot);
@@ -261,11 +281,19 @@ public class ClientStandDb implements HasAfterInject {
     private int calculateAge(String date) {
         String[] split = date.split("/");
         LocalDate birthDate;
+        int year = Integer.parseInt(split[2]);
+        int month = Integer.parseInt(split[0]);
+        int day = Integer.parseInt(split[1]);
         try {
-            birthDate = LocalDate.of(Integer.parseInt(split[2]), Integer.parseInt(split[0]), Integer.parseInt(split[1]));
+            if (day < 1)
+                day = 1;
+            if (month < 1)
+                month = 1;
+            if (year < 1)
+                year = 1;
+            birthDate = LocalDate.of(year, month, day);
         } catch (Exception e) {
             birthDate = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            ;
         }
         Date input = new Date();
         LocalDate currentDate = input.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
