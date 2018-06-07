@@ -2,9 +2,9 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material";
 import {Component, Inject} from "@angular/core";
 import {HttpService} from "../HttpService";
 import "rxjs-compat/add/observable/of";
-import {ClientDetail} from "../models/client.detail";
-import {Charm} from "../models/charm";
-import {ClientRecord} from "../models/client.record";
+import {ClientDetail} from "../../model/client.detail";
+import {Charm} from "../../model/charm";
+import {ClientRecord} from "../../model/client.record";
 
 @Component({
     selector: 'edit-dialog',
@@ -41,7 +41,7 @@ export class DialogComponent {
     }
 
     start() {
-        if (this.isValid()) { // TODO edit
+        if (this.isValid()) {
             console.log('valid');
             if (this.data.whichDialogNeeded == 2) {
                 this.edit(this.data.clientId);
@@ -65,6 +65,7 @@ export class DialogComponent {
     }
 
     getClientDetailById(clientId) {
+        console.log("getClientById birth date = ");
         this.http.post("/client/get_client_info_by_id", {
             clientId: clientId
         }).toPromise().then(result => {
@@ -91,7 +92,7 @@ export class DialogComponent {
         if (clientId != null)
             id = clientId;
         this.clientDetail.id = id;
-        this.clientDetail.birth_date = this.date.getMonth() + "/" + this.date.getDay() + "/" + this.date.getFullYear();
+        this.clientDetail.birth_date = this.date.toDateString();
         return this.clientDetail;
     }
 
@@ -106,30 +107,36 @@ export class DialogComponent {
             this.clientDetail.addrRegFlat != null && this.clientDetail.addrRegFlat.length != 0) {
             let count: number = 0;
             let temp: number = 0;
-            if (this.clientDetail.phoneWork != null) {
+            if (this.clientDetail.phoneWork != null && this.clientDetail.phoneWork.length != 0) {
                 count++;
-                if (this.isPhoneValid(this.clientDetail.phoneWork)) temp++;
+                if (this.isPhoneValid(this.clientDetail.phoneWork))
+                    temp++;
             }
-            if (this.clientDetail.phoneMob1 != null) {
+            if (this.clientDetail.phoneMob1 != null && this.clientDetail.phoneMob1.length != 0) {
                 count++;
-                if (this.isPhoneValid(this.clientDetail.phoneMob1)) temp++;
+                if (this.isPhoneValid(this.clientDetail.phoneMob1))
+                    temp++;
             }
-            if (this.clientDetail.phoneMob2 != null) {
+            if (this.clientDetail.phoneMob2 != null && this.clientDetail.phoneMob2.length != 0) {
                 count++;
-                if (this.isPhoneValid(this.clientDetail.phoneMob2)) temp++;
+                if (this.isPhoneValid(this.clientDetail.phoneMob2))
+                    temp++;
             }
-            if (this.clientDetail.phoneMob3 != null) {
+            if (this.clientDetail.phoneMob3 != null && this.clientDetail.phoneMob3.length != 0) {
                 count++;
-                if (this.isPhoneValid(this.clientDetail.phoneMob3)) temp++;
+                if (this.isPhoneValid(this.clientDetail.phoneMob3))
+                    temp++;
             }
+            console.log(count + " = " + temp);
             return count == temp;
 
         } else return false;
     }
 
     isPhoneValid(phone: string): boolean {
+        console.log(phone);
         let reg = new RegExp('^(1[ \\-\\+]{0,3}|\\+1[ -\\+]{0,3}|\\+1|\\+)?((\\(\\+?1-[2-9][0-9]{1,2}\\))|(\\(\\+?[2-8][0-9][0-9]\\))|(\\(\\+?[1-9][0-9]\\))|(\\(\\+?[17]\\))|(\\([2-9][2-9]\\))|([ \\-\\.]{0,3}[0-9]{2,4}))?([ \\-\\.][0-9])?([ \\-\\.]{0,3}[0-9]{2,4}){2,3}$');
-        return reg.test(phone);
+        return reg.test(phone.replace("-", ""));
     }
 
 }

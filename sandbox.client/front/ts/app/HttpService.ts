@@ -88,7 +88,6 @@ export class HttpService {
                 if (value) data.append(key, value as string);
             }
         }
-
         let ob = this.newOptionsBuilder();
         ob.appendHeader('Content-Type', 'application/x-www-form-urlencoded');
 
