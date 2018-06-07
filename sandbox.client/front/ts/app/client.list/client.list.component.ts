@@ -9,9 +9,9 @@ import {fromEvent} from 'rxjs/observable/fromEvent';
 import {merge, of as observableOf} from 'rxjs';
 import {Observable} from "rxjs/index";
 import {catchError, map, startWith, switchMap} from 'rxjs/operators';
-import {ClientRecord} from "../models/client.record";
-import {ClientInfo} from "../models/client.info";
-import {Options} from "../models/options";
+import {ClientRecord} from "../../model/client.record";
+import {ClientInfo} from "../../model/client.info";
+import {Options} from "../../model/options";
 import {DataSourceService} from "../services/data.source.service";
 
 @Component({
@@ -51,7 +51,7 @@ export class ClientListComponent implements OnInit {
         this.options = new Options();
         this.sort.sortChange.subscribe(() => this.paginator.pageIndex = 0);
 
-        fromEvent(this.input.nativeElement, 'keyup') // TODO edit
+        fromEvent(this.input.nativeElement, 'keyup')
             .pipe(
                 startWith({}),
                 switchMap(() => {
@@ -65,7 +65,7 @@ export class ClientListComponent implements OnInit {
                         this.options.size = 5;
                     else
                         this.options.size = this.paginator.pageSize;
-                    return this.displayedList = this.dataSource!.getClients(this.GET_CLIENTS_URL, this.options);
+                    return this.displayedList = this.dataSource!.getClients(this.GET_CLIENTS_URL, this.options, 0);
                 }),
                 map(data => {
                     this.isLoadingResults = false;
@@ -106,7 +106,7 @@ export class ClientListComponent implements OnInit {
                             this.options.size = 5;
                         else
                             this.options.size = this.paginator.pageSize;
-                        this.displayedList = this.dataSource!.getClients(this.GET_CLIENTS_URL, this.options);
+                        this.displayedList = this.dataSource!.getClients(this.GET_CLIENTS_URL, this.options, 0);
                         return this.displayedList;
                     } else {
                         console.log('loading data NOT from net');
@@ -141,13 +141,13 @@ export class ClientListComponent implements OnInit {
         }
     }
 
-    formDialog(whichDialogNeeded): void { // TODO edit
+    formDialog(whichDialogNeeded): void {
         if (whichDialogNeeded == 0) {
             let dialogRef = this.dialog.open(DeleteDialogComponent, {
                 data: {clientId: this.clientId}
             });
             dialogRef.afterClosed().subscribe(result => {
-                if (result == 'yes') {
+                if (result) {
                     this.http.post("/client/del_client", {
                         clientId: this.clientId
                     }).toPromise().then(res => {

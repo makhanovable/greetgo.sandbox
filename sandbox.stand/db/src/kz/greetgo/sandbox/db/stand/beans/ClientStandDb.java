@@ -9,6 +9,8 @@ import kz.greetgo.sandbox.db.stand.model.ClientDetailsDot;
 import kz.greetgo.sandbox.db.stand.model.ClientRecordDot;
 
 import java.security.SecureRandom;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
@@ -28,7 +30,7 @@ public class ClientStandDb implements HasAfterInject {
 
     @Override
     public void afterInject() {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 50; i++) {
             CharmDot charm = new CharmDot();
             charm.id = i;
             charm.name = randomString();
@@ -44,9 +46,7 @@ public class ClientStandDb implements HasAfterInject {
             clientDetailsDot.surname = randomString();
             clientDetailsDot.patronymic = randomString();
             clientDetailsDot.gender = genders[random.nextInt(2)];
-            clientDetailsDot.birth_date = (random.nextInt(12) + 1) + "/"
-                    + (random.nextInt(28) + 1) + "/"
-                    + (random.nextInt(1001) + 1018);
+            clientDetailsDot.birth_date = "Thu Dec 14 2006";
             clientDetailsDot.charm = random.nextInt(charmsStorage.size());
             clientDetailsDot.addrFactStreet = randomString();
             clientDetailsDot.addrFactHome = Integer.toString(random.nextInt(100));
@@ -199,9 +199,9 @@ public class ClientStandDb implements HasAfterInject {
                 + " " + clientDetailsDot.patronymic;
         clientRecordDot.charm = getCharmById(clientDetailsDot.charm);
         clientRecordDot.age = calculateAge(clientDetailsDot.birth_date);
-        clientRecordDot.total = (float) 1.3 * random.nextInt(5000);
-        clientRecordDot.max = (float) 1.3 * random.nextInt(5000);
-        clientRecordDot.min = (float) 1.3 * random.nextInt(5000);
+        clientRecordDot.total = 0;
+        clientRecordDot.max = 0;
+        clientRecordDot.min = 0;
         clientRecordStorage.add(clientRecordDot);
 
         return clientRecordDot;
@@ -279,38 +279,49 @@ public class ClientStandDb implements HasAfterInject {
     }
 
     private int calculateAge(String date) {
-        String[] split = date.split("/");
-        LocalDate birthDate;
-        int year = Integer.parseInt(split[2]);
-        int month = Integer.parseInt(split[0]);
-        int day = Integer.parseInt(split[1]);
+        System.out.println("have to calculate = " + date);
         try {
-            if (day < 1)
-                day = 1;
-            if (month < 1)
-                month = 1;
-            if (year < 1)
-                year = 1;
-            birthDate = LocalDate.of(year, month, day);
-        } catch (Exception e) {
-            birthDate = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        }
-        Date input = new Date();
-        LocalDate currentDate = input.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        if ((currentDate != null)) {
-            return Period.between(birthDate, currentDate).getYears();
-        } else {
+            String[] split = date.split(" ");
+            DateFormat formatter = new SimpleDateFormat("MM/dd/yy");
+            int year = Integer.parseInt(split[3]);
+            int month = getMonthNumber(split[1]);
+            int day = Integer.parseInt(split[2]);
+
+            Date input = new Date();
+            Date birth = formatter.parse(month + "/" + day + "/" + year);
+            LocalDate birthDate = birth.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate currentDate = input.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            if ((currentDate != null)) {
+                return Period.between(birthDate, currentDate).getYears();
+            } else {
+                return 0;
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
             return 0;
         }
     }
 
     private String getCharmById(int id) {
-        for (CharmDot aCharmsStorage : charmsStorage) {
-            if (aCharmsStorage.id == id) {
-                return aCharmsStorage.name;
+        try {
+            for (CharmDot aCharmsStorage : charmsStorage) {
+                if (aCharmsStorage.id == id) {
+                    return aCharmsStorage.name;
+                }
             }
+            return "";
+        } catch (Exception ex) {
+            return "";
         }
-        return "";
+    }
+
+    private int getMonthNumber(String monthName) {
+        String[] list = {"Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"};
+        for (int i = 0; i < list.length; i++) {
+            if (list[i].toLowerCase().equals(monthName.toLowerCase()))
+                return i + 1;
+        }
+        return 0;
     }
 
 }
