@@ -1,22 +1,25 @@
 package kz.greetgo.sandbox.controller.register;
 
-import kz.greetgo.sandbox.controller.register.model.ClientResponseTest;
+import kz.greetgo.sandbox.controller.model.Charm;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientRecordInfo;
+import kz.greetgo.sandbox.controller.model.Options;
 
 import java.util.List;
 
 public interface ClientRegister {
-    List<ClientResponseTest> getClientsList(); // TODO rename method and ClientResponseTest.java
 
-    void addNewClient(String surname, String name, String patronymic, String gender,
-                        String birth_date, String charm, String addrFactStreet,
-                        String addrFactHome, String addrFactFlat, String addrRegStreet,
-                        String addrRegHome, String addrRegFlat, String phoneHome,
-                        String phoneWork, String phoneMob1, String phoneMob2, String phoneMob3);
+    ClientRecordInfo getClientRecords(Options options);
 
-    void delClient(String clientId);
-    void editClient(String clientId, String surname, String name, String patronymic, String gender,
-                    String birth_date, String charm, String addrFactStreet,
-                    String addrFactHome, String addrFactFlat, String addrRegStreet,
-                    String addrRegHome, String addrRegFlat, String phoneHome,
-                    String phoneWork, String phoneMob1, String phoneMob2, String phoneMob3);
+    void deleteClient(int clientId);
+
+    ClientRecord addNewClient(ClientDetails details);
+
+    ClientRecord editClient(ClientDetails details);
+
+    ClientDetails getClientById(int clientId);
+
+    List<Charm> getCharms();
+
 }
