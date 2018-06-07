@@ -2,69 +2,112 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.sandbox.controller.model.Charm;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.controller.register.model.ClientResponseTest;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientRecordInfo;
+import kz.greetgo.sandbox.controller.model.Options;
 import kz.greetgo.sandbox.db.stand.beans.ClientStandDb;
-import kz.greetgo.sandbox.db.stand.model.ClientDot;
+import kz.greetgo.sandbox.db.stand.model.CharmDot;
+import kz.greetgo.sandbox.db.stand.model.ClientDetailsDot;
+import kz.greetgo.sandbox.db.stand.model.ClientRecordDot;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Bean
 public class ClientRegisterStand implements ClientRegister {
 
-  public BeanGetter<ClientStandDb> db;
+    public BeanGetter<ClientStandDb> db;
 
-  @Override
-  public List<ClientResponseTest> getClientsList() {
-    List<ClientResponseTest> list = new ArrayList<>();
-    for (ClientDot dot : db.get().clientStorage) {
-      ClientResponseTest clients = new ClientResponseTest();
-      clients.id = dot.id;
-      clients.name = dot.name;
-      clients.charm = dot.charm;
-      clients.age = dot.age;
-      clients.total = dot.total;
-      clients.max = dot.max;
-      clients.min = dot.min;
-      list.add(clients);
+    @Override
+    public ClientRecordInfo getClientRecords(Options options) {
+        ClientRecordInfo wrapper = new ClientRecordInfo();
+        List<ClientRecord> out = new ArrayList<>();
+        for (ClientRecordDot dot : db.get().getClientRecordStorage(options)) {
+            ClientRecord clientRecord = new ClientRecord();
+            clientRecord.id = dot.id;
+            clientRecord.name = dot.name;
+            clientRecord.charm = dot.charm;
+            clientRecord.age = dot.age;
+            clientRecord.total = dot.total;
+            clientRecord.max = dot.max;
+            clientRecord.min = dot.min;
+            out.add(clientRecord);
+        }
+        wrapper.total_count = db.get().out.size();
+        wrapper.items = out;
+        return wrapper;
     }
-    return list;
-  }
 
-  @Override
-  public void addNewClient(String surname, String name, String patronymic, String gender,
-                           String birth_date, String charm, String addrFactStreet,
-                           String addrFactHome, String addrFactFlat, String addrRegStreet,
-                           String addrRegHome, String addrRegFlat, String phoneHome, String phoneWork,
-                           String phoneMob1, String phoneMob2, String phoneMob3) {
+    @Override
+    public void deleteClient(int clientId) {
+        db.get().deleteClientInfo(clientId);
+    }
 
-    //TODO перенеси все эти входящие параметры в модель и назови эту модель понятно
+    @Override
+    public ClientRecord addNewClient(ClientDetails details) {
+        ClientRecord clientRecord = new ClientRecord();
+        ClientRecordDot dot = db.get().addNewClientRecord(details);
+        clientRecord.id = dot.id;
+        clientRecord.name = dot.name;
+        clientRecord.charm = dot.charm;
+        clientRecord.age = dot.age;
+        clientRecord.total = dot.total;
+        clientRecord.max = dot.max;
+        clientRecord.min = dot.min;
+        return clientRecord;
+    }
 
-    db.get().insert(surname, name, patronymic, gender,
-      birth_date, charm, addrFactStreet,
-      addrFactHome, addrFactFlat, addrRegStreet,
-      addrRegHome, addrRegFlat, phoneHome, phoneWork,
-      phoneMob1, phoneMob2, phoneMob3);// TODO all
-    //TODO insert модель, которая придет в addNewClient(Какая-то модель = SomeModel)
-  }
+    @Override
+    public ClientRecord editClient(ClientDetails details) {
+        ClientRecord clientRecord = new ClientRecord();
+        ClientRecordDot dot = db.get().editClientRecord(details);
+        clientRecord.id = dot.id;
+        clientRecord.name = dot.name;
+        clientRecord.charm = dot.charm;
+        clientRecord.age = dot.age;
+        clientRecord.total = dot.total;
+        clientRecord.max = dot.max;
+        clientRecord.min = dot.min;
+        return clientRecord;
+    }
 
-  @Override
-  public void delClient(String clientId) {
-    db.get().remove(clientId);
-  }
+    @Override
+    public ClientDetails getClientById(int clientId) {
+        ClientDetails clientDetails = new ClientDetails();
+        ClientDetailsDot dot = db.get().getClientDetailById(clientId);
+        clientDetails.id = dot.id;
+        clientDetails.name = dot.name;
+        clientDetails.surname = dot.surname;
+        clientDetails.patronymic = dot.patronymic;
+        clientDetails.gender = dot.gender;
+        clientDetails.birth_date = dot.birth_date;
+        clientDetails.charm = dot.charm;
+        clientDetails.addrFactStreet = dot.addrFactStreet;
+        clientDetails.addrFactHome = dot.addrFactHome;
+        clientDetails.addrFactFlat = dot.addrFactFlat;
+        clientDetails.addrRegStreet = dot.addrRegStreet;
+        clientDetails.addrRegHome = dot.addrRegHome;
+        clientDetails.addrRegFlat = dot.addrRegFlat;
+        clientDetails.phoneHome = dot.phoneHome;
+        clientDetails.phoneWork = dot.phoneWork;
+        clientDetails.phoneMob1 = dot.phoneMob1;
+        clientDetails.phoneMob2 = dot.phoneMob2;
+        clientDetails.phoneMob3 = dot.phoneMob3;
+        return clientDetails;
+    }
 
-  @Override
-  public void editClient(String clientId, String surname, String name, String patronymic, String gender, String birth_date, String charm, String addrFactStreet, String addrFactHome, String addrFactFlat, String addrRegStreet, String addrRegHome, String addrRegFlat, String phoneHome, String phoneWork, String phoneMob1, String phoneMob2, String phoneMob3) {
+    @Override
+    public List<Charm> getCharms() {
+        List<Charm> out = new ArrayList<>();
+        for (CharmDot dot : db.get().charmsStorage) {
+            Charm charm = new Charm();
+            charm.id = dot.id;
+            charm.name = dot.name;
+            out.add(charm);
+        }
+        return out;
+    }
 
-    //TODO перенеси все эти входящие параметры в модель и назови эту модель понятно
-
-    db.get().edit(clientId, surname, name, patronymic, gender,
-      birth_date, charm, addrFactStreet,
-      addrFactHome, addrFactFlat, addrRegStreet,
-      addrRegHome, addrRegFlat, phoneHome, phoneWork,
-      phoneMob1, phoneMob2, phoneMob3);
-    //TODO edit модель, которая придет в editClient(Какая-то модель = SomeModel)
-
-  }
 }

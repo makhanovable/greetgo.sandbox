@@ -1,8 +1,12 @@
 package kz.greetgo.sandbox.db.register_impl;
 
 import kz.greetgo.depinject.core.Bean;
+import kz.greetgo.sandbox.controller.model.Charm;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.controller.register.model.ClientResponseTest;
+import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientRecordInfo;
+import kz.greetgo.sandbox.controller.model.Options;
 
 import java.util.List;
 
@@ -10,23 +14,32 @@ import java.util.List;
 public class ClientRegisterImpl implements ClientRegister {
 
     @Override
-    public List<ClientResponseTest> getClientsList() {
+    public ClientRecordInfo getClientRecords(Options options) {
         return null;
     }
 
     @Override
-    public void addNewClient(String surname, String name, String patronymic, String gender, String birth_date, String charm, String addrFactStreet, String addrFactHome, String addrFactFlat, String addrRegStreet, String addrRegHome, String addrRegFlat, String phoneHome, String phoneWork, String phoneMob1, String phoneMob2, String phoneMob3) {
+    public void deleteClient(int clientId) {
 
     }
 
     @Override
-    public void delClient(String clientId) {
-
+    public ClientRecord addNewClient(ClientDetails details) {
+        return null;
     }
 
     @Override
-    public void editClient(String clientId, String surname, String name, String patronymic, String gender, String birth_date, String charm, String addrFactStreet, String addrFactHome, String addrFactFlat, String addrRegStreet, String addrRegHome, String addrRegFlat, String phoneHome, String phoneWork, String phoneMob1, String phoneMob2, String phoneMob3) {
-
+    public ClientRecord editClient(ClientDetails details) {
+        return null;
     }
 
+    @Override
+    public ClientDetails getClientById(int clientId) {
+        return null;
+    }
+
+    @Override
+    public List<Charm> getCharms() {
+        return null;
+    }
 }

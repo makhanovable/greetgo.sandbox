@@ -5,18 +5,22 @@ import {BrowserModule} from "@angular/platform-browser";
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {RootComponent} from "./root.component";
 import {LoginComponent} from "./input/login.component";
-import {MainFormComponent} from "./main_form/main_form.component";
+import {MainFormComponent} from "./main.form/main.form.component";
+import {MatToolbarModule} from '@angular/material/toolbar';
 import {HttpService} from "./HttpService";
 import {
     MatButtonModule, MatFormFieldModule, MatInputModule, MatSlideToggleModule,
     MatTableModule, MatPaginatorModule, MatSelectModule, MatDatepickerModule, MatNativeDateModule,
+    MatProgressSpinnerModule,
     MatSortModule
 } from "@angular/material";
-import {EditableListComponent} from "./editable_list/editable.list.component";
+import {ClientListComponent} from "./client.list/client.list.component";
 import {MatDialogModule} from "@angular/material";
-import {DialogComponent} from "./dialog/dialog.component";
-import {ErrorDialogComponent} from "./error_dialog/error.dialog.component";
-import {AreYouSureDialogComponent} from "./are_you_sure_dialog/are.you.sure.dialog.component";
+import {DialogComponent} from "./edit.dialog/edit.dialog.component";
+import {ErrorDialogComponent} from "./error.dialog/error.dialog.component";
+import {HttpClientModule} from '@angular/common/http';
+import {DeleteDialogComponent} from "./delete.dialog/delete.dialog.component";
+import {DataSourceService} from "./services/data.source.service";
 
 @NgModule({
     imports: [
@@ -26,6 +30,7 @@ import {AreYouSureDialogComponent} from "./are_you_sure_dialog/are.you.sure.dial
         MatSlideToggleModule,
         MatDialogModule,
         ReactiveFormsModule,
+        MatToolbarModule,
         MatFormFieldModule,
         MatInputModule,
         MatButtonModule,
@@ -35,15 +40,16 @@ import {AreYouSureDialogComponent} from "./are_you_sure_dialog/are.you.sure.dial
         MatNativeDateModule,
         MatDatepickerModule,
         MatSortModule,
-
+        MatProgressSpinnerModule,
+        HttpClientModule
     ],
     declarations: [
-        RootComponent, LoginComponent, MainFormComponent, EditableListComponent,
-        DialogComponent, ErrorDialogComponent, AreYouSureDialogComponent
+        RootComponent, LoginComponent, MainFormComponent, ClientListComponent,
+        DialogComponent, ErrorDialogComponent, DeleteDialogComponent,
     ],
     bootstrap: [RootComponent],
-    providers: [HttpService],
-    entryComponents: [DialogComponent, ErrorDialogComponent, AreYouSureDialogComponent],
+    providers: [HttpService, DataSourceService],
+    entryComponents: [DialogComponent, ErrorDialogComponent, DeleteDialogComponent],
 })
 export class AppModule {
 }
