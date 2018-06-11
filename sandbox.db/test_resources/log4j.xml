@@ -3,65 +3,78 @@
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
 
-  <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
-    <errorHandler class="org.apache.log4j.helpers.OnlyOnceErrorHandler"/>
-    <param name="Target" value="System.out"/>
-    <param name="Threshold" value="TRACE"/>
+    <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
+        <errorHandler class="org.apache.log4j.helpers.OnlyOnceErrorHandler"/>
+        <param name="Target" value="System.out"/>
+        <param name="Threshold" value="TRACE"/>
 
 
-    <layout class="kz.greetgo.sandbox.controller.logging.MyLog4jLayout">
-      <param name="LoggerNameCut" value="2"/>
-    </layout>
-    <!--
-    <layout class="org.apache.log4j.PatternLayout">
-      <param name="ConversionPattern" value="%d %-5p [%c{1}] %m%n"/>
-    </layout>
-    -->
-  </appender>
+        <layout class="kz.greetgo.sandbox.controller.logging.MyLog4jLayout">
+            <param name="LoggerNameCut" value="2"/>
+        </layout>
+        <!--
+        <layout class="org.apache.log4j.PatternLayout">
+          <param name="ConversionPattern" value="%d %-5p [%c{1}] %m%n"/>
+        </layout>
+        -->
+    </appender>
 
-  <appender name="SERVER" class="org.apache.log4j.RollingFileAppender">
-    <param name="File" value="${user.home}/sandbox.d/logs/server.log"/>
-    <param name="Threshold" value="INFO"/>
-    <param name="Append" value="true"/>
-    <param name="MaxFileSize" value="100MB"/>
-    <param name="MaxBackupIndex" value="100"/>
+    <appender name="SERVER" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${user.home}/sandbox.d/logs/server.log"/>
+        <param name="Threshold" value="INFO"/>
+        <param name="Append" value="true"/>
+        <param name="MaxFileSize" value="100MB"/>
+        <param name="MaxBackupIndex" value="100"/>
 
-    <layout class="kz.greetgo.sandbox.controller.logging.MyLog4jLayout">
-      <param name="LoggerNameCut" value="0"/>
-    </layout>
-  </appender>
+        <layout class="kz.greetgo.sandbox.controller.logging.MyLog4jLayout">
+            <param name="LoggerNameCut" value="0"/>
+        </layout>
+    </appender>
 
-  <category name="org.apache">
-    <priority value="INFO"/>
-  </category>
+    <category name="org.apache">
+        <priority value="INFO"/>
+    </category>
 
-  <category name="kz.greetgo.sandbox.db.test.beans._develop_" additivity="true">
-    <priority value="INFO"/>
-    <appender-ref ref="CONSOLE"/>
-  </category>
+    <category name="kz.greetgo.sandbox.db.test.beans._develop_" additivity="true">
+        <priority value="INFO"/>
+        <appender-ref ref="CONSOLE"/>
+    </category>
 
-  <category name="TRACE" additivity="true">
-    <priority value="TRACE"/>
-  </category>
+    <category name="TRACE" additivity="true">
+        <priority value="TRACE"/>
+    </category>
 
-  <category name="SQL" additivity="true">
-    <priority value="TRACE"/>
-    <!--<appender-ref ref="CONSOLE"/>-->
-  </category>
+    <category name="SQL" additivity="true">
+        <priority value="TRACE"/>
+        <!--<appender-ref ref="CONSOLE"/>-->
+    </category>
 
-  <category name="DIRECT_SQL" additivity="true">
-    <priority value="TRACE"/>
-    <!--<appender-ref ref="CONSOLE"/>-->
-  </category>
+    <category name="DIRECT_SQL" additivity="true">
+        <priority value="TRACE"/>
+        <!--<appender-ref ref="CONSOLE"/>-->
+    </category>
 
-  <category name="kz.greetgo.sandbox.db.register_impl" additivity="true">
-    <priority value="TRACE"/>
-    <!--<appender-ref ref="CONSOLE"/>-->
-  </category>
+    <category name="kz.greetgo.sandbox.db.register_impl" additivity="true">
+        <priority value="TRACE"/>
+        <!--<appender-ref ref="CONSOLE"/>-->
+    </category>
 
-  <root>
-    <priority value="INFO"/>
-    <appender-ref ref="SERVER"/>
-  </root>
+    <root>
+        <priority value="INFO"/>
+        <appender-ref ref="SERVER"/>
+    </root>
+
+    <!--<appender name="CLIENT" class="org.apache.log4j.RollingFileAppender">-->
+        <!--<param name="File" value="${user.home}/sandbox.d/logs/client.log"/>-->
+        <!--<param name="Threshold" value="INFO"/>-->
+        <!--<param name="Append" value="true"/>-->
+        <!--<param name="MaxFileSize" value="100MB"/>-->
+        <!--<param name="MaxBackupIndex" value="100"/>-->
+
+        <!--<layout class="kz.greetgo.sandbox.controller.logging.MyLog4jLayout">-->
+            <!--<param name="LoggerNameCut" value="0"/>-->
+            <!--<param name="ConversionPattern" value="%d %-5p [%c{1}] %m%n"/>-->
+        <!--</layout>-->
+    <!--</appender>-->
 
 </log4j:configuration>
