@@ -2,10 +2,7 @@ package kz.greetgo.sandbox.controller.controller;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.mvc.annotations.Mapping;
-import kz.greetgo.mvc.annotations.Par;
-import kz.greetgo.mvc.annotations.ParamsTo;
-import kz.greetgo.mvc.annotations.ToJson;
+import kz.greetgo.mvc.annotations.*;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.model.ClientDetails;
@@ -33,7 +30,7 @@ public class ClientController implements Controller {
     @ToJson
     @NoSecurity
     @Mapping("/add_new_client")
-    public ClientRecord addNewClientRecord(@ParamsTo ClientDetails clientDetails) {
+    public ClientRecord addNewClientRecord(@Json @Par("clientToSave") ClientDetails clientDetails) {
         return clientRegister.get().addNewClient(clientDetails);
     }
 
@@ -47,7 +44,7 @@ public class ClientController implements Controller {
     @ToJson
     @NoSecurity
     @Mapping("/edit_client")
-    public ClientRecord editClient(@ParamsTo ClientDetails clientDetails) {
+    public ClientRecord editClient(@Json @Par("clientToSave") ClientDetails clientDetails) {
         return clientRegister.get().editClient(clientDetails);
     }
 

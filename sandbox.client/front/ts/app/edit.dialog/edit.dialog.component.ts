@@ -54,7 +54,7 @@ export class DialogComponent {
 
     edit(clientId) {
         this.http.post("/client/edit_client", {
-            clientToSave: this.generateClientToSave(clientId)
+            clientToSave: JSON.stringify(this.generateClientToSave(clientId))
         }).toPromise().then(result => {
             let clientRecord = new ClientRecord(result.json());
             this.dialogRef.close(clientRecord);
@@ -78,7 +78,7 @@ export class DialogComponent {
 
     add() {
         this.http.post("/client/add_new_client", {
-            clientToSave: this.generateClientToSave(null)
+            clientToSave: JSON.stringify(this.generateClientToSave(null))
         }).toPromise().then(result => {
             let clientRecord = new ClientRecord(result.json());
             this.dialogRef.close(clientRecord);
@@ -101,30 +101,30 @@ export class DialogComponent {
             this.clientDetail.surname != null && this.clientDetail.surname.length != 0 &&
             this.clientDetail.gender != null && this.clientDetail.gender.length != 0 &&
             this.clientDetail.charm != null &&
-            this.clientDetail.phoneHome != null && this.isPhoneValid(this.clientDetail.phoneHome) &&
+            this.clientDetail.phones[0] != null && this.isPhoneValid(this.clientDetail.phones[0]) &&
             this.clientDetail.addrRegStreet != null && this.clientDetail.addrRegStreet.length != 0 &&
             this.clientDetail.addrRegHome != null && this.clientDetail.addrRegHome.length != 0 &&
             this.clientDetail.addrRegFlat != null && this.clientDetail.addrRegFlat.length != 0) {
             let count: number = 0;
             let temp: number = 0;
-            if (this.clientDetail.phoneWork != null && this.clientDetail.phoneWork.length != 0) {
+            if (this.clientDetail.phones[1] != null && this.clientDetail.phones[1].length != 0) {
                 count++;
-                if (this.isPhoneValid(this.clientDetail.phoneWork))
+                if (this.isPhoneValid(this.clientDetail.phones[1]))
                     temp++;
             }
-            if (this.clientDetail.phoneMob1 != null && this.clientDetail.phoneMob1.length != 0) {
+            if (this.clientDetail.phones[2] != null && this.clientDetail.phones[2].length != 0) {
                 count++;
-                if (this.isPhoneValid(this.clientDetail.phoneMob1))
+                if (this.isPhoneValid(this.clientDetail.phones[2]))
                     temp++;
             }
-            if (this.clientDetail.phoneMob2 != null && this.clientDetail.phoneMob2.length != 0) {
+            if (this.clientDetail.phones[3] != null && this.clientDetail.phones[3].length != 0) {
                 count++;
-                if (this.isPhoneValid(this.clientDetail.phoneMob2))
+                if (this.isPhoneValid(this.clientDetail.phones[3]))
                     temp++;
             }
-            if (this.clientDetail.phoneMob3 != null && this.clientDetail.phoneMob3.length != 0) {
+            if (this.clientDetail.phones[4] != null && this.clientDetail.phones[4].length != 0) {
                 count++;
-                if (this.isPhoneValid(this.clientDetail.phoneMob3))
+                if (this.isPhoneValid(this.clientDetail.phones[4]))
                     temp++;
             }
             console.log(count + " = " + temp);

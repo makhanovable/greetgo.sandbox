@@ -54,11 +54,10 @@ public class ClientStandDb implements HasAfterInject {
             clientDetailsDot.addrRegStreet = randomString();
             clientDetailsDot.addrRegHome = Integer.toString(random.nextInt(100));
             clientDetailsDot.addrRegFlat = Integer.toString(random.nextInt(100));
-            clientDetailsDot.phoneHome = random.nextInt(10) + "" + (random.nextInt(899) + 100);
-            clientDetailsDot.phoneWork = random.nextInt(10) + "" + (random.nextInt(899) + 100);
-            clientDetailsDot.phoneMob1 = random.nextInt(10) + "" + (random.nextInt(899) + 100);
-            clientDetailsDot.phoneMob2 = random.nextInt(10) + "" + (random.nextInt(899) + 100);
-            clientDetailsDot.phoneMob3 = random.nextInt(10) + "" + (random.nextInt(899) + 100);
+            String[] phones = new String[5];
+            for (int j = 0; j < 5; j++)
+                phones[j] = random.nextInt(10) + "" + (random.nextInt(899) + 100);
+            clientDetailsDot.phones = phones;
             clientDetailsStorage.add(clientDetailsDot);
 
             clientRecordDot.id = i;
@@ -183,15 +182,13 @@ public class ClientStandDb implements HasAfterInject {
         clientDetailsDot.addrRegStreet = details.addrRegStreet;
         clientDetailsDot.addrRegHome = details.addrRegHome;
         clientDetailsDot.addrRegFlat = details.addrRegFlat;
-        clientDetailsDot.phoneHome = details.phoneHome;
-        if (details.phoneWork != null) clientDetailsDot.phoneWork = details.phoneWork;
-        else clientDetailsDot.phoneWork = "";
-        if (details.phoneMob1 != null) clientDetailsDot.phoneMob1 = details.phoneMob1;
-        else clientDetailsDot.phoneMob1 = "";
-        if (details.phoneMob2 != null) clientDetailsDot.phoneMob2 = details.phoneMob2;
-        else clientDetailsDot.phoneMob2 = "";
-        if (details.phoneMob3 != null) clientDetailsDot.phoneMob3 = details.phoneMob3;
-        else clientDetailsDot.phoneMob3 = "";
+        String[] phones = new String[5];
+        for (int i = 0; i < details.phones.length; i++) {
+            String phone = details.phones[i];
+            if (phone != null) phones[i] = phone;
+            else phones[i] = "";
+        }
+        clientDetailsDot.phones = phones;
         clientDetailsStorage.add(clientDetailsDot);
 
         clientRecordDot.id = id;
@@ -228,15 +225,13 @@ public class ClientStandDb implements HasAfterInject {
         clientDetailsDot.addrRegStreet = details.addrRegStreet;
         clientDetailsDot.addrRegHome = details.addrRegHome;
         clientDetailsDot.addrRegFlat = details.addrRegFlat;
-        clientDetailsDot.phoneHome = details.phoneHome;
-        if (details.phoneWork != null) clientDetailsDot.phoneWork = details.phoneWork;
-        else clientDetailsDot.phoneWork = "";
-        if (details.phoneMob1 != null) clientDetailsDot.phoneMob1 = details.phoneMob1;
-        else clientDetailsDot.phoneMob1 = "";
-        if (details.phoneMob2 != null) clientDetailsDot.phoneMob2 = details.phoneMob2;
-        else clientDetailsDot.phoneMob2 = "";
-        if (details.phoneMob3 != null) clientDetailsDot.phoneMob3 = details.phoneMob3;
-        else clientDetailsDot.phoneMob3 = "";
+        String[] phones = new String[5];
+        for (int i = 0; i < details.phones.length; i++) {
+            String phone = details.phones[i];
+            if (phone != null) phones[i] = phone;
+            else phones[i] = "";
+        }
+        clientDetailsDot.phones = phones;
 
         clientRecordDot.id = details.id;
         clientRecordDot.name = clientDetailsDot.surname + " " + clientDetailsDot.name

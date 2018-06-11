@@ -14,9 +14,5 @@ public class ClientDetailsDot {
     public String addrRegStreet;
     public String addrRegHome;
     public String addrRegFlat;
-    public String phoneHome;
-    public String phoneWork;
-    public String phoneMob1;
-    public String phoneMob2;
-    public String phoneMob3;
+    public String[] phones;
 }

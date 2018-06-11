@@ -91,5 +91,13 @@
     ]]></sql>
     </changeSet>
 
+    <changeSet author="makhan" id="create-table-id">
+        <sql endDelimiter=";;"><![CDATA[
+        CREATE TABLE ID
+        (
+        id integer NOT NULL
+        )
+    ]]></sql>
+    </changeSet>
 
 </databaseChangeLog>
