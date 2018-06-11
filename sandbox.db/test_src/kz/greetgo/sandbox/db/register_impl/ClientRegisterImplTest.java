@@ -386,7 +386,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
         clientDetails.addrRegStreet = RND.str(10);
         clientDetails.addrRegHome = RND.str(10);
         clientDetails.addrRegFlat = RND.str(10);
-        //clientDetails.phoneHome = RND.str(10);
+        String[] phones = new String[5];
+        for (int i = 0; i < 5; i++){
+            phones[i] = RND.str(10);
+        }
+        clientDetails.phones = phones;
         if (id != -1)
             clientDetails.id = id;
         return clientDetails;
