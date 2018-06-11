@@ -24,7 +24,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     @Test
     public void add_new_client() {
         ClientDetails randomClientDetail = createRandomClientDetail(-1);
-        ClientRecord expectedClientRecord = createClientRecordFromClientDetail(randomClientDetail);
+        ClientRecord expectedClientRecord = createClientRecordFromClientDetail(randomClientDetail, true);
 
         //
         //
@@ -48,7 +48,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public void edit_client() {
         ClientDetails randomClientDetail = clientTestDao.get().getRandomClientDetail();
         ClientDetails editedClientDetail = createRandomClientDetail(randomClientDetail.id);
-        ClientRecord expectedClientRecord = createClientRecordFromClientDetail(editedClientDetail);
+        ClientRecord expectedClientRecord = createClientRecordFromClientDetail(editedClientDetail, false);
 
         //
         //
@@ -377,27 +377,32 @@ public class ClientRegisterImplTest extends ParentTestNg {
         clientDetails.gender = Gender.FEMALE.name(); // TODO edit
         clientDetails.birth_date = new Date().toString(); // TODO edit use RND.dateYear etc
 
-        int charms_count = clientTestDao.get().getCharmsCount();
+        Integer charms_count = clientTestDao.get().getCharmsCount();
+        if (charms_count == null || charms_count == 0)
+            insertRandomCharm();
+        charms_count = clientTestDao.get().getCharmsCount();
 
-        clientDetails.charm = RND.plusInt(charms_count);
+        clientDetails.charm = RND.plusInt(charms_count + 1);
         clientDetails.addrRegStreet = RND.str(10);
         clientDetails.addrRegHome = RND.str(10);
         clientDetails.addrRegFlat = RND.str(10);
-        clientDetails.phoneHome = RND.str(10);
+        //clientDetails.phoneHome = RND.str(10);
         if (id != -1)
             clientDetails.id = id;
         return clientDetails;
     }
 
-    private ClientRecord createClientRecordFromClientDetail(ClientDetails clientDetails) {
+    private ClientRecord createClientRecordFromClientDetail(ClientDetails clientDetails, boolean isNew) {
         ClientRecord clientRecord = new ClientRecord();
         clientRecord.id = clientDetails.id;
         clientRecord.name = clientDetails.surname + " " + clientDetails.name + " " + clientDetails.patronymic; // TODO add patronymic
         clientRecord.charm = clientTestDao.get().getCharmById(clientDetails.charm);
         clientRecord.age = calculateAge(clientDetails.birth_date);
-        clientRecord.total = clientTestDao.get().getTotalBalanceById(clientDetails.id);
-        clientRecord.max = clientTestDao.get().getMaxBalanceById(clientDetails.id);
-        clientRecord.min = clientTestDao.get().getMinBalanceById(clientDetails.id);
+        if (!isNew) {
+            clientRecord.total = clientTestDao.get().getTotalBalanceById(clientDetails.id);
+            clientRecord.max = clientTestDao.get().getMaxBalanceById(clientDetails.id);
+            clientRecord.min = clientTestDao.get().getMinBalanceById(clientDetails.id);
+        }
         return clientRecord;
     }
 
@@ -461,8 +466,12 @@ public class ClientRegisterImplTest extends ParentTestNg {
             transactionType.code = RND.str(10);
             transactionType.name = RND.str(10);
             clientTestDao.get().insert_random_transaction_type(transactionType);
+        }
+    }
 
-            // filling charms
+    private void insertRandomCharm() {
+        int count = 100;
+        for (int i = 0; i < count; i++) {
             Charm charm = new Charm();
             charm.id = i;
             charm.name = RND.str(10);

@@ -4,6 +4,7 @@ import kz.greetgo.sandbox.controller.model.*;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 public interface ClientDao {
 
@@ -21,5 +22,17 @@ public interface ClientDao {
 
     @Select("select name from charm where id = #{id}")
     String getCharmById(@Param("id") int id);
+
+    @Select("select id from id")
+    Integer getLastID();
+
+    @Update("update id set id = #{id}")
+    void setLastID(@Param("id") int id);
+
+    @Insert("insert into id values(#{id})")
+    void insertID(@Param("id") int id);
+
+    @Select("insert into id values(#{id})")// TODO
+    ClientRecord getClientRecordById(@Param("id") int id);
 
 }

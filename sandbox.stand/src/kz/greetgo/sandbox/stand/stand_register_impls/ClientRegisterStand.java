@@ -90,11 +90,14 @@ public class ClientRegisterStand implements ClientRegister {
         clientDetails.addrRegStreet = dot.addrRegStreet;
         clientDetails.addrRegHome = dot.addrRegHome;
         clientDetails.addrRegFlat = dot.addrRegFlat;
-        clientDetails.phoneHome = dot.phoneHome;
-        clientDetails.phoneWork = dot.phoneWork;
-        clientDetails.phoneMob1 = dot.phoneMob1;
-        clientDetails.phoneMob2 = dot.phoneMob2;
-        clientDetails.phoneMob3 = dot.phoneMob3;
+        String[] phones = new String[5];
+        for (int i = 0; i < dot.phones.length; i++) {
+            if (dot.phones[i] == null)
+                phones[i] = "";
+            else
+                phones[i] = dot.phones[i];
+        }
+        clientDetails.phones = phones;
         return clientDetails;
     }
 

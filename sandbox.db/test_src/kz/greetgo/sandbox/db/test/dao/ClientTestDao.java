@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Select;
 
 public interface ClientTestDao {
 
-    @Insert("TRUNCATE client, client_addr, client_phone,client_account, client_account_transaction,transaction_type, charm CASCADE")
+    @Insert("TRUNCATE client, client_addr, client_phone,client_account, client_account_transaction,transaction_type CASCADE")
     void TRUNCATE();
 
     @Insert("insert into client VALUES (#{client.id}, #{client.surname},#{client.name},#{client.patronymic},#{client.gender},#{client.birth_date},#{client.charm})")
@@ -36,7 +36,7 @@ public interface ClientTestDao {
     //
 
     @Select("select count(id) from charm")
-    int getCharmsCount();
+    Integer getCharmsCount();
 
     @Select("select name from charm where id = #{id}")
     String getCharmById(@Param("id") int id);
@@ -49,12 +49,12 @@ public interface ClientTestDao {
     ClientDetails getRandomClientDetail(); //TODO edit
 
     @Select("select money from client_account WHERE id = #{id}")
-    int getTotalBalanceById(@Param("id") int id);
+    Float getTotalBalanceById(@Param("id") int id);
 
     @Select("select money from client_account WHERE id = #{id}") // TODO calculate min
-    int getMinBalanceById(@Param("id") int id);
+    Float getMinBalanceById(@Param("id") int id);
 
     @Select("select money from client_account WHERE id = #{id}") // TODO calculate max
-    int getMaxBalanceById(@Param("id") int id);
+    Float getMaxBalanceById(@Param("id") int id);
 
 }
