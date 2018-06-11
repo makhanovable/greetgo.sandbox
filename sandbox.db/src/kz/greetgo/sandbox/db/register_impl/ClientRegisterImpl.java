@@ -1,6 +1,5 @@
 package kz.greetgo.sandbox.db.register_impl;
 
-import kz.greetgo.conf.SysParams;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
@@ -52,14 +51,14 @@ public class ClientRegisterImpl implements ClientRegister {
         client.name = details.name;
         client.surname = details.surname;
         client.patronymic = details.patronymic;
-        client.gender = Gender.FEMALE;
+        client.gender = Gender.FEMALE; // TODO
         client.birth_date = new Date();
         client.charm = details.charm;
         clientDao.get().insert_client(client);
 
+        ClientAddr clientAddr = new ClientAddr();
+        clientAddr.client = id;
         if (details.addrRegStreet != null || details.addrRegHome != null || details.addrRegFlat != null){
-            ClientAddr clientAddr = new ClientAddr();
-            clientAddr.client  = id;
             clientAddr.type = ClientAddrType.REG;
             clientAddr.street = details.addrRegStreet;
             clientAddr.house = details.addrRegHome;
@@ -67,48 +66,20 @@ public class ClientRegisterImpl implements ClientRegister {
             clientDao.get().insert_client_addr(clientAddr);
         }
         if (details.addrFactStreet != null || details.addrFactHome != null || details.addrFactFlat != null){
-            ClientAddr clientAddr = new ClientAddr();
-            clientAddr.client  = id;
             clientAddr.type = ClientAddrType.FACT;
             clientAddr.street = details.addrFactStreet;
             clientAddr.house = details.addrFactHome;
             clientAddr.flat = details.addrFactFlat;
             clientDao.get().insert_client_addr(clientAddr);
         }
-        if(details.phoneWork != null) {
-            ClientPhone clientPhone = new ClientPhone();
-            clientPhone.number = details.phoneWork;
-            clientPhone.client = id;
-            clientPhone.type = PhoneType.WORK;
-            clientDao.get().insert_client_phone(clientPhone);
-        }
-        if(details.phoneHome != null) {
-            ClientPhone clientPhone = new ClientPhone();
-            clientPhone.number = details.phoneHome;
-            clientPhone.client = id;
-            clientPhone.type = PhoneType.HOME;
-            clientDao.get().insert_client_phone(clientPhone);
-        }
-        if(details.phoneMob1 != null) {
-            ClientPhone clientPhone = new ClientPhone();
-            clientPhone.number = details.phoneMob1;
-            clientPhone.client = id;
-            clientPhone.type = PhoneType.MOBILE;
-            clientDao.get().insert_client_phone(clientPhone);
-        }
-        if(details.phoneMob2 != null) {
-            ClientPhone clientPhone = new ClientPhone();
-            clientPhone.number = details.phoneMob2;
-            clientPhone.client = id;
-            clientPhone.type = PhoneType.MOBILE;
-            clientDao.get().insert_client_phone(clientPhone);
-        }
-        if(details.phoneMob3 != null) {
-            ClientPhone clientPhone = new ClientPhone();
-            clientPhone.number = details.phoneMob3;
-            clientPhone.client = id;
-            clientPhone.type = PhoneType.MOBILE;
-            clientDao.get().insert_client_phone(clientPhone);
+        for (int i = 0; i < 5; i++) {
+            if(details.phones[i] != null) {
+                ClientPhone clientPhone = new ClientPhone();
+                clientPhone.number = details.phones[i];
+                clientPhone.client = id;
+                clientPhone.type = PhoneType.WORK; // TODO edit
+                clientDao.get().insert_client_phone(clientPhone);
+            }
         }
 
         ClientAccount clientAccount = new ClientAccount();
@@ -119,7 +90,7 @@ public class ClientRegisterImpl implements ClientRegister {
         clientAccount.registered_at = null; // TODO
         clientDao.get().insert_client_account(clientAccount);
 
-        return clientDao.get().getClientRecordById(id);
+        return getClientRecordById(id);
     }
 
     @Override
@@ -146,6 +117,25 @@ public class ClientRegisterImpl implements ClientRegister {
         id++;
         clientDao.get().setLastID(id);
         return id;
+    }
+
+    private ClientRecord getClientRecordById(int id) {
+        Client client = clientDao.get().getClientById(id);
+        ClientAccount clientAccount = clientDao.get().getClientAccountById(id);
+        ClientRecord clientRecord = new ClientRecord();
+
+        clientRecord.id = id;
+        clientRecord.name = client.surname + " " + client.name + " " + client.patronymic;
+        clientRecord.charm = clientDao.get().getCharmById(client.charm);
+        clientRecord.age = calculateAge(client.birth_date);
+        clientRecord.total = clientAccount.money;
+        clientRecord.min = clientAccount.money;
+        clientRecord.max = clientAccount.money;
+        return clientRecord;
+    }
+
+    private int calculateAge(Date birth) {
+        return 0;
     }
 
 }

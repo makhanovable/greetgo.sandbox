@@ -1,10 +1,7 @@
 package kz.greetgo.sandbox.db.dao;
 
 import kz.greetgo.sandbox.controller.model.*;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 
 public interface ClientDao {
 
@@ -32,7 +29,19 @@ public interface ClientDao {
     @Insert("insert into id values(#{id})")
     void insertID(@Param("id") int id);
 
-    @Select("insert into id values(#{id})")// TODO
-    ClientRecord getClientRecordById(@Param("id") int id);
+    @Select("select * from client where id = #{id}")
+//    @Results({
+//            @Result(property = "id", column = "id"),
+//            @Result(property = "name", column = "id"),
+//            @Result(property = "charm", column = "id"),
+//            @Result(property = "age", column = "id"),
+//            @Result(property = "total", column = "id"),
+//            @Result(property = "max", column = "id"),
+//            @Result(property = "min", column = "id"),
+//    })
+    Client getClientById(@Param("id") int id);
+
+    @Select("select * from client_account where client = #{id}")
+    ClientAccount getClientAccountById(@Param("id") int id);
 
 }
