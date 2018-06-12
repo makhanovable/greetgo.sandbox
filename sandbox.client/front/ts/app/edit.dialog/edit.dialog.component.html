@@ -75,33 +75,33 @@
 
         <mat-form-field>
             <!--<span matPrefix>+ &nbsp;</span>-->
-            <input matInput type="tel" [(ngModel)]="clientDetail.phones[0]" minlength="5" placeholder="Домашний"
+            <input matInput type="tel" [(ngModel)]="clientDetail.phones[0].number" minlength="5" placeholder="Домашний"
                    required="true">
-            <div style="display: none;">{{clientDetail.phones[0]}}</div>
+            <div style="display: none;">{{clientDetail.phones[0].number}}</div>
         </mat-form-field>
 
         <mat-form-field>
             <!--<span matPrefix>+ &nbsp;</span>-->
-            <input matInput type="tel" [(ngModel)]="clientDetail.phones[1]" minlength="5" placeholder="Рабочий">
-            <div style="display: none;">{{clientDetail.phones[1]}}</div>
+            <input matInput type="tel" [(ngModel)]="clientDetail.phones[1].number" minlength="5" placeholder="Рабочий">
+            <div style="display: none;">{{clientDetail.phones[1].number}}</div>
         </mat-form-field>
 
         <mat-form-field>
             <!--<span matPrefix>+ &nbsp;</span>-->
-            <input matInput type="tel" [(ngModel)]="clientDetail.phones[2]" minlength="5" placeholder="Мобильный №1">
-            <div style="display: none;">{{clientDetail.phones[2]}}</div>
+            <input matInput type="tel" [(ngModel)]="clientDetail.phones[2].number" minlength="5" placeholder="Мобильный №1">
+            <div style="display: none;">{{clientDetail.phones[2].number}}</div>
         </mat-form-field>
 
         <mat-form-field>
             <!--<span matPrefix>+ &nbsp;</span>-->
-            <input matInput type="tel" [(ngModel)]="clientDetail.phones[3]" minlength="5" placeholder="Мобильный №2">
-            <div style="display: none;">{{clientDetail.phones[3]}}</div>
+            <input matInput type="tel" [(ngModel)]="clientDetail.phones[3].number" minlength="5" placeholder="Мобильный №2">
+            <div style="display: none;">{{clientDetail.phones[3].number}}</div>
         </mat-form-field>
 
         <mat-form-field>
             <!--<span matPrefix>+ &nbsp;</span>-->
-            <input matInput type="tel" [(ngModel)]="clientDetail.phones[4]" minlength="5" placeholder="Мобильный №3">
-            <div style="display: none;">{{clientDetail.phones[4]}}</div>
+            <input matInput type="tel" [(ngModel)]="clientDetail.phones[4].number" minlength="5" placeholder="Мобильный №3">
+            <div style="display: none;">{{clientDetail.phones[4].number}}</div>
         </mat-form-field>
     </div>
     <mat-hint class="makhan-hint">Телефоны * (один мобильный обязателен)</mat-hint>

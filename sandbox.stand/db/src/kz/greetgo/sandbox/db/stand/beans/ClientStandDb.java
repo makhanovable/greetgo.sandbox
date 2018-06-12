@@ -3,7 +3,9 @@ package kz.greetgo.sandbox.db.stand.beans;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.HasAfterInject;
 import kz.greetgo.sandbox.controller.model.ClientDetails;
+import kz.greetgo.sandbox.controller.model.ClientPhone;
 import kz.greetgo.sandbox.controller.model.Options;
+import kz.greetgo.sandbox.controller.model.PhoneType;
 import kz.greetgo.sandbox.db.stand.model.CharmDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDetailsDot;
 import kz.greetgo.sandbox.db.stand.model.ClientRecordDot;
@@ -54,9 +56,12 @@ public class ClientStandDb implements HasAfterInject {
             clientDetailsDot.addrRegStreet = randomString();
             clientDetailsDot.addrRegHome = Integer.toString(random.nextInt(100));
             clientDetailsDot.addrRegFlat = Integer.toString(random.nextInt(100));
-            String[] phones = new String[5];
-            for (int j = 0; j < 5; j++)
-                phones[j] = random.nextInt(10) + "" + (random.nextInt(899) + 100);
+            ClientPhone[] phones = new ClientPhone[5];
+            for (int j = 0; j < 5; j++) {
+                phones[j] = new ClientPhone();
+                phones[j].number = random.nextInt(10) + "" + (random.nextInt(899) + 100);
+                phones[j].type = PhoneType.MOBILE;
+            }
             clientDetailsDot.phones = phones;
             clientDetailsStorage.add(clientDetailsDot);
 
@@ -182,11 +187,13 @@ public class ClientStandDb implements HasAfterInject {
         clientDetailsDot.addrRegStreet = details.addrRegStreet;
         clientDetailsDot.addrRegHome = details.addrRegHome;
         clientDetailsDot.addrRegFlat = details.addrRegFlat;
-        String[] phones = new String[5];
+        ClientPhone[] phones = new ClientPhone[5];
         for (int i = 0; i < details.phones.length; i++) {
-            String phone = details.phones[i];
-            if (phone != null) phones[i] = phone;
-            else phones[i] = "";
+            phones[i] = new ClientPhone();
+            ClientPhone phone = details.phones[i];
+            if (phone.number != null) phones[i].number = phone.number;
+            else phones[i].number = "";
+            phones[i].type = phone.type;
         }
         clientDetailsDot.phones = phones;
         clientDetailsStorage.add(clientDetailsDot);
@@ -225,11 +232,13 @@ public class ClientStandDb implements HasAfterInject {
         clientDetailsDot.addrRegStreet = details.addrRegStreet;
         clientDetailsDot.addrRegHome = details.addrRegHome;
         clientDetailsDot.addrRegFlat = details.addrRegFlat;
-        String[] phones = new String[5];
+        ClientPhone[] phones = new ClientPhone[5];
         for (int i = 0; i < details.phones.length; i++) {
-            String phone = details.phones[i];
-            if (phone != null) phones[i] = phone;
-            else phones[i] = "";
+            phones[i] = new ClientPhone();
+            ClientPhone phone = details.phones[i];
+            if (phone.number != null) phones[i].number = phone.number;
+            else phones[i].number = "";
+            phones[i].type = phone.type;
         }
         clientDetailsDot.phones = phones;
 

@@ -1,5 +1,7 @@
 package kz.greetgo.sandbox.db.stand.model;
 
+import kz.greetgo.sandbox.controller.model.ClientPhone;
+
 public class ClientDetailsDot {
     public int id;
     public String name;
@@ -14,5 +16,5 @@ public class ClientDetailsDot {
     public String addrRegStreet;
     public String addrRegHome;
     public String addrRegFlat;
-    public String[] phones;
+    public ClientPhone[] phones;
 }
