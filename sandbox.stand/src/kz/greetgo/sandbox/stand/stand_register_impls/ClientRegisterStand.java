@@ -2,12 +2,8 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.Charm;
+import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.controller.model.ClientDetails;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.controller.model.ClientRecordInfo;
-import kz.greetgo.sandbox.controller.model.Options;
 import kz.greetgo.sandbox.db.stand.beans.ClientStandDb;
 import kz.greetgo.sandbox.db.stand.model.CharmDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDetailsDot;
@@ -90,12 +86,14 @@ public class ClientRegisterStand implements ClientRegister {
         clientDetails.addrRegStreet = dot.addrRegStreet;
         clientDetails.addrRegHome = dot.addrRegHome;
         clientDetails.addrRegFlat = dot.addrRegFlat;
-        String[] phones = new String[5];
+        ClientPhone[] phones = new ClientPhone[5];
         for (int i = 0; i < dot.phones.length; i++) {
-            if (dot.phones[i] == null)
-                phones[i] = "";
+            phones[i] = new ClientPhone();
+            if (dot.phones[i].number == null)
+                phones[i].number = "";
             else
-                phones[i] = dot.phones[i];
+                phones[i].number = dot.phones[i].number;
+            phones[i].type = dot.phones[i].type;
         }
         clientDetails.phones = phones;
         return clientDetails;

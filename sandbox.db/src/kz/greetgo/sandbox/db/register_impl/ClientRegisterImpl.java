@@ -75,7 +75,7 @@ public class ClientRegisterImpl implements ClientRegister {
         for (int i = 0; i < 5; i++) {
             if(details.phones[i] != null) {
                 ClientPhone clientPhone = new ClientPhone();
-                clientPhone.number = details.phones[i];
+//                clientPhone.number = details.phones[i];
                 clientPhone.client = id;
                 clientPhone.type = PhoneType.WORK; // TODO edit
                 clientDao.get().insert_client_phone(clientPhone);

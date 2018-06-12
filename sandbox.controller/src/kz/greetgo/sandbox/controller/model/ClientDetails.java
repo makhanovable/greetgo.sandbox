@@ -14,5 +14,5 @@ public class ClientDetails {
     public String addrRegStreet;
     public String addrRegHome;
     public String addrRegFlat;
-    public String[] phones;
+    public ClientPhone[] phones;
 }
