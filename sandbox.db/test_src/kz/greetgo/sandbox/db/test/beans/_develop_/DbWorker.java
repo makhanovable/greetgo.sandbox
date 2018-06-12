@@ -135,9 +135,9 @@ public class DbWorker {
 //            SysParams.pgAdminPassword()
 //    );
         return DriverManager.getConnection(
-                "jdbc:postgresql://localhost:5432/makhan_sandbox",
-                "makhan_sandbox",
-                "111"
+                "jdbc:postgresql://localhost:5432/postgres",
+                "postgres",
+                "arduino121232"
         );
     }
 }
