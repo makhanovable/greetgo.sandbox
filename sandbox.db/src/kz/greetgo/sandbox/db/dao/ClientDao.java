@@ -3,10 +3,12 @@ package kz.greetgo.sandbox.db.dao;
 import kz.greetgo.sandbox.controller.model.*;
 import org.apache.ibatis.annotations.*;
 
+import java.sql.Timestamp;
+
 public interface ClientDao {
 
-    @Insert("insert into client VALUES (#{client.id}, #{client.surname},#{client.name},#{client.patronymic},#{client.gender},#{client.birth_date},#{client.charm})")
-    void insert_client(@Param("client") Client client);
+    @Select("insert into client(surname, name, patronymic, gender, birth_date, charm) VALUES (#{client.surname}, #{client.name}, #{client.patronymic}, #{client.gender}, #{client.birth_date}, #{client.charm}) RETURNING id")
+    int insert_client(@Param("client") Client client);
 
     @Insert("insert into client_addr VALUES (#{clientAddr.client}, #{clientAddr.type}, #{clientAddr.street}, #{clientAddr.house}, #{clientAddr.flat})")
     void insert_client_addr(@Param("clientAddr") ClientAddr clientAddr);
@@ -14,20 +16,24 @@ public interface ClientDao {
     @Insert("insert into client_phone VALUES (#{clientPhone.client}, #{clientPhone.number}, #{clientPhone.type})")
     void insert_client_phone(@Param("clientPhone") ClientPhone clientPhone);
 
-    @Insert("insert into client_account VALUES (#{clientAccount.id}, #{clientAccount.client}, #{clientAccount.money}, #{clientAccount.number}, #{clientAccount.registered_at})")
-    void insert_client_account(@Param("clientAccount") ClientAccount clientAccount);
-
     @Select("select name from charm where id = #{id}")
     String getCharmById(@Param("id") int id);
 
-    @Select("select id from id")
-    Integer getLastID();
+    @Delete("delete from client where id = #{id}")
+    void deleteFromClient(@Param("id") int id);
 
-    @Update("update id set id = #{id}")
-    void setLastID(@Param("id") int id);
+    @Delete("delete from client_addr where client = #{id}")
+    void deleteFromClientAddr(@Param("id") int id);
 
-    @Insert("insert into id values(#{id})")
-    void insertID(@Param("id") int id);
+    @Delete("delete from client_phone where client = #{id}")
+    void deleteFromClientPhone(@Param("id") int id);
+
+    @Delete("delete from client_account where client = #{id}")
+    void deleteFromClientAccount(@Param("id") int id);
+
+    //
+    //
+    //
 
     @Select("select * from client where id = #{id}")
 //    @Results({
