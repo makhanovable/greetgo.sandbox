@@ -5,9 +5,11 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+
 public interface ClientTestDao {
 
-    @Insert("TRUNCATE client, client_addr, client_phone,client_account, client_account_transaction,transaction_type CASCADE")
+    @Insert("TRUNCATE client, client_addr, client_phone,client_account, client_account_transaction,transaction_type, charm, id CASCADE")
     void TRUNCATE();
 
     @Insert("insert into client VALUES (#{client.id}, #{client.surname},#{client.name},#{client.patronymic},#{client.gender},#{client.birth_date},#{client.charm})")
@@ -44,9 +46,21 @@ public interface ClientTestDao {
     @Select("select * from client where id = #{id}")
     Client getClientById(@Param("id") int id);
 
-    ClientDetails getClientDetailsById(@Param("id") int id); // TODO edit
+    @Select("select * from client_addr where id = #{id}")
+    List<ClientAddr> getClientAddrsById(@Param("id") int id);
 
-    ClientDetails getRandomClientDetail(); //TODO edit
+    @Select("select * from client_phone where id = #{id}")
+    List<ClientPhone> getClientPhonesById(@Param("id") int id);
+
+    @Select("select * from client_account where id = #{id}")
+    List<ClientAccount> getClientAccountsById(@Param("id") int id);
+
+    @Select("select * from client_account_transaction where id = #{id}")
+    List<ClientAccountTransaction> getClientAccountTransactionsById(@Param("id") int id);
+
+    //
+    //
+    //
 
     @Select("select money from client_account WHERE id = #{id}")
     Float getTotalBalanceById(@Param("id") int id);

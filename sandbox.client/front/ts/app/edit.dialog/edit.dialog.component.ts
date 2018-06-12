@@ -108,7 +108,7 @@ export class DialogComponent {
             this.clientDetail.addrRegFlat != null && this.clientDetail.addrRegFlat.length != 0) {
             let count: number = 0;
             let temp: number = 0;
-            // TODO set id to clientDetail.phones[i].id
+            // TODO set id to clientDetail.phones[i].id но зачем это надо? можно не делать
             this.clientDetail.phones[0].type = PhoneType.HOME;
             this.clientDetail.phones[1].type = PhoneType.WORK;
             this.clientDetail.phones[2].type = PhoneType.MOBILE;

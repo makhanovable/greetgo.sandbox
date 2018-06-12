@@ -1,6 +1,6 @@
 package kz.greetgo.sandbox.controller.model;
 
-import java.security.Timestamp;
+import java.sql.Timestamp;
 
 public class ClientAccount {
     public int id;
