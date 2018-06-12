@@ -5,9 +5,10 @@
 
     <changeSet author="makhan" id="create-table-client">
         <sql endDelimiter=";;"><![CDATA[
+        CREATE SEQUENCE client_id_seq INCREMENT 1 START 1;
         CREATE TABLE client
         (
-            id integer NOT NULL PRIMARY KEY,
+            id integer NOT NULL DEFAULT NEXTVAL(('"client_id_seq"'::text)::regclass) PRIMARY KEY,
             surname varchar(255) NULL,
             name varchar(255) NULL,
             patronymic varchar(255) NULL,
@@ -20,9 +21,10 @@
 
     <changeSet author="makhan" id="create-table-client_account">
         <sql endDelimiter=";;"><![CDATA[
+        CREATE SEQUENCE client_account_id_seq INCREMENT 1 START 1;
         CREATE TABLE client_account
         (
-            id integer NOT NULL PRIMARY KEY,
+            id integer NOT NULL   DEFAULT NEXTVAL(('"client_account_id_seq"'::text)::regclass) PRIMARY KEY,
             client integer NULL,
             money double precision NULL,
             number varchar(50) NULL,
@@ -87,15 +89,6 @@
             name varchar(50) NULL,
             description varchar(50) NULL,
             energy double precision NULL
-        )
-    ]]></sql>
-    </changeSet>
-
-    <changeSet author="makhan" id="create-table-id">
-        <sql endDelimiter=";;"><![CDATA[
-        CREATE TABLE ID
-        (
-        id integer NOT NULL
         )
     ]]></sql>
     </changeSet>

@@ -5,7 +5,7 @@ public class ClientRecord {
     public String name;
     public String charm;
     public int age;
-    public float total;
-    public float max;
-    public float min;
+    public Float total;
+    public Float max;
+    public Float min;
 }
