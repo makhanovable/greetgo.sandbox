@@ -45,52 +45,52 @@ public class ClientRegisterImpl implements ClientRegister {
     @Override
     public ClientRecord addNewClient(ClientDetails details) {
         int id = generateID();
+//
+//        Client client = new Client();
+//        client.id = id;
+//        client.name = details.name;
+//        client.surname = details.surname;
+//        client.patronymic = details.patronymic;
+//        client.gender = Gender.FEMALE;
+//        client.birth_date = new Date();
+//        client.charm = details.charm;
+//        clientDao.get().insert_client(client);
+//
+//        ClientAddr clientAddr = new ClientAddr();
+//        clientAddr.client = id;
+//        if (details.addrRegStreet != null || details.addrRegHome != null || details.addrRegFlat != null){
+//            clientAddr.type = ClientAddrType.REG;
+//            clientAddr.street = details.addrRegStreet;
+//            clientAddr.house = details.addrRegHome;
+//            clientAddr.flat = details.addrRegFlat;
+//            clientDao.get().insert_client_addr(clientAddr);
+//        }
+//        if (details.addrFactStreet != null || details.addrFactHome != null || details.addrFactFlat != null){
+//            clientAddr.type = ClientAddrType.FACT;
+//            clientAddr.street = details.addrFactStreet;
+//            clientAddr.house = details.addrFactHome;
+//            clientAddr.flat = details.addrFactFlat;
+//            clientDao.get().insert_client_addr(clientAddr);
+//        }
+//        for (int i = 0; i < 5; i++) {
+//            if(details.phones[i] != null) {
+//                ClientPhone clientPhone = new ClientPhone();
+////                clientPhone.number = details.phones[i];
+//                clientPhone.client = id;
+//                clientPhone.type = PhoneType.WORK;
+//                clientDao.get().insert_client_phone(clientPhone);
+//            }
+//        }
+//
+//        ClientAccount clientAccount = new ClientAccount();
+//        clientAccount.id  = id;
+//        clientAccount.client = id;
+//        clientAccount.money = 0;
+//        clientAccount.number = RND.str(10);
+//        clientAccount.registered_at = null;
+//        clientDao.get().insert_client_account(clientAccount);
 
-        Client client = new Client();
-        client.id = id;
-        client.name = details.name;
-        client.surname = details.surname;
-        client.patronymic = details.patronymic;
-        client.gender = Gender.FEMALE; // TODO
-        client.birth_date = new Date();
-        client.charm = details.charm;
-        clientDao.get().insert_client(client);
-
-        ClientAddr clientAddr = new ClientAddr();
-        clientAddr.client = id;
-        if (details.addrRegStreet != null || details.addrRegHome != null || details.addrRegFlat != null){
-            clientAddr.type = ClientAddrType.REG;
-            clientAddr.street = details.addrRegStreet;
-            clientAddr.house = details.addrRegHome;
-            clientAddr.flat = details.addrRegFlat;
-            clientDao.get().insert_client_addr(clientAddr);
-        }
-        if (details.addrFactStreet != null || details.addrFactHome != null || details.addrFactFlat != null){
-            clientAddr.type = ClientAddrType.FACT;
-            clientAddr.street = details.addrFactStreet;
-            clientAddr.house = details.addrFactHome;
-            clientAddr.flat = details.addrFactFlat;
-            clientDao.get().insert_client_addr(clientAddr);
-        }
-        for (int i = 0; i < 5; i++) {
-            if(details.phones[i] != null) {
-                ClientPhone clientPhone = new ClientPhone();
-//                clientPhone.number = details.phones[i];
-                clientPhone.client = id;
-                clientPhone.type = PhoneType.WORK; // TODO edit
-                clientDao.get().insert_client_phone(clientPhone);
-            }
-        }
-
-        ClientAccount clientAccount = new ClientAccount();
-        clientAccount.id  = id;
-        clientAccount.client = id;
-        clientAccount.money = 0;
-        clientAccount.number = RND.str(10);
-        clientAccount.registered_at = null; // TODO
-        clientDao.get().insert_client_account(clientAccount);
-
-        return getClientRecordById(id);
+        return null;
     }
 
     @Override
@@ -120,17 +120,17 @@ public class ClientRegisterImpl implements ClientRegister {
     }
 
     private ClientRecord getClientRecordById(int id) {
-        Client client = clientDao.get().getClientById(id);
-        ClientAccount clientAccount = clientDao.get().getClientAccountById(id);
+//        Client client = clientDao.get().getClientById(id);
+//        ClientAccount clientAccount = clientDao.get().getClientAccountById(id);
         ClientRecord clientRecord = new ClientRecord();
-
-        clientRecord.id = id;
-        clientRecord.name = client.surname + " " + client.name + " " + client.patronymic;
-        clientRecord.charm = clientDao.get().getCharmById(client.charm);
-        clientRecord.age = calculateAge(client.birth_date);
-        clientRecord.total = clientAccount.money;
-        clientRecord.min = clientAccount.money;
-        clientRecord.max = clientAccount.money;
+//
+//        clientRecord.id = id;
+//        clientRecord.name = client.surname + " " + client.name + " " + client.patronymic;
+//        clientRecord.charm = clientDao.get().getCharmById(client.charm);
+//        clientRecord.age = calculateAge(client.birth_date);
+//        clientRecord.total = clientAccount.money;
+//        clientRecord.min = clientAccount.money;
+//        clientRecord.max = clientAccount.money;
         return clientRecord;
     }
 
