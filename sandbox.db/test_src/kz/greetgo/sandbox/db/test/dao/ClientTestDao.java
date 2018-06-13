@@ -5,7 +5,6 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
-import java.sql.Timestamp;
 import java.util.List;
 
 public interface ClientTestDao {
@@ -22,10 +21,10 @@ public interface ClientTestDao {
     @Insert("insert into client_phone VALUES (#{clientPhone.client}, #{clientPhone.number}, #{clientPhone.type})")
     void insert_random_client_phone(@Param("clientPhone") ClientPhone clientPhone);
 
-    @Insert("insert into client_account(client, money, number, registered_at) VALUES (#{clientAccount.client}, #{clientAccount.money}, #{clientAccount.number}, #{clientAccount.registered_at})")
-    void insert_random_client_account(@Param("clientAccount") ClientAccount clientAccount);
+    @Select("insert into client_account(client, money, number, registered_at) VALUES (#{clientAccount.client}, #{clientAccount.money}, #{clientAccount.number}, #{clientAccount.registered_at}) RETURNING id")
+    Integer insert_random_client_account(@Param("clientAccount") ClientAccount clientAccount);
 
-    @Insert("insert into client_account_transaction VALUES (#{clientAccountTransaction.id}, #{clientAccountTransaction.account}, #{clientAccountTransaction.money}, #{clientAccountTransaction.finished_at}, #{clientAccountTransaction.type})")
+    @Insert("insert into client_account_transaction(account, money, finished_at, type) VALUES (#{clientAccountTransaction.account}, #{clientAccountTransaction.money}, #{clientAccountTransaction.finished_at}, #{clientAccountTransaction.type})")
     void insert_random_client_account_transaction(@Param("clientAccountTransaction") ClientAccountTransaction clientAccountTransaction);
 
     @Insert("insert into transaction_type VALUES (#{transactionType.id}, #{transactionType.code}, #{transactionType.name})")
@@ -44,32 +43,26 @@ public interface ClientTestDao {
     @Select("select name from charm where id = #{id}")
     String getCharmById(@Param("id") int id);
 
-    @Select("select * from client where id = #{id}")
+    @Select("select * from client where id = #{id} and actual = true")
     Client getClientById(@Param("id") int id);
 
-    @Select("select * from client_addr where client = #{id}")
+    @Select("select * from client_addr where client = #{id} and actual = true")
     List<ClientAddr> getClientAddrsById(@Param("id") int id);
 
-    @Select("select * from client_phone where client = #{id}")
+    @Select("select * from client_phone where client = #{id} and actual = true")
     List<ClientPhone> getClientPhonesById(@Param("id") int id);
 
-    @Select("select * from client_account where client = #{id}")
+    @Select("select * from client_account where client = #{id} and actual = true")
     List<ClientAccount> getClientAccountsById(@Param("id") int id);
 
-    @Select("select * from client_account_transaction where id = #{id}")
-    List<ClientAccountTransaction> getClientAccountTransactionsById(@Param("id") int id);
+    @Select("select id from client where actual = true")
+    List<Integer> getAllActualClientIds();
 
     //
     //
     //
 
-    @Select("select money from client_account WHERE id = #{id}")
-    Float getTotalBalanceById(@Param("id") int id);
-
-    @Select("select money from client_account WHERE id = #{id}") // TODO calculate min
-    Float getMinBalanceById(@Param("id") int id);
-
-    @Select("select money from client_account WHERE id = #{id}") // TODO calculate max
-    Float getMaxBalanceById(@Param("id") int id);
+    @Select("select money from client_account WHERE id = #{id} and actual = true")
+    List<Float> getClientAccountsMoneyById(@Param("id") int id);
 
 }

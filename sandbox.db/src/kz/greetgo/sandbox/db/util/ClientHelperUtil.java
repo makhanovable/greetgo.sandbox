@@ -17,7 +17,6 @@ public class ClientHelperUtil {
             LocalDate currentDate = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             return Period.between(birthDate, currentDate).getYears();
         } catch (Exception e) {
-            e.printStackTrace();
             return 0;
         }
     }
