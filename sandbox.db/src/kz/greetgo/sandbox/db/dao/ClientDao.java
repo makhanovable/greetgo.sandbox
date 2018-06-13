@@ -3,7 +3,7 @@ package kz.greetgo.sandbox.db.dao;
 import kz.greetgo.sandbox.controller.model.*;
 import org.apache.ibatis.annotations.*;
 
-import java.sql.Timestamp;
+import java.util.List;
 
 public interface ClientDao {
 
@@ -19,35 +19,45 @@ public interface ClientDao {
     @Select("select name from charm where id = #{id}")
     String getCharmById(@Param("id") int id);
 
-    @Delete("delete from client where id = #{id}")
-    void deleteFromClient(@Param("id") int id);
+    //
+    //
+    //
 
-    @Delete("delete from client_addr where client = #{id}")
-    void deleteFromClientAddr(@Param("id") int id);
+    @Delete("update client set actual = false where id = #{id}")
+    void deleteClient(@Param("id") int id);
 
-    @Delete("delete from client_phone where client = #{id}")
-    void deleteFromClientPhone(@Param("id") int id);
+    @Delete("update client_addr set actual = false where client = #{id}")
+    void deleteClientAddr(@Param("id") int id);
 
-    @Delete("delete from client_account where client = #{id}")
-    void deleteFromClientAccount(@Param("id") int id);
+    @Delete("update client_phone set actual = false where client = #{id}")
+    void deleteClientPhone(@Param("id") int id);
+
+    @Delete("update client_account set actual = false where client = #{id}")
+    void deleteClientAccount(@Param("id") int id);
 
     //
     //
     //
 
-    @Select("select * from client where id = #{id}")
-//    @Results({
-//            @Result(property = "id", column = "id"),
-//            @Result(property = "name", column = "id"),
-//            @Result(property = "charm", column = "id"),
-//            @Result(property = "age", column = "id"),
-//            @Result(property = "total", column = "id"),
-//            @Result(property = "max", column = "id"),
-//            @Result(property = "min", column = "id"),
-//    })
-    Client getClientById(@Param("id") int id);
+    @Update("update client set(surname, name, patronymic, gender, birth_date, charm) = (#{client.surname}, #{client.name}, #{client.patronymic}, #{client.gender}, #{client.birth_date}, #{client.charm}) where id = #{client.id}")
+    void edit_client(@Param("client") Client client);
 
-    @Select("select * from client_account where client = #{id}")
-    ClientAccount getClientAccountById(@Param("id") int id);
+    @Update("update client_addr set(type, street, house, flat) = (#{clientAddr.type}, #{clientAddr.street}, #{clientAddr.house}, #{clientAddr.flat}) where client = #{clientAddr.client}")
+    void edit_client_addr(@Param("clientAddr") ClientAddr clientAddr);
+
+    @Update("update client_phone set(number, type) = (#{clientPhone.number}, #{clientPhone.type}) where client = #{clientPhone.client}")
+    void edit_client_phone(@Param("clientPhone") ClientPhone clientPhone);
+
+    @Select("select money from client_account WHERE id = #{id} and actual = true")
+    List<Float> getClientAccountsMoneyById(@Param("id") int id);
+
+    @Select("select * from client where id = #{id} and actual = true")
+    Client getClientByID(@Param("id") int id);
+
+    @Select("select * from client_addr where client = #{id} and actual = true")
+    List<ClientAddr> getClientAddrsByID(@Param("id") int id);
+
+    @Select("select * from client_phone where client = #{id} and actual = true")
+    List<ClientPhone> getClientPhonesByID(@Param("id") int id);
 
 }

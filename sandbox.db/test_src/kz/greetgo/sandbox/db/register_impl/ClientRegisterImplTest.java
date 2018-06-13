@@ -8,7 +8,6 @@ import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
 
-import java.sql.Timestamp;
 import java.util.*;
 
 import static kz.greetgo.sandbox.db.test.util.RandomDataUtil.*;
@@ -39,12 +38,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         assertThat(clientRecord).isNotNull();
         assertThat(clientRecord.id).isNotNull();
-        assertThat(clientRecord.name).isEqualTo(expectedClientRecord.name);
-        assertThat(clientRecord.age).isEqualTo(expectedClientRecord.age);
-        assertThat(clientRecord.charm).isEqualTo(expectedClientRecord.charm);
-        assertThat(clientRecord.total).isEqualTo(0);
-        assertThat(clientRecord.max).isEqualTo(0);
-        assertThat(clientRecord.min).isEqualTo(0);
+        assertThat(clientRecord).isEqualsToByComparingFields(expectedClientRecord);
     }
 
     private ClientDetails randomClientD = null; // used in edit_client and get_client_by_id @Test
@@ -53,34 +47,31 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public void edit_client() {
         remove_all_data_from_tables();
         fill_tables_with_random_values(101, true, null);
-        ClientDetails randomClientDetail = randomClientD;
-        ClientDetails editedClientDetail = createRandomClientDetail(randomClientDetail.id);
+        ClientDetails editedClientDetail = createRandomClientDetail(randomClientD.id);
         ClientRecord expectedClientRecord = createClientRecordFromClientDetail(editedClientDetail, false);
 
         //
         //
         //
-        ClientRecord clientRecord = clientRegister.get().editClient(randomClientDetail);
+        ClientRecord clientRecord = clientRegister.get().editClient(editedClientDetail);
         //
         //
         //
 
         assertThat(clientRecord).isNotNull();
         assertThat(clientRecord.id).isNotNull();
+        assertThat(clientRecord).isEqualsToByComparingFields(expectedClientRecord);
         assertThat(clientRecord.name).isEqualTo(expectedClientRecord.name);
         assertThat(clientRecord.age).isEqualTo(expectedClientRecord.age);
         assertThat(clientRecord.charm).isEqualTo(expectedClientRecord.charm);
-        assertThat(clientRecord.total).isEqualTo(clientTestDao.get().getTotalBalanceById(randomClientDetail.id));
-        assertThat(clientRecord.max).isEqualTo(clientTestDao.get().getMaxBalanceById(randomClientDetail.id));
-        assertThat(clientRecord.min).isEqualTo(clientTestDao.get().getMinBalanceById(randomClientDetail.id));
     }
 
     @Test
     public void delete_client() {
-        int count = 100;
         remove_all_data_from_tables();
-        fill_tables_with_random_values(count, false, null);
-        int deletedId = RND.plusInt(count);
+        fill_tables_with_random_values(100, false, null);
+        List<Integer> ids = clientTestDao.get().getAllActualClientIds();
+        int deletedId = ids.get(RND.plusInt(ids.size()));
 
         //
         //
@@ -95,8 +86,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
         List<ClientAddr> clientAddr = clientTestDao.get().getClientAddrsById(deletedId);
         List<ClientPhone> clientPhone = clientTestDao.get().getClientPhonesById(deletedId);
         List<ClientAccount> clientAccount = clientTestDao.get().getClientAccountsById(deletedId);
-        List<ClientAccountTransaction> clientAccountTransaction =
-                clientTestDao.get().getClientAccountTransactionsById(deletedId);
 
         assertThat(client).isNull();
         assertThat(clientAddr.size()).isEqualTo(0);
@@ -151,6 +140,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         Options options = new Options();
         options.sort = "name";
         options.order = randomStr("asc", "desc");
+        System.out.println(options.order);
 
         //
         //
@@ -176,8 +166,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
-        options.sort = "age";
+        options.sort = "birth_date";
         options.order = randomStr("asc", "desc");
+        System.out.println(options.order);
 
         //
         //
@@ -205,6 +196,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         Options options = new Options();
         options.sort = "total";
         options.order = randomStr("asc", "desc");
+        System.out.println(options.order);
 
         //
         //
@@ -232,6 +224,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         Options options = new Options();
         options.sort = "max";
         options.order = randomStr("asc", "desc");
+        System.out.println(options.order);
 
         //
         //
@@ -259,6 +252,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         Options options = new Options();
         options.sort = "min";
         options.order = randomStr("asc", "desc");
+        System.out.println(options.order);
 
         //
         //
@@ -303,8 +297,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
-        options.size = RND.intStr(100);
-        options.page = RND.intStr(100); // TODO check page
+        options.size = Integer.toString(RND.plusInt(100000));
+        options.page = Integer.toString(RND.plusInt(100000)); // TODO check page
 
         //
         //
@@ -324,8 +318,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public void pagination_of_filtered_list_by_name() {
         Options options = new Options();
         options.filter = RND.str(10);
-        options.size = RND.intStr(100);
-        options.page = RND.intStr(100);
+        options.size = Integer.toString(RND.plusInt(100000));
+        options.page = Integer.toString(RND.plusInt(100000));
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, options.filter);
 
@@ -352,8 +346,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
         Options options = new Options();
         options.sort = "name";
         options.order = randomStr("asc", "desc");
-        options.size = RND.intStr(100);
-        options.page = RND.intStr(100);
+        options.size = Integer.toString(RND.plusInt(100000));
+        options.page = Integer.toString(RND.plusInt(100000));
+        System.out.println(options.order);
 
         //
         //
@@ -381,10 +376,11 @@ public class ClientRegisterImplTest extends ParentTestNg {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
-        options.sort = "age";
+        options.sort = "birth_date";
         options.order = randomStr("asc", "desc");
-        options.size = RND.intStr(100);
-        options.page = RND.intStr(100);
+        options.size = Integer.toString(RND.plusInt(100000));
+        options.page = Integer.toString(RND.plusInt(100000));
+        System.out.println(options.order);
 
         //
         //
@@ -414,8 +410,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
         Options options = new Options();
         options.sort = "total";
         options.order = randomStr("asc", "desc");
-        options.size = RND.intStr(100);
-        options.page = RND.intStr(100);
+        options.size = Integer.toString(RND.plusInt(100000));
+        options.page = Integer.toString(RND.plusInt(100000));
+        System.out.println(options.order);
 
         //
         //
@@ -445,8 +442,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
         Options options = new Options();
         options.sort = "min";
         options.order = randomStr("asc", "desc");
-        options.size = RND.intStr(100);
-        options.page = RND.intStr(100);
+        options.size = Integer.toString(RND.plusInt(100000));
+        options.page = Integer.toString(RND.plusInt(100000));
+        System.out.println(options.order);
 
         //
         //
@@ -476,8 +474,9 @@ public class ClientRegisterImplTest extends ParentTestNg {
         Options options = new Options();
         options.sort = "max";
         options.order = randomStr("asc", "desc");
-        options.size = RND.intStr(100);
-        options.page = RND.intStr(100);
+        options.size = Integer.toString(RND.plusInt(100000));
+        options.page = Integer.toString(RND.plusInt(100000));
+        System.out.println(options.order);
 
         //
         //
@@ -538,10 +537,18 @@ public class ClientRegisterImplTest extends ParentTestNg {
         clientRecord.charm = clientTestDao.get().getCharmById(clientDetails.charm);
         clientRecord.age = calculateAge(clientDetails.birth_date);
         if (!isNew) {
+            List<Float> list = clientTestDao.get().getClientAccountsMoneyById(clientDetails.id);
+            Collections.sort(list);
+            clientRecord.total = 0f;
+            for (float i : list)
+                clientRecord.total += i;
+            clientRecord.min = list.isEmpty() ? 0f : list.get(0);
+            clientRecord.max = list.isEmpty() ? 0f : list.get(list.size() - 1);
             clientRecord.id = clientDetails.id;
-            clientRecord.total = clientTestDao.get().getTotalBalanceById(clientDetails.id);
-            clientRecord.max = clientTestDao.get().getMaxBalanceById(clientDetails.id);
-            clientRecord.min = clientTestDao.get().getMinBalanceById(clientDetails.id);
+        } else {
+            clientRecord.total = 0f;
+            clientRecord.min = 0f;
+            clientRecord.max = 0f;
         }
         return clientRecord;
     }
@@ -565,6 +572,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
             client.birth_date = randomDate();
             client.charm = RND.plusInt(count);
             Integer id = clientTestDao.get().insert_random_client(client);
+            client.id = id;
 
             // filling client_addr
             ClientAddr clientAddr = new ClientAddr();
@@ -583,21 +591,26 @@ public class ClientRegisterImplTest extends ParentTestNg {
             clientTestDao.get().insert_random_client_phone(clientPhone);
 
             // filling client_account
-            ClientAccount clientAccount = new ClientAccount();
-            clientAccount.client = id;
-            clientAccount.money = RND.plusInt(1000) * 1.1f;
-            clientAccount.number = RND.str(10);
-            clientAccount.registered_at = randomTimestamp();
-            clientTestDao.get().insert_random_client_account(clientAccount);
+            if (i < 10) {
+                for (int j = 0; j < 2; j++) {
+                    ClientAccount clientAccount = new ClientAccount();
+                    clientAccount.client = id;
+                    clientAccount.money = 0f;
+                    clientAccount.number = RND.str(10);
+                    clientAccount.registered_at = randomTimestamp();
+                    Integer accId = clientTestDao.get().insert_random_client_account(clientAccount);
 
-            // filling client_account_transaction
-            ClientAccountTransaction clientAccountTransaction = new ClientAccountTransaction();
-            clientAccountTransaction.account = i;
-            clientAccountTransaction.id = i;
-            clientAccountTransaction.money = RND.plusInt(1000) * 1.1f;
-            clientAccountTransaction.finished_at = randomTimestamp();
-            clientAccountTransaction.type = i;
-            clientTestDao.get().insert_random_client_account_transaction(clientAccountTransaction);
+                    // filling client_account_transaction
+                    for (int k = 0; k < 4; k++) {
+                        ClientAccountTransaction clientAccountTransaction = new ClientAccountTransaction();
+                        clientAccountTransaction.account = accId;
+                        clientAccountTransaction.money = RND.plusInt(2000) * 1.1f - 1000f;
+                        clientAccountTransaction.finished_at = randomTimestamp();
+                        clientAccountTransaction.type = i;
+                        clientTestDao.get().insert_random_client_account_transaction(clientAccountTransaction);
+                    }
+                }
+            }
 
             // filling transaction_type
             TransactionType transactionType = new TransactionType();
