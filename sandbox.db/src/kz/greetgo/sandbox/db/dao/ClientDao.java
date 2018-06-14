@@ -16,23 +16,20 @@ public interface ClientDao {
     @Insert("insert into client_phone VALUES (#{clientPhone.client}, #{clientPhone.number}, #{clientPhone.type})")
     void insert_client_phone(@Param("clientPhone") ClientPhone clientPhone);
 
-    @Select("select name from charm where id = #{id}")
-    String getCharmById(@Param("id") int id);
-
     //
     //
     //
 
-    @Delete("update client set actual = false where id = #{id}")
+    @Update("update client set actual = false where id = #{id}")
     void deleteClient(@Param("id") int id);
 
-    @Delete("update client_addr set actual = false where client = #{id}")
+    @Update("update client_addr set actual = false where client = #{id}")
     void deleteClientAddr(@Param("id") int id);
 
-    @Delete("update client_phone set actual = false where client = #{id}")
+    @Update("update client_phone set actual = false where client = #{id}")
     void deleteClientPhone(@Param("id") int id);
 
-    @Delete("update client_account set actual = false where client = #{id}")
+    @Update("update client_account set actual = false where client = #{id}")
     void deleteClientAccount(@Param("id") int id);
 
     //
@@ -48,16 +45,27 @@ public interface ClientDao {
     @Update("update client_phone set(number, type) = (#{clientPhone.number}, #{clientPhone.type}) where client = #{clientPhone.client}")
     void edit_client_phone(@Param("clientPhone") ClientPhone clientPhone);
 
+    //
+    //
+    //
+
     @Select("select money from client_account WHERE id = #{id} and actual = true")
     List<Float> getClientAccountsMoneyById(@Param("id") int id);
-
-    @Select("select * from client where id = #{id} and actual = true")
-    Client getClientByID(@Param("id") int id);
 
     @Select("select * from client_addr where client = #{id} and actual = true")
     List<ClientAddr> getClientAddrsByID(@Param("id") int id);
 
     @Select("select * from client_phone where client = #{id} and actual = true")
     List<ClientPhone> getClientPhonesByID(@Param("id") int id);
+
+    //
+    //
+    //
+
+    @Select("select name from charm where id = #{id}")
+    String getCharmById(@Param("id") int id);
+
+    @Select("select * from client where id = #{id} and actual = true")
+    Client getClientByID(@Param("id") int id);
 
 }

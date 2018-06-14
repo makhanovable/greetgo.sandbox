@@ -6,15 +6,15 @@ import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
 
 import static kz.greetgo.sandbox.db.util.ClientHelperUtil.calculateAge;
-import static kz.greetgo.sandbox.db.util.ClientHelperUtil.parseDate;
+import static kz.greetgo.sandbox.db.util.ClientHelperUtil.isClientDetailsValid;
+import static kz.greetgo.sandbox.db.util.FlexibleDateParser.parseDate;
 
 @Bean
 public class ClientRegisterImpl implements ClientRegister {
@@ -22,81 +22,41 @@ public class ClientRegisterImpl implements ClientRegister {
     public BeanGetter<ClientDao> clientDao;
     public BeanGetter<JdbcSandbox> jdbc;
 
-    @SuppressWarnings({"SqlDialectInspection", "StringConcatenationInLoop"})
     @Override
     public ClientRecordInfo getClientRecords(Options options) {
         ClientRecordInfo clientRecordInfo = new ClientRecordInfo();
         List<ClientRecord> clientRecords = new ArrayList<>();
         clientRecordInfo.items = clientRecords;
-        clientRecordInfo.total_count = 0;
 
-        String filter = "";
-        if (options.filter != null)
-            filter = options.filter;
-        String sql = "WITH info (id, name, surname, patronymic, gender, charm, birth_date) AS (" +
-                " SELECT id, name, surname, patronymic, gender, charm, birth_date" +
-                " FROM client WHERE actual = TRUE AND (name LIKE ? " +
-                " OR surname LIKE ? OR patronymic LIKE ?))" +
-                " SELECT info.id, info.name, info.surname, info.patronymic, info.gender, info.charm," +
-                " info.birth_date, (SELECT min(client_account.money) FROM client_account" +
-                " WHERE client_account.client = info.id) AS min, (SELECT max(client_account.money)" +
-                " FROM client_account WHERE client_account.client = info.id) AS max, " +
-                " (SELECT sum(client_account.money) FROM client_account" +
-                " WHERE client_account.client = info.id) AS total FROM info";
+        options.filter = options.filter != null ? options.filter : "";
+        String sql = createSqlForGetClientRecords(options);
 
-        if (options.sort != null && options.order != null) {
-            String temp;
-            if (options.sort.equals("name")) {
-                temp = " ORDER BY info.surname, info.name, info.patronymic";
-                if (options.order.toLowerCase().equals("desc"))
-                    temp = " ORDER BY info.surname DESC, info.name DESC, info.patronymic DESC";
-                sql += temp;
-            } else {
-                sql += " ORDER BY ?";
-                if (options.order.toLowerCase().equals("desc"))
-                    sql += " DESC";
-            }
-        }
-        if (options.page != null && options.size != null) {
-            int a = Integer.parseInt(options.page);
-            int b = Integer.parseInt(options.size);
-            System.out.println(a * b + " a * b"); // TODO hz
-            sql += " LIMIT " + options.size;
-            if (a * b >= 0)
-                sql += " OFFSET " + (a * b);
-        }
-
-
-        String finalSql = sql;
-        String finalFilter = filter;
         jdbc.get().execute(connection -> {
-            try (PreparedStatement ps = connection.prepareStatement(finalSql)) {
-                ps.setString(1, "'%" + finalFilter + "'%");
-                ps.setString(2, "'%" + finalFilter + "'%");
-                ps.setString(3, "'%" + finalFilter + "'%");
-                if (options.sort != null && options.order != null)
-                    if (!options.sort.equals("name"))
-                        ps.setString(4, options.sort);
-                ps.setString(5, options.size);
-                ps.setString(6, options.page); // TODO
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                // START set params to PreparedStatement
+                ps.setString(1, "%" + options.filter + "%");
+                ps.setString(2, "%" + options.filter + "%");
+                ps.setString(3, "%" + options.filter + "%");
+
+                if (options.page != null && options.size != null) {
+                    ps.setBigDecimal(4, new BigDecimal(options.size));
+                    ps.setBigDecimal(5, new BigDecimal(options.page)
+                            .multiply(new BigDecimal(options.size)));
+                }
+                // END set params to PreparedStatement
+
+                System.out.println(ps);
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         ClientRecord clientRecord = new ClientRecord();
                         clientRecord.id = rs.getInt("id");
-                        clientRecord.name = rs.getString("surname") + " " + rs.getString("name");
-                        if (rs.getString("name") != null && !rs.getString("name").isEmpty())
-                            clientRecord.name += " " + rs.getString("patronymic");
-                        clientRecord.age = calculateAge(rs.getString("birth_date"));
+                        clientRecord.name = rs.getString("name");
+                        clientRecord.age = calculateAge(rs.getString("age"));
                         clientRecord.charm = clientDao.get().getCharmById(rs.getInt("charm"));
                         clientRecord.total = rs.getFloat("total");
                         clientRecord.min = rs.getFloat("min");
                         clientRecord.max = rs.getFloat("max");
-                        if (options.sort != null && options.sort.equals("total") && rs.getFloat("total") == 0.0)
-                            continue;
-                        else if (options.sort != null && options.sort.equals("max") && rs.getFloat("max") == 0.0)
-                            continue;
-                        else if (options.sort != null && options.sort.equals("min") && rs.getFloat("min") == 0.0)
-                            continue;
+                        clientRecordInfo.total_count = rs.getInt("count");
                         clientRecords.add(clientRecord);
                     }
                     clientRecordInfo.items = clientRecords;
@@ -116,7 +76,9 @@ public class ClientRegisterImpl implements ClientRegister {
     }
 
     @Override
-    public ClientRecord addNewClient(ClientDetails details) { // TODO check valid
+    public ClientRecord addNewClient(ClientDetails details) {
+        if (!isClientDetailsValid(details, true)) // TODO return exception
+            return null;
         Client client = new Client();
         client.name = details.name;
         client.surname = details.surname;
@@ -166,6 +128,8 @@ public class ClientRegisterImpl implements ClientRegister {
 
     @Override
     public ClientRecord editClient(ClientDetails details) {
+        if (!isClientDetailsValid(details, false)) // TODO return exception
+            return null;
         Client client = new Client();
         client.id = details.id;
         client.name = details.name;
@@ -270,19 +234,50 @@ public class ClientRegisterImpl implements ClientRegister {
         return list;
     }
 
+    private String createSqlForGetClientRecords(Options options) {
+        String sql = "WITH info (id, iname, surname, patronymic, gender, charm, birth_date) AS (" +
+                " SELECT id, name as iname, surname, patronymic, gender, charm, birth_date" +
+                " FROM client WHERE actual = TRUE AND (name LIKE ? " +
+                " OR surname LIKE ? OR patronymic LIKE ?))" +
+                " SELECT info.id, concat_ws(' ', info.iname, info.surname, info.patronymic) AS name," +
+                " info.gender, info.charm," +
+                " info.birth_date AS age, CASE WHEN (SELECT min(client_account.money) FROM client_account" +
+                " WHERE client_account.client = info.id) ISNULL THEN 0 ELSE " +
+                " (SELECT min(client_account.money) FROM client_account WHERE client_account.client = info.id)" +
+                " END AS min, CASE WHEN (SELECT max(client_account.money)" +
+                " FROM client_account WHERE client_account.client = info.id) ISNULL THEN 0 ELSE " +
+                " (SELECT max(client_account.money) FROM client_account WHERE client_account.client = info.id)" +
+                " END AS max, CASE WHEN (SELECT sum(client_account.money) FROM client_account" +
+                " WHERE client_account.client = info.id) ISNULL THEN 0 ELSE (SELECT sum(client_account.money)" +
+                " FROM client_account WHERE client_account.client = info.id) END AS total," +
+                " (SELECT count(info) FROM info) AS count FROM info";
+
+        if (isValidSortOptions(options.sort, options.order)) {
+            sql += " ORDER BY " + options.sort;
+            if (options.sort.equalsIgnoreCase("age")) {
+                if (options.order.equalsIgnoreCase("asc"))
+                    sql+= " DESC";
+            } else if (options.order.equalsIgnoreCase("asc"))
+                sql+= " NULLS FIRST";
+            else
+                sql+= " DESC NULLS LAST";
+        }
+
+        if (options.page != null && options.size != null)
+            sql += " LIMIT ? OFFSET ?";
+        return sql;
+    }
+
+    private boolean isValidSortOptions(String sort, String order) {
+        return sort != null
+                && order != null
+                && (sort.equalsIgnoreCase("name") ||
+                    sort.equalsIgnoreCase("age") ||
+                    sort.equalsIgnoreCase("total") ||
+                    sort.equalsIgnoreCase("max") ||
+                    sort.equalsIgnoreCase("min"))
+                && (order.equalsIgnoreCase("desc") ||
+                    order.equalsIgnoreCase("asc"));
+    }
+
 }
-
-
-//        SqlSessionFactory sqlSessionFactory = MyBatisSqlSessionFactory.getSqlSessionFactory();
-//        sqlSessionFactory.getConfiguration().addMapper(ClientDao.class);
-//        SqlSession sqlSession = sqlSessionFactory.openSession();
-//
-//        try {
-//
-//        testingMapper.insert(testing);
-//        sqlSession.commit();
-//        } catch (Exception e) {
-//        sqlSession.rollback();
-//        } finally{
-//        sqlSession.close();
-//        }
