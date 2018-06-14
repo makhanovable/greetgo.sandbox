@@ -9,12 +9,12 @@
         CREATE TABLE client
         (
             id integer NOT NULL DEFAULT NEXTVAL(('"client_id_seq"'::text)::regclass) PRIMARY KEY,
-            surname varchar(255) NULL,
-            name varchar(255) NULL,
+            surname varchar(255) NOT NULL,
+            name varchar(255) NOT NULL,
             patronymic varchar(255) NULL,
-            gender varchar(50) NULL,
-            birth_date date NULL,
-            charm integer NULL,
+            gender varchar(50) NOT NULL,
+            birth_date date NOT NULL,
+            charm integer NOT NULL,
             actual boolean NULL default true
         )
     ]]></sql>
@@ -26,11 +26,11 @@
         CREATE TABLE client_account
         (
             id integer NOT NULL   DEFAULT NEXTVAL(('"client_account_id_seq"'::text)::regclass) PRIMARY KEY,
-            client integer NULL,
+            client integer NOT NULL,
             money double precision NULL,
-            number varchar(50) NULL,
-            registered_at timestamp without time zone NULL,
-            actual boolean NULL default true
+            number varchar(50) NOT NULL,
+            registered_at timestamp NOT NULL DEFAULT NOW(),
+            actual boolean NOT NULL DEFAULT true
         )
     ]]></sql>
     </changeSet>
@@ -41,10 +41,10 @@
         CREATE TABLE client_account_transaction
         (
             id integer NOT NULL   DEFAULT NEXTVAL(('"client_account_transaction_id_seq"'::text)::regclass) PRIMARY KEY,
-            account integer NULL,
-            money double precision NULL,
-            finished_at timestamp without time zone NULL,
-            type integer NULL
+            account integer NOT NULL,
+            money double precision NOT NULL,
+            finished_at timestamp NOT NULL DEFAULT NOW(),
+            type integer NOT NULL
         )
     ]]></sql>
     </changeSet>
@@ -54,8 +54,8 @@
         CREATE TABLE client_addr
         (
             client integer NOT NULL,
-            type varchar(50) NULL,
-            street varchar(255) NULL,
+            type varchar(50) NOT NULL,
+            street varchar(255) NOT NULL,
             house varchar(255) NULL,
             flat varchar(255) NULL,
             actual boolean NULL default true
@@ -68,8 +68,8 @@
         CREATE TABLE client_phone
         (
             client integer NOT NULL,
-            number varchar(255) NULL,
-            type varchar(50) NULL,
+            number varchar(255) NOT NULL,
+            type varchar(50) NOT NULL,
             actual boolean NULL default true
         )
     ]]></sql>
@@ -98,27 +98,28 @@
     ]]></sql>
     </changeSet>
 
-    <changeSet author="makhan" id="create-transactions_trigger">
-        <sql endDelimiter=";;"><![CDATA[
-        CREATE OR REPLACE FUNCTION update_wallet()
-          RETURNS TRIGGER AS $$
-        BEGIN
-          UPDATE client_account
-          SET money = ((SELECT money
-                        FROM client_account
-                        WHERE client_account.id = new.account) + new.money)
-          WHERE client_account.id = new.account;
-          RETURN new;
-        END;
-        $$
-        LANGUAGE plpgsql;
+    <!--TODO remove trigger-->
+    <!--<changeSet author="makhan" id="create-transactions_trigger">-->
+        <!--<sql endDelimiter=";;"><![CDATA[-->
+        <!--CREATE OR REPLACE FUNCTION update_wallet()-->
+          <!--RETURNS TRIGGER AS $$-->
+        <!--BEGIN-->
+          <!--UPDATE client_account-->
+          <!--SET money = ((SELECT money-->
+                        <!--FROM client_account-->
+                        <!--WHERE client_account.id = new.account) + new.money)-->
+          <!--WHERE client_account.id = new.account;-->
+          <!--RETURN new;-->
+        <!--END;-->
+        <!--$$-->
+        <!--LANGUAGE plpgsql;-->
 
-        CREATE TRIGGER transactions_trigger
-          AFTER INSERT
-          ON client_account_transaction
-          FOR EACH ROW EXECUTE PROCEDURE update_wallet();
-    ]]></sql>
-    </changeSet>
+        <!--CREATE TRIGGER transactions_trigger-->
+          <!--AFTER INSERT-->
+          <!--ON client_account_transaction-->
+          <!--FOR EACH ROW EXECUTE PROCEDURE update_wallet();-->
+    <!--]]></sql>-->
+    <!--</changeSet>-->
 
 
 </databaseChangeLog>

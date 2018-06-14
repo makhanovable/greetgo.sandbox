@@ -21,10 +21,10 @@ public interface ClientTestDao {
     @Insert("insert into client_phone VALUES (#{clientPhone.client}, #{clientPhone.number}, #{clientPhone.type})")
     void insert_random_client_phone(@Param("clientPhone") ClientPhone clientPhone);
 
-    @Select("insert into client_account(client, money, number, registered_at) VALUES (#{clientAccount.client}, #{clientAccount.money}, #{clientAccount.number}, #{clientAccount.registered_at}) RETURNING id")
+    @Select("insert into client_account(client, money, number) VALUES (#{clientAccount.client}, #{clientAccount.money}, #{clientAccount.number}) RETURNING id")
     Integer insert_random_client_account(@Param("clientAccount") ClientAccount clientAccount);
 
-    @Insert("insert into client_account_transaction(account, money, finished_at, type) VALUES (#{clientAccountTransaction.account}, #{clientAccountTransaction.money}, #{clientAccountTransaction.finished_at}, #{clientAccountTransaction.type})")
+    @Insert("insert into client_account_transaction(account, money, type) VALUES (#{clientAccountTransaction.account}, #{clientAccountTransaction.money}, #{clientAccountTransaction.type})")
     void insert_random_client_account_transaction(@Param("clientAccountTransaction") ClientAccountTransaction clientAccountTransaction);
 
     @Insert("insert into transaction_type VALUES (#{transactionType.id}, #{transactionType.code}, #{transactionType.name})")
