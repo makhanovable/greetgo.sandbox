@@ -22,4 +22,6 @@ public interface ClientRegister {
 
     List<Charm> getCharms();
 
+    void renderClientList(Options options);
+
 }

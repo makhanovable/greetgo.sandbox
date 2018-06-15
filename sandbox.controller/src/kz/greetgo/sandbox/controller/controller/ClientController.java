@@ -12,6 +12,7 @@ import kz.greetgo.sandbox.controller.model.Options;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
 
+import java.sql.Blob;
 import java.util.List;
 
 @Bean
@@ -60,6 +61,14 @@ public class ClientController implements Controller {
     @Mapping("/get_charms")
     public List<Charm> getCharms() {
         return clientRegister.get().getCharms();
+    }
+
+    @ToJson
+    @NoSecurity
+    @Mapping("/get_report_as_xlsx")
+    public Blob getReportAsXlsx() {
+
+        return null;
     }
 
 }

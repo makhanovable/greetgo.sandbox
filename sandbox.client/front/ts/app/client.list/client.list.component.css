@@ -88,3 +88,11 @@ table {
 .mat-column-created {
     max-width: 124px;
 }
+.report_btn {
+    margin-left: 550px;
+    alignment: right;
+}
+mat-toolbar {
+    position: relative;
+    width: 100%;
+}
