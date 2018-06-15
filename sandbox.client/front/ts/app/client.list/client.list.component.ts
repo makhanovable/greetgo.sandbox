@@ -231,4 +231,24 @@ export class ClientListComponent implements OnInit {
         }
     }
 
+    load_report() {
+        this.http.get("/client/get_report_as_xlsx") // TODO set options
+            .toPromise().then(res => {
+            this.saveAsBlob(res);
+        }, error => {
+            alert("Error " + error);
+        });
+    }
+
+    private saveAsBlob(data: any) {
+        console.log("rfdsxcdcd " + data.json());
+        const blob = new Blob([data._body],
+            { type: 'application/vnd.ms-excel' });
+        const file = new File([blob], 'report.xlsx',
+            { type: 'application/vnd.ms-excel' });
+        const url = window.URL.createObjectURL(blob);
+        window.open(url);
+       // FileSaver.saveAs(file);
+    }
+
 }

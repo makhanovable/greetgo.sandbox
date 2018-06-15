@@ -6,7 +6,6 @@ import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
-import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 
 import java.util.*;

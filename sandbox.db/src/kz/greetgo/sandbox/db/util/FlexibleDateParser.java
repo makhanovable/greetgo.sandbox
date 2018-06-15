@@ -8,7 +8,7 @@ public class FlexibleDateParser {
 
     private static List<String> formats = new ArrayList<String>(){{
        add("EEE MMM dd HH:mm:ss Z yyyy");
-       add("yyyy-MM-dd"); // TODO add
+       add("yyyy-MM-dd");
     }};
 
     public static Date parseDate(String dateStr) {

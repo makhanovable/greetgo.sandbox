@@ -111,4 +111,9 @@ public class ClientRegisterStand implements ClientRegister {
         return out;
     }
 
+    @Override
+    public void renderClientList(Options options) {
+        // TODO impl
+    }
+
 }
