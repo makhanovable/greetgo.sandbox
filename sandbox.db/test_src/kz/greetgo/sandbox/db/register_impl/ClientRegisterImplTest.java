@@ -6,6 +6,7 @@ import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
+import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 
 import java.util.*;
@@ -21,6 +22,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     public BeanGetter<ClientRegister> clientRegister;
     public BeanGetter<ClientTestDao> clientTestDao;
+
 
     @Test
     public void add_new_client() {
