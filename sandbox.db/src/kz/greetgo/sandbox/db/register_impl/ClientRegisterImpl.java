@@ -4,10 +4,12 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.controller.render.ClientRecordsReportView;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 import kz.greetgo.sandbox.db.register_impl.callback.ClientRecordsCallback;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
+import java.sql.Blob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
@@ -195,8 +197,8 @@ public class ClientRegisterImpl implements ClientRegister {
     }
 
     @Override
-    public void renderClientList(Options options) {
-        // TODO
+    public void renderClientList(Options options, ClientRecordsReportView view) {
+
     }
 
 }

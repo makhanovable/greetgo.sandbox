@@ -96,3 +96,12 @@ mat-toolbar {
     position: relative;
     width: 100%;
 }
+.report {
+    position: absolute;
+    right: 5%;
+    color: gray;
+    border-radius: 5px;
+    background: white;
+    padding: 5px;
+    width: 20%;
+}

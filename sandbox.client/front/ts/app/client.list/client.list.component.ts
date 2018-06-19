@@ -231,24 +231,44 @@ export class ClientListComponent implements OnInit {
         }
     }
 
-    load_report() {
+    // private saveAsBlob(data: any) {
+    //     console.log("rfdsxcdcd " + data.json());
+    //     const blob = new Blob([data._body],
+    //         { type: 'application/vnd.ms-excel' });
+    //     const file = new File([blob], 'report.xlsx',
+    //         { type: 'application/vnd.ms-excel' });
+    //     const url = window.URL.createObjectURL(blob);
+    //     window.open(url);
+    //    // FileSaver.saveAs(file);
+    // }
+
+    loadReport(res) {
+        if (res.value == 'pdf') {
+            this.pdf();
+        } else if (res.value == 'xlsx')
+            this.xlsx()
+    }
+
+    pdf() {
+        console.log('pdf');
         this.http.get("/client/get_report_as_xlsx") // TODO set options
             .toPromise().then(res => {
-            this.saveAsBlob(res);
+            //alert(res.arrayBuffer());
+            var file = new Blob([res.arrayBuffer()], {type: 'application/binary'});
+            var fileURL = URL.createObjectURL(file);
+            // window.open(fileURL);
+            var link = document.createElement('a');
+            link.href = fileURL;
+            link.download = "testing.pdf";
+            link.click();
         }, error => {
             alert("Error " + error);
         });
+
     }
 
-    private saveAsBlob(data: any) {
-        console.log("rfdsxcdcd " + data.json());
-        const blob = new Blob([data._body],
-            { type: 'application/vnd.ms-excel' });
-        const file = new File([blob], 'report.xlsx',
-            { type: 'application/vnd.ms-excel' });
-        const url = window.URL.createObjectURL(blob);
-        window.open(url);
-       // FileSaver.saveAs(file);
+    xlsx() {
+        console.log('xlsx');
     }
 
 }
