@@ -4,11 +4,14 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.controller.render.ClientRecordsReportView;
 import kz.greetgo.sandbox.db.stand.beans.ClientStandDb;
 import kz.greetgo.sandbox.db.stand.model.CharmDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDetailsDot;
 import kz.greetgo.sandbox.db.stand.model.ClientRecordDot;
 
+import java.io.UnsupportedEncodingException;
+import java.sql.Blob;
 import java.util.*;
 
 @Bean
@@ -112,8 +115,8 @@ public class ClientRegisterStand implements ClientRegister {
     }
 
     @Override
-    public void renderClientList(Options options) {
-        // TODO impl
+    public void renderClientList(Options options, ClientRecordsReportView view) {
+        view.start();
     }
 
 }

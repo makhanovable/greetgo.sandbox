@@ -3,15 +3,19 @@ package kz.greetgo.sandbox.controller.controller;
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.mvc.annotations.*;
+import kz.greetgo.mvc.interfaces.RequestTunnel;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.model.ClientDetails;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientRecordInfo;
 import kz.greetgo.sandbox.controller.model.Options;
+import kz.greetgo.sandbox.controller.render.ClientRecordReportViewPdfImpl;
+import kz.greetgo.sandbox.controller.render.ClientRecordsReportView;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
 
+import java.io.OutputStream;
 import java.sql.Blob;
 import java.util.List;
 
@@ -63,12 +67,17 @@ public class ClientController implements Controller {
         return clientRegister.get().getCharms();
     }
 
-    @ToJson
+//    @ToJson
     @NoSecurity
     @Mapping("/get_report_as_xlsx")
-    public Blob getReportAsXlsx() {
+    public void getReportAsXlsx(RequestTunnel tunnel) {
+        tunnel.setResponseHeader("Content-Disposition", "attachment; filename = mytest.pdf");
+        OutputStream out = tunnel.getResponseOutputStream();
+        ClientRecordsReportView view = new ClientRecordReportViewPdfImpl(out);
 
-        return null;
+        clientRegister.get().renderClientList(null, view);// todo
+
+        tunnel.flushBuffer();
     }
 
 }

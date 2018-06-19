@@ -1,7 +1,10 @@
 <mat-toolbar color="primary">
     <mat-toolbar-row>
         <span>Редактируемый Список</span>
-        <span><button mat-raised-button class="report_btn" (click)="load_report()">Загрузить отчёт</button></span>
+        <mat-select class="report" placeholder="Загрузить отчет" [(value)]="selected" (selectionChange)="loadReport($event)">
+            <mat-option value="pdf">В формате PDF</mat-option>
+            <mat-option value="xlsx">В формате XLSX</mat-option>
+        </mat-select>
     </mat-toolbar-row>
 </mat-toolbar>
 
