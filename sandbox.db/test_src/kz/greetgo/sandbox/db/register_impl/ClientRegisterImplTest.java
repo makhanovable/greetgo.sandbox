@@ -3,10 +3,12 @@ package kz.greetgo.sandbox.db.register_impl;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.controller.render.ClientRecordsReportView;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 import org.testng.annotations.Test;
+import org.testng.collections.Lists;
 
 import java.util.*;
 
@@ -21,7 +23,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     public BeanGetter<ClientRegister> clientRegister;
     public BeanGetter<ClientTestDao> clientTestDao;
-
 
 
     @Test
@@ -642,6 +643,53 @@ public class ClientRegisterImplTest extends ParentTestNg {
         }
         clientDetails.phones = new ClientPhone[]{clientPhone};
         this.randomClientD = clientDetails;
+    }
+
+    private static class TestClientRecordsReportView implements ClientRecordsReportView {
+
+        public String user;
+        public Date created_at;
+        public String link_to_download;
+        public final List<ClientRecord> rowList = Lists.newArrayList();
+
+        @Override
+        public void start() {
+
+        }
+
+        @Override
+        public void append(ClientRecord row) {
+            rowList.add(row);
+        }
+
+        @Override
+        public void finish(String user, Date created_at, String link_to_download) {
+            this.user = user;
+            this.created_at = created_at;
+            this.link_to_download = link_to_download;
+        }
+
+    }
+
+
+    @Test
+    public void render_client_list() {
+        remove_all_data_from_tables();
+        fill_tables_with_random_values(100,false,null);
+        Options options = new Options();
+        options.size = Integer.toString(RND.plusInt(10));
+        options.page = Integer.toString(RND.plusInt(10));
+        TestClientRecordsReportView view = new TestClientRecordsReportView();
+
+        //
+        //
+        //
+        clientRegister.get().renderClientList(options, view);
+        //
+        //
+        //
+
+        assertThat(view.rowList.size()).isLessThanOrEqualTo(Integer.parseInt(options.size));
     }
 
 }
