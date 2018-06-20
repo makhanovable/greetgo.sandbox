@@ -10,8 +10,6 @@ import kz.greetgo.sandbox.db.stand.model.CharmDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDetailsDot;
 import kz.greetgo.sandbox.db.stand.model.ClientRecordDot;
 
-import java.io.UnsupportedEncodingException;
-import java.sql.Blob;
 import java.util.*;
 
 @Bean
@@ -117,6 +115,18 @@ public class ClientRegisterStand implements ClientRegister {
     @Override
     public void renderClientList(Options options, ClientRecordsReportView view) {
         view.start();
+        for (ClientRecordDot dot : db.get().getClientRecordStorage(options)) {
+            ClientRecord clientRecord = new ClientRecord();
+            clientRecord.id = dot.id;
+            clientRecord.name = dot.name;
+            clientRecord.charm = dot.charm;
+            clientRecord.age = dot.age;
+            clientRecord.total = dot.total;
+            clientRecord.max = dot.max;
+            clientRecord.min = dot.min;
+            view.append(clientRecord);
+        }
+        view.finish("test name", new Date(), "test link");
     }
 
 }

@@ -5,10 +5,7 @@ import kz.greetgo.msoffice.xlsx.gen.Xlsx;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.util.RND;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Date;
 
 public class ClientRecordReportViewXlsxImpl implements ClientRecordsReportView {
@@ -16,6 +13,7 @@ public class ClientRecordReportViewXlsxImpl implements ClientRecordsReportView {
     private OutputStream out;
     private Xlsx xlsx;
     private Sheet sheet;
+
     public ClientRecordReportViewXlsxImpl(OutputStream out) {
         this.out = out;
     }
@@ -53,34 +51,43 @@ public class ClientRecordReportViewXlsxImpl implements ClientRecordsReportView {
 
     @Override
     public void finish(String user, Date created_at, String link_to_download) {
-        sheet.skipRow();
-        sheet.row().start().height(100);
-        sheet.cellStr(1, "Сформирован: " + user);
-        sheet.cellStr(2, created_at.toString());
-        sheet.row().finish();
-        sheet.row().start();
-        sheet.cellStr(1, "Ссылка на отчет: " + link_to_download);
-        sheet.row().finish();
-
-        xlsx.complete(out);
+        try {
+            sheet.skipRow();
+            sheet.row().start();
+            sheet.cellStr(1, "Ссылка для скачивания: " + link_to_download);
+            sheet.row().finish();
+            sheet.row().start();
+            sheet.cellStr(1, "Отчет сформировал(-а): " + user);
+            sheet.row().finish();
+            sheet.row().start();
+            sheet.cellStr(1, created_at.toString());
+            sheet.row().finish();
+            xlsx.complete(out);
+            out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public static void main(String[] args) throws FileNotFoundException {
-        OutputStream out = new FileOutputStream(new File("C:\\Users\\makhan\\Desktop\\test.xlsx"));
-        ClientRecordReportViewXlsxImpl report = new ClientRecordReportViewXlsxImpl(out);
-        report.start();
-        for (int i = 0; i < 100; i++) {
-            ClientRecord record = new ClientRecord();
-            record.name = RND.str(10);
-            record.age = RND.plusInt(100);
-            record.charm = RND.str(10);
-            record.total = RND.plusInt(1000) * 1.1f;
-            record.max = RND.plusInt(1000) * 1.1f;
-            record.min = RND.plusInt(1000) * 1.1f;
-            report.append(record);
+    public static void main(String[] args) throws Exception {
+        File file = new File("results/tables/simple.xlsx");
+        file.getParentFile().mkdirs();
+
+        try (FileOutputStream outputStream = new FileOutputStream(file)) {
+            ClientRecordsReportView view = new ClientRecordReportViewXlsxImpl(outputStream);
+            view.start();
+            for (int i = 0; i < 100; i++) {
+                ClientRecord clientRecord = new ClientRecord();
+                clientRecord.name = RND.str(10) + " " + RND.str(10) + " " + RND.str(10);
+                clientRecord.charm = RND.str(10);
+                clientRecord.total = RND.plusInt(1000) * 1.1f;
+                clientRecord.max = RND.plusInt(1000) * 1.1f;
+                clientRecord.min = RND.plusInt(1000) * 1.1f;
+                clientRecord.age = RND.plusInt(100);
+                view.append(clientRecord);
+            }
+            view.finish("Маханов Мадияр", new Date(), "vk.com/btvrfedsf");
         }
-        report.finish("Маханов Мадияр", new Date(), "vk.com/dnfjvbisdnohbvfidscvnds");
-        System.out.println("Done");
     }
 
 }
