@@ -23,6 +23,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public BeanGetter<ClientTestDao> clientTestDao;
 
 
+
     @Test
     public void add_new_client() {
         remove_all_data_from_tables();

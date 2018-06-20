@@ -11,13 +11,14 @@ import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientRecordInfo;
 import kz.greetgo.sandbox.controller.model.Options;
 import kz.greetgo.sandbox.controller.render.ClientRecordReportViewPdfImpl;
+import kz.greetgo.sandbox.controller.render.ClientRecordReportViewXlsxImpl;
 import kz.greetgo.sandbox.controller.render.ClientRecordsReportView;
 import kz.greetgo.sandbox.controller.security.NoSecurity;
 import kz.greetgo.sandbox.controller.util.Controller;
 
 import java.io.OutputStream;
-import java.sql.Blob;
 import java.util.List;
+import java.util.Objects;
 
 @Bean
 @Mapping("/client")
@@ -67,16 +68,22 @@ public class ClientController implements Controller {
         return clientRegister.get().getCharms();
     }
 
-//    @ToJson
     @NoSecurity
-    @Mapping("/get_report_as_xlsx")
-    public void getReportAsXlsx(RequestTunnel tunnel) {
-        tunnel.setResponseHeader("Content-Disposition", "attachment; filename = mytest.pdf");
-        OutputStream out = tunnel.getResponseOutputStream();
-        ClientRecordsReportView view = new ClientRecordReportViewPdfImpl(out);
-
-        clientRegister.get().renderClientList(null, view);// todo
-
+    @Mapping("/get_report/{type}")
+    public void getReport(@ParPath("type") String type, @ParamsTo Options options, RequestTunnel tunnel) {
+        ClientRecordsReportView view;
+        OutputStream out;
+        if (Objects.equals(type, "pdf")) {
+            tunnel.setResponseHeader("Content-Type", "application/pdf");
+            out = tunnel.getResponseOutputStream();
+            view = new ClientRecordReportViewPdfImpl(out);
+        } else {
+            tunnel.setResponseHeader("Content-Type",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            out = tunnel.getResponseOutputStream();
+            view = new ClientRecordReportViewXlsxImpl(out);
+        }
+        clientRegister.get().renderClientList(options, view);
         tunnel.flushBuffer();
     }
 
