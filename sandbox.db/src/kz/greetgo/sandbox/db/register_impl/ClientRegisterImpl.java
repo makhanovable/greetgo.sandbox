@@ -4,9 +4,10 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.controller.render.ClientRecordsReportView;
+import kz.greetgo.sandbox.controller.report.ClientRecordsReportView;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 import kz.greetgo.sandbox.db.register_impl.callback.ClientRecordsCallback;
+import kz.greetgo.sandbox.db.register_impl.callback.ClientRecordsReportCallback;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
 
 import java.sql.PreparedStatement;
@@ -196,13 +197,12 @@ public class ClientRegisterImpl implements ClientRegister {
     }
 
     @Override
-    public void renderClientList(Options options, ClientRecordsReportView view) {
+    public void renderClientList(Options options,
+                                 ClientRecordsReportView view,
+                                 String username, String link) {
         view.start();
-        for (ClientRecord clientRecord : jdbc.get()
-                .execute(new ClientRecordsCallback(options, clientDao)).items) {
-            view.append(clientRecord);
-        }
-        view.finish("test name", new Date(), "test link");
+        jdbc.get().execute(new ClientRecordsReportCallback(options, clientDao, view));
+        view.finish(username, new Date(), link);
     }
 
 }

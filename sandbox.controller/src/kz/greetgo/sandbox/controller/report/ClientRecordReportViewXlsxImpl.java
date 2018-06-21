@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.controller.render;
+package kz.greetgo.sandbox.controller.report;
 
 import kz.greetgo.msoffice.xlsx.gen.Sheet;
 import kz.greetgo.msoffice.xlsx.gen.Xlsx;
@@ -6,15 +6,16 @@ import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.util.RND;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class ClientRecordReportViewXlsxImpl implements ClientRecordsReportView {
 
-    private OutputStream out;
+    private PrintStream out;
     private Xlsx xlsx;
     private Sheet sheet;
 
-    public ClientRecordReportViewXlsxImpl(OutputStream out) {
+    public ClientRecordReportViewXlsxImpl(PrintStream out) {
         this.out = out;
     }
 
@@ -60,11 +61,12 @@ public class ClientRecordReportViewXlsxImpl implements ClientRecordsReportView {
             sheet.cellStr(1, "Отчет сформировал(-а): " + user);
             sheet.row().finish();
             sheet.row().start();
-            sheet.cellStr(1, created_at.toString());
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            sheet.cellStr(1,simpleDateFormat.format(created_at));
             sheet.row().finish();
             xlsx.complete(out);
             out.flush();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -73,8 +75,9 @@ public class ClientRecordReportViewXlsxImpl implements ClientRecordsReportView {
         File file = new File("results/tables/simple.xlsx");
         file.getParentFile().mkdirs();
 
-        try (FileOutputStream outputStream = new FileOutputStream(file)) {
-            ClientRecordsReportView view = new ClientRecordReportViewXlsxImpl(outputStream);
+        try (FileOutputStream out = new FileOutputStream(file)) {
+            try (PrintStream printStream = new PrintStream(out, false, "UTF-8")) {
+            ClientRecordsReportView view = new ClientRecordReportViewXlsxImpl(printStream);
             view.start();
             for (int i = 0; i < 100; i++) {
                 ClientRecord clientRecord = new ClientRecord();
@@ -87,6 +90,7 @@ public class ClientRecordReportViewXlsxImpl implements ClientRecordsReportView {
                 view.append(clientRecord);
             }
             view.finish("Маханов Мадияр", new Date(), "vk.com/btvrfedsf");
+        }
         }
     }
 

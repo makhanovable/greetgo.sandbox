@@ -3,7 +3,7 @@ package kz.greetgo.sandbox.db.register_impl;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.controller.render.ClientRecordsReportView;
+import kz.greetgo.sandbox.controller.report.ClientRecordsReportView;
 import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
@@ -677,18 +677,23 @@ public class ClientRegisterImplTest extends ParentTestNg {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100,false,null);
         Options options = new Options();
-        options.size = Integer.toString(RND.plusInt(10));
-        options.page = Integer.toString(RND.plusInt(10));
+        options.size = Integer.toString(RND.plusInt(20));
+        options.page = Integer.toString(0);
         TestClientRecordsReportView view = new TestClientRecordsReportView();
+        String username = "someuser";
+        String link = "http://link.com";
+
 
         //
         //
         //
-        clientRegister.get().renderClientList(options, view);
+        clientRegister.get().renderClientList(options, view, username, link);
         //
         //
         //
 
+        assertThat(view.link_to_download).isEqualTo(link);
+        assertThat(view.user).isEqualTo(username);
         assertThat(view.rowList.size()).isLessThanOrEqualTo(Integer.parseInt(options.size));
     }
 

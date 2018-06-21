@@ -68,7 +68,7 @@ public class ClientRecordsCallback implements ConnectionCallback<ClientRecordInf
         return clientRecordInfo;
     }
 
-    private String createSqlForGetClientRecords(Options options) {
+    public static String createSqlForGetClientRecords(Options options) {
         String sql = "WITH info (id, iname, surname, patronymic, gender, charm, birth_date) AS (" +
                 " SELECT id, name as iname, surname, patronymic, gender, charm, birth_date" +
                 " FROM client WHERE actual = TRUE AND (name LIKE ? " +
@@ -102,7 +102,7 @@ public class ClientRecordsCallback implements ConnectionCallback<ClientRecordInf
         return sql;
     }
 
-    private boolean isValidSortOptions(String sort, String order) {
+    public static boolean isValidSortOptions(String sort, String order) {
         return sort != null
                 && order != null
                 && (sort.equalsIgnoreCase("name") ||

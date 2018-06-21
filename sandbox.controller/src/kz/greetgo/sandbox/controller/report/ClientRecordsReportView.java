@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.controller.render;
+package kz.greetgo.sandbox.controller.report;
 
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 
