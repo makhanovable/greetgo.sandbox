@@ -5,9 +5,8 @@ import kz.greetgo.sandbox.controller.model.ClientDetails;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientRecordInfo;
 import kz.greetgo.sandbox.controller.model.Options;
-import kz.greetgo.sandbox.controller.render.ClientRecordsReportView;
+import kz.greetgo.sandbox.controller.report.ClientRecordsReportView;
 
-import java.sql.Blob;
 import java.util.List;
 
 public interface ClientRegister {
@@ -24,6 +23,7 @@ public interface ClientRegister {
 
     List<Charm> getCharms();
 
-    void renderClientList(Options options, ClientRecordsReportView view);
+    void renderClientList(Options options, ClientRecordsReportView view,
+                          String username, String link);
 
 }

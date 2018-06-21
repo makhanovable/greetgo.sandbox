@@ -1,4 +1,4 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, EventEmitter, OnInit, Output, ViewChild} from '@angular/core';
 import {DialogComponent} from "../edit.dialog/edit.dialog.component";
 import {MatDialog, MatPaginator, MatSort} from "@angular/material";
 import {HttpService} from "../HttpService";
@@ -13,6 +13,7 @@ import {ClientRecord} from "../../model/client.record";
 import {ClientInfo} from "../../model/client.info";
 import {Options} from "../../model/options";
 import {DataSourceService} from "../services/data.source.service";
+import { saveAs } from 'file-saver/FileSaver';
 
 @Component({
     selector: 'client-list',
@@ -21,6 +22,7 @@ import {DataSourceService} from "../services/data.source.service";
 })
 export class ClientListComponent implements OnInit {
 
+    //@Output() exit = new EventEmitter<void>();
     GET_CLIENTS_URL: string = "/client/get_clients_list";
 
     displayedColumns = ['name', 'charm', 'age', 'total', 'max', 'min'];
@@ -38,6 +40,7 @@ export class ClientListComponent implements OnInit {
     options: Options;
 
     displayedList: Observable<ClientInfo>;
+    selected: string;
 
     @ViewChild(MatPaginator) paginator: MatPaginator;
     @ViewChild(MatSort) sort: MatSort;
@@ -232,38 +235,37 @@ export class ClientListComponent implements OnInit {
     }
 
     loadReport(res) {
+        this.options.page  = 0;
+        this.options.size = this.resultsLength;
+
         if (res.value == 'pdf') {
             this.pdf();
         } else if (res.value == 'xlsx')
             this.xlsx()
     }
 
-    pdf() { // TODO parse
-        // this.http.post("/client/get_report/pdf", {
-        //     options: this.options
-        // }).map(response => {
-        //     return new Blob([response.blob()], {type: 'application/pdf'});
-        // }).subscribe(
-        //     (blob) => {
-        //         FileSaver.saveAs(blob, 'test.pdf');
-        //     }
-        // )
+    pdf() {
+        this.http.download("/client/get_report/pdf", {
+            options: JSON.stringify(this.options)
+        }).toPromise().then(res => {
+            const file = new Blob([res], {type: 'application/pdf'});
+            saveAs(file, new Date().toLocaleString() + ".pdf");
+            this.selected = null;
+        }, error => {
+            alert(error);
+        });
     }
 
     xlsx() {
-        // this.http.post("/client/get_report/pdf", {
-        //     options: this.options
-        // }).toPromise().then(res => {
-        //     //alert(res.arrayBuffer());
-        //     var file = new Blob([res.arrayBuffer()], {type: 'application/binary'});
-        //     var fileURL = URL.createObjectURL(file);
-        //     var link = document.createElement('b');
-        //     // link.href = fileURL;
-        //     // link.download = "testing.xlsx";
-        //     link.click();
-        // }, error => {
-        //     alert("Error " + error);
-        // });
+        this.http.download("/client/get_report/xlsx", {
+            options: JSON.stringify(this.options)
+        }).toPromise().then(res => {
+            const file = new Blob([res], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+            saveAs(file, new Date().toLocaleString() + ".xlsx");
+            this.selected = null;
+        }, error => {
+            alert(error);
+        });
     }
 
 }

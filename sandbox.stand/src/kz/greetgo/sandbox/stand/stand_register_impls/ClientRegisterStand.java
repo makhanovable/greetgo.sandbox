@@ -4,7 +4,7 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.controller.render.ClientRecordsReportView;
+import kz.greetgo.sandbox.controller.report.ClientRecordsReportView;
 import kz.greetgo.sandbox.db.stand.beans.ClientStandDb;
 import kz.greetgo.sandbox.db.stand.model.CharmDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDetailsDot;
@@ -113,7 +113,9 @@ public class ClientRegisterStand implements ClientRegister {
     }
 
     @Override
-    public void renderClientList(Options options, ClientRecordsReportView view) {
+    public void renderClientList(Options options,
+                                 ClientRecordsReportView view,
+                                 String username, String link) {
         view.start();
         for (ClientRecordDot dot : db.get().getClientRecordStorage(options)) {
             ClientRecord clientRecord = new ClientRecord();
@@ -126,7 +128,7 @@ public class ClientRegisterStand implements ClientRegister {
             clientRecord.min = dot.min;
             view.append(clientRecord);
         }
-        view.finish("test name", new Date(), "test link");
+        view.finish(username, new Date(), link);
     }
 
 }

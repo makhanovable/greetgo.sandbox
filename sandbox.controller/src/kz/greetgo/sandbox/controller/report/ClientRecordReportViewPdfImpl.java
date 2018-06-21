@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.controller.render;
+package kz.greetgo.sandbox.controller.report;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.BaseFont;
@@ -6,6 +6,7 @@ import com.itextpdf.text.pdf.PdfPCell;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import com.itextpdf.text.pdf.PdfPTable;
@@ -15,11 +16,11 @@ import kz.greetgo.util.RND;
 public class ClientRecordReportViewPdfImpl implements ClientRecordsReportView {
 
     private Font font;
-    private OutputStream out;
+    private PrintStream out;
     private PdfPTable table;
     private Document document;
 
-    public ClientRecordReportViewPdfImpl(OutputStream out) {
+    public ClientRecordReportViewPdfImpl(PrintStream out) {
         this.out = out;
     }
 
@@ -32,7 +33,7 @@ public class ClientRecordReportViewPdfImpl implements ClientRecordsReportView {
             Font font2 = new Font(baseFont, 10, Font.NORMAL);
 
             document = new Document();
-            PdfWriter.getInstance(document, out); // TODO for test
+            PdfWriter.getInstance(document, out);
 //            PdfWriter.getInstance(document, new FileOutputStream("results/tables/simple.pdf"));
             document.open();
 
@@ -68,7 +69,8 @@ public class ClientRecordReportViewPdfImpl implements ClientRecordsReportView {
         try {
             PdfPCell userName = new PdfPCell(new Phrase("Отчет сформировал(-а): " + user, font));
             userName.setBorder(Rectangle.NO_BORDER);
-            PdfPCell date = new PdfPCell(new Phrase(created_at.toString(), font));
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            PdfPCell date = new PdfPCell(new Phrase(simpleDateFormat.format(created_at), font));
             date.setBorder(Rectangle.NO_BORDER);
             PdfPCell link = new PdfPCell(new Phrase("Ссылка для скачивания: " + link_to_download, font));
             link.setBorder(Rectangle.NO_BORDER);
@@ -90,20 +92,22 @@ public class ClientRecordReportViewPdfImpl implements ClientRecordsReportView {
         File file = new File("results/tables/simple.pdf");
         file.getParentFile().mkdirs();
 
-        try (FileOutputStream outputStream = new FileOutputStream(file)) {
-            ClientRecordsReportView view = new ClientRecordReportViewPdfImpl(outputStream);
-            view.start();
-            for (int i = 0; i < 100; i++) {
-                ClientRecord clientRecord = new ClientRecord();
-                clientRecord.name = RND.str(10) + " " + RND.str(10) + " " + RND.str(10);
-                clientRecord.charm = RND.str(10);
-                clientRecord.total = RND.plusInt(1000) * 1.1f;
-                clientRecord.max = RND.plusInt(1000) * 1.1f;
-                clientRecord.min = RND.plusInt(1000) * 1.1f;
-                clientRecord.age = RND.plusInt(100);
-                view.append(clientRecord);
+        try (FileOutputStream out = new FileOutputStream(file)) {
+            try (PrintStream printStream = new PrintStream(out, false, "UTF-8")) {
+                ClientRecordsReportView view = new ClientRecordReportViewPdfImpl(printStream);
+                view.start();
+                for (int i = 0; i < 100; i++) {
+                    ClientRecord clientRecord = new ClientRecord();
+                    clientRecord.name = RND.str(10) + " " + RND.str(10) + " " + RND.str(10);
+                    clientRecord.charm = RND.str(10);
+                    clientRecord.total = RND.plusInt(1000) * 1.1f;
+                    clientRecord.max = RND.plusInt(1000) * 1.1f;
+                    clientRecord.min = RND.plusInt(1000) * 1.1f;
+                    clientRecord.age = RND.plusInt(100);
+                    view.append(clientRecord);
+                }
+                view.finish("Маханов Мадияр", new Date(), "vk.com/btvrfedsf");
             }
-            view.finish("Маханов Мадияр", new Date(),"vk.com/btvrfedsf");
         }
     }
 
