@@ -32,9 +32,6 @@ public class ClientRegisterImpl implements ClientRegister {
     @Override
     public void deleteClient(int clientId) {
         clientDao.get().deleteClient(clientId);
-        clientDao.get().deleteClientAddr(clientId);
-        clientDao.get().deleteClientPhone(clientId);
-        clientDao.get().deleteClientAccount(clientId);
     }
 
     @Override

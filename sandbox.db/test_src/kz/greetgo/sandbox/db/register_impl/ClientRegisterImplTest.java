@@ -94,14 +94,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
 
         Client client = clientTestDao.get().getClientById(deletedId);
-        List<ClientAddr> clientAddr = clientTestDao.get().getClientAddrsById(deletedId);
-        List<ClientPhone> clientPhone = clientTestDao.get().getClientPhonesById(deletedId);
-        List<ClientAccount> clientAccount = clientTestDao.get().getClientAccountsById(deletedId);
-
         assertThat(client).isNull();
-        assertThat(clientAddr.size()).isEqualTo(0);
-        assertThat(clientPhone.size()).isEqualTo(0);
-        assertThat(clientAccount.size()).isEqualTo(0);
     }
 
     @Test
@@ -149,7 +142,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
-        options.sort = "name";
+        options.sort = SortBy.name;
         options.order = "asc";
 
         //
@@ -170,7 +163,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
-        options.sort = "name";
+        options.sort = SortBy.name;
         options.order = "desc";
 
         //
@@ -194,7 +187,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
-        options.sort = "age";
+        options.sort = SortBy.age;
         options.order = "asc";
 
         //
@@ -216,7 +209,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
-        options.sort = "age";
+        options.sort = SortBy.age;
         options.order = "desc";
 
         //
@@ -239,7 +232,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
-        options.sort = "total";
+        options.sort = SortBy.total;
         options.order = "asc";
 
         //
@@ -260,7 +253,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
-        options.sort = "total";
+        options.sort = SortBy.total;
         options.order = "desc";
 
         //
@@ -282,7 +275,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
-        options.sort = "max";
+        options.sort = SortBy.max;
         options.order = "asc";
 
         //
@@ -303,7 +296,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
-        options.sort = "max";
+        options.sort = SortBy.max;
         options.order = "desc";
 
         //
@@ -325,7 +318,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
-        options.sort = "min";
+        options.sort = SortBy.min;
         options.order = "asc";
 
         //
@@ -346,7 +339,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
-        options.sort = "min";
+        options.sort = SortBy.min;
         options.order = "desc";
 
         //
@@ -434,7 +427,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         remove_all_data_from_tables();
         fill_tables_with_random_values(1000, false, null);
         Options options = new Options();
-        options.sort = "name";
+        options.sort = SortBy.name;
         options.order = randomStr("asc", "desc");
         options.size = Integer.toString(RND.plusInt(10));
         options.page = Integer.toString(RND.plusInt(10));
@@ -464,7 +457,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
-        options.sort = "age";
+        options.sort = SortBy.age;
         options.order = randomStr("asc", "desc");
         options.size = Integer.toString(RND.plusInt(10));
         options.page = Integer.toString(RND.plusInt(10));
@@ -494,7 +487,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
-        options.sort = "total";
+        options.sort = SortBy.total;
         options.order = randomStr("asc", "desc");
         options.size = Integer.toString(RND.plusInt(10));
         options.page = Integer.toString(RND.plusInt(10));
@@ -524,7 +517,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
-        options.sort = "min";
+        options.sort = SortBy.min;
         options.order = randomStr("asc", "desc");
         options.size = Integer.toString(RND.plusInt(10));
         options.page = Integer.toString(RND.plusInt(10));
@@ -554,7 +547,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
-        options.sort = "max";
+        options.sort = SortBy.max;
         options.order = randomStr("asc", "desc");
         options.size = Integer.toString(RND.plusInt(10));
         options.page = Integer.toString(RND.plusInt(10));
@@ -640,6 +633,23 @@ public class ClientRegisterImplTest extends ParentTestNg {
     private void fill_tables_with_random_values(int count, boolean isNeedGenerateClientDetail, String nameFilter) {
         int pick = RND.plusInt(count);
         for (int i = 0; i < count; i++) {
+            // filling transaction_type
+            TransactionType transactionType = new TransactionType();
+            transactionType.id = i;
+            transactionType.code = RND.str(10);
+            transactionType.name = RND.str(10);
+            clientTestDao.get().insert_random_transaction_type(transactionType);
+
+            // filling charm
+            Charm charm = new Charm();
+            charm.id = i;
+            charm.name = RND.str(10);
+            charm.description = RND.str(10);
+            charm.energy = RND.plusInt(1000) * 1.1f;
+            clientTestDao.get().insert_random_charm(charm);
+        }
+        for (int i = 0; i < count; i++) {
+
             // filling client
             Client client = new Client();
             if (nameFilter != null && i % 3 == 0) {
@@ -690,21 +700,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
                     }
                 }
             }
-
-            // filling transaction_type
-            TransactionType transactionType = new TransactionType();
-            transactionType.id = i;
-            transactionType.code = RND.str(10);
-            transactionType.name = RND.str(10);
-            clientTestDao.get().insert_random_transaction_type(transactionType);
-
-            // filling charm
-            Charm charm = new Charm();
-            charm.id = i;
-            charm.name = RND.str(10);
-            charm.description = RND.str(10);
-            charm.energy = RND.plusInt(1000) * 1.1f;
-            clientTestDao.get().insert_random_charm(charm);
 
             if (isNeedGenerateClientDetail && pick == i)
                 generateExistingClientDetail(client, clientAddr, clientPhone);

@@ -3,19 +3,43 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
+    <changeSet author="makhan" id="create-table-charm">
+        <sql endDelimiter=";;"><![CDATA[
+        CREATE TABLE charm
+        (
+            id bigserial PRIMARY KEY,
+            name varchar(50) NOT NULL,
+            description varchar(50) NULL,
+            energy double precision NULL
+        )
+    ]]></sql>
+    </changeSet>
+
+    <changeSet author="makhan" id="create-table-transaction_type">
+        <sql endDelimiter=";;"><![CDATA[
+        CREATE TABLE transaction_type
+        (
+            id bigserial PRIMARY KEY,
+            code varchar(50) NOT NULL,
+            name varchar(50) NULL
+        )
+    ]]></sql>
+    </changeSet>
+
     <changeSet author="makhan" id="create-table-client">
         <sql endDelimiter=";;"><![CDATA[
         CREATE SEQUENCE client_id_seq INCREMENT 1 START 1;
         CREATE TABLE client
         (
-            id integer NOT NULL DEFAULT NEXTVAL(('"client_id_seq"'::text)::regclass) PRIMARY KEY,
+            id bigserial PRIMARY KEY,
             surname varchar(255) NOT NULL,
             name varchar(255) NOT NULL,
             patronymic varchar(255) NULL,
             gender varchar(50) NOT NULL,
             birth_date date NOT NULL,
             charm integer NOT NULL,
-            actual boolean NOT NULL default true
+            actual boolean NOT NULL default true,
+            FOREIGN KEY (charm) REFERENCES charm (id)
         )
     ]]></sql>
     </changeSet>
@@ -25,12 +49,12 @@
         CREATE SEQUENCE client_account_id_seq INCREMENT 1 START 1;
         CREATE TABLE client_account
         (
-            id integer NOT NULL   DEFAULT NEXTVAL(('"client_account_id_seq"'::text)::regclass) PRIMARY KEY,
+            id bigserial PRIMARY KEY,
             client integer NOT NULL,
             money double precision NULL,
             number varchar(50) NOT NULL,
             registered_at timestamp NOT NULL DEFAULT NOW(),
-            actual boolean NOT NULL default true
+            FOREIGN KEY (client) REFERENCES client (id)
         )
     ]]></sql>
     </changeSet>
@@ -40,11 +64,13 @@
         CREATE SEQUENCE client_account_transaction_id_seq INCREMENT 1 START 1;
         CREATE TABLE client_account_transaction
         (
-            id integer NOT NULL   DEFAULT NEXTVAL(('"client_account_transaction_id_seq"'::text)::regclass) PRIMARY KEY,
+            id bigserial PRIMARY KEY,
             account integer NOT NULL,
             money double precision NOT NULL,
             finished_at timestamp NOT NULL DEFAULT NOW(),
-            type integer NOT NULL
+            type integer NOT NULL,
+            FOREIGN KEY (account) REFERENCES client_account (id),
+            FOREIGN KEY (type) REFERENCES transaction_type (id)
         )
     ]]></sql>
     </changeSet>
@@ -53,12 +79,13 @@
         <sql endDelimiter=";;"><![CDATA[
         CREATE TABLE client_addr
         (
-            client integer NOT NULL,
-            type varchar(50) NOT NULL,
+            client integer,
+            type varchar(50),
             street varchar(255) NOT NULL,
-            house varchar(255) NULL,
+            house varchar(255) NOT NULL,
             flat varchar(255) NULL,
-            actual boolean NOT NULL default true
+            PRIMARY KEY(client, type),
+            FOREIGN KEY (client) REFERENCES client (id)
         )
     ]]></sql>
     </changeSet>
@@ -67,33 +94,11 @@
         <sql endDelimiter=";;"><![CDATA[
         CREATE TABLE client_phone
         (
-            client integer NOT NULL,
-            number varchar(255) NOT NULL,
+            client integer,
+            number varchar(255),
             type varchar(50) NOT NULL,
-            actual boolean NOT NULL default true
-        )
-    ]]></sql>
-    </changeSet>
-
-    <changeSet author="makhan" id="create-table-transaction_type">
-        <sql endDelimiter=";;"><![CDATA[
-        CREATE TABLE transaction_type
-        (
-            id integer NOT NULL PRIMARY KEY,
-            code varchar(50) NULL,
-            name varchar(50) NULL
-        )
-    ]]></sql>
-    </changeSet>
-
-    <changeSet author="makhan" id="create-table-charm">
-        <sql endDelimiter=";;"><![CDATA[
-        CREATE TABLE charm
-        (
-            id integer NOT NULL PRIMARY KEY,
-            name varchar(50) NULL,
-            description varchar(50) NULL,
-            energy double precision NULL
+            PRIMARY KEY(client, number),
+            FOREIGN KEY (client) REFERENCES client (id)
         )
     ]]></sql>
     </changeSet>

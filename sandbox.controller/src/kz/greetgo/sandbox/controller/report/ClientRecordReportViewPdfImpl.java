@@ -89,7 +89,7 @@ public class ClientRecordReportViewPdfImpl implements ClientRecordsReportView {
     }
 
     public static void main(String[] args) throws Exception {
-        File file = new File("results/tables/simple.pdf");
+        File file = new File("build/report/simple.pdf");
         file.getParentFile().mkdirs();
 
         try (FileOutputStream out = new FileOutputStream(file)) {

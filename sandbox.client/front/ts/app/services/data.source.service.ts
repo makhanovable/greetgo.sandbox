@@ -12,7 +12,7 @@ export class DataSourceService {
 
     getClients(URL, params, type): Observable<any> {
         return this.http.post(URL, {
-            options: params
+            options: JSON.stringify(params)
         }).map(
             (result) => {
                 if (type == 0)

@@ -14,6 +14,7 @@ import {ClientInfo} from "../../model/client.info";
 import {Options} from "../../model/options";
 import {DataSourceService} from "../services/data.source.service";
 import { saveAs } from 'file-saver/FileSaver';
+import {SortBy} from "../../model/sort.by";
 
 @Component({
     selector: 'client-list',
@@ -61,7 +62,7 @@ export class ClientListComponent implements OnInit {
                     this.isLoadingResults = true;
                     this.paginator.pageIndex = 0;
                     this.options.filter = this.input.nativeElement.value;
-                    this.options.sort = this.sort.active;
+                    this.options.sort = SortBy[this.sort.active];
                     this.options.order = this.sort.direction;
                     this.options.page = this.paginator.pageIndex;
                     if (this.paginator.pageSize == null)
@@ -102,7 +103,7 @@ export class ClientListComponent implements OnInit {
                         console.log('loading data from net');
                         this.options = new Options();
                         this.options.filter = this.input.nativeElement.value;
-                        this.options.sort = this.sort.active;
+                        this.options.sort = SortBy[this.sort.active];
                         this.options.order = this.sort.direction;
                         this.options.page = this.paginator.pageIndex;
                         if (this.paginator.pageSize == null)

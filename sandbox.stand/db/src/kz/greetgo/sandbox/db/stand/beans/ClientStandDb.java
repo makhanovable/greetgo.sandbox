@@ -97,21 +97,21 @@ public class ClientStandDb implements HasAfterInject {
 
         try {
             if (options.sort != null && options.order != null &&
-                    !options.sort.isEmpty() && !options.order.isEmpty()) {
+                     !options.order.isEmpty()) {
                 switch (options.sort) {
-                    case "name":
+                    case name:
                         out.sort(Comparator.comparing(o -> o.name));
                         break;
-                    case "age":
+                    case age:
                         out.sort(Comparator.comparing(o -> o.age));
                         break;
-                    case "total":
+                    case total:
                         out.sort(Comparator.comparing(o -> o.total));
                         break;
-                    case "max":
+                    case max:
                         out.sort(Comparator.comparing(o -> o.max));
                         break;
-                    case "min":
+                    case min:
                         out.sort(Comparator.comparing(o -> o.min));
                         break;
                 }
