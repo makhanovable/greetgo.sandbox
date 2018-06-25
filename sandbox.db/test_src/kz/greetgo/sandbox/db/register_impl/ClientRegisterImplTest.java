@@ -145,12 +145,12 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
 
     @Test
-    public void sort_by_name() {
+    public void sort_by_name_asc() {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
         options.sort = "name";
-        options.order = randomStr("asc", "desc");
+        options.order = "asc";
 
         //
         //
@@ -162,21 +162,40 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         assertThat(clientRecordInfo).isNotNull();
         assertThat(clientRecordInfo.items).isNotNull();
-        if (options.order.equals("asc"))
-            assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.name.toLowerCase()));
-        else {
-            Collections.reverse(clientRecordInfo.items);
-            assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.name.toLowerCase()));
-        }
+        assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.name.toLowerCase()));
     }
 
     @Test
-    public void sort_by_age() {
+    public void sort_by_name_desc() {
+        remove_all_data_from_tables();
+        fill_tables_with_random_values(100, false, null);
+        Options options = new Options();
+        options.sort = "name";
+        options.order = "desc";
+
+        //
+        //
+        //
+        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
+        //
+        //
+        //
+
+        assertThat(clientRecordInfo).isNotNull();
+        assertThat(clientRecordInfo.items).isNotNull();
+
+        Collections.reverse(clientRecordInfo.items);
+        assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.name.toLowerCase()));
+
+    }
+
+    @Test
+    public void sort_by_age_asc() {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
         options.sort = "age";
-        options.order = randomStr("asc", "desc");
+        options.order = "asc";
 
         //
         //
@@ -188,21 +207,40 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         assertThat(clientRecordInfo).isNotNull();
         assertThat(clientRecordInfo.items).isNotNull();
-        if (options.order.equals("asc"))
-            assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.age));
-        else {
-            Collections.reverse(clientRecordInfo.items);
-            assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.age));
-        }
+        assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.age));
+
     }
 
     @Test
-    public void sort_by_total_balance() {
+    public void sort_by_age_desc() {
+        remove_all_data_from_tables();
+        fill_tables_with_random_values(100, false, null);
+        Options options = new Options();
+        options.sort = "age";
+        options.order = "desc";
+
+        //
+        //
+        //
+        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
+        //
+        //
+        //
+
+        assertThat(clientRecordInfo).isNotNull();
+        assertThat(clientRecordInfo.items).isNotNull();
+        Collections.reverse(clientRecordInfo.items);
+        assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.age));
+
+    }
+
+    @Test
+    public void sort_by_total_balance_asc() {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
         options.sort = "total";
-        options.order = randomStr("asc", "desc");
+        options.order = "asc";
 
         //
         //
@@ -214,21 +252,38 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         assertThat(clientRecordInfo).isNotNull();
         assertThat(clientRecordInfo.items).isNotNull();
-        if (options.order.equals("asc"))
-            assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.total));
-        else {
-            Collections.reverse(clientRecordInfo.items);
-            assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.total));
-        }
+        assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.total));
     }
 
     @Test
-    public void sort_by_max_balance() {
+    public void sort_by_total_balance_desc() {
+        remove_all_data_from_tables();
+        fill_tables_with_random_values(100, false, null);
+        Options options = new Options();
+        options.sort = "total";
+        options.order = "desc";
+
+        //
+        //
+        //
+        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
+        //
+        //
+        //
+
+        assertThat(clientRecordInfo).isNotNull();
+        assertThat(clientRecordInfo.items).isNotNull();
+        Collections.reverse(clientRecordInfo.items);
+        assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.total));
+    }
+
+    @Test
+    public void sort_by_max_balance_asc() {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
         options.sort = "max";
-        options.order = randomStr("asc", "desc");
+        options.order = "asc";
 
         //
         //
@@ -240,21 +295,38 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         assertThat(clientRecordInfo).isNotNull();
         assertThat(clientRecordInfo.items).isNotNull();
-        if (options.order.equals("asc"))
-            assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.max));
-        else {
-            Collections.reverse(clientRecordInfo.items);
-            assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.max));
-        }
+        assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.max));
     }
 
     @Test
-    public void sort_by_min_balance() {
+    public void sort_by_max_balance_desc() {
+        remove_all_data_from_tables();
+        fill_tables_with_random_values(100, false, null);
+        Options options = new Options();
+        options.sort = "max";
+        options.order = "desc";
+
+        //
+        //
+        //
+        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
+        //
+        //
+        //
+
+        assertThat(clientRecordInfo).isNotNull();
+        assertThat(clientRecordInfo.items).isNotNull();
+        Collections.reverse(clientRecordInfo.items);
+        assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.max));
+    }
+
+    @Test
+    public void sort_by_min_balance_asc() {
         remove_all_data_from_tables();
         fill_tables_with_random_values(100, false, null);
         Options options = new Options();
         options.sort = "min";
-        options.order = randomStr("asc", "desc");
+        options.order = "asc";
 
         //
         //
@@ -266,12 +338,29 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         assertThat(clientRecordInfo).isNotNull();
         assertThat(clientRecordInfo.items).isNotNull();
-        if (options.order.equals("asc"))
-            assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.min));
-        else {
-            Collections.reverse(clientRecordInfo.items);
-            assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.min));
-        }
+        assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.min));
+    }
+
+    @Test
+    public void sort_by_min_balance_desc() {
+        remove_all_data_from_tables();
+        fill_tables_with_random_values(100, false, null);
+        Options options = new Options();
+        options.sort = "min";
+        options.order = "desc";
+
+        //
+        //
+        //
+        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
+        //
+        //
+        //
+
+        assertThat(clientRecordInfo).isNotNull();
+        assertThat(clientRecordInfo.items).isNotNull();
+        Collections.reverse(clientRecordInfo.items);
+        assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.min));
     }
 
     @Test
@@ -675,7 +764,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     @Test
     public void render_client_list() {
         remove_all_data_from_tables();
-        fill_tables_with_random_values(100,false,null);
+        fill_tables_with_random_values(100, false, null);
         Options options = new Options();
         options.size = Integer.toString(RND.plusInt(20));
         options.page = Integer.toString(0);

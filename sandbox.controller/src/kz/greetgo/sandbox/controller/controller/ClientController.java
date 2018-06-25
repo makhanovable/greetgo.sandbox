@@ -85,7 +85,7 @@ public class ClientController implements Controller {
         if (userInfo.patronymic != null)
             name += " " + userInfo.patronymic;
 
-        tunnel.setResponseHeader("content-disposition", "attachment; filename = testreport." + type);
+        tunnel.setResponseHeader("content-disposition", "attachment; filename = report." + type);
 
         OutputStream out = tunnel.getResponseOutputStream();
         PrintStream printStream = new PrintStream(out, false, "UTF-8");

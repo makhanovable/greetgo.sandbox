@@ -2,7 +2,6 @@ package kz.greetgo.sandbox.db.register_impl.callback;
 
 import kz.greetgo.db.ConnectionCallback;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.Options;
 import kz.greetgo.sandbox.controller.report.ClientRecordsReportView;
 import kz.greetgo.sandbox.db.dao.ClientDao;
@@ -13,7 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import static kz.greetgo.sandbox.db.register_impl.callback.ClientRecordsCallback.createSqlForGetClientRecords;
-import static kz.greetgo.sandbox.db.util.ClientHelperUtil.calculateAge;
+import static kz.greetgo.sandbox.db.register_impl.callback.ClientRecordsCallback.extractClientRecord;
 
 public class ClientRecordsReportCallback implements ConnectionCallback<Void> {
 
@@ -48,17 +47,8 @@ public class ClientRecordsReportCallback implements ConnectionCallback<Void> {
 
             System.out.println(ps);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    ClientRecord clientRecord = new ClientRecord();
-                    clientRecord.id = rs.getInt("id");
-                    clientRecord.name = rs.getString("name");
-                    clientRecord.age = calculateAge(rs.getString("age"));
-                    clientRecord.charm = clientDao.get().getCharmById(rs.getInt("charm"));
-                    clientRecord.total = rs.getFloat("total");
-                    clientRecord.min = rs.getFloat("min");
-                    clientRecord.max = rs.getFloat("max");
-                    view.append(clientRecord);
-                }
+                while (rs.next())
+                    view.append(extractClientRecord(rs));
             }
         }
         return null;
