@@ -46,13 +46,13 @@ public interface ClientTestDao {
     @Select("select * from client where id = #{id} and actual = true")
     Client getClientById(@Param("id") int id);
 
-    @Select("select * from client_addr where client = #{id} and actual = true")
+    @Select("select * from client_addr where client = #{id}")
     List<ClientAddr> getClientAddrsById(@Param("id") int id);
 
-    @Select("select * from client_phone where client = #{id} and actual = true")
+    @Select("select * from client_phone where client = #{id}")
     List<ClientPhone> getClientPhonesById(@Param("id") int id);
 
-    @Select("select * from client_account where client = #{id} and actual = true")
+    @Select("select * from client_account where client = #{id}")
     List<ClientAccount> getClientAccountsById(@Param("id") int id);
 
     @Select("select id from client where actual = true")
@@ -62,7 +62,7 @@ public interface ClientTestDao {
     //
     //
 
-    @Select("select money from client_account WHERE id = #{id} and actual = true")
+    @Select("select money from client_account WHERE id = #{id}")
     List<Float> getClientAccountsMoneyById(@Param("id") int id);
 
 }

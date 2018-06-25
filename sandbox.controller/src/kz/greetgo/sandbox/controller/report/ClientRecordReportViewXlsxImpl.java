@@ -72,7 +72,7 @@ public class ClientRecordReportViewXlsxImpl implements ClientRecordsReportView {
     }
 
     public static void main(String[] args) throws Exception {
-        File file = new File("results/tables/simple.xlsx");
+        File file = new File("build/report/simple.xlsx");
         file.getParentFile().mkdirs();
 
         try (FileOutputStream out = new FileOutputStream(file)) {

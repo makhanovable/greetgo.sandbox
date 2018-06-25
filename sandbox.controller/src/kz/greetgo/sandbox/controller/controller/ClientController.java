@@ -32,7 +32,7 @@ public class ClientController implements Controller {
     @ToJson
     @NoSecurity
     @Mapping("/get_clients_list")
-    public ClientRecordInfo getClientRecords(@ParamsTo Options options) {
+    public ClientRecordInfo getClientRecords(@Par("options") @Json Options options) {
         return clientRegister.get().getClientRecords(options);
     }
 

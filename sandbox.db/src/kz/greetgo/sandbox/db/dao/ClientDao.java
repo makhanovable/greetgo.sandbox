@@ -23,15 +23,6 @@ public interface ClientDao {
     @Update("update client set actual = false where id = #{id}")
     void deleteClient(@Param("id") int id);
 
-    @Update("update client_addr set actual = false where client = #{id}")
-    void deleteClientAddr(@Param("id") int id);
-
-    @Update("update client_phone set actual = false where client = #{id}")
-    void deleteClientPhone(@Param("id") int id);
-
-    @Update("update client_account set actual = false where client = #{id}")
-    void deleteClientAccount(@Param("id") int id);
-
     //
     //
     //
@@ -49,13 +40,13 @@ public interface ClientDao {
     //
     //
 
-    @Select("select money from client_account WHERE id = #{id} and actual = true")
+    @Select("select money from client_account WHERE id = #{id}")
     List<Float> getClientAccountsMoneyById(@Param("id") int id);
 
-    @Select("select * from client_addr where client = #{id} and actual = true")
+    @Select("select * from client_addr where client = #{id}")
     List<ClientAddr> getClientAddrsByID(@Param("id") int id);
 
-    @Select("select * from client_phone where client = #{id} and actual = true")
+    @Select("select * from client_phone where client = #{id}")
     List<ClientPhone> getClientPhonesByID(@Param("id") int id);
 
     //

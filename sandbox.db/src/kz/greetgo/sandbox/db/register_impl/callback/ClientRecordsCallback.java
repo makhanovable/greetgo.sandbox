@@ -5,6 +5,7 @@ import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientRecordInfo;
 import kz.greetgo.sandbox.controller.model.Options;
+import kz.greetgo.sandbox.controller.model.SortBy;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 
 import java.math.BigDecimal;
@@ -98,32 +99,18 @@ public class ClientRecordsCallback implements ConnectionCallback<ClientRecordInf
         sb.append("FROM info");
 
 
-        if (isValidSortOptions(options.sort, options.order)) { // TODO remove nulls last i td
+        if (options.sort != null && options.order != null) {
             sb.append(" ORDER BY ").append(options.sort);
-            if (options.sort.equalsIgnoreCase("age")) {
+            if (options.sort == SortBy.age) {
                 if (options.order.equalsIgnoreCase("asc"))
                     sb.append(" DESC");
-            } else if (options.order.equalsIgnoreCase("asc"))
-                sb.append(" NULLS FIRST");
-            else
-                sb.append(" DESC NULLS LAST");
+            } else if (options.order.equalsIgnoreCase("desc"))
+                sb.append(" DESC");
         }
 
         if (options.page != null && options.size != null)
             sb.append(" LIMIT ? OFFSET ?");
         return sb.toString();
-    }
-
-    private static boolean isValidSortOptions(String sort, String order) {
-        return sort != null
-                && order != null
-                && (sort.equalsIgnoreCase("name") ||
-                sort.equalsIgnoreCase("age") ||
-                sort.equalsIgnoreCase("total") ||
-                sort.equalsIgnoreCase("max") ||
-                sort.equalsIgnoreCase("min"))
-                && (order.equalsIgnoreCase("desc") ||
-                order.equalsIgnoreCase("asc"));
     }
 
 }
