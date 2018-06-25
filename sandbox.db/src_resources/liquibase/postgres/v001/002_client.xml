@@ -15,7 +15,7 @@
             gender varchar(50) NOT NULL,
             birth_date date NOT NULL,
             charm integer NOT NULL,
-            actual boolean NULL default true
+            actual boolean NOT NULL default true
         )
     ]]></sql>
     </changeSet>
@@ -30,7 +30,7 @@
             money double precision NULL,
             number varchar(50) NOT NULL,
             registered_at timestamp NOT NULL DEFAULT NOW(),
-            actual boolean NOT NULL DEFAULT true
+            actual boolean NOT NULL default true
         )
     ]]></sql>
     </changeSet>
@@ -58,7 +58,7 @@
             street varchar(255) NOT NULL,
             house varchar(255) NULL,
             flat varchar(255) NULL,
-            actual boolean NULL default true
+            actual boolean NOT NULL default true
         )
     ]]></sql>
     </changeSet>
@@ -70,7 +70,7 @@
             client integer NOT NULL,
             number varchar(255) NOT NULL,
             type varchar(50) NOT NULL,
-            actual boolean NULL default true
+            actual boolean NOT NULL default true
         )
     ]]></sql>
     </changeSet>

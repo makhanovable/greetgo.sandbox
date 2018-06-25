@@ -68,4 +68,7 @@ public interface ClientDao {
     @Select("select * from client where id = #{id} and actual = true")
     Client getClientByID(@Param("id") int id);
 
+    @Select("SELECT count(id) FROM client WHERE actual = TRUE AND (name LIKE #{filter} OR surname LIKE #{filter} OR patronymic LIKE #{filter})")
+    int getClientRecordsCount(@Param("filter") String filter);
+
 }
