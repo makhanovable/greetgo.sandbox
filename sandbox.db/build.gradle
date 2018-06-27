@@ -6,6 +6,7 @@ dependencies {
     compile "kz.greetgo.mvc:greetgo.mvc.security:$greetgoMvcVersion"
     compile "kz.greetgo:greetgo.msoffice:0.4.23"
     compile "com.jcraft:jsch:0.1.54"
+    compile "org.codehaus.jackson:jackson-jaxrs:1.9.0"
     compile "org.apache.commons:commons-compress:1.8.1"
 
     compile group: 'org.postgresql', name: 'postgresql', version: '9.4-1202-jdbc42'
