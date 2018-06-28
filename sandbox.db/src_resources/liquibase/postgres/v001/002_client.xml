@@ -8,7 +8,7 @@
         CREATE TABLE charm
         (
             id bigserial PRIMARY KEY,
-            name varchar(50) NOT NULL,
+            name varchar(50) UNIQUE,
             description varchar(50) NULL,
             energy double precision NULL
         )
@@ -28,7 +28,6 @@
 
     <changeSet author="makhan" id="create-table-client">
         <sql endDelimiter=";;"><![CDATA[
-        CREATE SEQUENCE client_id_seq INCREMENT 1 START 1;
         CREATE TABLE client
         (
             id bigserial PRIMARY KEY,
@@ -38,6 +37,7 @@
             gender varchar(50) NOT NULL,
             birth_date date NOT NULL,
             charm integer NOT NULL,
+            cia_client_id varchar(100) UNIQUE,
             actual boolean NOT NULL default true,
             FOREIGN KEY (charm) REFERENCES charm (id)
         )

@@ -6,17 +6,17 @@ import java.sql.DriverManager;
 public class LaunchMigration {
 
     public static void main(String args[]) throws Exception {
-
         Connection connection = getConnection();
         long start = System.currentTimeMillis();
         Migration migration = new Migration(connection);
+        migration.downloadMaxBatchSize = 10_000;
 
         migration.migrate();
 
         connection.close();
         long end = System.currentTimeMillis();
         System.out.println();
-        System.out.println("TOTAL TIME TO PREPARE DATA = " + (end - start));
+        System.out.println("TOTAL TIME = " + (end - start));
     }
 
     private static Connection getConnection() throws Exception {
