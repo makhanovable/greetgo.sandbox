@@ -1,7 +1,10 @@
 package kz.greetgo.sandbox.db.migration;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.xml.sax.XMLReader;
 
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.sql.*;
@@ -39,7 +42,7 @@ public class Migration {
     }
 
     private void parseINSERT_JSON(String filename) throws Exception {
-        System.out.println("Starting parsing JSON and inserting to TMP_TABLES ......");
+        System.out.println("Starting parsing JSON and inserting to TMP_TABLES ...... " + filename);
         long start = System.currentTimeMillis();
 
         BufferedReader bf = new BufferedReader(new FileReader(filename));
@@ -78,6 +81,7 @@ public class Migration {
         }
 
         if (batchSize > 0) {
+            System.out.println("COMMIT " + batchSize);
             accPS.executeBatch();
             trPS.executeBatch();
             connection.commit();
@@ -91,6 +95,7 @@ public class Migration {
         System.out.println("TIME TO PARSE and INSERT = " + (end - start));
         System.out.println("INSERTED = " + rowsAcc + " ACCOUNT AND " + rowsTrans + " TRANSACTIONS");
         System.out.println("TOTAL rows = " + (rowsAcc + rowsTrans));
+        System.out.println();
     }
 
     private void insertAccount(Account a) throws Exception {
@@ -124,11 +129,26 @@ public class Migration {
     }
 
 
-    private void parseINSERT_XML(String filename) {
+    private void parseINSERT_XML(String filename) throws Exception {
+        System.out.println("Starting parsing XML and Inserting to TMP_TABLES.... " + filename);
+        long start = System.currentTimeMillis();
+        SAXParserFactory spf = SAXParserFactory.newInstance();
+        SAXParser saxParser = spf.newSAXParser();
+        XMLReader xmlReader = saxParser.getXMLReader();
+
+        XmlSaxParser parser = new XmlSaxParser(this);
+
+        xmlReader.setContentHandler(parser);
+        xmlReader.parse(filename);
+        long end = System.currentTimeMillis();
+        System.out.println("ending parsing XML and Inserting to TMP_TABLES....");
+        System.out.println("TIME TO PARSE and INSERT = " + (end - start));
+        System.out.println("INSERTED = " + parser.count + " XML");
+        System.out.println();
     }
 
     private boolean hasDataToMigrate() {
-        return false;
+        return true;
     }
 
     private void createTempTables() {
@@ -137,13 +157,15 @@ public class Migration {
         exec("DROP TABLE IF EXISTS TMP_CLIENT CASCADE;" +
                 "CREATE TABLE TMP_CLIENT (" +
                 "   error VARCHAR(100)," +
+                "   client_id BIGINT DEFAULT NULL," +
                 "   id VARCHAR(100)," +
                 "   name VARCHAR(100)," +
                 "   surname VARCHAR(100)," +
                 "   patronymic VARCHAR(100)," +
                 "   birth DATE," +
                 "   charm VARCHAR(100)," +
-                "   gender VARCHAR(100)" +
+                "   gender VARCHAR(100)," +
+                "   number bigserial" +
                 ")");
 
         //language=PostgreSQL
@@ -204,17 +226,53 @@ public class Migration {
         exec("UPDATE TMP_CLIENT SET error = 'birth_date is not defined'" +
                 "   WHERE error ISNULL AND birth ISNULL");
 
-
         //
-        // МИГРАЦИЯ
+        //
         //
 
         //language=PostgreSQL
         exec("INSERT INTO charm(name)" +
-                "   SELECT DISTINCT charm FROM tmp_cia " +
+                "   SELECT DISTINCT charm FROM TMP_CLIENT " +
                 "ON CONFLICT (name) DO NOTHING");
 
-        // TODO execute some SQL
+        //language=PostgreSQL
+        exec("WITH num_ord AS (" +
+                "    SELECT number, id," +
+                "    row_number() OVER (PARTITION BY id ORDER BY number DESC ) AS ord " +
+                "    FROM TMP_CLIENT" +
+                ")" +
+                "UPDATE TMP_CLIENT SET error = 'NOT ACTUAL' " +
+                "WHERE  number IN (SELECT number FROM num_ord WHERE ord > 1)");
+
+        //language=PostgreSQL
+        exec("UPDATE tmp_client SET client_id = client.id FROM client " +
+                "   WHERE tmp_client.id = client.cia_client_id AND error ISNULL");
+
+        //language=PostgreSQL
+        exec("INSERT INTO client (surname, name, patronymic, gender, birth_date, charm, cia_client_id, actual)" +
+                "  SELECT " +
+                "    surname," +
+                "    name," +
+                "    patronymic," +
+                "    gender," +
+                "    birth," +
+                "    (SELECT id" +
+                "     FROM charm" +
+                "     WHERE name LIKE charm) AS charm_id," +
+                "    id," +
+                "    FALSE" +
+                "  FROM TMP_CLIENT" +
+                "  WHERE error ISNULL AND client_id ISNULL");
+
+        //language=PostgreSQL
+        exec("UPDATE client SET" +
+                "  surname = t.surname," +
+                "  name = t.name," +
+                "  patronymic = t.patronymic," +
+                "  gender = t.gender," +
+                "  birth_date = t.birth," +
+                "  charm = (SELECT id FROM charm WHERE charm.name LIKE t.charm)" +
+                "FROM tmp_client t WHERE client_id NOTNULL AND client.id = client_id");
 
         long end = System.currentTimeMillis();
         System.out.println("TIME TO MIGRATION = " + (end - start));
