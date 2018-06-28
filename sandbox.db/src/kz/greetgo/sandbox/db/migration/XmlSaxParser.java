@@ -6,6 +6,8 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -112,7 +114,9 @@ public class XmlSaxParser extends DefaultHandler {
                 else clientRecord.patronymic = attributes.getValue("value");
                 break;
             case BIRTH:
-                clientRecord.birth = attributes.getValue("value");
+                tmp = attributes.getValue("value");
+                tmp = isValidDate(tmp);
+                clientRecord.birth = tmp;
                 break;
             case CHARM:
                 clientRecord.charm = attributes.getValue("value");
@@ -141,6 +145,17 @@ public class XmlSaxParser extends DefaultHandler {
         }
     }
 
+    private String isValidDate(String tmp) {
+        try {
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            df.setLenient(false);
+            df.parse(tmp);
+            return tmp;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
         switch (qName) {
@@ -165,18 +180,21 @@ public class XmlSaxParser extends DefaultHandler {
         if (currentTag != null)
             switch (currentTag) {
                 case HOME_PHONE:
+                    phone = new Phone();
                     phone.type = HOME_PHONE;
                     phone.number = str;
                     phones.add(phone);
                     clientRecord.phones = phones;
                     break;
                 case WORK_PHONE:
+                    phone = new Phone();
                     phone.type = WORK_PHONE;
                     phone.number = str;
                     phones.add(phone);
                     clientRecord.phones = phones;
                     break;
                 case MOBILE_PHONE:
+                    phone = new Phone();
                     phone.type = MOBILE_PHONE;
                     phone.number = str;
                     phones.add(phone);
