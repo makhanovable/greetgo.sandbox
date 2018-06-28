@@ -26,6 +26,8 @@
     ]]></sql>
     </changeSet>
 
+
+    <!--TODO NOT NULL charm-->
     <changeSet author="makhan" id="create-table-client">
         <sql endDelimiter=";;"><![CDATA[
         CREATE TABLE client
@@ -36,7 +38,7 @@
             patronymic varchar(255) NULL,
             gender varchar(50) NOT NULL,
             birth_date date NOT NULL,
-            charm integer NOT NULL,
+            charm integer NULL,
             cia_client_id varchar(100) UNIQUE,
             actual boolean NOT NULL default true,
             FOREIGN KEY (charm) REFERENCES charm (id)

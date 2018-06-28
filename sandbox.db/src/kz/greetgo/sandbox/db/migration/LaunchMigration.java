@@ -9,7 +9,7 @@ public class LaunchMigration {
         Connection connection = getConnection();
         long start = System.currentTimeMillis();
         Migration migration = new Migration(connection);
-        migration.downloadMaxBatchSize = 10_000;
+        migration.downloadMaxBatchSize = 250_000;
 
         migration.migrate();
 

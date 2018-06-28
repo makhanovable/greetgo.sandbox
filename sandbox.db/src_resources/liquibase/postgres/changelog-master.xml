@@ -8,6 +8,4 @@
     <include file="liquibase/postgres/v001/001_person.xml"/>
     <include file="liquibase/postgres/v001/002_client.xml"/>
 
-    <include file="liquibase/postgres/migration_temp/000_common.xml"/>
-
 </databaseChangeLog>

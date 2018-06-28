@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class XmlSaxParser extends DefaultHandler {
@@ -34,6 +35,7 @@ public class XmlSaxParser extends DefaultHandler {
     private List<Phone> phones;
     private String currentTag;
     public int count = 0;
+    private int batchSize = 0;
 
     XmlSaxParser(Migration migration) {
         this.migration = migration;
@@ -55,7 +57,7 @@ public class XmlSaxParser extends DefaultHandler {
     }
 
     private void start() throws Exception {
-        Insert client = new Insert("TMP_CIA");
+        Insert client = new Insert("tmp_client");
         client.field(1, "id", "?");
         client.field(2, "name", "?");
         client.field(3, "surname", "?");
@@ -115,8 +117,7 @@ public class XmlSaxParser extends DefaultHandler {
                 break;
             case BIRTH:
                 tmp = attributes.getValue("value");
-                tmp = isValidDate(tmp);
-                clientRecord.birth = tmp;
+                clientRecord.birth = isValidDate(tmp);
                 break;
             case CHARM:
                 clientRecord.charm = attributes.getValue("value");
@@ -145,12 +146,11 @@ public class XmlSaxParser extends DefaultHandler {
         }
     }
 
-    private String isValidDate(String tmp) {
+    private Date isValidDate(String tmp) {
         try {
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
             df.setLenient(false);
-            df.parse(tmp);
-            return tmp;
+            return df.parse(tmp);
         } catch (Exception e) {
             return null;
         }
@@ -163,6 +163,7 @@ public class XmlSaxParser extends DefaultHandler {
                 try {
                     insertToTmpTable(clientRecord);
                 } catch (Exception ignored) {
+                    ignored.printStackTrace();
                 }
                 clientRecord = null;
                 phones = null;
@@ -203,13 +204,15 @@ public class XmlSaxParser extends DefaultHandler {
             }
     }
 
-    int batchSize = 0, downloadMaxBatchSize = 150;
     private void insertToTmpTable(ClientRecord c) throws Exception {
         clientPs.setString(1, c.id);
         clientPs.setString(2, c.name);
         clientPs.setString(3, c.surname);
         clientPs.setString(4, c.patronymic);
-        clientPs.setString(5, c.birth);
+        if (c.birth != null)
+            clientPs.setDate(5, new java.sql.Date(c.birth.getTime()));
+        else
+            clientPs.setDate(5, null);
         clientPs.setString(6, c.charm);
         clientPs.setString(7, c.gender);
         clientPs.addBatch();
@@ -230,7 +233,7 @@ public class XmlSaxParser extends DefaultHandler {
             phonePs.addBatch();
         }
         batchSize++;
-        if (batchSize >= downloadMaxBatchSize) {
+        if (batchSize >= migration.downloadMaxBatchSize) {
             System.out.println("COMMIT " + batchSize);
             clientPs.executeBatch();
             phonePs.executeBatch();
@@ -244,6 +247,7 @@ public class XmlSaxParser extends DefaultHandler {
     public void endDocument() throws SAXException {
         try {
             if (batchSize >= 0) {
+                System.out.println("COMMIT " + batchSize);
                 clientPs.executeBatch();
                 phonePs.executeBatch();
                 addrPs.executeBatch();
