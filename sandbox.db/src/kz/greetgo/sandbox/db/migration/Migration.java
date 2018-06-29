@@ -176,7 +176,8 @@ public class Migration {
                 "   type VARCHAR(50)," +
                 "   street VARCHAR(100)," +
                 "   house VARCHAR(50)," +
-                "   flat VARCHAR(50)" +
+                "   flat VARCHAR(50)," +
+                "   number bigserial" +
                 ")");
 
         //language=PostgreSQL
@@ -185,7 +186,8 @@ public class Migration {
                 "   error VARCHAR(100)," +
                 "   client VARCHAR(100)," +
                 "   type VARCHAR(50)," +
-                "   number VARCHAR(100)" +
+                "   phone VARCHAR(100)," +
+                "   number bigserial" +
                 ")");
 
         //language=PostgreSQL
@@ -196,7 +198,8 @@ public class Migration {
                 "   money VARCHAR(100)," +
                 "   finished_at VARCHAR(100)," +
                 "   transaction_type VARCHAR(100)," +
-                "   account_number VARCHAR(100)" +
+                "   account_number VARCHAR(100)," +
+                "   number bigserial" +
                 ")");
 
         //language=PostgreSQL
@@ -206,7 +209,8 @@ public class Migration {
                 "   type VARCHAR(50)," +
                 "   client_id VARCHAR(100)," +
                 "   account_number VARCHAR(100)," +
-                "   registered_at VARCHAR(100)" +
+                "   registered_at VARCHAR(100)," +
+                "   number bigserial" +
                 ")");
     }
 
@@ -230,10 +234,18 @@ public class Migration {
         //
         //
 
+        /*
+         * CHARM
+         */
+
         //language=PostgreSQL
         exec("INSERT INTO charm(name)" +
                 "   SELECT DISTINCT charm FROM TMP_CLIENT " +
                 "ON CONFLICT (name) DO NOTHING");
+
+        /*
+         * CLIENT
+         */
 
         //language=PostgreSQL
         exec("WITH num_ord AS (" +
@@ -273,6 +285,37 @@ public class Migration {
                 "  birth_date = t.birth," +
                 "  charm = (SELECT id FROM charm WHERE charm.name LIKE t.charm)" +
                 "FROM tmp_client t WHERE client_id NOTNULL AND client.id = client_id");
+
+        /*
+         * CLIENT_ADDR
+         */
+
+        //language=PostgreSQL
+        exec("WITH num_ord AS (" +
+                "    SELECT number, client," +
+                "    row_number() OVER (PARTITION BY client ORDER BY number DESC ) AS ord" +
+                "    FROM tmp_address" +
+                ")" +
+                "UPDATE tmp_address SET error = 'NOT ACTUAL' " +
+                "WHERE  number IN (SELECT number FROM num_ord WHERE ord > 1)");
+
+
+
+        /*
+         * CLIENT_PHONE
+         */
+
+        /*
+         * TRANSACTION_TYPE
+         */
+
+        /*
+         * CLIENT_TRANSACTION
+         */
+
+        /*
+         * CLIENT_ACCOUNT
+         */
 
         long end = System.currentTimeMillis();
         System.out.println("TIME TO MIGRATION = " + (end - start));

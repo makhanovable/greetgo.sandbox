@@ -76,7 +76,7 @@ public class XmlSaxParser extends DefaultHandler {
         Insert client_phone = new Insert("TMP_PHONE");
         client_phone.field(1, "client", "?");
         client_phone.field(2, "type", "?");
-        client_phone.field(3, "number", "?");
+        client_phone.field(3, "phone", "?");
 
         migration.connection.setAutoCommit(false);
         clientPs = migration.connection.prepareStatement(client.toString());

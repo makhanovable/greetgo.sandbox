@@ -5,11 +5,12 @@ import com.jcraft.jsch.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Vector;
 
 public class DataUtil {
 
-    private final static String[] FOLDERS = new String[]{"/var/metodology/100_000/build/out_files/"};
+    private final static String[] FOLDERS = new String[]{"/var/metodology/100_000/"};
     private final static String USER = "makhan";
     private final static String PASSWORD = "arduino121232";
     private final static String HOST = "localhost";
@@ -27,19 +28,23 @@ public class DataUtil {
             channelSftp.cd(FOLDER);
             Vector<ChannelSftp.LsEntry> files = channelSftp.ls(FOLDER);
             for (ChannelSftp.LsEntry oListItem : files)
-                // TODO чередовать cia и frs
                 if (!oListItem.getAttrs().isDir()) {
-                    String dest = "build" + FOLDER + oListItem.getFilename(); // TODO all files needed
-                    if (dest.endsWith("xml") ||
-                            dest.endsWith("txt")) {
-                        channelSftp.get(oListItem.getFilename(), dest);
-                       // sendCommand("cmd tar -jxvf " + oListItem.getFilename());
-                        extractedFiles.add(dest);
+                    String filename = oListItem.getFilename();
+                    if (filename.endsWith("from_cia_2018-02-21-154532-1-300.xml.tar.bz2") ||
+                            filename.endsWith("from_frs_2018-02-21-154543-1-30009.json_row.txt.tar.bz2")) {
+                        String extractedFilePath = sendCommand("tar -jxvf " + FOLDER.substring(1, FOLDER.length()) + oListItem.getFilename());
+                        System.out.println(extractedFilePath);
                     }
                 }
         }
         closeConnection();
         return extractedFiles;
+    }
+
+    private static void downloadFile(String file) throws Exception {
+        ChannelSftp channelSftp = (ChannelSftp) channel;
+        channelSftp.cd("/");
+        channelSftp.get(file);
     }
 
     private static void createConnection() throws Exception {
@@ -55,7 +60,7 @@ public class DataUtil {
         channelSftp = (ChannelSftp) channel;
     }
 
-    private static void sendCommand(String command) throws Exception {
+    private static String sendCommand(String command) throws Exception {
         StringBuilder outputBuffer = new StringBuilder();
         Channel channel = session.openChannel("exec");
         ((ChannelExec) channel).setCommand(command);
@@ -66,9 +71,8 @@ public class DataUtil {
             outputBuffer.append((char) readByte);
             readByte = commandOutput.read();
         }
-        System.out.println(command);
         channel.disconnect();
-        System.out.println(outputBuffer.toString());
+        return outputBuffer.toString();
     }
 
     private static void closeConnection() {
