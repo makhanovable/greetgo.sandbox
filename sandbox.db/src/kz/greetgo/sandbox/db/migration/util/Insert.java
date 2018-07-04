@@ -1,4 +1,4 @@
-package kz.greetgo.sandbox.db.migration;
+package kz.greetgo.sandbox.db.migration.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,7 @@ public class Insert {
     private static class InsertElement {
         final String name, value;
 
-        public InsertElement(String name, String value) {
+        InsertElement(String name, String value) {
             this.name = name;
             this.value = value;
         }
@@ -22,7 +22,7 @@ public class Insert {
         this.tableName = tableName;
     }
 
-    public void field(@SuppressWarnings("unused") int no, String name, String value) {
+    public void field(int no, String name, String value) {
         elementList.add(new InsertElement(name, value));
     }
 
