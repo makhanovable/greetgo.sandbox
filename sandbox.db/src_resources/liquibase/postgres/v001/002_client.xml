@@ -8,7 +8,7 @@
         CREATE TABLE charm
         (
             id bigserial PRIMARY KEY,
-            name varchar(50) UNIQUE,
+            name varchar(255) UNIQUE,
             description varchar(50) NULL,
             energy double precision NULL
         )
@@ -20,8 +20,8 @@
         CREATE TABLE transaction_type
         (
             id bigserial PRIMARY KEY,
-            code varchar(50) NOT NULL,
-            name varchar(50) NULL
+            code varchar(50) NULL,
+            name varchar(255) UNIQUE
         )
     ]]></sql>
     </changeSet>
@@ -38,7 +38,7 @@
             patronymic varchar(255) NULL,
             gender varchar(50) NOT NULL,
             birth_date date NOT NULL,
-            charm integer NULL,
+            charm integer NOT NULL,
             cia_client_id varchar(100) UNIQUE,
             actual boolean NOT NULL default true,
             FOREIGN KEY (charm) REFERENCES charm (id)
@@ -54,7 +54,7 @@
             id bigserial PRIMARY KEY,
             client integer NOT NULL,
             money double precision NULL,
-            number varchar(50) NOT NULL,
+            number varchar(50) UNIQUE,
             registered_at timestamp NOT NULL DEFAULT NOW(),
             FOREIGN KEY (client) REFERENCES client (id)
         )
@@ -92,6 +92,7 @@
     ]]></sql>
     </changeSet>
 
+    <!--TODO add actual column-->
     <changeSet author="makhan" id="create-table-client_phone">
         <sql endDelimiter=";;"><![CDATA[
         CREATE TABLE client_phone

@@ -1,16 +1,15 @@
-package kz.greetgo.sandbox.db.migration;
+package kz.greetgo.sandbox.db.migration.util;
 
 import com.jcraft.jsch.*;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Vector;
 
-public class DataUtil {
+public class SSHDataUtil {
 
-    private final static String[] FOLDERS = new String[]{"/var/metodology/100_000/"};
+    private final static String[] FOLDERS = new String[]{"/var/metodology/1_000_000/"};
     private final static String USER = "makhan";
     private final static String PASSWORD = "arduino121232";
     private final static String HOST = "localhost";
@@ -30,21 +29,32 @@ public class DataUtil {
             for (ChannelSftp.LsEntry oListItem : files)
                 if (!oListItem.getAttrs().isDir()) {
                     String filename = oListItem.getFilename();
-                    if (filename.endsWith("from_cia_2018-02-21-154532-1-300.xml.tar.bz2") ||
-                            filename.endsWith("from_frs_2018-02-21-154543-1-30009.json_row.txt.tar.bz2")) {
-                        String extractedFilePath = sendCommand("tar -jxvf " + FOLDER.substring(1, FOLDER.length()) + oListItem.getFilename());
-                        System.out.println(extractedFilePath);
+                    if (filename.endsWith("from_cia_2018-02-21-154929-1-300.xml.tar.bz2") ||
+                            filename.endsWith("from_frs_2018-02-21-155112-1-30002.json_row.txt.tar.bz2")) {
+                        String extractedFilePath = sendCommand("tar -jxvf "
+                                + FOLDER.substring(1, FOLDER.length()) + oListItem.getFilename());
+                        extractedFilePath = extractedFilePath.replace("\n", "");
+                        extractedFiles.add(extractedFilePath);
                     }
                 }
         }
+        downloadFiles();
         closeConnection();
         return extractedFiles;
     }
 
-    private static void downloadFile(String file) throws Exception {
-        ChannelSftp channelSftp = (ChannelSftp) channel;
-        channelSftp.cd("/");
-        channelSftp.get(file);
+    private static void downloadFiles() throws Exception {
+        String folder = "/build/out_files";
+        channelSftp.cd(folder);
+        Vector<ChannelSftp.LsEntry> files = channelSftp.ls(folder);
+        for (ChannelSftp.LsEntry oListItem : files)
+            if (!oListItem.getAttrs().isDir()) {
+                String filename = oListItem.getFilename();
+                if (filename.endsWith("xml") ||
+                        filename.endsWith("txt")) {
+                    channelSftp.get(filename, folder);
+                }
+            }
     }
 
     private static void createConnection() throws Exception {
