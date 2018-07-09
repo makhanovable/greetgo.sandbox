@@ -1,4 +1,4 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, EventEmitter, OnInit, Output, ViewChild} from '@angular/core';
 import {DialogComponent} from "../edit.dialog/edit.dialog.component";
 import {MatDialog, MatPaginator, MatSort} from "@angular/material";
 import {HttpService} from "../HttpService";
@@ -13,6 +13,8 @@ import {ClientRecord} from "../../model/client.record";
 import {ClientInfo} from "../../model/client.info";
 import {Options} from "../../model/options";
 import {DataSourceService} from "../services/data.source.service";
+import { saveAs } from 'file-saver/FileSaver';
+import {SortBy} from "../../model/sort.by";
 
 @Component({
     selector: 'client-list',
@@ -21,6 +23,7 @@ import {DataSourceService} from "../services/data.source.service";
 })
 export class ClientListComponent implements OnInit {
 
+    //@Output() exit = new EventEmitter<void>();
     GET_CLIENTS_URL: string = "/client/get_clients_list";
 
     displayedColumns = ['name', 'charm', 'age', 'total', 'max', 'min'];
@@ -38,6 +41,7 @@ export class ClientListComponent implements OnInit {
     options: Options;
 
     displayedList: Observable<ClientInfo>;
+    selected: string;
 
     @ViewChild(MatPaginator) paginator: MatPaginator;
     @ViewChild(MatSort) sort: MatSort;
@@ -58,7 +62,7 @@ export class ClientListComponent implements OnInit {
                     this.isLoadingResults = true;
                     this.paginator.pageIndex = 0;
                     this.options.filter = this.input.nativeElement.value;
-                    this.options.sort = this.sort.active;
+                    this.options.sort = SortBy[this.sort.active];
                     this.options.order = this.sort.direction;
                     this.options.page = this.paginator.pageIndex;
                     if (this.paginator.pageSize == null)
@@ -99,7 +103,7 @@ export class ClientListComponent implements OnInit {
                         console.log('loading data from net');
                         this.options = new Options();
                         this.options.filter = this.input.nativeElement.value;
-                        this.options.sort = this.sort.active;
+                        this.options.sort = SortBy[this.sort.active];
                         this.options.order = this.sort.direction;
                         this.options.page = this.paginator.pageIndex;
                         if (this.paginator.pageSize == null)
@@ -229,6 +233,40 @@ export class ClientListComponent implements OnInit {
             this.loadData();
             this.clientId = null;
         }
+    }
+
+    loadReport(res) {
+        this.options.page  = 0;
+        this.options.size = this.resultsLength;
+
+        if (res.value == 'pdf') {
+            this.pdf();
+        } else if (res.value == 'xlsx')
+            this.xlsx()
+    }
+
+    pdf() {
+        this.http.download("/client/get_report/pdf", {
+            options: JSON.stringify(this.options)
+        }).toPromise().then(res => {
+            const file = new Blob([res], {type: 'application/pdf'});
+            saveAs(file, new Date().toLocaleString() + ".pdf");
+            this.selected = null;
+        }, error => {
+            alert(error);
+        });
+    }
+
+    xlsx() {
+        this.http.download("/client/get_report/xlsx", {
+            options: JSON.stringify(this.options)
+        }).toPromise().then(res => {
+            const file = new Blob([res], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+            saveAs(file, new Date().toLocaleString() + ".xlsx");
+            this.selected = null;
+        }, error => {
+            alert(error);
+        });
     }
 
 }

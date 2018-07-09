@@ -1,3 +1,5 @@
+import {Phone} from "./phone";
+
 export class ClientDetail {
     id: number;
     name: string;
@@ -12,13 +14,12 @@ export class ClientDetail {
     addrRegStreet: string;
     addrRegHome: string;
     addrRegFlat: string;
-    phoneHome: string;
-    phoneWork: string;
-    phoneMob1: string;
-    phoneMob2: string;
-    phoneMob3: string;
+    phones: Phone[] = [];
 
     constructor(result) {
+        for (let i = 0; i < 5; i++) {
+            this.phones[i] = new Phone();
+        }
         if (result != null) {
             this.id = Number(JSON.stringify(result.id));
             this.name = JSON.stringify(result.name).replace(/["]+/g, '');
@@ -33,11 +34,11 @@ export class ClientDetail {
             this.addrRegStreet = JSON.stringify(result.addrRegStreet).replace(/["]+/g, '');
             this.addrRegHome = JSON.stringify(result.addrRegHome).replace(/["]+/g, '');
             this.addrRegFlat = JSON.stringify(result.addrRegFlat).replace(/["]+/g, '');
-            this.phoneHome = JSON.stringify(result.phoneHome).replace(/["]+/g, '');
-            this.phoneWork = JSON.stringify(result.phoneWork).replace(/["]+/g, '');
-            this.phoneMob1 = JSON.stringify(result.phoneMob1).replace(/["]+/g, '');
-            this.phoneMob2 = JSON.stringify(result.phoneMob2).replace(/["]+/g, '');
-            this.phoneMob3 = JSON.stringify(result.phoneMob3).replace(/["]+/g, '');
+            this.phones[0].number = JSON.stringify(result.phones[0].number).replace(/["]+/g, '');
+            this.phones[1].number= JSON.stringify(result.phones[1].number).replace(/["]+/g, '');
+            this.phones[2].number= JSON.stringify(result.phones[2].number).replace(/["]+/g, '');
+            this.phones[3].number = JSON.stringify(result.phones[3].number).replace(/["]+/g, '');
+            this.phones[4].number = JSON.stringify(result.phones[4].number).replace(/["]+/g, '');
         }
     }
 
