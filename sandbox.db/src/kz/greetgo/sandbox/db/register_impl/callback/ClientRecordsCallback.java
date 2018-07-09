@@ -8,7 +8,6 @@ import kz.greetgo.sandbox.controller.model.Options;
 import kz.greetgo.sandbox.controller.model.SortBy;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -44,12 +43,9 @@ public class ClientRecordsCallback implements ConnectionCallback<ClientRecordInf
             ps.setString(2, "%" + options.filter + "%");
             ps.setString(3, "%" + options.filter + "%");
 
-
-            //TODO переделать на примитивный тип int. Не будет такого кейса, когда BigDecimal будет нужен, а он в свою очередь работает медленней и зибрает лишнюю память.
             if (options.page != null && options.size != null) {
-                ps.setBigDecimal(4, new BigDecimal(options.size));
-                ps.setBigDecimal(5, new BigDecimal(options.page)
-                        .multiply(new BigDecimal(options.size)));
+                ps.setInt(4, Integer.parseInt(options.size));
+                ps.setInt(5, Integer.parseInt(options.page) * Integer.parseInt(options.size));
             }
             // END set params to PreparedStatement
 
