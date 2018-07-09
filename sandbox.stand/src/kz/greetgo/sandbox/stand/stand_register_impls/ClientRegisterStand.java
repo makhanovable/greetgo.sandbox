@@ -2,12 +2,9 @@ package kz.greetgo.sandbox.stand.stand_register_impls;
 
 import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.Charm;
+import kz.greetgo.sandbox.controller.model.*;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
-import kz.greetgo.sandbox.controller.model.ClientDetails;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.controller.model.ClientRecordInfo;
-import kz.greetgo.sandbox.controller.model.Options;
+import kz.greetgo.sandbox.controller.report.ClientRecordsReportView;
 import kz.greetgo.sandbox.db.stand.beans.ClientStandDb;
 import kz.greetgo.sandbox.db.stand.model.CharmDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDetailsDot;
@@ -90,11 +87,16 @@ public class ClientRegisterStand implements ClientRegister {
         clientDetails.addrRegStreet = dot.addrRegStreet;
         clientDetails.addrRegHome = dot.addrRegHome;
         clientDetails.addrRegFlat = dot.addrRegFlat;
-        clientDetails.phoneHome = dot.phoneHome;
-        clientDetails.phoneWork = dot.phoneWork;
-        clientDetails.phoneMob1 = dot.phoneMob1;
-        clientDetails.phoneMob2 = dot.phoneMob2;
-        clientDetails.phoneMob3 = dot.phoneMob3;
+        ClientPhone[] phones = new ClientPhone[5];
+        for (int i = 0; i < dot.phones.length; i++) {
+            phones[i] = new ClientPhone();
+            if (dot.phones[i].number == null)
+                phones[i].number = "";
+            else
+                phones[i].number = dot.phones[i].number;
+            phones[i].type = dot.phones[i].type;
+        }
+        clientDetails.phones = phones;
         return clientDetails;
     }
 
@@ -108,6 +110,25 @@ public class ClientRegisterStand implements ClientRegister {
             out.add(charm);
         }
         return out;
+    }
+
+    @Override
+    public void renderClientList(Options options,
+                                 ClientRecordsReportView view,
+                                 String username, String link) {
+        view.start();
+        for (ClientRecordDot dot : db.get().getClientRecordStorage(options)) {
+            ClientRecord clientRecord = new ClientRecord();
+            clientRecord.id = dot.id;
+            clientRecord.name = dot.name;
+            clientRecord.charm = dot.charm;
+            clientRecord.age = dot.age;
+            clientRecord.total = dot.total;
+            clientRecord.max = dot.max;
+            clientRecord.min = dot.min;
+            view.append(clientRecord);
+        }
+        view.finish(username, new Date(), link);
     }
 
 }

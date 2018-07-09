@@ -1,6 +1,6 @@
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs";
-import {Headers, Http, Request, RequestOptionsArgs, Response} from "@angular/http";
+import {Headers, Http, Request, RequestOptionsArgs, Response, ResponseContentType} from "@angular/http";
 
 class OptionsBuilder {
     private appendingHeaders: { [key: string]: string }[] = [];
@@ -113,5 +113,34 @@ export class HttpService {
         }
 
         return this.http.delete(this.url(urlSuffix) + post, this.newOptionsBuilder().get());
+    }
+
+    public download(urlSuffix: string, keyValue?: { [key: string]: | string | number | null | Object }): Observable<Blob> {
+        let post: string = '';
+        let data = new URLSearchParams();
+        if (keyValue) {
+            let appended = false;
+            for (let key in keyValue) {
+                let value = keyValue[key];
+                if (value instanceof Object) {
+                    Object.keys(value).forEach(function (k) {
+                        let v = value[k];
+                        if (v) {
+                            data.append(k, v as string);
+                            appended = true;
+                        }
+                    });
+                } else if (value) {
+                    data.append(key, value as string);
+                    appended = true;
+                }
+            }
+            if (appended) post = '?' + data.toString();
+        }
+        let ob = this.newOptionsBuilder().get();
+        ob.responseType = ResponseContentType.Blob;
+        data.append('link', this.url(urlSuffix) + post);
+        post = '?' + data.toString();
+        return this.http.get(this.url(urlSuffix) + post, ob).map(res => res.blob())
     }
 }

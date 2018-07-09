@@ -88,3 +88,26 @@ table {
 .mat-column-created {
     max-width: 124px;
 }
+.report_btn {
+    margin-left: 550px;
+    alignment: right;
+}
+mat-toolbar {
+    position: relative;
+    width: 100%;
+}
+.report {
+    position: absolute;
+    right: 5%;
+    color: gray;
+    border-radius: 5px;
+    background: white;
+    padding: 5px;
+    width: 20%;
+}
+/*.logout {*/
+    /*position: absolute;*/
+    /*right: 5%;*/
+    /*color: gray;*/
+    /*background: white;*/
+/*}*/

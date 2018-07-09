@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet author="makhan" id="create-table-charm">
+        <sql endDelimiter=";;"><![CDATA[
+        CREATE TABLE charm
+        (
+            id bigserial PRIMARY KEY,
+            name varchar(255) UNIQUE,
+            description varchar(50) NULL,
+            energy double precision NULL
+        )
+    ]]></sql>
+    </changeSet>
+
+    <changeSet author="makhan" id="create-table-transaction_type">
+        <sql endDelimiter=";;"><![CDATA[
+        CREATE TABLE transaction_type
+        (
+            id bigserial PRIMARY KEY,
+            code varchar(50) NULL,
+            name varchar(255) UNIQUE
+        )
+    ]]></sql>
+    </changeSet>
+
+
+    <!--TODO NOT NULL charm-->
+    <changeSet author="makhan" id="create-table-client">
+        <sql endDelimiter=";;"><![CDATA[
+        CREATE TABLE client
+        (
+            id bigserial PRIMARY KEY,
+            surname varchar(255) NOT NULL,
+            name varchar(255) NOT NULL,
+            patronymic varchar(255) NULL,
+            gender varchar(50) NOT NULL,
+            birth_date date NOT NULL,
+            charm integer NOT NULL,
+            cia_client_id varchar(100) UNIQUE,
+            actual boolean NOT NULL default true,
+            FOREIGN KEY (charm) REFERENCES charm (id)
+        )
+    ]]></sql>
+    </changeSet>
+
+    <changeSet author="makhan" id="create-table-client_account">
+        <sql endDelimiter=";;"><![CDATA[
+        CREATE SEQUENCE client_account_id_seq INCREMENT 1 START 1;
+        CREATE TABLE client_account
+        (
+            id bigserial PRIMARY KEY,
+            client integer NOT NULL,
+            money double precision NULL,
+            number varchar(50) UNIQUE,
+            registered_at timestamp NOT NULL DEFAULT NOW(),
+            FOREIGN KEY (client) REFERENCES client (id)
+        )
+    ]]></sql>
+    </changeSet>
+
+    <changeSet author="makhan" id="client_account_transaction">
+        <sql endDelimiter=";;"><![CDATA[
+        CREATE SEQUENCE client_account_transaction_id_seq INCREMENT 1 START 1;
+        CREATE TABLE client_account_transaction
+        (
+            id bigserial PRIMARY KEY,
+            account integer NOT NULL,
+            money double precision NOT NULL,
+            finished_at timestamp NOT NULL DEFAULT NOW(),
+            type integer NOT NULL,
+            FOREIGN KEY (account) REFERENCES client_account (id),
+            FOREIGN KEY (type) REFERENCES transaction_type (id)
+        )
+    ]]></sql>
+    </changeSet>
+
+    <changeSet author="makhan" id="create-table-client_addr">
+        <sql endDelimiter=";;"><![CDATA[
+        CREATE TABLE client_addr
+        (
+            client integer,
+            type varchar(50),
+            street varchar(255) NOT NULL,
+            house varchar(255) NOT NULL,
+            flat varchar(255) NULL,
+            PRIMARY KEY(client, type),
+            FOREIGN KEY (client) REFERENCES client (id)
+        )
+    ]]></sql>
+    </changeSet>
+
+    <!--TODO add actual column-->
+    <changeSet author="makhan" id="create-table-client_phone">
+        <sql endDelimiter=";;"><![CDATA[
+        CREATE TABLE client_phone
+        (
+            client integer,
+            number varchar(255),
+            type varchar(50) NOT NULL,
+            actual boolean NOT NULL default true,
+            PRIMARY KEY(client, number),
+            FOREIGN KEY (client) REFERENCES client (id)
+        )
+    ]]></sql>
+    </changeSet>
+
+    <!--TODO remove trigger-->
+    <!--<changeSet author="makhan" id="create-transactions_trigger">-->
+        <!--<sql endDelimiter=";;"><![CDATA[-->
+        <!--CREATE OR REPLACE FUNCTION update_wallet()-->
+          <!--RETURNS TRIGGER AS $$-->
+        <!--BEGIN-->
+          <!--UPDATE client_account-->
+          <!--SET money = ((SELECT money-->
+                        <!--FROM client_account-->
+                        <!--WHERE client_account.id = new.account) + new.money)-->
+          <!--WHERE client_account.id = new.account;-->
+          <!--RETURN new;-->
+        <!--END;-->
+        <!--$$-->
+        <!--LANGUAGE plpgsql;-->
+
+        <!--CREATE TRIGGER transactions_trigger-->
+          <!--AFTER INSERT-->
+          <!--ON client_account_transaction-->
+          <!--FOR EACH ROW EXECUTE PROCEDURE update_wallet();-->
+    <!--]]></sql>-->
+    <!--</changeSet>-->
+
+
+</databaseChangeLog>
