@@ -44,6 +44,8 @@ public class ClientRecordsCallback implements ConnectionCallback<ClientRecordInf
             ps.setString(2, "%" + options.filter + "%");
             ps.setString(3, "%" + options.filter + "%");
 
+
+            //TODO переделать на примитивный тип int. Не будет такого кейса, когда BigDecimal будет нужен, а он в свою очередь работает медленней и зибрает лишнюю память.
             if (options.page != null && options.size != null) {
                 ps.setBigDecimal(4, new BigDecimal(options.size));
                 ps.setBigDecimal(5, new BigDecimal(options.page)
