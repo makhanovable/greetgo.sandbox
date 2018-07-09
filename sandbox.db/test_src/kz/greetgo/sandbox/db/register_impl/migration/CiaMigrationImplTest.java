@@ -1,7 +1,9 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.sandbox.controller.model.ClientAddr;
 import kz.greetgo.sandbox.controller.model.ClientAddrType;
+import kz.greetgo.sandbox.controller.model.Gender;
 import kz.greetgo.sandbox.db.migration.CIAMigration;
 import kz.greetgo.sandbox.db.migration.model.Address;
 import kz.greetgo.sandbox.db.migration.model.Client;
@@ -23,7 +25,8 @@ public class CiaMigrationImplTest extends ParentTestNg {
 
     @Test
     public void insert_to_tmp_client() throws Exception {
-        String file = "C:\\Users\\makhan\\Desktop\\release\\greetgo.sandbox\\sandbox.db\\test_src\\kz\\greetgo\\sandbox\\db\\register_impl\\migration\\data\\one_cia.xml";
+        remove_all_data_from_tables();
+        String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_cia.xml";
         String cia_id = "0-B9N-HT-PU-04wolRBPzj";
         String name = "WCИTБЯ7щАо";
         String surname = "ГRнШб7gDn1";
@@ -55,7 +58,8 @@ public class CiaMigrationImplTest extends ParentTestNg {
 
     @Test
     public void insert_to_tmp_address() throws Exception {
-        String file = "C:\\Users\\makhan\\Desktop\\release\\greetgo.sandbox\\sandbox.db\\test_src\\kz\\greetgo\\sandbox\\db\\register_impl\\migration\\data\\one_cia.xml";
+        remove_all_data_from_tables();
+        String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_cia.xml";
         String Fstreet = "RцВWAаEkMкёнkOзДfжГк";
         String Fhouse = "RП";
         String Fflat = "hИ";
@@ -91,7 +95,8 @@ public class CiaMigrationImplTest extends ParentTestNg {
 
     @Test
     public void insert_to_tmp_phone() throws Exception {
-        String file = "C:\\Users\\makhan\\Desktop\\release\\greetgo.sandbox\\sandbox.db\\test_src\\kz\\greetgo\\sandbox\\db\\register_impl\\migration\\data\\one_cia.xml";
+        remove_all_data_from_tables();
+        String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_cia.xml";
         String home = "+7-878-241-63-94";
         String work = "+7-418-204-55-17";
         String mobile = "+7-385-253-53-56";
@@ -126,7 +131,8 @@ public class CiaMigrationImplTest extends ParentTestNg {
 
     @Test
     public void validate_tmp_client() throws Exception {
-        String file = "C:\\Users\\makhan\\Desktop\\release\\greetgo.sandbox\\sandbox.db\\test_src\\kz\\greetgo\\sandbox\\db\\register_impl\\migration\\data\\invalid_one_cia.xml";
+        remove_all_data_from_tables();
+        String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/invalid_one_cia.xml";
         String cia_id = "0-B9N-HT-PU-04wolRBPzj";
 
         Connection connection = getConnection();
@@ -150,7 +156,8 @@ public class CiaMigrationImplTest extends ParentTestNg {
 
     @Test
     public void duplacate_tmp_client() throws Exception {
-        String file = "C:\\Users\\makhan\\Desktop\\release\\greetgo.sandbox\\sandbox.db\\test_src\\kz\\greetgo\\sandbox\\db\\register_impl\\migration\\data\\dublicate_one_cia.xml";
+        remove_all_data_from_tables();
+        String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/dublicate_one_cia.xml";
         String cia_id = "0-B9N-HT-PU-04wolRBPzj";
 
         Connection connection = getConnection();
@@ -169,6 +176,122 @@ public class CiaMigrationImplTest extends ParentTestNg {
         assertThat(nw).isNotNull();
         assertThat(old.info).isEqualTo("NOT ACTUAL");
         assertThat(nw.info).isNull();
+    }
+
+    @Test
+    public void insert_and_update_real_client() throws Exception {
+        remove_all_data_from_tables();
+        String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_cia.xml";
+        String cia_id = "0-B9N-HT-PU-04wolRBPzj";
+        String name = "WCИTБЯ7щАо";
+        String surname = "ГRнШб7gDn1";
+        String patronymic = "NIfТDтуЯkТ";
+        String birth = "1995-07-07";
+        String charm = "ЩlВOpФpЪИШ";
+        String gender = "FEMALE";
+
+        Connection connection = getConnection();
+        //
+        // FIRST insertion
+        //
+        CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
+        ciaMigration.migrate();
+        kz.greetgo.sandbox.controller.model.Client result = ciaTestDao.get().getRealClientByCiaId(cia_id);
+        int charm_id = ciaTestDao.get().getRealCharmIdByName(charm);
+        //
+        //
+        //
+        assertThat(result).isNotNull();
+        assertThat(result.name).isEqualTo(name);
+        assertThat(result.surname).isEqualTo(surname);
+        assertThat(result.patronymic).isEqualTo(patronymic);
+        assertThat(result.birth_date).isEqualTo(birth);
+        assertThat(result.charm).isEqualTo(charm_id);
+        assertThat(result.gender).isEqualTo(Gender.valueOf(gender));
+
+
+        //
+        // SECOND updating
+        //
+        ciaMigration = new CIAMigration(connection, file, maxBatchSize);
+        ciaMigration.migrate();
+        connection.close();
+        result = ciaTestDao.get().getRealClientByCiaId(cia_id);
+        charm_id = ciaTestDao.get().getRealCharmIdByName(charm);
+        //
+        //
+        //
+        assertThat(result).isNotNull();
+        assertThat(result.name).isEqualTo(name);
+        assertThat(result.surname).isEqualTo(surname);
+        assertThat(result.patronymic).isEqualTo(patronymic);
+        assertThat(result.birth_date).isEqualTo(birth);
+        assertThat(result.charm).isEqualTo(charm_id);
+        assertThat(result.gender).isEqualTo(Gender.valueOf(gender));
+    }
+
+
+    @Test
+    public void insert_and_update_real_client_addr() throws Exception {
+        remove_all_data_from_tables();
+        String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_cia.xml";
+        String Fstreet = "RцВWAаEkMкёнkOзДfжГк";
+        String Fhouse = "RП";
+        String Fflat = "hИ";
+        String Rstreet = "ХfАИKлFщсiхДЗрPгWЗdЭ";
+        String Rhouse = "оz";
+        String Rflat = "РБ";
+
+        Connection connection = getConnection();
+        //
+        // FIRST INSERTION
+        //
+        CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
+        ciaMigration.migrate();
+        List<ClientAddr> result = ciaTestDao.get().getRealAddress();
+        //
+        //
+        //
+        assertThat(result).isNotEmpty();
+        assertThat(result).hasSize(2);
+        for (ClientAddr aResult : result) {
+            if (aResult.type == ClientAddrType.REG) {
+                assertThat(aResult.street).isEqualTo(Rstreet);
+                assertThat(aResult.house).isEqualTo(Rhouse);
+                assertThat(aResult.flat).isEqualTo(Rflat);
+            } else {
+                assertThat(aResult.street).isEqualTo(Fstreet);
+                assertThat(aResult.house).isEqualTo(Fhouse);
+                assertThat(aResult.flat).isEqualTo(Fflat);
+            }
+        }
+        //
+        // SECOND UPDATING
+        //
+        ciaMigration = new CIAMigration(connection, file, maxBatchSize);
+        ciaMigration.migrate();
+        connection.close();
+        result = ciaTestDao.get().getRealAddress();
+        //
+        //
+        //
+        assertThat(result).isNotEmpty();
+        assertThat(result).hasSize(2);
+        for (ClientAddr aResult : result) {
+            if (aResult.type == ClientAddrType.REG) {
+                assertThat(aResult.street).isEqualTo(Rstreet);
+                assertThat(aResult.house).isEqualTo(Rhouse);
+                assertThat(aResult.flat).isEqualTo(Rflat);
+            } else {
+                assertThat(aResult.street).isEqualTo(Fstreet);
+                assertThat(aResult.house).isEqualTo(Fhouse);
+                assertThat(aResult.flat).isEqualTo(Fflat);
+            }
+        }
+    }
+
+    private void remove_all_data_from_tables() {
+        ciaTestDao.get().TRUNCATE();
     }
 
     private Connection getConnection() throws Exception {

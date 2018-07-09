@@ -8,4 +8,5 @@ public class Client {
     public Gender gender;
     public Date birth_date;
     public int charm;
+//    public String cia_client_id;
 }
