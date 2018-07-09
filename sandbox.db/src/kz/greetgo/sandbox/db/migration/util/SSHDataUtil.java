@@ -29,7 +29,7 @@ public class SSHDataUtil {
             for (ChannelSftp.LsEntry oListItem : files)
                 if (!oListItem.getAttrs().isDir()) {
                     String filename = oListItem.getFilename();
-                    if (filename.endsWith("from_cia_2018-02-21-154532-1-300.xml.tar.bz2")) {
+                    if (filename.endsWith("tar.bz2")) {
                         String extractedFilePath = sendCommand("tar -jxvf "
                                 + FOLDER.substring(1, FOLDER.length()) + oListItem.getFilename());
                         extractedFilePath = extractedFilePath.replace("\n", "");

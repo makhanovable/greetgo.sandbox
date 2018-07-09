@@ -5,41 +5,42 @@ import org.xml.sax.XMLReader;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
 
-public class CIAMigration {
+public class CIAMigration extends MigrationAbstract {
 
     private String path;
     private int maxBatchSize;
     private Connection connection;
 
     public CIAMigration(Connection connection, String path, int maxBatchSize) {
+        super(connection);
         this.connection = connection;
         this.maxBatchSize = maxBatchSize;
         this.path = path;
     }
 
+    @Override
     public void migrate() throws Exception {
         long start = System.currentTimeMillis();
         System.out.println("Starting parsing and insert " + path);
-        createTempTables();
-        prepareData();
+
+        {
+            createTempTables();
+            prepareData();
+        }
+
         System.out.println("Time to parsing and inserting " + (System.currentTimeMillis() - start) + " " + path);
         start = System.currentTimeMillis();
         System.out.println("Starting inner migration " + path);
-        validateTableData();
-        migrateCharmTable();
-        migrateClientTable();
-        migrateClientAddressTable();
-        migrateClientPhoneTable();
-        finishMigration();
-//        for (String key: topSqlList.keySet()){
-//            System.out.println(topSqlList.get(key));
-//            System.out.println(key);
-//        }
+
+        {
+            validateTableData();
+            migrateCharmTable();
+            migrateClientTable();
+            migrateClientAddressTable();
+            migrateClientPhoneTable();
+            finishMigration();
+        }
 
         System.out.println("Time to inner migration " + (System.currentTimeMillis() - start) + " " + path);
     }
@@ -197,20 +198,6 @@ public class CIAMigration {
         exec("UPDATE client SET actual = TRUE FROM" +
                 " tmp_client WHERE tmp_client.client_id = client.id" +
                 " AND tmp_client.info ISNULL");
-    }
-
-    private Map<String, Long> topSqlList = new HashMap<>();
-    private void exec(String sql) {
-        long start = System.currentTimeMillis();
-        try (Statement statement = connection.createStatement()) {
-            statement.executeUpdate(sql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        long end = System.currentTimeMillis();
-        topSqlList.put(sql, end - start);
-        System.out.println("sql time: " + (end - start));
-        System.out.println(sql);
     }
 
 }

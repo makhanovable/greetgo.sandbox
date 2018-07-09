@@ -1,37 +1,41 @@
 package kz.greetgo.sandbox.db.migration;
 
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
 
-public class FRSMigration {
+public class FRSMigration extends MigrationAbstract {
 
     private String file;
     private int maxBatchSize;
     private Connection connection;
 
     public FRSMigration(Connection connection, String file, int maxBatchSize) {
+        super(connection);
         this.file = file;
         this.maxBatchSize = maxBatchSize;
         this.connection = connection;
     }
 
+    @Override
     public void migrate() throws Exception {
         long start = System.currentTimeMillis();
         System.out.println("Starting parsing and insert " + file);
-        createTempTables();
-        prepareData();
+
+        {
+            createTempTables();
+            prepareData();
+        }
 
         System.out.println("Time to parsing and inserting " + (System.currentTimeMillis() - start) + " " + file);
         start = System.currentTimeMillis();
         System.out.println("Starting inner migration " + file);
 
-        validateTableData();
-        migrateTransactionTypeTable();
-        migrateAccountTable();
-        migrateTransactionTable();
+        {
+            validateTableData();
+            migrateTransactionTypeTable();
+            migrateAccountTable();
+            migrateTransactionTable();
+        }
+
         System.out.println("Time to inner migration " + (System.currentTimeMillis() - start) + " " + file);
     }
 
@@ -61,29 +65,6 @@ public class FRSMigration {
     }
 
     private void validateTableData() {
-        //language=PostgreSQL
-//        exec("WITH num_ord AS (" +
-//                "    SELECT num," +
-//                "    row_number() OVER (PARTITION BY account_number ORDER BY num DESC ) AS ord " +
-//                "    FROM TMP_ACC" +
-//                ")" +
-//                "UPDATE TMP_ACC SET info = 'NOT ACTUAL' " +
-//                "WHERE num IN (SELECT num FROM num_ord WHERE ord > 1)");
-
-        //language=PostgreSQL
-//        exec("WITH num_ord AS (" +
-//                "    SELECT num," +
-//                "    row_number() OVER (PARTITION BY (money, finished_at, account_number) ORDER BY num DESC ) AS ord " +
-//                "    FROM TMP_TRANS" +
-//                ")" +
-//                "UPDATE TMP_TRANS SET info = 'NOT ACTUAL' " +
-//                "WHERE num IN (SELECT num FROM num_ord WHERE ord > 1)");
-
-//        //language=PostgreSQL
-//        exec("UPDATE tmp_acc SET client_id = client_account.client " +
-//                "FROM client_account WHERE tmp_acc.info ISNULL " +
-//                "AND tmp_acc.account_number = client_account.number");
-
         //language=PostgreSQL
         exec("UPDATE tmp_trans SET info = 'TRANSACTION EXISTS' " +
                 " FROM client_account_transaction " +
@@ -119,7 +100,7 @@ public class FRSMigration {
         //language=PostgreSQL
         exec("CREATE INDEX tmp_trans_money ON tmp_trans (money);");
 
-        //language=PostgreSQL // TODO оптимизировать
+        //language=PostgreSQL
         exec("INSERT INTO client_account(client, money, number, registered_at) " +
                 "   SELECT " +
                 "    c.id," +
@@ -129,17 +110,6 @@ public class FRSMigration {
                 "   FROM tmp_acc " +
                 "JOIN client c ON c.cia_client_id = tmp_acc.cia_client_id " +
                 " ON CONFLICT (number) DO NOTHING");
-
-//        //language=PostgreSQL // TODO оптимизировать
-//        exec("INSERT INTO client_account(client, money, number, registered_at) " +
-//                "   SELECT " +
-//                "    c.id," +
-//                " (SELECT sum(tr.money)), "+
-//                "   tmp_acc.account_number, tmp_acc.registered_at " +
-//                "   FROM tmp_acc " +
-//                "JOIN client c ON c.cia_client_id = tmp_acc.cia_client_id " +
-//                "JOIN tmp_trans tr ON tr.account_number = tmp_acc.account_number " +
-//                " ON CONFLICT (number) DO NOTHING");
     }
 
     private void migrateTransactionTable() {
@@ -154,29 +124,5 @@ public class FRSMigration {
                 "JOIN transaction_type ON transaction_type.name LIKE tmp_trans.transaction_type " +
                 "WHERE tmp_trans.info ISNULL");
     }
-
-//    private void calculateAccountsMoney(){
-//        //language=PostgreSQL
-//        exec("UPDATE client_account " +
-//                "SET money = (SELECT sum(money) FROM client_account_transaction " +
-//                "WHERE client_account.id = account)");
-//
-//    }
-
-    private Map<String, Long> topSqlList = new HashMap<>();
-
-    private void exec(String sql) {
-        long start = System.currentTimeMillis();
-        try (Statement statement = connection.createStatement()) {
-            statement.executeUpdate(sql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        long end = System.currentTimeMillis();
-        topSqlList.put(sql, end - start);
-        System.out.println("Sql time: " + (end - start));
-        System.out.println(sql);
-    }
-
 
 }
