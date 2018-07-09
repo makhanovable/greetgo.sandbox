@@ -781,4 +781,66 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(view.rowList.size()).isLessThanOrEqualTo(Integer.parseInt(options.size));
     }
 
+    @Test
+    public void composite_key_client_addr() {
+        remove_all_data_from_tables();
+        fill_tables_with_random_values(10, false, null);
+
+        boolean insertedSuccessfull;
+        ClientAddr clientAddr = new ClientAddr();
+        clientAddr.client = clientTestDao.get().getAllActualClientIds().get(0);
+        clientAddr.type = randomize(ClientAddrType.class);
+        clientAddr.street = RND.str(10);
+        clientAddr.house = RND.str(10);
+        clientAddr.flat = RND.str(10);
+
+        //
+        //
+        //
+        try {
+            // делаем первый инсерт
+            clientTestDao.get().insert_random_client_addr(clientAddr);
+            // делаем второй инсерт того же адреса, должна вылететь ошибка так как ключи повторяются
+            clientTestDao.get().insert_random_client_addr(clientAddr);
+            insertedSuccessfull = true;
+        } catch (Exception ignored) {
+            insertedSuccessfull = false;
+        }
+        //
+        //
+        //
+
+        assertThat(insertedSuccessfull).isFalse();
+    }
+
+    @Test
+    public void composite_key_client_phone() {
+        remove_all_data_from_tables();
+        fill_tables_with_random_values(10, false, null);
+
+        boolean insertedSuccessfull;
+        ClientPhone clientPhone = new ClientPhone();
+        clientPhone.client = clientTestDao.get().getAllActualClientIds().get(0);
+        clientPhone.number = RND.intStr(10);
+        clientPhone.type = randomize(PhoneType.class);
+
+        //
+        //
+        //
+        try {
+            // делаем первый инсерт
+            clientTestDao.get().insert_random_client_phone(clientPhone);
+            // делаем второй инсерт того же елефона, должна вылететь ошибка так как ключи повторяются
+            clientTestDao.get().insert_random_client_phone(clientPhone);
+            insertedSuccessfull = true;
+        } catch (Exception ignored) {
+            insertedSuccessfull = false;
+        }
+        //
+        //
+        //
+
+        assertThat(insertedSuccessfull).isFalse();
+    }
+
 }
