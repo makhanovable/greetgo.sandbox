@@ -15,7 +15,7 @@ public class LaunchMigration {
         connection = getConnection();
         long start = System.currentTimeMillis();
 
-        startMigration();
+        startMigration(500_000);
 
         connection.close();
         long end = System.currentTimeMillis();
@@ -23,41 +23,44 @@ public class LaunchMigration {
         System.out.println("TOTAL TIME = " + (end - start));
     }
 
-    private static void startMigration() throws Exception {
+    private static void startMigration(int maxBatchSize) throws Exception {
 
 //        long start = System.currentTimeMillis();
 //        System.out.println("Starting Extracting and Downloading...");
 //        List<String> dataToMigrate = SSHDataUtil.downloadFilesAndExtract();
 //        System.out.println("TIME TO DOWNLOAD and EXTRACT = " + (System.currentTimeMillis() - start));
         List<String> dataToMigrate = new ArrayList<>();
-        dataToMigrate.add("build/out_files/from_cia_2018-02-21-154929-1-300.xml");
-        dataToMigrate.add("build/out_files/from_frs_2018-02-21-155112-1-30002.json_row.txt");
+//        dataToMigrate.add("build/out_files/from_cia_2018-02-21-154532-1-300.xml");
+//        dataToMigrate.add("build/out_files/from_frs_2018-02-21-154543-1-30009.json_row.txt");
+//        dataToMigrate.add("build/out_files/from_frs_2018-02-21-154551-3-1000004.json_row.txt");
+//        dataToMigrate.add("build/out_files/from_frs_2018-02-21-155121-3-10000007.json_row.txt");
+        dataToMigrate.add("build/out_files/from_cia_2018-02-21-154955-5-1000000.xml");
 
         long a, b;
         if (!dataToMigrate.isEmpty())
             for (String file : dataToMigrate) {
                 if (file.endsWith("xml")) {
                     a = System.currentTimeMillis();
-                    executeCiaMigration(file);
+                    executeCiaMigration(file, maxBatchSize);
                     b = System.currentTimeMillis();
-                    System.out.println("Time to migrate one CIA file = " + (b-a) + " FileName: " + file);
+                    System.out.println("Time to migrate one CIA with PARSING file = " + (b-a) + " FileName: " + file);
                 }
                 else if (file.endsWith("txt")) {
                     a = System.currentTimeMillis();
-                    executeFrsMigration(file);
+                    executeFrsMigration(file, maxBatchSize);
                     b = System.currentTimeMillis();
-                    System.out.println("Time to migrate one FRS file " + (b-a) + " FileName: " + file);
+                    System.out.println("Time to migrate one FRS with PARSING file " + (b-a) + " FileName: " + file);
                 }
             }
     }
 
-    private static void executeCiaMigration(String path) throws Exception {
-        CIAMigration ciaMigration = new CIAMigration(connection, path);
+    private static void executeCiaMigration(String path, int maxBatchSize) throws Exception {
+        CIAMigration ciaMigration = new CIAMigration(connection, path, maxBatchSize);
         ciaMigration.migrate();
     }
 
-    private static void executeFrsMigration(String path) throws Exception {
-        FRSMigration frsMigration = new FRSMigration(connection, path);
+    private static void executeFrsMigration(String path, int maxBatchSize) throws Exception {
+        FRSMigration frsMigration = new FRSMigration(connection, path, maxBatchSize);
         frsMigration.migrate();
     }
 

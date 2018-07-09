@@ -1,0 +1,2 @@
+{"account_number":"84466KZ333-27891-50080-1292286","registered_at":"2001-02-21T15:45:45.532","type":"new_account","client_id":"2-T9E-FQ-IC-vomCQG1s9s"}
+{"transaction_type":"Отмывание на ботинках","account_number":"84466KZ333-27891-50080-1292286","money":"+0","finished_at":"2011-02-21T15:45:51.537","type":"transaction"}

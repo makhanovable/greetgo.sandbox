@@ -36,11 +36,12 @@ public class CIAParser extends DefaultHandler {
     private Connection connection;
     private int num = 0;
     private int batch = 0;
-    private int maxBatchSize = 250_000;
+    private int maxBatchSize;
     private StringBuilder phoneStr;
 
-    CIAParser(Connection connection) {
+    CIAParser(Connection connection, int maxBatchSize) {
         this.connection = connection;
+        this.maxBatchSize = maxBatchSize;
     }
 
     private PreparedStatement clientPs;
@@ -201,7 +202,7 @@ public class CIAParser extends DefaultHandler {
         clientPs.setString(2, client.name);
         clientPs.setString(3, client.surname);
         clientPs.setString(4, client.patronymic);
-        if (client.birth != null)
+        if (client.birth != null) // TODO one line
             clientPs.setDate(5, new java.sql.Date(client.birth.getTime()));
         else
             clientPs.setDate(5, null);

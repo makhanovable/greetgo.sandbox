@@ -100,6 +100,7 @@
             client integer,
             number varchar(255),
             type varchar(50) NOT NULL,
+            actual boolean NOT NULL default true,
             PRIMARY KEY(client, number),
             FOREIGN KEY (client) REFERENCES client (id)
         )

@@ -18,10 +18,11 @@ public class FRSParser {
     private PreparedStatement accPS;
     private PreparedStatement trPS;
     private int batch = 0;
-    private int maxBatchSize = 50_000;
+    private int maxBatchSize;
 
-    FRSParser(Connection connection) {
+    FRSParser(Connection connection, int maxBatchSize) {
         this.connection = connection;
+        this.maxBatchSize = maxBatchSize;
     }
 
     public void parseAndInsertToTempTables(String file) throws Exception {
