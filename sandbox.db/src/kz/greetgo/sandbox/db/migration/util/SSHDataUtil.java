@@ -9,7 +9,7 @@ import java.util.Vector;
 
 public class SSHDataUtil {
 
-    private final static String[] FOLDERS = new String[]{"/var/metodology/1_000_000/"};
+    private final static String[] FOLDERS = new String[]{"/var/metodology/100_000/"};
     private final static String USER = "makhan";
     private final static String PASSWORD = "arduino121232";
     private final static String HOST = "localhost";
@@ -29,8 +29,7 @@ public class SSHDataUtil {
             for (ChannelSftp.LsEntry oListItem : files)
                 if (!oListItem.getAttrs().isDir()) {
                     String filename = oListItem.getFilename();
-                    if (filename.endsWith("from_cia_2018-02-21-154929-1-300.xml.tar.bz2") ||
-                            filename.endsWith("from_frs_2018-02-21-155112-1-30002.json_row.txt.tar.bz2")) {
+                    if (filename.endsWith("from_cia_2018-02-21-154532-1-300.xml.tar.bz2")) {
                         String extractedFilePath = sendCommand("tar -jxvf "
                                 + FOLDER.substring(1, FOLDER.length()) + oListItem.getFilename());
                         extractedFilePath = extractedFilePath.replace("\n", "");
