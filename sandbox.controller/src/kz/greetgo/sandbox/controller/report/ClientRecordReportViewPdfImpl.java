@@ -27,6 +27,8 @@ public class ClientRecordReportViewPdfImpl implements ClientRecordsReportView {
     @Override
     public void start() {
         try {
+
+            //TODO это не будет работать у других, например у меня
             BaseFont baseFont = BaseFont.createFont("c:/Windows/Fonts/arial.ttf",
                     BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
             font = new Font(baseFont, 7, Font.NORMAL);
