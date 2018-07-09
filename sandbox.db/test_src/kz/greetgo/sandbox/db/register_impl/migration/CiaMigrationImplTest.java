@@ -290,6 +290,37 @@ public class CiaMigrationImplTest extends ParentTestNg {
         }
     }
 
+    @Test
+    public void cia_integration_test() throws Exception {
+        remove_all_data_from_tables();
+        String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/integration_one_cia.xml";
+        String cia_id = "0-B9N-HT-PU-04wolRBPzj";
+        String surname = "ГRнШб7gDn1";
+        String patronymic = "NIfТDтуЯkТ";
+        String charm = "ЩlВOpФpЪИШ";
+        String gender = "FEMALE";
+
+        Connection connection = getConnection();
+        //
+        //
+        //
+        CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
+        ciaMigration.migrate();
+        connection.close();
+        Client result_from_tmp = ciaTestDao.get().getClientByCiaId(cia_id);
+        kz.greetgo.sandbox.controller.model.Client result = ciaTestDao.get().getRealClientByCiaId(cia_id);
+        //
+        //
+        //
+        assertThat(result).isNull();
+        assertThat(result_from_tmp.info).isNotNull();
+        assertThat(result_from_tmp.birth).isNull();
+        assertThat(result_from_tmp.surname).isEqualTo(surname);
+        assertThat(result_from_tmp.patronymic).isEqualTo(patronymic);
+        assertThat(result_from_tmp.charm).isEqualTo(charm);
+        assertThat(result_from_tmp.gender).isEqualTo(gender);
+    }
+
     private void remove_all_data_from_tables() {
         ciaTestDao.get().TRUNCATE();
     }

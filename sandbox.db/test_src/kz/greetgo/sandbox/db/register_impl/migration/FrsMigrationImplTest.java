@@ -24,7 +24,8 @@ public class FrsMigrationImplTest extends ParentTestNg {
 
     @Test
     public void insert_to_tmp_acc() throws Exception {
-        String file = "C:\\Users\\makhan\\Desktop\\release\\greetgo.sandbox\\sandbox.db\\test_src\\kz\\greetgo\\sandbox\\db\\register_impl\\migration\\data\\one_frs.txt";
+        remove_all_data_from_tables();
+        String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_frs.txt";
         String cia_id = "2-T9E-FQ-IC-vomCQG1s9s";
         String account_number = "84466KZ333-27891-50080-1292286";
         String registered_at = "2001-02-21 15:45:45.532";
@@ -47,7 +48,8 @@ public class FrsMigrationImplTest extends ParentTestNg {
 
     @Test
     public void insert_to_tmp_trans() throws Exception {
-        String file = "C:\\Users\\makhan\\Desktop\\release\\greetgo.sandbox\\sandbox.db\\test_src\\kz\\greetgo\\sandbox\\db\\register_impl\\migration\\data\\one_frs.txt";
+        remove_all_data_from_tables();
+        String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_frs.txt";
         String account_number = "84466KZ333-27891-50080-1292286";
         String money = "0";
         String finished_at = "2011-02-21 15:45:51.537";
@@ -71,7 +73,8 @@ public class FrsMigrationImplTest extends ParentTestNg {
 
     @Test
     public void validate_tmp_trans() throws Exception {
-        String file = "C:\\Users\\makhan\\Desktop\\release\\greetgo.sandbox\\sandbox.db\\test_src\\kz\\greetgo\\sandbox\\db\\register_impl\\migration\\data\\one_frs.txt";
+        remove_all_data_from_tables();
+        String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_frs.txt";
 
         Connection connection = getConnection();
         //
@@ -91,7 +94,8 @@ public class FrsMigrationImplTest extends ParentTestNg {
 
     @Test
     public void validate_tmp_acc() throws Exception {
-        String file = "C:\\Users\\makhan\\Desktop\\release\\greetgo.sandbox\\sandbox.db\\test_src\\kz\\greetgo\\sandbox\\db\\register_impl\\migration\\data\\one_frs.txt";
+        remove_all_data_from_tables();
+        String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_frs.txt";
         String cia_id = "2-T9E-FQ-IC-vomCQG1s9s";
 
         Connection connection = getConnection();
@@ -108,6 +112,42 @@ public class FrsMigrationImplTest extends ParentTestNg {
         assertThat(result).isNotNull();
         assertThat(result.account_number).isNotNull();
         assertThat(result.registered_at).isNotNull();
+    }
+
+    @Test
+    public void frs_integration_test() throws Exception {
+        remove_all_data_from_tables();
+        String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_frs.txt";
+        String cia_id = "2-T9E-FQ-IC-vomCQG1s9s";
+        String account_number = "84466KZ333-27891-50080-1292286";
+        String registered_at = "2001-02-21 15:45:45.532";
+        String money = "0";
+        String finished_at = "2011-02-21 15:45:51.537";
+
+        Connection connection = getConnection();
+        //
+        //
+        //
+        FRSMigration frsMigration = new FRSMigration(connection, file, maxBatchSize);
+        frsMigration.migrate();
+        connection.close();
+        Account result_acc = frsTestDao.get().getAccountById(cia_id);
+        List<Transaction> result_tr = frsTestDao.get().getTransactions();
+        //
+        //
+        //
+        assertThat(result_acc).isNotNull();
+        assertThat(result_acc.account_number).isEqualTo(account_number);
+        assertThat(result_acc.registered_at).isEqualTo(registered_at);
+
+        assertThat(result_tr).hasSize(1);
+        assertThat(result_tr.get(0).account_number).isEqualTo(account_number);
+        assertThat(result_tr.get(0).money).isEqualTo(money);
+        assertThat(result_tr.get(0).finished_at).isEqualTo(finished_at);
+    }
+
+    private void remove_all_data_from_tables() {
+        frsTestDao.get().TRUNCATE();
     }
 
     private Connection getConnection() throws Exception {
