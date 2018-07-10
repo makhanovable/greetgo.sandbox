@@ -3,7 +3,7 @@ import {Component, Inject} from "@angular/core";
 import {HttpService} from "../HttpService";
 
 @Component({
-    selector: 'are-you-sure-dialog',
+    selector: 'delete-dialog',
     template: require('./delete.dialog.component.html'),
 })
 export class DeleteDialogComponent {

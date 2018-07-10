@@ -16,11 +16,11 @@ public interface ClientRegister {
 
     void deleteClient(int clientId);
 
-    ClientRecord addNewClient(ClientDetails details);
+    ClientRecord addClient(ClientDetails details);
 
     ClientRecord editClient(ClientDetails details);
 
-    ClientDetails getClientById(int clientId);
+    ClientDetails getClientDetails(int clientId);
 
     List<Charm> getCharms();
 

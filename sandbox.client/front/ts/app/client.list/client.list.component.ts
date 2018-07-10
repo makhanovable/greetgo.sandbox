@@ -23,8 +23,8 @@ import {SortBy} from "../../model/sort.by";
 export class ClientListComponent implements OnInit {
 
     //@Output() exit = new EventEmitter<void>();
-    GET_CLIENTS_URL: string = "/client/get_clients_list";
-    GET_CLIENTS_COUNT_URL: string = "/client/get_clients_list_count";
+    GET_CLIENTS_URL: string = "/client/get-list";
+    GET_CLIENTS_COUNT_URL: string = "/client/get-list-count";
 
     displayedColumns = ['name', 'charm', 'age', 'total', 'max', 'min'];
 
@@ -95,7 +95,6 @@ export class ClientListComponent implements OnInit {
     }
 
     loadData(): void {
-        console.log("load data");
         merge(this.sort.sortChange, this.paginator.page)
             .pipe(
                 startWith({}),
@@ -153,7 +152,7 @@ export class ClientListComponent implements OnInit {
             });
             dialogRef.afterClosed().subscribe(result => {
                 if (result) {
-                    this.http.post("/client/del_client", {
+                    this.http.post("/client/delete", {
                         clientId: this.clientId
                     }).toPromise().then(res => {
                         this.loadData();
@@ -241,7 +240,7 @@ export class ClientListComponent implements OnInit {
     }
 
     pdf() {
-        this.http.download("/client/get_report/pdf", {
+        this.http.download("/client/get-report/pdf", {
             options: JSON.stringify(this.options)
         }).toPromise().then(res => {
             const file = new Blob([res], {type: 'application/pdf'});
@@ -253,7 +252,7 @@ export class ClientListComponent implements OnInit {
     }
 
     xlsx() {
-        this.http.download("/client/get_report/xlsx", {
+        this.http.download("/client/get-report/xlsx", {
             options: JSON.stringify(this.options)
         }).toPromise().then(res => {
             const file = new Blob([res], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});

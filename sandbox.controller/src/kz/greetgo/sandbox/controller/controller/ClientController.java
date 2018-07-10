@@ -9,7 +9,6 @@ import kz.greetgo.sandbox.controller.register.AuthRegister;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.model.ClientDetails;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.controller.model.ClientRecordInfo;
 import kz.greetgo.sandbox.controller.model.Options;
 import kz.greetgo.sandbox.controller.report.ClientRecordReportViewPdfImpl;
 import kz.greetgo.sandbox.controller.report.ClientRecordReportViewXlsxImpl;
@@ -31,55 +30,55 @@ public class ClientController implements Controller {
 
     @ToJson
     @NoSecurity
-    @Mapping("/get_clients_list")
-    public List<ClientRecord> getClientRecords(@Par("options") @Json Options options) {
+    @Mapping("/get-list")
+    public List<ClientRecord> getClientList(@Par("options") @Json Options options) {
         return clientRegister.get().getClientRecords(options);
     }
 
     @ToJson
     @NoSecurity
-    @Mapping("/get_clients_list_count")
-    public int getClientRecordsCount(@Par("filter") String filter) {
+    @Mapping("/get-list-count")
+    public int getClientListCount(@Par("filter") String filter) {
         return clientRegister.get().getClientRecordsCount(filter);
     }
 
     @ToJson
     @NoSecurity
-    @Mapping("/add_new_client")
-    public ClientRecord addNewClientRecord(@Json @Par("clientToSave") ClientDetails clientDetails) {
-        return clientRegister.get().addNewClient(clientDetails);
+    @Mapping("/add")
+    public ClientRecord addClient(@Json @Par("toSave") ClientDetails clientDetails) {
+        return clientRegister.get().addClient(clientDetails);
     }
 
     @ToJson
     @NoSecurity
-    @Mapping("/del_client")
+    @Mapping("/delete")
     public void deleteClient(@Par("clientId") int clientId) {
         clientRegister.get().deleteClient(clientId);
     }
 
     @ToJson
     @NoSecurity
-    @Mapping("/edit_client")
-    public ClientRecord editClient(@Json @Par("clientToSave") ClientDetails clientDetails) {
+    @Mapping("/edit")
+    public ClientRecord editClient(@Json @Par("toSave") ClientDetails clientDetails) {
         return clientRegister.get().editClient(clientDetails);
     }
 
     @ToJson
     @NoSecurity
-    @Mapping("/get_client_info_by_id")
-    public ClientDetails getClientById(@Par("clientId") int clientId) {
-        return clientRegister.get().getClientById(clientId);
+    @Mapping("/get-details")
+    public ClientDetails getClientDetails(@Par("clientId") int clientId) {
+        return clientRegister.get().getClientDetails(clientId);
     }
 
     @ToJson
     @NoSecurity
-    @Mapping("/get_charms")
+    @Mapping("/get-charms")
     public List<Charm> getCharms() {
         return clientRegister.get().getCharms();
     }
 
     @ToJson
-    @Mapping("/get_report/{type}")
+    @Mapping("/get-report/{type}")
     public void getReport(@ParSession("personId") String personId,
                           @ParPath("type") String type,
                           @Par("options") @Json Options options,

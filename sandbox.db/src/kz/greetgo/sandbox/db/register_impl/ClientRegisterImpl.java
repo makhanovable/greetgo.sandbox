@@ -40,7 +40,7 @@ public class ClientRegisterImpl implements ClientRegister {
     }
 
     @Override
-    public ClientRecord addNewClient(ClientDetails details) {
+    public ClientRecord addClient(ClientDetails details) {
         if (!isClientDetailsValid(details, true))
             return null;
         Client client = new Client();
@@ -147,7 +147,7 @@ public class ClientRegisterImpl implements ClientRegister {
     }
 
     @Override
-    public ClientDetails getClientById(int clientId) {
+    public ClientDetails getClientDetails(int clientId) {
         ClientDetails clientDetails = new ClientDetails();
         Client client = clientDao.get().getClientByID(clientId);
         List<ClientAddr> clientAddrs = clientDao.get().getClientAddrsByID(clientId);

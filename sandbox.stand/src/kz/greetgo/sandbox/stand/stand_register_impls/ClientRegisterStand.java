@@ -45,7 +45,7 @@ public class ClientRegisterStand implements ClientRegister {
     }
 
     @Override
-    public ClientRecord addNewClient(ClientDetails details) {
+    public ClientRecord addClient(ClientDetails details) {
         ClientRecord clientRecord = new ClientRecord();
         ClientRecordDot dot = db.get().addNewClientRecord(details);
         clientRecord.id = dot.id;
@@ -73,7 +73,7 @@ public class ClientRegisterStand implements ClientRegister {
     }
 
     @Override
-    public ClientDetails getClientById(int clientId) {
+    public ClientDetails getClientDetails(int clientId) {
         ClientDetails clientDetails = new ClientDetails();
         ClientDetailsDot dot = db.get().getClientDetailById(clientId);
         clientDetails.id = dot.id;

@@ -16,7 +16,7 @@ export class DialogComponent {
 
     constructor(public dialogRef: MatDialogRef<DialogComponent>,
                 @Inject(MAT_DIALOG_DATA) public data: any, private http: HttpService) {
-        this.http.get("/client/get_charms").toPromise().then(result => {
+        this.http.get("/client/get-charms").toPromise().then(result => {
             this.charmList = [];
             for (let i = 0; i < Number(JSON.stringify(result.json().length)); i++) {
                 let charm = new Charm(result.json()[i]);
@@ -54,8 +54,8 @@ export class DialogComponent {
     }
 
     edit(clientId) {
-        this.http.post("/client/edit_client", {
-            clientToSave: JSON.stringify(this.generateClientToSave(clientId))
+        this.http.post("/client/edit", {
+            toSave: JSON.stringify(this.generateClientToSave(clientId))
         }).toPromise().then(result => {
             let clientRecord = new ClientRecord(result.json());
             this.dialogRef.close(clientRecord);
@@ -66,8 +66,7 @@ export class DialogComponent {
     }
 
     getClientDetailById(clientId) {
-        console.log("getClientById birth date = ");
-        this.http.post("/client/get_client_info_by_id", {
+        this.http.post("/client/get-details", {
             clientId: clientId
         }).toPromise().then(result => {
             this.clientDetail = new ClientDetail(result.json());
@@ -78,8 +77,8 @@ export class DialogComponent {
     }
 
     add() {
-        this.http.post("/client/add_new_client", {
-            clientToSave: JSON.stringify(this.generateClientToSave(null))
+        this.http.post("/client/add", {
+            toSave: JSON.stringify(this.generateClientToSave(null))
         }).toPromise().then(result => {
             let clientRecord = new ClientRecord(result.json());
             this.dialogRef.close(clientRecord);
