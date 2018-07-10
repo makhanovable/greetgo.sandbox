@@ -57,19 +57,20 @@ public class FRSMigration extends MigrationAbstract {
         //language=PostgreSQL
         exec("DROP TABLE IF EXISTS TMP_TRANS CASCADE;" +
                 "CREATE TABLE TMP_TRANS (" +
-                "   info VARCHAR(50)," +
+                "   status INTEGER DEFAULT 0," +
                 "   money DOUBLE PRECISION," +
                 "   finished_at TIMESTAMP," +
                 "   transaction_type VARCHAR(100)," +
                 "   account_number VARCHAR(50))");
     }
 
+    // status 1 means transaction exists
     private void validateTableData() {
         //language=PostgreSQL
-        exec("UPDATE tmp_trans SET info = 'TRANSACTION EXISTS' " +
+        exec("UPDATE tmp_trans SET status = 1 " +
                 " FROM client_account_transaction " +
                 "JOIN client_account ON client_account.id = client_account_transaction.account " +
-                "WHERE tmp_trans.info ISNULL AND tmp_trans.account_number = client_account.number" +
+                "WHERE tmp_trans.status = 0 AND tmp_trans.account_number = client_account.number" +
                 " AND tmp_trans.finished_at = client_account_transaction.finished_at " +
                 "AND tmp_trans.money = client_account_transaction.money");
     }
@@ -77,7 +78,7 @@ public class FRSMigration extends MigrationAbstract {
     private void migrateTransactionTypeTable() {
         //language=PostgreSQL
         exec("INSERT INTO transaction_type(name)" +
-                "   SELECT DISTINCT transaction_type FROM TMP_TRANS WHERE tmp_trans.info ISNULL " +
+                "   SELECT DISTINCT transaction_type FROM TMP_TRANS WHERE tmp_trans.status = 0 " +
                 "ON CONFLICT (name) DO NOTHING");
     }
 
@@ -122,7 +123,7 @@ public class FRSMigration extends MigrationAbstract {
                 "FROM tmp_trans " +
                 "JOIN client_account ca ON ca.number = tmp_trans.account_number " +
                 "JOIN transaction_type ON transaction_type.name LIKE tmp_trans.transaction_type " +
-                "WHERE tmp_trans.info ISNULL");
+                "WHERE tmp_trans.status = 0");
     }
 
 }

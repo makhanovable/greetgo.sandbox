@@ -25,15 +25,15 @@ public class LaunchMigration {
 
     private static void startMigration(int maxBatchSize) throws Exception {
 
-//        long start = System.currentTimeMillis();
-//        System.out.println("Starting Extracting and Downloading...");
-//        List<String> dataToMigrate = SSHDataUtil.downloadFilesAndExtract();
-//        System.out.println("TIME TO DOWNLOAD and EXTRACT = " + (System.currentTimeMillis() - start));
+        long start = System.currentTimeMillis();
+        System.out.println("Starting Extracting and Downloading...");
+        List<String> dataToMigrate = SSHDataUtil.downloadFilesAndExtract();
+        System.out.println("TIME TO DOWNLOAD and EXTRACT = " + (System.currentTimeMillis() - start));
 
         //migration from local files
-        List<String> dataToMigrate = new ArrayList<>();
-        dataToMigrate.add("build/out_files/from_cia_2018-02-21-154532-1-300.xml");
-        dataToMigrate.add("build/out_files/from_frs_2018-02-21-154543-1-30009.json_row.txt");
+//        List<String> dataToMigrate = new ArrayList<>();
+//        dataToMigrate.add("build/out_files/from_cia_2018-02-21-154532-1-300.xml");
+//        dataToMigrate.add("build/out_files/from_frs_2018-02-21-154543-1-30009.json_row.txt");
 //        dataToMigrate.add("build/out_files/from_frs_2018-02-21-154551-3-1000004.json_row.txt");
 //        dataToMigrate.add("build/out_files/from_frs_2018-02-21-155121-3-10000007.json_row.txt");
 //        dataToMigrate.add("build/out_files/from_cia_2018-02-21-154955-5-1000000.xml");
