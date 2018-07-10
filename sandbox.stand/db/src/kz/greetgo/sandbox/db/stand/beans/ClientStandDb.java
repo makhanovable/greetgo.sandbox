@@ -143,6 +143,25 @@ public class ClientStandDb implements HasAfterInject {
         return returned;
     }
 
+
+    public List<ClientRecordDot> getClientRecordStorage(String filter) {
+        out = new ArrayList<>();
+
+        System.out.println(filter);
+
+        if (filter != null && !filter.isEmpty()) {
+            for (ClientRecordDot aList : clientRecordStorage) {
+                String name = aList.name.replace(" ", "").toLowerCase();
+                if (name.matches("(?i).*" + filter.replace(" ", "")
+                        .toLowerCase() + ".*"))
+                    out.add(aList);
+            }
+        } else
+            out = clientRecordStorage;
+
+        return out;
+    }
+
     public void deleteClientInfo(int id) {
         System.out.println("deleting id = " + id);
         for (int i = 0; i < clientDetailsStorage.size(); i++) {

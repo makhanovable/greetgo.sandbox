@@ -18,8 +18,7 @@ public class ClientRegisterStand implements ClientRegister {
     public BeanGetter<ClientStandDb> db;
 
     @Override
-    public ClientRecordInfo getClientRecords(Options options) {
-        ClientRecordInfo wrapper = new ClientRecordInfo();
+    public List<ClientRecord> getClientRecords(Options options) {
         List<ClientRecord> out = new ArrayList<>();
         for (ClientRecordDot dot : db.get().getClientRecordStorage(options)) {
             ClientRecord clientRecord = new ClientRecord();
@@ -32,9 +31,12 @@ public class ClientRegisterStand implements ClientRegister {
             clientRecord.min = dot.min;
             out.add(clientRecord);
         }
-        wrapper.total_count = db.get().out.size();
-        wrapper.items = out;
-        return wrapper;
+        return out;
+    }
+
+    @Override
+    public int getClientRecordsCount(String filter) {
+        return db.get().getClientRecordStorage(filter).size();
     }
 
     @Override

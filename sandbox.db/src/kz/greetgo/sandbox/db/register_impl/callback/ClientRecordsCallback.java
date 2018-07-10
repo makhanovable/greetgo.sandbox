@@ -3,7 +3,6 @@ package kz.greetgo.sandbox.db.register_impl.callback;
 import kz.greetgo.db.ConnectionCallback;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.controller.model.ClientRecordInfo;
 import kz.greetgo.sandbox.controller.model.Options;
 import kz.greetgo.sandbox.controller.model.SortBy;
 import kz.greetgo.sandbox.db.dao.ClientDao;
@@ -17,7 +16,7 @@ import java.util.List;
 
 import static kz.greetgo.sandbox.db.util.ClientHelperUtil.calculateAge;
 
-public class ClientRecordsCallback implements ConnectionCallback<ClientRecordInfo> {
+public class ClientRecordsCallback implements ConnectionCallback<List<ClientRecord>> {
 
     public static BeanGetter<ClientDao> clientDao;
     private Options options;
@@ -28,10 +27,8 @@ public class ClientRecordsCallback implements ConnectionCallback<ClientRecordInf
     }
 
     @Override
-    public ClientRecordInfo doInConnection(Connection connection) throws Exception {
-        ClientRecordInfo clientRecordInfo = new ClientRecordInfo();
+    public List<ClientRecord> doInConnection(Connection connection) throws Exception {
         List<ClientRecord> clientRecords = new ArrayList<>();
-        clientRecordInfo.items = clientRecords;
 
         options.filter = options.filter != null ? options.filter : "";
         String sql = createSqlForGetClientRecords(options);
@@ -53,11 +50,9 @@ public class ClientRecordsCallback implements ConnectionCallback<ClientRecordInf
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next())
                     clientRecords.add(extractClientRecord(rs));
-                clientRecordInfo.items = clientRecords;
-                clientRecordInfo.total_count = clientDao.get().getClientRecordsCount(options.filter);
             }
         }
-        return clientRecordInfo;
+        return clientRecords;
     }
 
     static ClientRecord extractClientRecord(ResultSet rs) throws SQLException {

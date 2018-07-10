@@ -10,10 +10,9 @@ import {merge, of as observableOf} from 'rxjs';
 import {Observable} from "rxjs/index";
 import {catchError, map, startWith, switchMap} from 'rxjs/operators';
 import {ClientRecord} from "../../model/client.record";
-import {ClientInfo} from "../../model/client.info";
 import {Options} from "../../model/options";
 import {DataSourceService} from "../services/data.source.service";
-import { saveAs } from 'file-saver/FileSaver';
+import {saveAs} from 'file-saver/FileSaver';
 import {SortBy} from "../../model/sort.by";
 
 @Component({
@@ -25,6 +24,7 @@ export class ClientListComponent implements OnInit {
 
     //@Output() exit = new EventEmitter<void>();
     GET_CLIENTS_URL: string = "/client/get_clients_list";
+    GET_CLIENTS_COUNT_URL: string = "/client/get_clients_list_count";
 
     displayedColumns = ['name', 'charm', 'age', 'total', 'max', 'min'];
 
@@ -40,7 +40,7 @@ export class ClientListComponent implements OnInit {
     mustLoadFromNet: boolean = true;
     options: Options;
 
-    displayedList: Observable<ClientInfo>;
+    displayedList: Observable<ClientRecord[]>;
     selected: string;
 
     @ViewChild(MatPaginator) paginator: MatPaginator;
@@ -74,8 +74,9 @@ export class ClientListComponent implements OnInit {
                 map(data => {
                     this.isLoadingResults = false;
                     this.isRateLimitReached = false;
-                    this.resultsLength = data.total_count;
-                    return data.items;
+                    this.getClientsCount(this.options.filter);
+                    console.log("get count");
+                    return data;
                 }),
                 catchError(() => {
                     this.isLoadingResults = false;
@@ -94,6 +95,7 @@ export class ClientListComponent implements OnInit {
     }
 
     loadData(): void {
+        console.log("load data");
         merge(this.sort.sortChange, this.paginator.page)
             .pipe(
                 startWith({}),
@@ -121,8 +123,7 @@ export class ClientListComponent implements OnInit {
                 map(data => {
                     this.isLoadingResults = false;
                     this.isRateLimitReached = false;
-                    this.resultsLength = data.total_count;
-                    return data.items;
+                    return data;
                 }),
                 catchError(() => {
                     this.isLoadingResults = false;
@@ -156,6 +157,7 @@ export class ClientListComponent implements OnInit {
                         clientId: this.clientId
                     }).toPromise().then(res => {
                         this.loadData();
+                        this.resultsLength = this.resultsLength - 1;
                         this.clientId = null;
                     }, error => {
                         alert("Error " + error);
@@ -195,12 +197,9 @@ export class ClientListComponent implements OnInit {
                 this.temp.push(this.data[i]);
             }
             this.temp.push(result);
-            let ClientWrapper = {
-                items: this.temp,
-                total_count: this.resultsLength + 1
-            };
+            this.resultsLength = this.resultsLength + 1;
+            this.displayedList = observableOf(this.temp);
             this.temp = [];
-            this.displayedList = observableOf(ClientWrapper);
             this.mustLoadFromNet = false;
             this.loadData();
         }
@@ -223,20 +222,16 @@ export class ClientListComponent implements OnInit {
                     this.temp.push(this.data[i])
                 }
             }
-            let ClientWrapper = {
-                items: this.temp,
-                total_count: this.resultsLength
-            };
-            this.temp = [];
-            this.displayedList = observableOf(ClientWrapper);
+            this.displayedList = observableOf(this.temp);
             this.mustLoadFromNet = false;
             this.loadData();
+            this.temp = [];
             this.clientId = null;
         }
     }
 
     loadReport(res) {
-        this.options.page  = 0;
+        this.options.page = 0;
         this.options.size = this.resultsLength;
 
         if (res.value == 'pdf') {
@@ -267,6 +262,14 @@ export class ClientListComponent implements OnInit {
         }, error => {
             alert(error);
         });
+    }
+
+    getClientsCount(filter) {
+        this.http.get(this.GET_CLIENTS_COUNT_URL, {
+            filter: filter
+        }).toPromise().then(res => {
+            this.resultsLength = res.json();
+        })
     }
 
 }

@@ -25,8 +25,13 @@ public class ClientRegisterImpl implements ClientRegister {
     public BeanGetter<JdbcSandbox> jdbc;
 
     @Override
-    public ClientRecordInfo getClientRecords(Options options) {
+    public List<ClientRecord> getClientRecords(Options options) {
         return jdbc.get().execute(new ClientRecordsCallback(options, clientDao));
+    }
+
+    @Override
+    public int getClientRecordsCount(String filter) {
+        return clientDao.get().getClientRecordsCount(filter);
     }
 
     @Override

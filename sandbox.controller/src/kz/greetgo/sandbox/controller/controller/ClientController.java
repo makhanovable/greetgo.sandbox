@@ -32,8 +32,15 @@ public class ClientController implements Controller {
     @ToJson
     @NoSecurity
     @Mapping("/get_clients_list")
-    public ClientRecordInfo getClientRecords(@Par("options") @Json Options options) {
+    public List<ClientRecord> getClientRecords(@Par("options") @Json Options options) {
         return clientRegister.get().getClientRecords(options);
+    }
+
+    @ToJson
+    @NoSecurity
+    @Mapping("/get_clients_list_count")
+    public int getClientRecordsCount(@Par("filter") String filter) {
+        return clientRegister.get().getClientRecordsCount(filter);
     }
 
     @ToJson
