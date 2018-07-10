@@ -3,7 +3,7 @@ package kz.greetgo.sandbox.db.register_impl.callback;
 import kz.greetgo.db.ConnectionCallback;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.controller.model.Options;
+import kz.greetgo.sandbox.controller.model.RequestOptions;
 import kz.greetgo.sandbox.controller.model.SortBy;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 
@@ -19,9 +19,9 @@ import static kz.greetgo.sandbox.db.util.ClientHelperUtil.calculateAge;
 public class ClientRecordsCallback implements ConnectionCallback<List<ClientRecord>> {
 
     public static BeanGetter<ClientDao> clientDao;
-    private Options options;
+    private RequestOptions options;
 
-    public ClientRecordsCallback(Options options, BeanGetter<ClientDao> clientDao) {
+    public ClientRecordsCallback(RequestOptions options, BeanGetter<ClientDao> clientDao) {
         this.options = options;
         ClientRecordsCallback.clientDao = clientDao;
     }
@@ -67,7 +67,7 @@ public class ClientRecordsCallback implements ConnectionCallback<List<ClientReco
         return clientRecord;
     }
 
-    static String createSqlForGetClientRecords(Options options) {
+    static String createSqlForGetClientRecords(RequestOptions options) {
         StringBuilder sb = new StringBuilder();
 
         sb.append("WITH info (id, iname, surname, patronymic, gender, charm, birth_date) ");

@@ -2,7 +2,7 @@ package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.ClientAddr;
-import kz.greetgo.sandbox.controller.model.ClientAddrType;
+import kz.greetgo.sandbox.controller.model.AddrType;
 import kz.greetgo.sandbox.controller.model.Gender;
 import kz.greetgo.sandbox.db.migration.CIAMigration;
 import kz.greetgo.sandbox.db.migration.model.Address;
@@ -81,7 +81,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
         assertThat(result).isNotEmpty();
         assertThat(result).hasSize(2);
         for (Address aResult : result) {
-            if (aResult.type == ClientAddrType.REG) {
+            if (aResult.type == AddrType.REG) {
                 assertThat(aResult.street).isEqualTo(Rstreet);
                 assertThat(aResult.house).isEqualTo(Rhouse);
                 assertThat(aResult.flat).isEqualTo(Rflat);
@@ -255,7 +255,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
         assertThat(result).isNotEmpty();
         assertThat(result).hasSize(2);
         for (ClientAddr aResult : result) {
-            if (aResult.type == ClientAddrType.REG) {
+            if (aResult.type == AddrType.REG) {
                 assertThat(aResult.street).isEqualTo(Rstreet);
                 assertThat(aResult.house).isEqualTo(Rhouse);
                 assertThat(aResult.flat).isEqualTo(Rflat);
@@ -278,7 +278,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
         assertThat(result).isNotEmpty();
         assertThat(result).hasSize(2);
         for (ClientAddr aResult : result) {
-            if (aResult.type == ClientAddrType.REG) {
+            if (aResult.type == AddrType.REG) {
                 assertThat(aResult.street).isEqualTo(Rstreet);
                 assertThat(aResult.house).isEqualTo(Rhouse);
                 assertThat(aResult.flat).isEqualTo(Rflat);

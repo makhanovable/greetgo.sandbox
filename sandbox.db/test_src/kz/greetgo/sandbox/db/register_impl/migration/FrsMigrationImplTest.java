@@ -1,11 +1,8 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.ClientAddrType;
 import kz.greetgo.sandbox.db.migration.FRSMigration;
 import kz.greetgo.sandbox.db.migration.model.Account;
-import kz.greetgo.sandbox.db.migration.model.Address;
-import kz.greetgo.sandbox.db.migration.model.Client;
 import kz.greetgo.sandbox.db.migration.model.Transaction;
 import kz.greetgo.sandbox.db.test.dao.FrsTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;

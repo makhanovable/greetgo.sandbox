@@ -2,7 +2,7 @@ package kz.greetgo.sandbox.db.register_impl.callback;
 
 import kz.greetgo.db.ConnectionCallback;
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.Options;
+import kz.greetgo.sandbox.controller.model.RequestOptions;
 import kz.greetgo.sandbox.controller.report.ClientRecordsReportView;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 
@@ -16,10 +16,10 @@ import static kz.greetgo.sandbox.db.register_impl.callback.ClientRecordsCallback
 public class ClientRecordsReportCallback implements ConnectionCallback<Void> {
 
     public BeanGetter<ClientDao> clientDao;
-    private Options options;
+    private RequestOptions options;
     private ClientRecordsReportView view;
 
-    public ClientRecordsReportCallback(Options options, BeanGetter<ClientDao> clientDao,
+    public ClientRecordsReportCallback(RequestOptions options, BeanGetter<ClientDao> clientDao,
                                        ClientRecordsReportView view) {
         this.options = options;
         this.clientDao = clientDao;

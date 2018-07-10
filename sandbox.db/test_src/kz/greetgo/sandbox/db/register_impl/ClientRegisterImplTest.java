@@ -26,16 +26,20 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
 
     @Test
-    public void add_new_client() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, null);
-        ClientDetails randomClientDetail = createRandomClientDetail(-1);
-        ClientRecord expectedClientRecord = createClientRecordFromClientDetail(randomClientDetail, true);
+    public void addClient_valid() {
+        TRUNCATE();
+
+        Charm rndCharm = generateAndInsertRNDCharm();
+        Client rndClient = generateRNDClient(false, rndCharm.id, null);
+        ClientAddr rndClientAddr = generateRNDClientAddr(false, rndClient.id, AddrType.REG);
+        ClientPhone rndClientPhone = generateRNDClientPhone(false, rndClient.id);
+        ClientDetails clientDetailToAdd = generateClientDetail(rndClient, rndClientPhone, rndClientAddr);
+        ClientRecord expectedClientRecord = createClientRecordFromClientDetail(clientDetailToAdd, true);
 
         //
         //
         //
-        ClientRecord clientRecord = clientRegister.get().addNewClient(randomClientDetail);
+        ClientRecord clientRecord = clientRegister.get().addClient(clientDetailToAdd);
         //
         //
         //
@@ -50,19 +54,22 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(clientRecord.max).isEqualTo(0f);
     }
 
-    private ClientDetails randomClientD = null; // used in edit_client and get_client_by_id @Test
-
     @Test
-    public void edit_client() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(101, true, null);
-        ClientDetails editedClientDetail = createRandomClientDetail(randomClientD.id);
-        ClientRecord expectedClientRecord = createClientRecordFromClientDetail(editedClientDetail, false);
+    public void editClient_valid() {
+        TRUNCATE();
+
+        Charm rndCharm = generateAndInsertRNDCharm();
+        Client rndClient = generateRNDClient(true, rndCharm.id, null);
+        ClientAddr rndClientAddr = generateRNDClientAddr(true, rndClient.id, AddrType.REG);
+        ClientPhone rndClientPhone = generateRNDClientPhone(true, rndClient.id);
+        // TODO add transctions and accounts
+        ClientDetails clientDetailToEdit = generateClientDetail(rndClient, rndClientPhone, rndClientAddr);
+        ClientRecord expectedClientRecord = createClientRecordFromClientDetail(clientDetailToEdit, false);
 
         //
         //
         //
-        ClientRecord clientRecord = clientRegister.get().editClient(editedClientDetail);
+        ClientRecord clientRecord = clientRegister.get().editClient(clientDetailToEdit);
         //
         //
         //
@@ -78,30 +85,29 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
 
     @Test
-    public void delete_client() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, null);
-        List<Integer> ids = clientTestDao.get().getAllActualClientIds();
-        int deletedId = ids.get(RND.plusInt(ids.size()));
+    public void deleteClient_valid() {
+        TRUNCATE();
+
+        Charm rndCharm = generateAndInsertRNDCharm();
+        Client rndClient = generateRNDClient(true, rndCharm.id, null);
 
         //
         //
         //
-        clientRegister.get().deleteClient(deletedId);
+        clientRegister.get().deleteClient(rndClient.id);
         //
         //
         //
 
-
-        Client client = clientTestDao.get().getClientById(deletedId);
+        Client client = clientTestDao.get().getClientById(rndClient.id);
         assertThat(client).isNull();
     }
 
     @Test
-    public void get_charms() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, null);
-        Integer expected_size = clientTestDao.get().getCharmsCount();
+    public void getCharms_valid() {
+        TRUNCATE();
+
+        Charm rndCharm = generateAndInsertRNDCharm();
 
         //
         //
@@ -112,493 +118,509 @@ public class ClientRegisterImplTest extends ParentTestNg {
         //
 
         assertThat(charms).isNotNull();
-        assertThat(charms.size()).isEqualTo(expected_size);
+        assertThat(charms).hasSize(1);
+        assertThat(charms.get(0).id).isEqualTo(rndCharm.id);
+        assertThat(charms.get(0).name).isEqualTo(rndCharm.name);
+        assertThat(charms.get(0).description).isEqualTo(rndCharm.description);
+        assertThat(charms.get(0).energy).isEqualTo(rndCharm.energy);
     }
 
     @Test
-    public void filter_by_name() {
-        Options options = new Options();
+    public void getClientList_filterByName() {
+        TRUNCATE();
+
+        RequestOptions options = new RequestOptions();
         options.filter = generateRndStr(10);
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, options.filter);
+        List<Client> clients = fillClientWithRNDData(100, options.filter); // TODO check use it
 
         //
         //
         //
-        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
+        List<ClientRecord> clientRecords = clientRegister.get().getClientList(options);
         //
         //
         //
 
 
-        assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo.items).isNotNull();
-        for (ClientRecord aFilteredList : clientRecordInfo.items)
+        assertThat(clientRecords).isNotNull();
+        for (ClientRecord aFilteredList : clientRecords)
             assertThat(aFilteredList.name).contains(options.filter);
     }
 
     @Test
-    public void sort_by_name_asc() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, null);
-        Options options = new Options();
+    public void getClientList_SortByNameAsc() {
+        TRUNCATE();
+        List<Client> clients = fillClientWithRNDData(100, null);
+
+        RequestOptions options = new RequestOptions();
         options.sort = SortBy.name;
         options.order = "asc";
 
         //
         //
         //
-        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
+        List<ClientRecord> clientRecords = clientRegister.get().getClientList(options);
         //
         //
         //
 
-        assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo.items).isNotNull();
-        assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.name.toLowerCase()));
+        assertThat(clientRecords).isNotNull();
+        assertThat(clientRecords).isSortedAccordingTo(Comparator.comparing(o -> o.name.toLowerCase()));
     }
 
     @Test
-    public void sort_by_name_desc() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, null);
-        Options options = new Options();
+    public void getClientList_SortByNameDesc() {
+        TRUNCATE();
+        List<Client> clients = fillClientWithRNDData(101, null);
+
+        RequestOptions options = new RequestOptions();
         options.sort = SortBy.name;
         options.order = "desc";
 
         //
         //
         //
-        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
+        List<ClientRecord> clientRecords = clientRegister.get().getClientList(options);
         //
         //
         //
 
-        assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo.items).isNotNull();
+        assertThat(clientRecords).isNotNull();
 
-        Collections.reverse(clientRecordInfo.items);
-        assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.name.toLowerCase()));
-
+        Collections.reverse(clientRecords);
+        assertThat(clientRecords).isSortedAccordingTo(Comparator.comparing(o -> o.name.toLowerCase()));
     }
 
     @Test
-    public void sort_by_age_asc() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, null);
-        Options options = new Options();
+    public void getClientList_SortByAgeAsc() {
+        TRUNCATE();
+        List<Client> clients = fillClientWithRNDData(100, null);
+
+        RequestOptions options = new RequestOptions();
         options.sort = SortBy.age;
         options.order = "asc";
 
         //
         //
         //
-        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
+        List<ClientRecord> clientRecordInfo = clientRegister.get().getClientList(options);
         //
         //
         //
 
         assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo.items).isNotNull();
-        assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.age));
-
+        assertThat(clientRecordInfo).isSortedAccordingTo(Comparator.comparing(o -> o.age));
     }
 
     @Test
-    public void sort_by_age_desc() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, null);
-        Options options = new Options();
+    public void getClientList_SortByAgeDesc() {
+        TRUNCATE();
+        List<Client> clients = fillClientWithRNDData(100, null);
+
+        RequestOptions options = new RequestOptions();
         options.sort = SortBy.age;
         options.order = "desc";
 
         //
         //
         //
-        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
+        List<ClientRecord> clientRecordInfo = clientRegister.get().getClientList(options);
         //
         //
         //
 
         assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo.items).isNotNull();
-        Collections.reverse(clientRecordInfo.items);
-        assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.age));
+
+        Collections.reverse(clientRecordInfo);
+        assertThat(clientRecordInfo).isSortedAccordingTo(Comparator.comparing(o -> o.age));
 
     }
 
     @Test
-    public void sort_by_total_balance_asc() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, null);
-        Options options = new Options();
+    public void getClientList_SortByTotalBalanceAsc() {
+        TRUNCATE();
+        List<Client> clients = fillClientWithRNDData(100, null); // TODO lapwa
+
+        RequestOptions options = new RequestOptions();
         options.sort = SortBy.total;
         options.order = "asc";
 
         //
         //
         //
-        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
+        List<ClientRecord> clientRecordInfo = clientRegister.get().getClientList(options);
         //
         //
         //
 
         assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo.items).isNotNull();
-        assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.total));
+        assertThat(clientRecordInfo).isSortedAccordingTo(Comparator.comparing(o -> o.total));
     }
 
     @Test
-    public void sort_by_total_balance_desc() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, null);
-        Options options = new Options();
+    public void getClientList_SortByTotalBalanceDesc() {
+        TRUNCATE();
+        List<Client> clients = fillClientWithRNDData(100, null); // TODO lapwa
+
+        RequestOptions options = new RequestOptions();
         options.sort = SortBy.total;
         options.order = "desc";
 
         //
         //
         //
-        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
+        List<ClientRecord> clientRecordInfo = clientRegister.get().getClientList(options);
         //
         //
         //
 
         assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo.items).isNotNull();
-        Collections.reverse(clientRecordInfo.items);
-        assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.total));
+        Collections.reverse(clientRecordInfo);
+        assertThat(clientRecordInfo).isSortedAccordingTo(Comparator.comparing(o -> o.total));
     }
 
     @Test
-    public void sort_by_max_balance_asc() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, null);
-        Options options = new Options();
+    public void getClientList_SortByMaxBalanceAsc() {
+        TRUNCATE();
+        List<Client> clients = fillClientWithRNDData(100, null);
+
+        RequestOptions options = new RequestOptions();
         options.sort = SortBy.max;
         options.order = "asc";
 
         //
         //
         //
-        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
+        List<ClientRecord> clientRecordInfo = clientRegister.get().getClientList(options);
         //
         //
         //
 
         assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo.items).isNotNull();
-        assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.max));
+        assertThat(clientRecordInfo).isSortedAccordingTo(Comparator.comparing(o -> o.max));
     }
 
     @Test
-    public void sort_by_max_balance_desc() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, null);
-        Options options = new Options();
+    public void getClientListSortByMaxBalanceDesc() {
+        TRUNCATE();
+        List<Client> clients = fillClientWithRNDData(100, null); // TODO lapwa
+
+        RequestOptions options = new RequestOptions();
         options.sort = SortBy.max;
         options.order = "desc";
 
         //
         //
         //
-        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
+        List<ClientRecord> clientRecordInfo = clientRegister.get().getClientList(options);
         //
         //
         //
 
         assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo.items).isNotNull();
-        Collections.reverse(clientRecordInfo.items);
-        assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.max));
+        Collections.reverse(clientRecordInfo);
+        assertThat(clientRecordInfo).isSortedAccordingTo(Comparator.comparing(o -> o.max));
     }
 
     @Test
-    public void sort_by_min_balance_asc() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, null);
-        Options options = new Options();
+    public void getClientList_SortByMinBalanceAsc() {
+        TRUNCATE();
+        List<Client> clients = fillClientWithRNDData(100, null); // TODO lapwa
+
+        RequestOptions options = new RequestOptions();
         options.sort = SortBy.min;
         options.order = "asc";
 
         //
         //
         //
-        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
+        List<ClientRecord> clientRecordInfo = clientRegister.get().getClientList(options);
         //
         //
         //
 
         assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo.items).isNotNull();
-        assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.min));
+        assertThat(clientRecordInfo).isSortedAccordingTo(Comparator.comparing(o -> o.min));
     }
 
     @Test
-    public void sort_by_min_balance_desc() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, null);
-        Options options = new Options();
+    public void getClientList_SortByMinBalanceDesc() {
+        TRUNCATE();
+        List<Client> clients = fillClientWithRNDData(100, null); // TODO lapwa
+
+        RequestOptions options = new RequestOptions();
         options.sort = SortBy.min;
         options.order = "desc";
 
         //
         //
         //
-        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
+        List<ClientRecord> clientRecordInfo = clientRegister.get().getClientList(options);
         //
         //
         //
 
         assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo.items).isNotNull();
-        Collections.reverse(clientRecordInfo.items);
-        assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.min));
+        Collections.reverse(clientRecordInfo);
+        assertThat(clientRecordInfo).isSortedAccordingTo(Comparator.comparing(o -> o.min));
     }
 
     @Test
-    public void get_client_by_id() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(101, true, null);
-        ClientDetails expectedClientDetails = randomClientD;
-        int id = expectedClientDetails.id;
-
-        //
-        //
-        //
-        ClientDetails clientDetails = clientRegister.get().getClientById(id);
-        //
-        //
-        //
-
-        assertThat(clientDetails).isNotNull();
-        assertThat(clientDetails).isEqualsToByComparingFields(expectedClientDetails);
+    public void getClientListCount_valid() {
+        // TODO
     }
 
     @Test
-    public void pagination_of_list() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, null);
-        Options options = new Options();
+    public void getClientDetails_valid() {
+        //TODO
+        TRUNCATE();
+
+        // TODO данные подготовить
+//        ClientDetails expectedClientDetails = randomClientD;
+//        int id = expectedClientDetails.id;
+//
+//        //
+//        //
+//        //
+//        ClientDetails clientDetails = clientRegister.get().getClientDetails(id);
+//        //
+//        //
+//        //
+//
+//        assertThat(clientDetails).isNotNull();
+//        assertThat(clientDetails).isEqualsToByComparingFields(expectedClientDetails);
+    }
+
+    @Test
+    public void getClientList_pagination() { // TODO дополнить
+        TRUNCATE();
+
+        // TODO данные подготовить
+
+        RequestOptions options = new RequestOptions();
         options.size = Integer.toString(RND.plusInt(10));
         options.page = Integer.toString(RND.plusInt(10));
 
         //
         //
         //
-        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
+        List<ClientRecord> clientRecordInfo = clientRegister.get().getClientList(options);
         //
         //
         //
 
         assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo.items).isNotNull();
-        assertThat(clientRecordInfo.total_count).isNotNull();
-        assertThat(clientRecordInfo.items.size()).isLessThanOrEqualTo(Integer.parseInt(options.size));
+        assertThat(clientRecordInfo.size()).isLessThanOrEqualTo(Integer.parseInt(options.size));
     }
 
     @Test
-    public void pagination_of_filtered_list_by_name() {
-        Options options = new Options();
+    public void getClientList_paginationOfFilteredList() {
+        TRUNCATE();
+
+        // TODO данные подготовить
+        RequestOptions options = new RequestOptions();
         options.filter = generateRndStr(10);
         options.size = Integer.toString(RND.plusInt(10));
         options.page = Integer.toString(RND.plusInt(10));
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, options.filter);
 
         //
         //
         //
-        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
+        List<ClientRecord> clientRecordInfo = clientRegister.get().getClientList(options);
         //
         //
         //
 
         assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo.items).isNotNull();
-        assertThat(clientRecordInfo.total_count).isNotNull();
-        assertThat(clientRecordInfo.items.size()).isLessThanOrEqualTo(Integer.parseInt(options.size));
-        for (ClientRecord aFilteredList : clientRecordInfo.items)
+        assertThat(clientRecordInfo.size()).isLessThanOrEqualTo(Integer.parseInt(options.size));
+        for (ClientRecord aFilteredList : clientRecordInfo)
             assertThat(aFilteredList.name).contains(options.filter);
     }
 
-    @Test
-    public void pagination_of_sorted_list_by_name() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(1000, false, null);
-        Options options = new Options();
-        options.sort = SortBy.name;
-        options.order = randomStr("asc", "desc");
-        options.size = Integer.toString(RND.plusInt(10));
-        options.page = Integer.toString(RND.plusInt(10));
+    private static class TestClientRecordsReportView implements ClientRecordsReportView {
 
-        //
-        //
-        //
-        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
-        //
-        //
-        //
+        String user;
+        Date created_at;
+        String link_to_download;
+        final List<ClientRecord> rowList = Lists.newArrayList();
 
-        assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo.items).isNotNull();
-        assertThat(clientRecordInfo.total_count).isNotNull();
-        assertThat(clientRecordInfo.items.size()).isLessThanOrEqualTo(Integer.parseInt(options.size));
-        if (options.order.equals("asc"))
-            assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.name.toLowerCase()));
-        else {
-            Collections.reverse(clientRecordInfo.items);
-            assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.name.toLowerCase()));
+        @Override
+        public void start() {
         }
+
+        @Override
+        public void append(ClientRecord row) {
+            rowList.add(row);
+        }
+
+        @Override
+        public void finish(String user, Date created_at, String link_to_download) {
+            this.user = user;
+            this.created_at = created_at;
+            this.link_to_download = link_to_download;
+        }
+
+    }
+
+
+    @Test
+    public void render_client_list() {
+        RequestOptions options = new RequestOptions();
+        options.size = Integer.toString(RND.plusInt(20));
+        options.page = Integer.toString(0);
+        TestClientRecordsReportView view = new TestClientRecordsReportView();
+        String username = "someuser";
+        String link = "http://link.com";
+
+
+        //
+        //
+        //
+        clientRegister.get().renderClientList(options, view, username, link);
+        //
+        //
+        //
+
+        assertThat(view.link_to_download).isEqualTo(link);
+        assertThat(view.user).isEqualTo(username);
+        assertThat(view.rowList.size()).isLessThanOrEqualTo(Integer.parseInt(options.size));
     }
 
     @Test
-    public void pagination_of_sorted_list_by_age() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, null);
-        Options options = new Options();
-        options.sort = SortBy.age;
-        options.order = randomStr("asc", "desc");
-        options.size = Integer.toString(RND.plusInt(10));
-        options.page = Integer.toString(RND.plusInt(10));
+    public void composite_key_client_addr() {
+
+        boolean insertedSuccessfull;
+        ClientAddr clientAddr = new ClientAddr();
+        clientAddr.client = clientTestDao.get().getAllActualClientIds().get(0);
+        clientAddr.type = randomize(AddrType.class);
+        clientAddr.street = RND.str(10);
+        clientAddr.house = RND.str(10);
+        clientAddr.flat = RND.str(10);
 
         //
         //
         //
-        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
-        //
-        //
-        //
-
-        assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo.items).isNotNull();
-        assertThat(clientRecordInfo.total_count).isNotNull();
-        assertThat(clientRecordInfo.items.size()).isLessThanOrEqualTo(Integer.parseInt(options.size));
-        if (options.order.equals("asc"))
-            assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.age));
-        else {
-            Collections.reverse(clientRecordInfo.items);
-            assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.age));
+        try {
+            // делаем первый инсерт
+            clientTestDao.get().insert_random_client_addr(clientAddr);
+            // делаем второй инсерт того же адреса, должна вылететь ошибка так как ключи повторяются
+            clientTestDao.get().insert_random_client_addr(clientAddr);
+            insertedSuccessfull = true;
+        } catch (Exception ignored) {
+            insertedSuccessfull = false;
         }
+        //
+        //
+        //
+
+        assertThat(insertedSuccessfull).isFalse();
     }
 
     @Test
-    public void pagination_of_sorted_list_by_total_balance() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, null);
-        Options options = new Options();
-        options.sort = SortBy.total;
-        options.order = randomStr("asc", "desc");
-        options.size = Integer.toString(RND.plusInt(10));
-        options.page = Integer.toString(RND.plusInt(10));
+    public void composite_key_client_phone() {
+
+        boolean insertedSuccessfull;
+        ClientPhone clientPhone = new ClientPhone();
+        clientPhone.client = clientTestDao.get().getAllActualClientIds().get(0);
+        clientPhone.number = RND.intStr(10);
+        clientPhone.type = randomize(PhoneType.class);
 
         //
         //
         //
-        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
-        //
-        //
-        //
-
-        assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo.items).isNotNull();
-        assertThat(clientRecordInfo.total_count).isNotNull();
-        assertThat(clientRecordInfo.items.size()).isLessThanOrEqualTo(Integer.parseInt(options.size));
-        if (options.order.equals("asc"))
-            assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.total));
-        else {
-            Collections.reverse(clientRecordInfo.items);
-            assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.total));
+        try {
+            // делаем первый инсерт
+            clientTestDao.get().insert_random_client_phone(clientPhone);
+            // делаем второй инсерт того же елефона, должна вылететь ошибка так как ключи повторяются
+            clientTestDao.get().insert_random_client_phone(clientPhone);
+            insertedSuccessfull = true;
+        } catch (Exception ignored) {
+            insertedSuccessfull = false;
         }
+        //
+        //
+        //
+
+        assertThat(insertedSuccessfull).isFalse();
     }
 
-    @Test
-    public void pagination_of_sorted_list_by_min_balance() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, null);
-        Options options = new Options();
-        options.sort = SortBy.min;
-        options.order = randomStr("asc", "desc");
-        options.size = Integer.toString(RND.plusInt(10));
-        options.page = Integer.toString(RND.plusInt(10));
 
-        //
-        //
-        //
-        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
-        //
-        //
-        //
-
-        assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo.items).isNotNull();
-        assertThat(clientRecordInfo.total_count).isNotNull();
-        assertThat(clientRecordInfo.items.size()).isLessThanOrEqualTo(Integer.parseInt(options.size));
-        if (options.order.equals("asc"))
-            assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.min));
-        else {
-            Collections.reverse(clientRecordInfo.items);
-            assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.min));
-        }
+    private void TRUNCATE() {
+        clientTestDao.get().TRUNCATE();
     }
 
-    @Test
-    public void pagination_of_sorted_list_by_max_balance() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, null);
-        Options options = new Options();
-        options.sort = SortBy.max;
-        options.order = randomStr("asc", "desc");
-        options.size = Integer.toString(RND.plusInt(10));
-        options.page = Integer.toString(RND.plusInt(10));
-
-        //
-        //
-        //
-        ClientRecordInfo clientRecordInfo = clientRegister.get().getClientRecords(options);
-        //
-        //
-        //
-
-        assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo.items).isNotNull();
-        assertThat(clientRecordInfo.total_count).isNotNull();
-        assertThat(clientRecordInfo.items.size()).isLessThanOrEqualTo(Integer.parseInt(options.size));
-        if (options.order.equals("asc"))
-            assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.max));
-        else {
-            Collections.reverse(clientRecordInfo.items);
-            assertThat(clientRecordInfo.items).isSortedAccordingTo(Comparator.comparing(o -> o.max));
+    private List<Client> fillClientWithRNDData(int count, String filter) {
+        List<Client> clients = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            Charm rndCharm = generateAndInsertRNDCharm();
+            clients.add(generateRNDClient(true, rndCharm.id, filter));
         }
+        return clients;
     }
 
-    private ClientDetails createRandomClientDetail(int id) {
+    private Charm generateAndInsertRNDCharm() {
+        Charm charm = new Charm();
+        charm.name = RND.str(10);
+        charm.description = RND.str(10);
+        charm.energy = RND.plusInt(1000) * 1.1f;
+        charm.id = clientTestDao.get().insert_random_charm(charm);
+        return charm;
+    }
+
+    private Client generateRNDClient(boolean insertIt, int charmId, String filter) {
+        Client client = new Client();
+        client.name = generateRndStr(10);
+        client.surname = generateRndStr(10);
+        client.patronymic = generateRndStr(10);
+        if (filter != null)
+            client.name += filter;
+        client.gender = randomize(Gender.class);
+        client.birth_date = randomDate();
+        client.charm = charmId;
+        if (insertIt)
+            client.id = clientTestDao.get().insert_random_client(client);
+        return client;
+    }
+
+    private ClientAddr generateRNDClientAddr(boolean insertIt, int clientId, AddrType addrType) {
+        ClientAddr clientAddr = new ClientAddr();
+        clientAddr.client = clientId;
+        clientAddr.type = addrType;
+        clientAddr.street = RND.str(10);
+        clientAddr.house = RND.str(10);
+        clientAddr.flat = RND.str(10);
+        if (insertIt)
+            clientTestDao.get().insert_random_client_addr(clientAddr);
+        return clientAddr;
+    }
+
+    private ClientPhone generateRNDClientPhone(boolean insertIt, int clientId) {
+        ClientPhone clientPhone = new ClientPhone();
+        clientPhone.client = clientId;
+        clientPhone.number = RND.intStr(10);
+        clientPhone.type = randomize(PhoneType.class);
+        if (insertIt)
+            clientTestDao.get().insert_random_client_phone(clientPhone);
+        return clientPhone;
+    }
+
+    private ClientDetails generateClientDetail(Client rndClient,
+                                               ClientPhone rndClientPhone,
+                                               ClientAddr rndClientAddr) {
         ClientDetails clientDetails = new ClientDetails();
-        clientDetails.name = generateRndStr(10);
-        clientDetails.surname = generateRndStr(10);
-        clientDetails.patronymic = generateRndStr(10);
-        clientDetails.gender = randomize(Gender.class).name();
-        clientDetails.birth_date = randomDate().toString();
-
-        Integer charms_count = clientTestDao.get().getCharmsCount();
-        if (charms_count == null)
-            charms_count = -2;
-
-        clientDetails.charm = RND.plusInt(charms_count + 1);
-        clientDetails.addrRegStreet = RND.str(10);
-        clientDetails.addrRegHome = RND.str(10);
-        clientDetails.addrRegFlat = RND.str(10); // TODO add FactAddr
-        ClientPhone[] phones = new ClientPhone[5];
-        for (int i = 0; i < 5; i++) {
-            phones[i] = new ClientPhone();
-            phones[i].type = randomize(PhoneType.class);
-            phones[i].number = RND.str(10);
-            if (id != -1)
-                phones[i].client = id;
-        }
+        clientDetails.id = rndClient.id;
+        clientDetails.name = rndClient.name;
+        clientDetails.surname = rndClient.surname;
+        clientDetails.patronymic = rndClient.patronymic;
+        clientDetails.gender = rndClient.gender.name();
+        clientDetails.birth_date = rndClient.birth_date.toString();
+        clientDetails.charm = rndClient.charm;
+        clientDetails.addrRegStreet = rndClientAddr.street;
+        clientDetails.addrRegHome = rndClientAddr.house;
+        clientDetails.addrRegFlat = rndClientAddr.flat;
+        ClientPhone[] phones = new ClientPhone[1];
+        phones[0] = rndClientPhone;
         clientDetails.phones = phones;
-        if (id != -1)
-            clientDetails.id = id;
         return clientDetails;
     }
 
@@ -626,221 +648,5 @@ public class ClientRegisterImplTest extends ParentTestNg {
         return clientRecord;
     }
 
-    private void remove_all_data_from_tables() {
-        clientTestDao.get().TRUNCATE();
-    }
-
-    private void fill_tables_with_random_values(int count, boolean isNeedGenerateClientDetail, String nameFilter) {
-        int pick = RND.plusInt(count);
-        for (int i = 0; i < count; i++) {
-            // filling transaction_type
-            TransactionType transactionType = new TransactionType();
-            transactionType.id = i;
-            transactionType.code = RND.str(10);
-            transactionType.name = RND.str(10);
-            clientTestDao.get().insert_random_transaction_type(transactionType);
-
-            // filling charm
-            Charm charm = new Charm();
-            charm.id = i;
-            charm.name = RND.str(10);
-            charm.description = RND.str(10);
-            charm.energy = RND.plusInt(1000) * 1.1f;
-            clientTestDao.get().insert_random_charm(charm);
-        }
-        for (int i = 0; i < count; i++) {
-
-            // filling client
-            Client client = new Client();
-            if (nameFilter != null && i % 3 == 0) {
-                client.name = generateRndStr(2) + nameFilter + generateRndStr(2);
-            } else
-                client.name = generateRndStr(10);
-            client.surname = generateRndStr(10);
-            if (i < 20)
-                client.patronymic = generateRndStr(10);
-            client.gender = randomize(Gender.class);
-            client.birth_date = randomDate();
-            client.charm = RND.plusInt(count); // TODO
-            Integer id = clientTestDao.get().insert_random_client(client);
-            client.id = id;
-
-            // filling client_addr
-            ClientAddr clientAddr = new ClientAddr();
-            clientAddr.client = id;
-            clientAddr.type = randomize(ClientAddrType.class);
-            clientAddr.street = RND.str(10);
-            clientAddr.house = RND.str(10);
-            clientAddr.flat = RND.str(10);
-            clientTestDao.get().insert_random_client_addr(clientAddr);
-
-            // filling client_phone
-            ClientPhone clientPhone = new ClientPhone();
-            clientPhone.client = id;
-            clientPhone.number = RND.intStr(10);
-            clientPhone.type = randomize(PhoneType.class);
-            clientTestDao.get().insert_random_client_phone(clientPhone);
-
-            // filling client_account
-            if (i < 10) {
-                for (int j = 0; j < 2; j++) {
-                    ClientAccount clientAccount = new ClientAccount();
-                    clientAccount.client = id;
-                    clientAccount.money = 0f;
-                    clientAccount.number = RND.str(10);
-                    Integer accId = clientTestDao.get().insert_random_client_account(clientAccount);
-
-                    // filling client_account_transaction
-                    for (int k = 0; k < 4; k++) {
-                        ClientAccountTransaction clientAccountTransaction = new ClientAccountTransaction();
-                        clientAccountTransaction.account = accId;
-                        clientAccountTransaction.money = RND.plusInt(2000) * 1.1f - 1000f;
-                        clientAccountTransaction.type = i;
-                        clientTestDao.get().insert_random_client_account_transaction(clientAccountTransaction);
-                    }
-                }
-            }
-
-            if (isNeedGenerateClientDetail && pick == i)
-                generateExistingClientDetail(client, clientAddr, clientPhone);
-        }
-    }
-
-    private void generateExistingClientDetail(Client client, ClientAddr clientAddr, ClientPhone clientPhone) {
-        ClientDetails clientDetails = new ClientDetails();
-        clientDetails.id = client.id;
-        clientDetails.name = client.name;
-        clientDetails.surname = client.surname;
-        clientDetails.patronymic = client.patronymic;
-        clientDetails.gender = client.gender.name();
-        clientDetails.birth_date = client.birth_date.toString();
-        clientDetails.charm = client.charm;
-
-        if (clientAddr.type == ClientAddrType.REG) {
-            clientDetails.addrRegStreet = clientAddr.street;
-            clientDetails.addrRegHome = clientAddr.house;
-            clientDetails.addrRegFlat = clientAddr.flat;
-        } else {
-            clientDetails.addrFactStreet = clientAddr.street;
-            clientDetails.addrFactHome = clientAddr.house;
-            clientDetails.addrFactFlat = clientAddr.flat;
-        }
-        clientDetails.phones = new ClientPhone[]{clientPhone};
-        this.randomClientD = clientDetails;
-    }
-
-    private static class TestClientRecordsReportView implements ClientRecordsReportView {
-
-        public String user;
-        public Date created_at;
-        public String link_to_download;
-        public final List<ClientRecord> rowList = Lists.newArrayList();
-
-        @Override
-        public void start() {
-
-        }
-
-        @Override
-        public void append(ClientRecord row) {
-            rowList.add(row);
-        }
-
-        @Override
-        public void finish(String user, Date created_at, String link_to_download) {
-            this.user = user;
-            this.created_at = created_at;
-            this.link_to_download = link_to_download;
-        }
-
-    }
-
-
-    @Test
-    public void render_client_list() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(100, false, null);
-        Options options = new Options();
-        options.size = Integer.toString(RND.plusInt(20));
-        options.page = Integer.toString(0);
-        TestClientRecordsReportView view = new TestClientRecordsReportView();
-        String username = "someuser";
-        String link = "http://link.com";
-
-
-        //
-        //
-        //
-        clientRegister.get().renderClientList(options, view, username, link);
-        //
-        //
-        //
-
-        assertThat(view.link_to_download).isEqualTo(link);
-        assertThat(view.user).isEqualTo(username);
-        assertThat(view.rowList.size()).isLessThanOrEqualTo(Integer.parseInt(options.size));
-    }
-
-    @Test
-    public void composite_key_client_addr() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(10, false, null);
-
-        boolean insertedSuccessfull;
-        ClientAddr clientAddr = new ClientAddr();
-        clientAddr.client = clientTestDao.get().getAllActualClientIds().get(0);
-        clientAddr.type = randomize(ClientAddrType.class);
-        clientAddr.street = RND.str(10);
-        clientAddr.house = RND.str(10);
-        clientAddr.flat = RND.str(10);
-
-        //
-        //
-        //
-        try {
-            // делаем первый инсерт
-            clientTestDao.get().insert_random_client_addr(clientAddr);
-            // делаем второй инсерт того же адреса, должна вылететь ошибка так как ключи повторяются
-            clientTestDao.get().insert_random_client_addr(clientAddr);
-            insertedSuccessfull = true;
-        } catch (Exception ignored) {
-            insertedSuccessfull = false;
-        }
-        //
-        //
-        //
-
-        assertThat(insertedSuccessfull).isFalse();
-    }
-
-    @Test
-    public void composite_key_client_phone() {
-        remove_all_data_from_tables();
-        fill_tables_with_random_values(10, false, null);
-
-        boolean insertedSuccessfull;
-        ClientPhone clientPhone = new ClientPhone();
-        clientPhone.client = clientTestDao.get().getAllActualClientIds().get(0);
-        clientPhone.number = RND.intStr(10);
-        clientPhone.type = randomize(PhoneType.class);
-
-        //
-        //
-        //
-        try {
-            // делаем первый инсерт
-            clientTestDao.get().insert_random_client_phone(clientPhone);
-            // делаем второй инсерт того же елефона, должна вылететь ошибка так как ключи повторяются
-            clientTestDao.get().insert_random_client_phone(clientPhone);
-            insertedSuccessfull = true;
-        } catch (Exception ignored) {
-            insertedSuccessfull = false;
-        }
-        //
-        //
-        //
-
-        assertThat(insertedSuccessfull).isFalse();
-    }
 
 }

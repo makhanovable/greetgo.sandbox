@@ -142,7 +142,7 @@ public class CIAMigration extends MigrationAbstract {
                 "  charm = c.id " +
                 "FROM TMP_CLIENT t " +
                 "JOIN charm c ON c.name LIKE t.charm " +
-                "WHERE t.client_id NOTNULL AND client.id = t.client_id");
+                "WHERE t.client_id NOTNULL AND client.id = t.client_id AND t.info ISNULL");
 
         //language=PostgreSQL
         exec("INSERT INTO client (surname, name, patronymic, gender, birth_date, charm, cia_client_id, actual)" +

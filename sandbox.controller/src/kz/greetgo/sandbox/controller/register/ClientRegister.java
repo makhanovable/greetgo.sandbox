@@ -3,16 +3,16 @@ package kz.greetgo.sandbox.controller.register;
 import kz.greetgo.sandbox.controller.model.Charm;
 import kz.greetgo.sandbox.controller.model.ClientDetails;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.controller.model.Options;
+import kz.greetgo.sandbox.controller.model.RequestOptions;
 import kz.greetgo.sandbox.controller.report.ClientRecordsReportView;
 
 import java.util.List;
 
 public interface ClientRegister {
 
-    List<ClientRecord> getClientRecords(Options options);
+    List<ClientRecord> getClientList(RequestOptions options);
 
-    int getClientRecordsCount(String filter);
+    int getClientListCount(String filter);
 
     void deleteClient(int clientId);
 
@@ -24,7 +24,8 @@ public interface ClientRegister {
 
     List<Charm> getCharms();
 
-    void renderClientList(Options options, ClientRecordsReportView view,
+    void renderClientList(RequestOptions options,
+                          ClientRecordsReportView view,
                           String username, String link);
 
 }

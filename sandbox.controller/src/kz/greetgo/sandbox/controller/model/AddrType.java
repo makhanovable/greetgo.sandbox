@@ -1,6 +1,6 @@
 package kz.greetgo.sandbox.controller.model;
 
-public enum ClientAddrType {
+public enum AddrType {
     FACT,
     REG
 }

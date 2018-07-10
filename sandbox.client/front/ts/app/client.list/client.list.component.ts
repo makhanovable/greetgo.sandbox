@@ -252,7 +252,7 @@ export class ClientListComponent implements OnInit {
     }
 
     xlsx() {
-        this.http.download("/client/get-report/xlsx", {
+        this.http.download("/client/render-list/xlsx", {
             options: JSON.stringify(this.options)
         }).toPromise().then(res => {
             const file = new Blob([res], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
