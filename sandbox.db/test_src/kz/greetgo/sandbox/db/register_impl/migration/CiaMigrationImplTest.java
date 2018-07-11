@@ -35,14 +35,15 @@ public class CiaMigrationImplTest extends ParentTestNg {
 //        String charm = "ЩlВOpФpЪИШ";
 //        String gender = "FEMALE";
 
-//        Connection connection = getConnection();
+        Connection connection = getConnection();
         //
         //
         //
 //        CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
 //        ciaMigration.migrate();
-//        connection.close();
-        Client result = ciaTestDao.get().getClientByCiaId("tgef");
+        connection.close();
+        ciaTestDao.get().getRealAddress();
+//        Client result = ciaTestDao.get().getClientByCiaId("tgef");
 //        //
 //        //
 //        //
