@@ -202,7 +202,7 @@ public class CIAParser extends DefaultHandler {
         clientPs.setString(2, client.name);
         clientPs.setString(3, client.surname);
         clientPs.setString(4, client.patronymic);
-        if (client.birth != null) // TODO one line
+        if (client.birth != null)
             clientPs.setDate(5, new java.sql.Date(client.birth.getTime()));
         else
             clientPs.setDate(5, null);
@@ -238,7 +238,6 @@ public class CIAParser extends DefaultHandler {
             phonePs.executeBatch();
             addrPs.executeBatch();
             connection.commit();
-            System.out.println("COMMIT " + batch);
             batch = 0;
         }
     }
@@ -251,7 +250,6 @@ public class CIAParser extends DefaultHandler {
                 phonePs.executeBatch();
                 addrPs.executeBatch();
                 connection.commit();
-                System.out.println("COMMIT " + batch);
             }
             clientPs.close();
             addrPs.close();

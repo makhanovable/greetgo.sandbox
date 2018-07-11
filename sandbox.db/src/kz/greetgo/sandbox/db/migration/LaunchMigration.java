@@ -1,59 +1,45 @@
 package kz.greetgo.sandbox.db.migration;
 
 import kz.greetgo.sandbox.db.migration.util.SSHDataUtil;
+import org.apache.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.util.ArrayList;
 import java.util.List;
 
 public class LaunchMigration {
 
     private static Connection connection;
+    private static Logger logger = Logger.getLogger(LaunchMigration.class);
 
     public static void main(String args[]) throws Exception {
         connection = getConnection();
-        long start = System.currentTimeMillis();
 
-        startMigration(500_000);
+        int maxBatchSize = 500_000;
+        startMigration(maxBatchSize);
 
         connection.close();
-        long end = System.currentTimeMillis();
-        System.out.println();
-        System.out.println("TOTAL TIME = " + (end - start));
     }
 
     private static void startMigration(int maxBatchSize) throws Exception {
+        long start = System.currentTimeMillis();
+        logger.info("Starting Migration");
 
-//        long start = System.currentTimeMillis();
-//        System.out.println("Starting Extracting and Downloading...");
-//        List<String> dataToMigrate = SSHDataUtil.downloadFilesAndExtract();
-//        System.out.println("TIME TO DOWNLOAD and EXTRACT = " + (System.currentTimeMillis() - start));
-
-        //migration from local files
-        List<String> dataToMigrate = new ArrayList<>();
-        dataToMigrate.add("build/out_files/from_cia_2018-02-21-154532-1-300.xml");
-        dataToMigrate.add("build/out_files/from_frs_2018-02-21-154543-1-30009.json_row.txt");
-//        dataToMigrate.add("build/out_files/from_frs_2018-02-21-154551-3-1000004.json_row.txt");
-//        dataToMigrate.add("build/out_files/from_frs_2018-02-21-155121-3-10000007.json_row.txt");
-//        dataToMigrate.add("build/out_files/from_cia_2018-02-21-154955-5-1000000.xml");
-
-        long a, b;
-        if (!dataToMigrate.isEmpty())
-            for (String file : dataToMigrate) {
-                if (file.endsWith("xml")) {
-                    a = System.currentTimeMillis();
-                    executeCiaMigration(file, maxBatchSize);
-                    b = System.currentTimeMillis();
-                    System.out.println("Time to migrate one CIA with PARSING file = " + (b-a) + " FileName: " + file);
+        {
+            List<String> dataToMigrate = SSHDataUtil.downloadFilesAndExtract();
+            if (!dataToMigrate.isEmpty())
+                for (String file : dataToMigrate) {
+                    if (file.endsWith("xml"))
+                        executeCiaMigration(file, maxBatchSize);
+                    else if (file.endsWith("txt"))
+                        executeFrsMigration(file, maxBatchSize);
                 }
-                else if (file.endsWith("txt")) {
-                    a = System.currentTimeMillis();
-                    executeFrsMigration(file, maxBatchSize);
-                    b = System.currentTimeMillis();
-                    System.out.println("Time to migrate one FRS with PARSING file " + (b-a) + " FileName: " + file);
-                }
-            }
+        }
+
+
+        long end = System.currentTimeMillis();
+        logger.info("Migration Finished in " + (end - start) + " ms");
+        logger.info("");
     }
 
     private static void executeCiaMigration(String path, int maxBatchSize) throws Exception {

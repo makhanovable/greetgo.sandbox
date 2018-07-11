@@ -13,15 +13,15 @@ public abstract class MigrationAbstract {
 
     private Connection connection;
     private Map<String, Long> topSqlQueries = new HashMap<>();
-    private static final Logger logger = Logger.getLogger(MigrationAbstract.class);
+    private static final Logger logger = Logger.getLogger("SQL_queries");
 
-    public MigrationAbstract(Connection connection) {
+    MigrationAbstract(Connection connection) {
         this.connection = connection;
     }
 
     public abstract void migrate() throws Exception;
 
-    public void exec(String sql) {
+    void exec(String sql) {
         long start = System.currentTimeMillis();
 
         try (Statement statement = connection.createStatement()) {
@@ -34,11 +34,15 @@ public abstract class MigrationAbstract {
         topSqlQueries.put(sql, end - start);
     }
 
-    public void loadTopSqlQueriesList() {
+    void loadTopSqlQueriesList() {
+        logger.info("Start Session");
         Map<String, Long> sorted = ClientHelperUtil.sortMapByValues(topSqlQueries);
         for (String key : sorted.keySet()) {
-            logger.info(sorted.get(key) + " - " + key + "\n");
+            logger.info(sorted.get(key) + "ms - " + key);
         }
+
+        logger.info("End Session");
+        logger.info("");
     }
 
 }

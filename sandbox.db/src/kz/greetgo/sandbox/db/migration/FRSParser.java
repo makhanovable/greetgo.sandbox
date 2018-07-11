@@ -54,7 +54,6 @@ public class FRSParser {
             }
         }
         if (batch > 0) {
-            System.out.println("COMMIT " + batch);
             accPS.executeBatch();
             trPS.executeBatch();
             connection.commit();
@@ -90,7 +89,6 @@ public class FRSParser {
             accPS.executeBatch();
             trPS.executeBatch();
             connection.commit();
-            System.out.println("COMMIT " + batch);
             batch = 0;
         }
     }
