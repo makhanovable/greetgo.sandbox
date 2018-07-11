@@ -34,6 +34,16 @@ public interface ClientTestDao {
             " #{clientPhone.type})")
     void insert_random_client_phone(@Param("clientPhone") ClientPhone clientPhone);
 
+    //language=PostgreSQL
+    @Select("insert into client_account(client, money, number) VALUES (#{clientAccount.client}, #{clientAccount.money}, #{clientAccount.number}) RETURNING id")
+    int insert_random_client_account(@Param("clientAccount") ClientAccount clientAccount);
+
+    @Insert("insert into client_account_transaction(account, money, type) VALUES (#{clientAccountTransaction.account}, #{clientAccountTransaction.money}, #{clientAccountTransaction.type})")
+    void insert_random_client_account_transaction(@Param("clientAccountTransaction") ClientAccountTransaction clientAccountTransaction);
+
+    @Insert("insert into transaction_type VALUES (#{transactionType.id}, #{transactionType.code}, #{transactionType.name})")
+    void insert_random_transaction_type(@Param("transactionType") TransactionType transactionType);
+
     //
     //
     //

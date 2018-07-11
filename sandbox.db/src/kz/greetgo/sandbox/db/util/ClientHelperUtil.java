@@ -6,6 +6,9 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static kz.greetgo.sandbox.db.util.FlexibleDateParser.parseDate;
 
@@ -47,6 +50,14 @@ public class ClientHelperUtil {
                 details.gender != null &&
                 details.addrRegStreet != null &&
                 details.addrRegHome != null;
+    }
+
+    public static Map<String, Long> sortMapByValues(Map<String, Long> map) {
+        return map.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+                        (e1, e2) -> e1, LinkedHashMap::new));
+
     }
 
 }

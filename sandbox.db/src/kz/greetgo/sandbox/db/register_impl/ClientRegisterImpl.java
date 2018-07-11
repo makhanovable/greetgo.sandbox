@@ -31,7 +31,7 @@ public class ClientRegisterImpl implements ClientRegister {
 
     @Override
     public int getClientListCount(String filter) {
-        return clientDao.get().getClientRecordsCount(filter);
+        return clientDao.get().getClientRecordsCount("%" + filter + "%");
     }
 
     @Override
@@ -179,7 +179,7 @@ public class ClientRegisterImpl implements ClientRegister {
     @Override
     public List<Charm> getCharms() {
         List<Charm> list = new ArrayList<>();
-        final String sql = "select * from charm";
+        final String sql = "SELECT * FROM charm";
         jdbc.get().execute(connection -> {
             try (PreparedStatement ps = connection.prepareStatement(sql)) {
                 try (ResultSet rs = ps.executeQuery()) {

@@ -3,7 +3,6 @@ dependencies {
     compile "kz.greetgo.depinject:greetgo.depinject:$depinjectVersion"
     compile "kz.greetgo:greetgo.msoffice:0.4.23"
     compile "com.itextpdf:itextpdf:5.5.13"
-    compile "com.itextpdf:itext-licensekey:3.0.2"
 
     compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.21'
 }

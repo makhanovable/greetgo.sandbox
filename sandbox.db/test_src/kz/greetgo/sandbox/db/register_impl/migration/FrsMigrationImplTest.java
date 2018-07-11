@@ -6,6 +6,7 @@ import kz.greetgo.sandbox.db.migration.model.Account;
 import kz.greetgo.sandbox.db.migration.model.Transaction;
 import kz.greetgo.sandbox.db.test.dao.FrsTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
+import org.codehaus.jackson.JsonParseException;
 import org.testng.annotations.Test;
 
 import java.sql.Connection;
@@ -20,7 +21,7 @@ public class FrsMigrationImplTest extends ParentTestNg {
     private int maxBatchSize = 500_000;
 
     @Test
-    public void insert_to_tmp_acc() throws Exception {
+    public void insertingToTempClientAccountTable() throws Exception {
         remove_all_data_from_tables();
         String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_frs.txt";
         String cia_id = "2-T9E-FQ-IC-vomCQG1s9s";
@@ -44,7 +45,7 @@ public class FrsMigrationImplTest extends ParentTestNg {
     }
 
     @Test
-    public void insert_to_tmp_trans() throws Exception {
+    public void insertingToTempCliectAccountTransactionsTable() throws Exception {
         remove_all_data_from_tables();
         String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_frs.txt";
         String account_number = "84466KZ333-27891-50080-1292286";
@@ -69,7 +70,7 @@ public class FrsMigrationImplTest extends ParentTestNg {
     }
 
     @Test
-    public void validate_tmp_trans() throws Exception {
+    public void checkToErrorTempClientAccountTransactionsTable() throws Exception {
         remove_all_data_from_tables();
         String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_frs.txt";
 
@@ -90,7 +91,7 @@ public class FrsMigrationImplTest extends ParentTestNg {
 
 
     @Test
-    public void validate_tmp_acc() throws Exception {
+    public void checkToErrorTempClientAccountTable() throws Exception {
         remove_all_data_from_tables();
         String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_frs.txt";
         String cia_id = "2-T9E-FQ-IC-vomCQG1s9s";
@@ -112,9 +113,41 @@ public class FrsMigrationImplTest extends ParentTestNg {
     }
 
     @Test
-    public void frs_integration_test() throws Exception {
+    public void frsIntegration() throws Exception {
         remove_all_data_from_tables();
         String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_frs.txt";
+        String cia_id = "2-T9E-FQ-IC-vomCQG1s9s";
+        String account_number = "84466KZ333-27891-50080-1292286";
+        String registered_at = "2001-02-21 15:45:45.532";
+        String money = "0";
+        String finished_at = "2011-02-21 15:45:51.537";
+
+        Connection connection = getConnection();
+        //
+        //
+        //
+        FRSMigration frsMigration = new FRSMigration(connection, file, maxBatchSize);
+        frsMigration.migrate();
+        connection.close();
+        Account result_acc = frsTestDao.get().getAccountById(cia_id);
+        List<Transaction> result_tr = frsTestDao.get().getTransactions();
+        //
+        //
+        //
+        assertThat(result_acc).isNotNull();
+        assertThat(result_acc.account_number).isEqualTo(account_number);
+        assertThat(result_acc.registered_at).isEqualTo(registered_at);
+
+        assertThat(result_tr).hasSize(1);
+        assertThat(result_tr.get(0).account_number).isEqualTo(account_number);
+        assertThat(result_tr.get(0).money).isEqualTo(money);
+        assertThat(result_tr.get(0).finished_at).isEqualTo(finished_at);
+    }
+
+    @Test(expectedExceptions = JsonParseException.class)
+    public void migration_WrongFrs() throws Exception {
+        remove_all_data_from_tables();
+        String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/wrong_frs.txt";
         String cia_id = "2-T9E-FQ-IC-vomCQG1s9s";
         String account_number = "84466KZ333-27891-50080-1292286";
         String registered_at = "2001-02-21 15:45:45.532";

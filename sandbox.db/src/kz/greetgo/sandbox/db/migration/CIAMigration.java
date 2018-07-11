@@ -1,5 +1,6 @@
 package kz.greetgo.sandbox.db.migration;
 
+import org.apache.log4j.Logger;
 import org.xml.sax.XMLReader;
 
 import javax.xml.parsers.SAXParser;
@@ -11,6 +12,7 @@ public class CIAMigration extends MigrationAbstract {
     private String path;
     private int maxBatchSize;
     private Connection connection;
+    private static final Logger logger = Logger.getLogger(CIAMigration.class);
 
     public CIAMigration(Connection connection, String path, int maxBatchSize) {
         super(connection);
@@ -22,16 +24,14 @@ public class CIAMigration extends MigrationAbstract {
     @Override
     public void migrate() throws Exception {
         long start = System.currentTimeMillis();
-        System.out.println("Starting parsing and insert " + path);
 
         {
             createTempTables();
             prepareData();
         }
 
-        System.out.println("Time to parsing and inserting " + (System.currentTimeMillis() - start) + " " + path);
+//        logger.info("TIME to PARSING and INSERTING: " + (System.currentTimeMillis() - start) + " FILENAME: " + path);
         start = System.currentTimeMillis();
-        System.out.println("Starting inner migration " + path);
 
         {
             validateTableData();
@@ -40,6 +40,7 @@ public class CIAMigration extends MigrationAbstract {
             migrateClientAddressTable();
             migrateClientPhoneTable();
             finishMigration();
+            loadTopSqlQueriesList();
         }
 
         System.out.println("Time to inner migration " + (System.currentTimeMillis() - start) + " " + path);
@@ -160,11 +161,19 @@ public class CIAMigration extends MigrationAbstract {
                 "WHERE t.client_id ISNULL AND t.status = 0");
 
         //language=PostgreSQL
+        exec("UPDATE tmp_client SET status = 4 WHERE status NOT IN(2,3)" +
+                " AND client_id NOTNULL"); // 4 проапдейтился
+
+        //language=PostgreSQL
+        exec("UPDATE tmp_client SET status = 5 WHERE status NOT IN(2,3)" +
+                " AND client_id ISNULL"); // 5 проинсертился
+
+        //language=PostgreSQL
         exec("UPDATE TMP_CLIENT tc SET " +
                 "client_id = c.id " +
                 "FROM client c " +
                 "WHERE tc.cia_id = c.cia_client_id " +
-                "AND tc.status = 0 " +
+                "AND tc.status IN (4,5)" +
                 "AND tc.client_id ISNULL");
     }
 
@@ -176,7 +185,7 @@ public class CIAMigration extends MigrationAbstract {
                 "   adr.type, adr.street, adr.house, adr.flat" +
                 "   FROM TMP_ADDRESS adr" +
                 "   JOIN TMP_CLIENT t ON t.num = adr.num " +
-                "   WHERE t.status = 0 " +
+                "   WHERE t.status IN (4,5)" +
                 "   ON CONFLICT(client, type) DO UPDATE " +
                 "   SET street = EXCLUDED.street, house = EXCLUDED.house, flat = EXCLUDED.flat");
     }
@@ -190,7 +199,7 @@ public class CIAMigration extends MigrationAbstract {
                 "    ph.type" +
                 "  FROM tmp_phone ph" +
                 "  JOIN tmp_client t ON t.num = ph.num" +
-                "  WHERE t.status = 0");
+                "  WHERE t.status IN (4,5)");
     }
 
     private void finishMigration() {

@@ -3,7 +3,7 @@ package kz.greetgo.sandbox.db.migration.model;
 import java.util.Date;
 
 public class Client {
-    public String info;
+    public int status;
     public String cia_id;
     public String surname;
     public String name;

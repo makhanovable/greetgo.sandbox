@@ -24,7 +24,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
     private int maxBatchSize = 500_000;
 
     @Test
-    public void insert_to_tmp_client() throws Exception {
+    public void insertingToTempClientTable() throws Exception {
         remove_all_data_from_tables();
         String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_cia.xml";
         String cia_id = "0-B9N-HT-PU-04wolRBPzj";
@@ -57,7 +57,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
     }
 
     @Test
-    public void insert_to_tmp_address() throws Exception {
+    public void insertingToTempClientAddressTable() throws Exception {
         remove_all_data_from_tables();
         String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_cia.xml";
         String Fstreet = "RцВWAаEkMкёнkOзДfжГк";
@@ -94,7 +94,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
     }
 
     @Test
-    public void insert_to_tmp_phone() throws Exception {
+    public void insertingToTempClientPhoneTable() throws Exception {
         remove_all_data_from_tables();
         String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_cia.xml";
         String home = "+7-878-241-63-94";
@@ -130,7 +130,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
     }
 
     @Test
-    public void validate_tmp_client() throws Exception {
+    public void checkErrorsOnTempClientTable() throws Exception {
         remove_all_data_from_tables();
         String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/invalid_one_cia.xml";
         String cia_id = "0-B9N-HT-PU-04wolRBPzj";
@@ -148,14 +148,14 @@ public class CiaMigrationImplTest extends ParentTestNg {
         //
         assertThat(result).isNotNull();
         assertThat(result.cia_id).isEqualTo(cia_id);
-        assertThat(result.info).isNotNull();
+        assertThat(result.status).isEqualTo(3);
         assertThat(result.name).isNull();
         assertThat(result.surname).isNull();
         assertThat(result.birth).isNull();
     }
 
     @Test
-    public void duplacate_tmp_client() throws Exception {
+    public void checkForDublicatesOnTempClientTable() throws Exception {
         remove_all_data_from_tables();
         String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/dublicate_one_cia.xml";
         String cia_id = "0-B9N-HT-PU-04wolRBPzj";
@@ -167,19 +167,16 @@ public class CiaMigrationImplTest extends ParentTestNg {
         CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
         ciaMigration.migrate();
         connection.close();
-        Client old = ciaTestDao.get().getOldClientByCiaId(cia_id);
-        Client nw = ciaTestDao.get().getNewClientByCiaId(cia_id);
+        Client client = ciaTestDao.get().getOldClientByCiaId(cia_id);
         //
         //
         //
-        assertThat(old).isNotNull();
-        assertThat(nw).isNotNull();
-        assertThat(old.info).isEqualTo("NOT ACTUAL");
-        assertThat(nw.info).isNull();
+        assertThat(client).isNotNull();
+        assertThat(client.status).isEqualTo(2);
     }
 
     @Test
-    public void insert_and_update_real_client() throws Exception {
+    public void insertAndUpdateClient() throws Exception {
         remove_all_data_from_tables();
         String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_cia.xml";
         String cia_id = "0-B9N-HT-PU-04wolRBPzj";
@@ -232,7 +229,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
 
 
     @Test
-    public void insert_and_update_real_client_addr() throws Exception {
+    public void insertAndUpdateClientAddress() throws Exception {
         remove_all_data_from_tables();
         String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_cia.xml";
         String Fstreet = "RцВWAаEkMкёнkOзДfжГк";
@@ -291,7 +288,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
     }
 
     @Test
-    public void cia_integration_test() throws Exception {
+    public void ciaIntegration() throws Exception {
         remove_all_data_from_tables();
         String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/integration_one_cia.xml";
         String cia_id = "0-B9N-HT-PU-04wolRBPzj";
@@ -313,12 +310,25 @@ public class CiaMigrationImplTest extends ParentTestNg {
         //
         //
         assertThat(result).isNull();
-        assertThat(result_from_tmp.info).isNotNull();
         assertThat(result_from_tmp.birth).isNull();
         assertThat(result_from_tmp.surname).isEqualTo(surname);
         assertThat(result_from_tmp.patronymic).isEqualTo(patronymic);
         assertThat(result_from_tmp.charm).isEqualTo(charm);
         assertThat(result_from_tmp.gender).isEqualTo(gender);
+    }
+
+    @Test(expectedExceptions = Exception.class)
+    public void migration_WrongCia() throws Exception {
+        remove_all_data_from_tables();
+        String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/wrong_cia.xml";
+
+        Connection connection = getConnection();
+        //
+        //
+        //
+        CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
+        ciaMigration.migrate();
+        connection.close();
     }
 
     private void remove_all_data_from_tables() {

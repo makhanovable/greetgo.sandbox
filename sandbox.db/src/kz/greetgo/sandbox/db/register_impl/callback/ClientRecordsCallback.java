@@ -70,11 +70,12 @@ public class ClientRecordsCallback implements ConnectionCallback<List<ClientReco
     static String createSqlForGetClientRecords(RequestOptions options) {
         StringBuilder sb = new StringBuilder();
 
+        //language=PostgreSQL
         sb.append("WITH info (id, iname, surname, patronymic, gender, charm, birth_date) ");
         sb.append("AS (SELECT id, name as iname, surname, patronymic, gender, charm, birth_date ");
         sb.append("FROM client WHERE actual = TRUE AND (name LIKE ? OR surname LIKE ? OR patronymic LIKE ?)) ");
 
-        sb.append("SELECT info.id, concat_ws(' ', info.iname, info.surname, info.patronymic) AS name, ");
+        sb.append("SELECT info.id, concat_ws(' ', info.surname, info.iname, info.patronymic) AS name, ");
         sb.append("info.gender, info.charm, info.birth_date AS age, ");
 
         sb.append("CASE WHEN (SELECT min(client_account.money) FROM client_account ");

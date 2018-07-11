@@ -2,7 +2,7 @@ package kz.greetgo.sandbox.db.migration;
 
 import java.sql.Connection;
 
-public class FRSMigration extends MigrationAbstract {
+public class FRSMigration extends MigrationAbstract { // TODO upload to tmp again status 4 and 5
 
     private String file;
     private int maxBatchSize;
@@ -18,7 +18,6 @@ public class FRSMigration extends MigrationAbstract {
     @Override
     public void migrate() throws Exception {
         long start = System.currentTimeMillis();
-        System.out.println("Starting parsing and insert " + file);
 
         {
             createTempTables();
@@ -27,13 +26,13 @@ public class FRSMigration extends MigrationAbstract {
 
         System.out.println("Time to parsing and inserting " + (System.currentTimeMillis() - start) + " " + file);
         start = System.currentTimeMillis();
-        System.out.println("Starting inner migration " + file);
 
         {
             validateTableData();
             migrateTransactionTypeTable();
             migrateAccountTable();
             migrateTransactionTable();
+            loadTopSqlQueriesList();
         }
 
         System.out.println("Time to inner migration " + (System.currentTimeMillis() - start) + " " + file);
@@ -50,6 +49,7 @@ public class FRSMigration extends MigrationAbstract {
         //language=PostgreSQL
         exec("DROP TABLE IF EXISTS TMP_ACC CASCADE;" +
                 "CREATE TABLE TMP_ACC (" +
+                "   status INTEGER DEFAULT 0," +
                 "   cia_client_id VARCHAR(50)," +
                 "   account_number VARCHAR(50)," +
                 "   registered_at TIMESTAMP)");
@@ -94,7 +94,7 @@ public class FRSMigration extends MigrationAbstract {
                 " FROM tmp_acc" +
                 " ON CONFLICT (cia_client_id) DO NOTHING");
 
-        //language=PostgreSQL // TODO use concurrently or not?
+        //language=PostgreSQL
         exec("CREATE INDEX tmp_trans_acc_num ON tmp_trans (account_number);");
         //language=PostgreSQL
         exec("CREATE INDEX tmp_acc_acc_num ON tmp_acc (account_number);");
