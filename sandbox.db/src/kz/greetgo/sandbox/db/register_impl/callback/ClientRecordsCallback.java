@@ -46,7 +46,7 @@ public class ClientRecordsCallback implements ConnectionCallback<List<ClientReco
             }
             // END set params to PreparedStatement
 
-            System.out.println(ps);
+            //System.out.println(ps);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next())
                     clientRecords.add(extractClientRecord(rs));

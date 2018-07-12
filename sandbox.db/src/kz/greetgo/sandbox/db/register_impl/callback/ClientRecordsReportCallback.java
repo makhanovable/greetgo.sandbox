@@ -43,7 +43,7 @@ public class ClientRecordsReportCallback implements ConnectionCallback<Void> {
             }
             // END set params to PreparedStatement
 
-            System.out.println(ps);
+            //System.out.println(ps);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next())
                     view.append(extractClientRecord(rs));
