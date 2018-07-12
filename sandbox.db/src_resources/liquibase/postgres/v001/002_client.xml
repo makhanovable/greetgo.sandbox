@@ -54,7 +54,7 @@
             id bigserial PRIMARY KEY,
             client integer NOT NULL,
             money double precision NULL,
-            number varchar(50) UNIQUE,
+            number varchar(50) UNIQUE NOT NULL,
             registered_at timestamp NOT NULL DEFAULT NOW(),
             FOREIGN KEY (client) REFERENCES client (id)
         )

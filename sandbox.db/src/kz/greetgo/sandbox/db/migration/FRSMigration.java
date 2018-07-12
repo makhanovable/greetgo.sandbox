@@ -57,11 +57,10 @@ public class FRSMigration extends MigrationAbstract {
         logger.info("Time to parseAndInsertDataToTempTables: " + (end - start) + " ms");
     }
 
-    private void createTempTables() {
+    private void createTempTables() throws Exception {
         //language=PostgreSQL
         exec("DROP TABLE IF EXISTS tmp_acc CASCADE; " +
                 "CREATE TABLE tmp_acc (" +
-                "status INTEGER DEFAULT 0," +
                 " cia_client_id VARCHAR(50)," +
                 " account_number VARCHAR(50)," +
                 " registered_at TIMESTAMP)");
@@ -77,7 +76,7 @@ public class FRSMigration extends MigrationAbstract {
     }
 
     // status 1 means transaction exists
-    private void validateTableData() {
+    private void validateTableData() throws Exception {
         //language=PostgreSQL
         exec("UPDATE tmp_trans SET status = 1 " +
                 "FROM client_account_transaction " +
@@ -87,14 +86,14 @@ public class FRSMigration extends MigrationAbstract {
                 "AND tmp_trans.money = client_account_transaction.money");
     }
 
-    private void migrateTransactionTypeTable() {
+    private void migrateTransactionTypeTable() throws Exception {
         //language=PostgreSQL
         exec("INSERT INTO transaction_type(name) " +
                 "SELECT DISTINCT transaction_type FROM TMP_TRANS WHERE tmp_trans.status = 0 " +
                 "ON CONFLICT (name) DO NOTHING");
     }
 
-    private void migrateAccountTable() {
+    private void migrateAccountTable() throws Exception{
         //language=PostgreSQL
         exec("INSERT INTO charm(id, name) " +
                 "VALUES (-1, 'FAKE') " +
@@ -125,7 +124,7 @@ public class FRSMigration extends MigrationAbstract {
                 "ON CONFLICT (number) DO NOTHING");
     }
 
-    private void migrateTransactionTable() {
+    private void migrateTransactionTable() throws Exception {
         //language=PostgreSQL
         exec("INSERT INTO client_account_transaction(account, money, finished_at, type)" +
                 "SELECT" +

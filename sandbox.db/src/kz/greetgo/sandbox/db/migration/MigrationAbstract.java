@@ -21,13 +21,11 @@ public abstract class MigrationAbstract {
 
     public abstract void migrate() throws Exception;
 
-    void exec(String sql) {
+    void exec(String sql) throws Exception {
         long start = System.currentTimeMillis();
 
         try (Statement statement = connection.createStatement()) {
             statement.executeUpdate(sql);
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
 
         long end = System.currentTimeMillis();

@@ -70,7 +70,7 @@ public class CIAMigration extends MigrationAbstract {
         logger.info("Time to parseAndInsertDataToTempTables: " + (end - start) + " ms");
     }
 
-    private void createTempTables() {
+    private void createTempTables() throws Exception {
         //language=PostgreSQL
         exec("DROP TABLE IF EXISTS tmp_client CASCADE; " +
                 "CREATE TABLE tmp_client (" +
@@ -103,7 +103,7 @@ public class CIAMigration extends MigrationAbstract {
                 " num BIGINT)");
     }
 
-    private void validateTableData() {
+    private void validateTableData() throws Exception {
         //language=PostgreSQL
         exec("UPDATE tmp_client SET error = 'SURNAME INVALID', status = 3" +
                 " WHERE status = 0 AND (surname <> '') IS NOT TRUE");
@@ -137,14 +137,14 @@ public class CIAMigration extends MigrationAbstract {
                 "AND client_phone.client = tmp_client.client_id");
     }
 
-    private void migrateCharmTable() {
+    private void migrateCharmTable() throws Exception {
         //language=PostgreSQL
         exec("INSERT INTO charm(name) " +
                 "SELECT DISTINCT charm FROM tmp_client WHERE tmp_client.status = 0 " +
                 "ON CONFLICT (name) DO NOTHING");
     }
 
-    private void migrateClientTable() {
+    private void migrateClientTable() throws Exception {
         //language=PostgreSQL
         exec("UPDATE client SET " +
                 "surname = t.surname," +
@@ -189,7 +189,7 @@ public class CIAMigration extends MigrationAbstract {
                 "AND tc.client_id ISNULL");
     }
 
-    private void migrateClientAddressTable() {
+    private void migrateClientAddressTable() throws Exception {
         //language=PostgreSQL
         exec("INSERT INTO client_addr(client, type, street, house, flat) " +
                 "SELECT" +
@@ -202,7 +202,7 @@ public class CIAMigration extends MigrationAbstract {
                 "SET street = EXCLUDED.street, house = EXCLUDED.house, flat = EXCLUDED.flat");
     }
 
-    private void migrateClientPhoneTable() {
+    private void migrateClientPhoneTable() throws Exception {
         //language=PostgreSQL
         exec("INSERT INTO client_phone (client, number, type) " +
                 "SELECT" +
@@ -214,7 +214,7 @@ public class CIAMigration extends MigrationAbstract {
                 "WHERE t.status IN (4, 5)");
     }
 
-    private void finishMigration() {
+    private void finishMigration() throws Exception {
         //language=PostgreSQL
         exec("UPDATE client SET actual = TRUE FROM" +
                 " tmp_client WHERE tmp_client.client_id = client.id " +

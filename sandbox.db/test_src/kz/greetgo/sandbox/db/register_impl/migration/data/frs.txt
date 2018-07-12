@@ -1,0 +1,11 @@
+{"registered_at":"2011-02-21T15:45:51.537","type":"new_account","client_id":"9РQхТзпьeн"}
+{"transaction_type":"4wdG7и1RЁЩ","money":"90957","finished_at":"2011-02-21T15:45:51.537","type":"transaction"}
+{"transaction_type":"иqУюTтЩЦNе","money":"18100","finished_at":"2011-02-21T15:45:51.537","type":"transaction"}
+{"transaction_type":"Jчu5ХУЭnТч","money":"24412","finished_at":"2011-02-21T15:45:51.537","type":"transaction"}
+{"transaction_type":"пWОHIнaZ4ъ","money":"72166","finished_at":"2011-02-21T15:45:51.537","type":"transaction"}
+{"transaction_type":"бБЬвEугеDy","money":"04806","finished_at":"2011-02-21T15:45:51.537","type":"transaction"}
+{"transaction_type":"Ш2АЙMrМЮЮX","money":"70948","finished_at":"2011-02-21T15:45:51.537","type":"transaction"}
+{"transaction_type":"мUгФуиШТРQ","money":"12925","finished_at":"2011-02-21T15:45:51.537","type":"transaction"}
+{"transaction_type":"XЗчЯдхЧS0g","money":"70827","finished_at":"2011-02-21T15:45:51.537","type":"transaction"}
+{"transaction_type":"EbZушfOнvX","money":"32873","finished_at":"2011-02-21T15:45:51.537","type":"transaction"}
+{"transaction_type":"ЩНяЮaМ3Fcл","money":"84921","finished_at":"2011-02-21T15:45:51.537","type":"transaction"}

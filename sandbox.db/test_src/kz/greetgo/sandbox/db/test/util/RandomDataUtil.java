@@ -17,7 +17,7 @@ public class RandomDataUtil {
     }
 
     public static Date randomDate() {
-        LocalDate local = LocalDate.now().minus(Period.ofDays((RND.plusInt(365 * 110))));
+        LocalDate local = LocalDate.now().minus(Period.ofDays((RND.plusInt(365 * 110)) + (365 * 4)));
         return Date.from(local.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
