@@ -130,7 +130,7 @@ public class CIAMigration extends MigrationAbstract {
         exec("UPDATE tmp_client SET client_id = client.id FROM client " +
                 "WHERE tmp_client.cia_id = client.cia_client_id AND status = 0");
 
-        //language=PostgreSQL // TODO not use delete set actual 0
+        //language=PostgreSQL
         exec("DELETE FROM client_phone USING tmp_client " +
                 "WHERE tmp_client.client_id NOTNULL " +
                 "AND tmp_client.status = 0 " +
