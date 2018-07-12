@@ -31,106 +31,6 @@ public class CiaMigrationImplTest extends ParentTestNg {
     private int maxBatchSize = 500_000;
 
     @Test
-    public void migration_WrongName() throws Exception {
-        TRUNCATE();
-        Client client = generateRNDClient();
-        List<Address> addrs = generateRNDClientAddr();
-        List<Phone> phones = generateRNDClientPhone(5);
-
-        client.name = null;
-
-        String file = CiaGeneratorUtil.generateXmlFile(client, addrs, phones);
-        Connection connection = getConnection();
-        //
-        //
-        //
-        CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
-        ciaMigration.migrate();
-        connection.close();
-        Client result = ciaTestDao.get().getClientByCiaId(client.cia_id);
-        kz.greetgo.sandbox.controller.model.Client resultFromRealTable = ciaTestDao.get().getRealClientByCiaId(client.cia_id);
-
-        assertThat(result).isNotNull();
-        assertThat(result.status).isEqualTo(3); // error
-        assertThat(resultFromRealTable).isNull();
-    }
-
-    @Test
-    public void migration_WrongSurname() throws Exception {
-        TRUNCATE();
-        Client client = generateRNDClient();
-        List<Address> addrs = generateRNDClientAddr();
-        List<Phone> phones = generateRNDClientPhone(5);
-
-        client.surname = null;
-
-        String file = CiaGeneratorUtil.generateXmlFile(client, addrs, phones);
-        Connection connection = getConnection();
-        //
-        //
-        //
-        CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
-        ciaMigration.migrate();
-        connection.close();
-        Client result = ciaTestDao.get().getClientByCiaId(client.cia_id);
-        kz.greetgo.sandbox.controller.model.Client resultFromRealTable = ciaTestDao.get().getRealClientByCiaId(client.cia_id);
-
-        assertThat(result).isNotNull();
-        assertThat(result.status).isEqualTo(3); // error
-        assertThat(resultFromRealTable).isNull();
-    }
-
-    @Test
-    public void migration_WrongBirthDate() throws Exception {
-        TRUNCATE();
-        Client client = generateRNDClient();
-        List<Address> addrs = generateRNDClientAddr();
-        List<Phone> phones = generateRNDClientPhone(5);
-
-        client.birth = null;
-
-        String file = CiaGeneratorUtil.generateXmlFile(client, addrs, phones);
-        Connection connection = getConnection();
-        //
-        //
-        //
-        CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
-        ciaMigration.migrate();
-        connection.close();
-        Client result = ciaTestDao.get().getClientByCiaId(client.cia_id);
-        kz.greetgo.sandbox.controller.model.Client resultFromRealTable = ciaTestDao.get().getRealClientByCiaId(client.cia_id);
-
-        assertThat(result).isNotNull();
-        assertThat(result.status).isEqualTo(3); // error
-        assertThat(resultFromRealTable).isNull();
-    }
-
-    @Test
-    public void migration_WrongCharm() throws Exception {
-        TRUNCATE();
-        Client client = generateRNDClient();
-        List<Address> addrs = generateRNDClientAddr();
-        List<Phone> phones = generateRNDClientPhone(5);
-
-        client.charm = null;
-
-        String file = CiaGeneratorUtil.generateXmlFile(client, addrs, phones);
-        Connection connection = getConnection();
-        //
-        //
-        //
-        CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
-        ciaMigration.migrate();
-        connection.close();
-        Client result = ciaTestDao.get().getClientByCiaId(client.cia_id);
-        kz.greetgo.sandbox.controller.model.Client resultFromRealTable = ciaTestDao.get().getRealClientByCiaId(client.cia_id);
-
-        assertThat(result).isNotNull();
-        assertThat(result.status).isEqualTo(3); // error
-        assertThat(resultFromRealTable).isNull();
-    }
-
-    @Test
     public void insertingToTempClientTable() throws Exception {
         TRUNCATE();
         String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_cia.xml";
@@ -234,6 +134,106 @@ public class CiaMigrationImplTest extends ParentTestNg {
                     break;
             }
         }
+    }
+
+    @Test
+    public void migration_WrongName() throws Exception {
+        TRUNCATE();
+        Client client = generateRNDClient();
+        List<Address> addrs = generateRNDClientAddr();
+        List<Phone> phones = generateRNDClientPhone(5);
+
+        client.name = null;
+
+        String file = CiaGeneratorUtil.generateXmlFile(client, addrs, phones);
+        Connection connection = getConnection();
+        //
+        //
+        //
+        CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
+        ciaMigration.migrate();
+        connection.close();
+        Client result = ciaTestDao.get().getClientByCiaId(client.cia_id);
+        kz.greetgo.sandbox.controller.model.Client resultFromRealTable = ciaTestDao.get().getRealClientByCiaId(client.cia_id);
+
+        assertThat(result).isNotNull();
+        assertThat(result.status).isEqualTo(3); // error
+        assertThat(resultFromRealTable).isNull();
+    }
+
+    @Test
+    public void migration_WrongSurname() throws Exception {
+        TRUNCATE();
+        Client client = generateRNDClient();
+        List<Address> addrs = generateRNDClientAddr();
+        List<Phone> phones = generateRNDClientPhone(5);
+
+        client.surname = null;
+
+        String file = CiaGeneratorUtil.generateXmlFile(client, addrs, phones);
+        Connection connection = getConnection();
+        //
+        //
+        //
+        CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
+        ciaMigration.migrate();
+        connection.close();
+        Client result = ciaTestDao.get().getClientByCiaId(client.cia_id);
+        kz.greetgo.sandbox.controller.model.Client resultFromRealTable = ciaTestDao.get().getRealClientByCiaId(client.cia_id);
+
+        assertThat(result).isNotNull();
+        assertThat(result.status).isEqualTo(3); // error
+        assertThat(resultFromRealTable).isNull();
+    }
+
+    @Test
+    public void migration_WrongBirthDate() throws Exception {
+        TRUNCATE();
+        Client client = generateRNDClient();
+        List<Address> addrs = generateRNDClientAddr();
+        List<Phone> phones = generateRNDClientPhone(5);
+
+        client.birth = null;
+
+        String file = CiaGeneratorUtil.generateXmlFile(client, addrs, phones);
+        Connection connection = getConnection();
+        //
+        //
+        //
+        CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
+        ciaMigration.migrate();
+        connection.close();
+        Client result = ciaTestDao.get().getClientByCiaId(client.cia_id);
+        kz.greetgo.sandbox.controller.model.Client resultFromRealTable = ciaTestDao.get().getRealClientByCiaId(client.cia_id);
+
+        assertThat(result).isNotNull();
+        assertThat(result.status).isEqualTo(3); // error
+        assertThat(resultFromRealTable).isNull();
+    }
+
+    @Test
+    public void migration_WrongCharm() throws Exception {
+        TRUNCATE();
+        Client client = generateRNDClient();
+        List<Address> addrs = generateRNDClientAddr();
+        List<Phone> phones = generateRNDClientPhone(5);
+
+        client.charm = null;
+
+        String file = CiaGeneratorUtil.generateXmlFile(client, addrs, phones);
+        Connection connection = getConnection();
+        //
+        //
+        //
+        CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
+        ciaMigration.migrate();
+        connection.close();
+        Client result = ciaTestDao.get().getClientByCiaId(client.cia_id);
+        kz.greetgo.sandbox.controller.model.Client resultFromRealTable = ciaTestDao.get().getRealClientByCiaId(client.cia_id);
+
+        assertThat(result).isNotNull();
+        assertThat(result.status).isEqualTo(3); // error
+        assertThat(resultFromRealTable).isNull();
     }
 
     @Test

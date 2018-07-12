@@ -25,40 +25,6 @@ public class FrsMigrationImplTest extends ParentTestNg {
     public BeanGetter<FrsTestDao> frsTestDao;
     private int maxBatchSize = 500_000;
 
-    @Test(expectedExceptions = PSQLException.class)
-    public void migration_wrongAccountNumber() throws Exception {
-        TRUNCATE();
-        Account account = generateRNDAccount();
-        account.account_number = null;
-        List<Transaction> transactions = generateRNDTransactions(account.account_number, 10);
-
-        String file = FrsGeneratorUtil.generateFrsFile(account, transactions);
-        Connection connection = getConnection();
-        //
-        //
-        //
-        FRSMigration frsMigration = new FRSMigration(connection, file, maxBatchSize);
-        frsMigration.migrate();
-        connection.close();
-    }
-
-    @Test(expectedExceptions = JsonParseException.class)
-    public void migration_wrongAccountCiaId() throws Exception {
-        TRUNCATE();
-        Account account = generateRNDAccount();
-        account.client_id = null;
-        List<Transaction> transactions = generateRNDTransactions(account.account_number, 10);
-
-        String file = FrsGeneratorUtil.generateFrsFile(account, transactions);
-        Connection connection = getConnection();
-        //
-        //
-        //
-        FRSMigration frsMigration = new FRSMigration(connection, file, maxBatchSize);
-        frsMigration.migrate();
-        connection.close();
-    }
-
     @Test
     public void insertingToTempClientAccountTable() throws Exception {
         TRUNCATE();
@@ -149,6 +115,40 @@ public class FrsMigrationImplTest extends ParentTestNg {
         assertThat(result).isNotNull();
         assertThat(result.account_number).isNotNull();
         assertThat(result.registered_at).isNotNull();
+    }
+
+    @Test(expectedExceptions = PSQLException.class)
+    public void migration_wrongAccountNumber() throws Exception {
+        TRUNCATE();
+        Account account = generateRNDAccount();
+        account.account_number = null;
+        List<Transaction> transactions = generateRNDTransactions(account.account_number, 10);
+
+        String file = FrsGeneratorUtil.generateFrsFile(account, transactions);
+        Connection connection = getConnection();
+        //
+        //
+        //
+        FRSMigration frsMigration = new FRSMigration(connection, file, maxBatchSize);
+        frsMigration.migrate();
+        connection.close();
+    }
+
+    @Test(expectedExceptions = JsonParseException.class)
+    public void migration_wrongAccountCiaId() throws Exception {
+        TRUNCATE();
+        Account account = generateRNDAccount();
+        account.client_id = null;
+        List<Transaction> transactions = generateRNDTransactions(account.account_number, 10);
+
+        String file = FrsGeneratorUtil.generateFrsFile(account, transactions);
+        Connection connection = getConnection();
+        //
+        //
+        //
+        FRSMigration frsMigration = new FRSMigration(connection, file, maxBatchSize);
+        frsMigration.migrate();
+        connection.close();
     }
 
     @Test
