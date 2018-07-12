@@ -2,7 +2,7 @@ package kz.greetgo.sandbox.controller.report;
 
 import kz.greetgo.msoffice.xlsx.gen.Sheet;
 import kz.greetgo.msoffice.xlsx.gen.Xlsx;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
+import kz.greetgo.sandbox.controller.model.ClientRecordReportRow;
 import kz.greetgo.util.RND;
 
 import java.io.*;
@@ -39,7 +39,7 @@ public class ClientRecordReportViewXlsxImpl implements ClientRecordsReportView {
     }
 
     @Override
-    public void append(ClientRecord row) {
+    public void append(ClientRecordReportRow row) {
         sheet.row().start();
         sheet.cellStr(1, row.name);
         sheet.cellStr(2, row.charm);
@@ -80,7 +80,7 @@ public class ClientRecordReportViewXlsxImpl implements ClientRecordsReportView {
             ClientRecordsReportView view = new ClientRecordReportViewXlsxImpl(printStream);
             view.start();
             for (int i = 0; i < 100; i++) {
-                ClientRecord clientRecord = new ClientRecord();
+                ClientRecordReportRow clientRecord = new ClientRecordReportRow();
                 clientRecord.name = RND.str(10) + " " + RND.str(10) + " " + RND.str(10);
                 clientRecord.charm = RND.str(10);
                 clientRecord.total = RND.plusInt(1000) * 1.1f;

@@ -3,7 +3,6 @@ package kz.greetgo.sandbox.controller.report;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfPCell;
-import kz.greetgo.sandbox.controller.model.ClientRecord;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -11,6 +10,7 @@ import java.util.Date;
 
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
+import kz.greetgo.sandbox.controller.model.ClientRecordReportRow;
 import kz.greetgo.util.RND;
 
 public class ClientRecordReportViewPdfImpl implements ClientRecordsReportView {
@@ -55,7 +55,7 @@ public class ClientRecordReportViewPdfImpl implements ClientRecordsReportView {
     }
 
     @Override
-    public void append(ClientRecord row) {
+    public void append(ClientRecordReportRow row) {
         table.addCell(new Phrase(row.name, font));
         table.addCell(new Phrase(row.charm, font));
         table.addCell(new Phrase(row.age + "", font));
@@ -97,7 +97,7 @@ public class ClientRecordReportViewPdfImpl implements ClientRecordsReportView {
                 ClientRecordsReportView view = new ClientRecordReportViewPdfImpl(printStream);
                 view.start();
                 for (int i = 0; i < 100; i++) {
-                    ClientRecord clientRecord = new ClientRecord();
+                    ClientRecordReportRow clientRecord = new ClientRecordReportRow();
                     clientRecord.name = RND.str(10) + " " + RND.str(10) + " " + RND.str(10);
                     clientRecord.charm = RND.str(10);
                     clientRecord.total = RND.plusInt(1000) * 1.1f;

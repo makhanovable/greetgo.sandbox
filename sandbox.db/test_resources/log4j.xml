@@ -9,14 +9,14 @@
         <param name="Threshold" value="TRACE"/>
 
 
-        <layout class="kz.greetgo.sandbox.controller.logging.MyLog4jLayout">
-            <param name="LoggerNameCut" value="2"/>
-        </layout>
-        <!--
+        <!--<layout class="kz.greetgo.sandbox.controller.logging.MyLog4jLayout">-->
+            <!--<param name="LoggerNameCut" value="2"/>-->
+        <!--</layout>-->
+        <!---->
         <layout class="org.apache.log4j.PatternLayout">
           <param name="ConversionPattern" value="%d %-5p [%c{1}] %m%n"/>
         </layout>
-        -->
+
     </appender>
 
     <appender name="SERVER" class="org.apache.log4j.RollingFileAppender">
@@ -63,5 +63,6 @@
         <priority value="INFO"/>
         <appender-ref ref="SERVER"/>
     </root>
+
 
 </log4j:configuration>

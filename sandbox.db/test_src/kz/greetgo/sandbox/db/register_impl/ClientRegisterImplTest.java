@@ -8,9 +8,11 @@ import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 import org.apache.ibatis.exceptions.PersistenceException;
+import org.postgresql.util.PSQLException;
 import org.testng.annotations.Test;
 import org.testng.collections.Lists;
 
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,237 +29,290 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public BeanGetter<ClientTestDao> clientTestDao;
 
     @Test
-    public void getClientList_filterByName() {
+    public void getClientList_and_renderClientList_SortByNameAsc() {
         TRUNCATE();
-
-        RequestOptions options = new RequestOptions();
-        options.filter = generateRndStr(10);
-        List<Client> clients = fillClientWithRNDData(100, options.filter);
-
-        List<Client> expectedList = new ArrayList<>();
-        for (Client client : clients) {
-            if (client.name.contains(options.filter) ||
-                    client.surname.contains(options.filter) ||
-                    client.patronymic.contains(options.filter))
-                expectedList.add(client);
-        }
-
-        //
-        //
-        //
-        List<ClientRecord> clientRecords = clientRegister.get().getClientList(options);
-        //
-        //
-        //
-
-        assertThat(clientRecords).isNotNull();
-        assertThat(expectedList.size()).isEqualTo(clientRecords.size());
-        for (int i = 0; i < clientRecords.size(); i++)
-            assertThat(clientRecords.get(i).id).isEqualTo(expectedList.get(i).id);
-        for (ClientRecord aFilteredList : clientRecords)
-            assertThat(aFilteredList.name).contains(options.filter);
-    }
-
-    @Test
-    public void getClientList_SortByNameAsc() {
-        TRUNCATE();
-        List<Client> clients = fillClientWithRNDData(100, null);
-        clients.sort(Comparator.comparing(o -> o.surname.toLowerCase() + o.name.toLowerCase() + o.patronymic.toLowerCase()));
 
         RequestOptions options = new RequestOptions();
         options.sort = SortBy.name;
         options.order = "asc";
 
+        List<Client> expectedClients = fillClientWithRNDData(100, null);
+        expectedClients.sort(Comparator.comparing(o -> o.surname.toLowerCase() + o.name.toLowerCase() + o.patronymic.toLowerCase()));
+        TestClientRecordsReportView expectedView = new TestClientRecordsReportView();
+        String expectedUsername = RND.str(10);
+        String expectedLink = RND.str(10);
+
         //
         //
         //
         List<ClientRecord> clientRecords = clientRegister.get().getClientList(options);
+        clientRegister.get().renderClientList(options, expectedView, expectedUsername, expectedLink);
         //
         //
         //
 
         assertThat(clientRecords).isNotNull();
         assertThat(clientRecords).isSortedAccordingTo(Comparator.comparing(o -> o.name.toLowerCase()));
-
         for (int i = 0; i < clientRecords.size(); i++)
-            assertThat(clientRecords.get(i).id).isEqualTo(clients.get(i).id);
+            assertThat(clientRecords.get(i).id).isEqualTo(expectedClients.get(i).id);
+
+        assertThat(expectedView.rowList).isNotNull();
+        assertThat(expectedView.user).isEqualTo(expectedUsername);
+        assertThat(expectedView.link_to_download).isEqualTo(expectedLink);
+        assertThat(expectedView.rowList).isSortedAccordingTo(Comparator.comparing(o -> o.name.toLowerCase()));
+        for (int i = 0; i < expectedView.rowList.size(); i++)
+            assertThat(expectedView.rowList.get(i).id).isEqualTo(expectedClients.get(i).id);
+
     }
 
     @Test
-    public void getClientList_SortByNameDesc() {
+    public void getClientList_and_renderClientList_SortByNameDesc() {
         TRUNCATE();
-        List<Client> clients = fillClientWithRNDData(101, null);
-        clients.sort(Comparator.comparing(o -> o.surname.toLowerCase() + o.name.toLowerCase() + o.patronymic.toLowerCase()));
 
         RequestOptions options = new RequestOptions();
         options.sort = SortBy.name;
         options.order = "desc";
 
+        List<Client> expectedClients = fillClientWithRNDData(101, null);
+        expectedClients.sort(Comparator.comparing(o -> o.surname.toLowerCase() + o.name.toLowerCase() + o.patronymic.toLowerCase()));
+        TestClientRecordsReportView expectedView = new TestClientRecordsReportView();
+        String expectedUsername = RND.str(10);
+        String expectedLink = RND.str(10);
+
         //
         //
         //
         List<ClientRecord> clientRecords = clientRegister.get().getClientList(options);
+        clientRegister.get().renderClientList(options, expectedView, expectedUsername, expectedLink);
         //
         //
         //
 
-        assertThat(clientRecords).isNotNull();
         Collections.reverse(clientRecords);
+        Collections.reverse(expectedView.rowList);
+
+        assertThat(clientRecords).isNotNull();
         assertThat(clientRecords).isSortedAccordingTo(Comparator.comparing(o -> o.name.toLowerCase()));
         for (int i = 0; i < clientRecords.size(); i++)
-            assertThat(clientRecords.get(i).id).isEqualTo(clients.get(i).id);
+            assertThat(clientRecords.get(i).id).isEqualTo(expectedClients.get(i).id);
+
+        assertThat(expectedView.rowList).isNotNull();
+        assertThat(expectedView.user).isEqualTo(expectedUsername);
+        assertThat(expectedView.link_to_download).isEqualTo(expectedLink);
+        assertThat(expectedView.rowList).isSortedAccordingTo(Comparator.comparing(o -> o.name.toLowerCase()));
+        for (int i = 0; i < expectedView.rowList.size(); i++)
+            assertThat(expectedView.rowList.get(i).id).isEqualTo(expectedClients.get(i).id);
     }
 
     @Test
-    public void getClientList_SortByAgeAsc() {
+    public void getClientList_and_renderClientList_SortByAgeAsc() {
         TRUNCATE();
-        List<Client> clients = fillClientWithRNDData(100, null);
-        clients.sort(Comparator.comparing(o -> o.birth_date));
-        Collections.reverse(clients);
 
         RequestOptions options = new RequestOptions();
         options.sort = SortBy.age;
         options.order = "asc";
 
+        List<Client> expectedClients = fillClientWithRNDData(100, null);
+        expectedClients.sort(Comparator.comparing(o -> o.birth_date));
+        TestClientRecordsReportView expectedView = new TestClientRecordsReportView();
+        String expectedUsername = RND.str(10);
+        String expectedLink = RND.str(10);
+        Collections.reverse(expectedClients);
+
         //
         //
         //
-        List<ClientRecord> clientRecordInfo = clientRegister.get().getClientList(options);
+        List<ClientRecord> clientRecords = clientRegister.get().getClientList(options);
+        clientRegister.get().renderClientList(options, expectedView, expectedUsername, expectedLink);
         //
         //
         //
 
-        assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo).isSortedAccordingTo(Comparator.comparing(o -> o.age));
-        for (int i = 0; i < clients.size(); i++)
-            assertThat(clientRecordInfo.get(i).id).isEqualTo(clients.get(i).id);
+        assertThat(clientRecords).isNotNull();
+        assertThat(clientRecords).isSortedAccordingTo(Comparator.comparing(o -> o.age));
+        for (int i = 0; i < clientRecords.size(); i++)
+            assertThat(clientRecords.get(i).id).isEqualTo(expectedClients.get(i).id);
+
+        assertThat(expectedView.rowList).isNotNull();
+        assertThat(expectedView.user).isEqualTo(expectedUsername);
+        assertThat(expectedView.link_to_download).isEqualTo(expectedLink);
+        assertThat(expectedView.rowList).isSortedAccordingTo(Comparator.comparing(o -> o.age));
+        for (int i = 0; i < expectedView.rowList.size(); i++)
+            assertThat(expectedView.rowList.get(i).id).isEqualTo(expectedClients.get(i).id);
     }
 
     @Test
-    public void getClientList_SortByAgeDesc() {
+    public void getClientList_and_renderClientList_SortByAgeDesc() {
         TRUNCATE();
-        List<Client> clients = fillClientWithRNDData(100, null);
-        clients.sort(Comparator.comparing(o -> o.birth_date));
-        Collections.reverse(clients);
 
         RequestOptions options = new RequestOptions();
         options.sort = SortBy.age;
         options.order = "desc";
 
-        //
-        //
-        //
-        List<ClientRecord> clientRecordInfo = clientRegister.get().getClientList(options);
-        //
-        //
-        //
-
-        assertThat(clientRecordInfo).isNotNull();
-
-        Collections.reverse(clientRecordInfo);
-        assertThat(clientRecordInfo).isSortedAccordingTo(Comparator.comparing(o -> o.age));
-        for (int i = 0; i < clients.size(); i++)
-            assertThat(clientRecordInfo.get(i).id).isEqualTo(clients.get(i).id);
-    }
-
-    @Test
-    public void getClientList_SortByTotalBalanceAsc() {
-        TRUNCATE();
-        List<Client> clients = fillClientWithRNDData(100, null);
-        List<ClientAccount> accounts = fillClientAccountWithRNDData(clients);
-        Map<Integer, Float> clientIdAndTotalBalance = new HashMap<>();
-        for (ClientAccount account : accounts) {
-            clientIdAndTotalBalance.merge(account.client, account.money, (a, b) -> a + b);
-        }
-        clientIdAndTotalBalance = sortMapByValues(clientIdAndTotalBalance);
-
-        RequestOptions options = new RequestOptions();
-        options.sort = SortBy.total;
-        options.order = "asc";
+        List<Client> expectedClients = fillClientWithRNDData(100, null);
+        expectedClients.sort(Comparator.comparing(o -> o.birth_date));
+        TestClientRecordsReportView expectedView = new TestClientRecordsReportView();
+        String expectedUsername = RND.str(10);
+        String expectedLink = RND.str(10);
+        Collections.reverse(expectedClients);
 
         //
         //
         //
         List<ClientRecord> clientRecords = clientRegister.get().getClientList(options);
+        clientRegister.get().renderClientList(options, expectedView, expectedUsername, expectedLink);
         //
         //
         //
 
-        assertThat(clientRecords).isNotNull();
-        assertThat(clientRecords).isSortedAccordingTo(Comparator.comparing(o -> o.total));
-
-        int i = 0;
-        for (Integer key : clientIdAndTotalBalance.keySet()) {
-            assertThat(key).isEqualTo(clientRecords.get(i).id);
-            assertThat(Math.round(clientIdAndTotalBalance.get(key))).isEqualTo(Math.round(clientRecords.get(i).total));
-            i++;
-        }
-    }
-
-    @Test
-    public void getClientList_SortByTotalBalanceDesc() {
-        TRUNCATE();
-        List<Client> clients = fillClientWithRNDData(100, null);
-        List<ClientAccount> accounts = fillClientAccountWithRNDData(clients);
-        Map<Integer, Float> clientIdAndTotalBalance = new HashMap<>();
-        for (ClientAccount account : accounts) {
-            clientIdAndTotalBalance.merge(account.client, account.money, (a, b) -> a + b);
-        }
-        clientIdAndTotalBalance = sortMapByValues(clientIdAndTotalBalance);
-
-        RequestOptions options = new RequestOptions();
-        options.sort = SortBy.total;
-        options.order = "desc";
-
-        //
-        //
-        //
-        List<ClientRecord> clientRecords = clientRegister.get().getClientList(options);
-        //
-        //
-        //
-
-        assertThat(clientRecords).isNotNull();
         Collections.reverse(clientRecords);
-        assertThat(clientRecords).isSortedAccordingTo(Comparator.comparing(o -> o.total));
+        Collections.reverse(expectedView.rowList);
 
+        assertThat(clientRecords).isNotNull();
+        assertThat(clientRecords).isSortedAccordingTo(Comparator.comparing(o -> o.age));
+        for (int i = 0; i < clientRecords.size(); i++)
+            assertThat(clientRecords.get(i).id).isEqualTo(expectedClients.get(i).id);
+
+        assertThat(expectedView.rowList).isNotNull();
+        assertThat(expectedView.user).isEqualTo(expectedUsername);
+        assertThat(expectedView.link_to_download).isEqualTo(expectedLink);
+        assertThat(expectedView.rowList).isSortedAccordingTo(Comparator.comparing(o -> o.age));
+        for (int i = 0; i < expectedView.rowList.size(); i++)
+            assertThat(expectedView.rowList.get(i).id).isEqualTo(expectedClients.get(i).id);
+    }
+
+    @Test
+    public void getClientList_and_renderClientList_SortByTotalBalanceAsc() {
+        TRUNCATE();
+
+        RequestOptions options = new RequestOptions();
+        options.sort = SortBy.total;
+        options.order = "asc";
+
+        List<Client> expectedClients = fillClientWithRNDData(100, null);
+        List<ClientAccount> expectedAccounts = fillClientAccountWithRNDData(expectedClients);
+        TestClientRecordsReportView expectedView = new TestClientRecordsReportView();
+        String expectedUsername = RND.str(10);
+        String expectedLink = RND.str(10);
+        Map<Integer, Float> clientIdAndTotalBalance = new HashMap<>();
+        for (ClientAccount account : expectedAccounts)
+            clientIdAndTotalBalance.merge(account.client, account.money, (a, b) -> a + b);
+        clientIdAndTotalBalance = sortMapByValues(clientIdAndTotalBalance);
+
+        //
+        //
+        //
+        List<ClientRecord> clientRecords = clientRegister.get().getClientList(options);
+        clientRegister.get().renderClientList(options, expectedView, expectedUsername, expectedLink);
+        //
+        //
+        //
+
+        assertThat(clientRecords).isNotNull();
+        assertThat(clientRecords).isSortedAccordingTo(Comparator.comparing(o -> o.total));
         int i = 0;
         for (Integer key : clientIdAndTotalBalance.keySet()) {
             assertThat(key).isEqualTo(clientRecords.get(i).id);
             assertThat(Math.round(clientIdAndTotalBalance.get(key))).isEqualTo(Math.round(clientRecords.get(i).total));
             i++;
         }
+
+        assertThat(expectedView.rowList).isNotNull();
+        assertThat(expectedView.user).isEqualTo(expectedUsername);
+        assertThat(expectedView.link_to_download).isEqualTo(expectedLink);
+        assertThat(expectedView.rowList).isSortedAccordingTo(Comparator.comparing(o -> o.total));
+        i = 0;
+        for (Integer key : clientIdAndTotalBalance.keySet()) {
+            assertThat(key).isEqualTo(expectedView.rowList.get(i).id);
+            assertThat(Math.round(clientIdAndTotalBalance.get(key))).isEqualTo(Math.round(expectedView.rowList.get(i).total));
+            i++;
+        }
     }
 
     @Test
-    public void getClientList_SortByMaxBalanceAsc() {
+    public void getClientList_and_renderClientList_SortByTotalBalanceDesc() {
         TRUNCATE();
-        List<ClientAccount> accounts = fillClientAccountWithRNDData(fillClientWithRNDData(10, null));
-        Map<Integer, Float> clientIdAndMaxBalance = new HashMap<>();
-        Float max = null;
-        for (ClientAccount account : accounts) {
-            Float temp = account.money;
-            Float isFirstTime = clientIdAndMaxBalance.get(account.client);
-            if (isFirstTime == null) {
-                max = temp;
-                clientIdAndMaxBalance.put(account.client, max);
-            } else {
-                if (temp > max) {
-                    max = temp;
-                    clientIdAndMaxBalance.put(account.client, max);
-                }
-            }
+
+        RequestOptions options = new RequestOptions();
+        options.sort = SortBy.total;
+        options.order = "desc";
+
+        List<Client> expectedClients = fillClientWithRNDData(100, null);
+        List<ClientAccount> expectedAccounts = fillClientAccountWithRNDData(expectedClients);
+        TestClientRecordsReportView expectedView = new TestClientRecordsReportView();
+        String expectedUsername = RND.str(10);
+        String expectedLink = RND.str(10);
+        Map<Integer, Float> clientIdAndTotalBalance = new HashMap<>();
+        for (ClientAccount account : expectedAccounts)
+            clientIdAndTotalBalance.merge(account.client, account.money, (a, b) -> a + b);
+        clientIdAndTotalBalance = sortMapByValues(clientIdAndTotalBalance);
+
+        //
+        //
+        //
+        List<ClientRecord> clientRecords = clientRegister.get().getClientList(options);
+        clientRegister.get().renderClientList(options, expectedView, expectedUsername, expectedLink);
+        //
+        //
+        //
+
+        Collections.reverse(clientRecords);
+        Collections.reverse(expectedView.rowList);
+
+        assertThat(clientRecords).isNotNull();
+        assertThat(clientRecords).isSortedAccordingTo(Comparator.comparing(o -> o.total));
+        int i = 0;
+        for (Integer key : clientIdAndTotalBalance.keySet()) {
+            assertThat(key).isEqualTo(clientRecords.get(i).id);
+            assertThat(Math.round(clientIdAndTotalBalance.get(key))).isEqualTo(Math.round(clientRecords.get(i).total));
+            i++;
         }
-        clientIdAndMaxBalance = sortMapByValues(clientIdAndMaxBalance);
+
+        assertThat(expectedView.rowList).isNotNull();
+        assertThat(expectedView.user).isEqualTo(expectedUsername);
+        assertThat(expectedView.link_to_download).isEqualTo(expectedLink);
+        assertThat(expectedView.rowList).isSortedAccordingTo(Comparator.comparing(o -> o.total));
+        i = 0;
+        for (Integer key : clientIdAndTotalBalance.keySet()) {
+            assertThat(key).isEqualTo(expectedView.rowList.get(i).id);
+            assertThat(Math.round(clientIdAndTotalBalance.get(key))).isEqualTo(Math.round(expectedView.rowList.get(i).total));
+            i++;
+        }
+    }
+
+    @Test
+    public void getClientList_and_renderClientList_SortByMaxBalanceAsc() {
+        TRUNCATE();
 
         RequestOptions options = new RequestOptions();
         options.sort = SortBy.max;
         options.order = "asc";
 
+        List<Client> expectedClients = fillClientWithRNDData(100, null);
+        List<ClientAccount> expectedAccounts = fillClientAccountWithRNDData(expectedClients);
+        TestClientRecordsReportView expectedView = new TestClientRecordsReportView();
+        String expectedUsername = RND.str(10);
+        String expectedLink = RND.str(10);
+        Map<Integer, Float> clientIdAndMaxBalance = new HashMap<>();
+        Float max = null;
+        for (ClientAccount account : expectedAccounts) {
+            Float temp = account.money;
+            Float isFirstTime = clientIdAndMaxBalance.get(account.client);
+            if (isFirstTime == null) {
+                max = temp;
+                clientIdAndMaxBalance.put(account.client, max);
+            } else if (max != null && temp > max) {
+                max = temp;
+                clientIdAndMaxBalance.put(account.client, max);
+            }
+        }
+        clientIdAndMaxBalance = sortMapByValues(clientIdAndMaxBalance);
+
         //
         //
         //
         List<ClientRecord> clientRecords = clientRegister.get().getClientList(options);
+        clientRegister.get().renderClientList(options, expectedView, expectedUsername, expectedLink);
         //
         //
         //
@@ -265,137 +320,213 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(clientRecords).isNotNull();
         assertThat(clientRecords).isSortedAccordingTo(Comparator.comparing(o -> o.max));
         int i = 0;
-        for (Integer key : clientIdAndMaxBalance.keySet()) { // TODO исправить
+        for (Integer key : clientIdAndMaxBalance.keySet()) {
             assertThat(key).isEqualTo(clientRecords.get(i).id);
-//            assertThat(Math.round(clientIdAndMaxBalance.get(key))).isEqualTo(Math.round(clientRecords.get(i).total));
+            assertThat(Math.round(clientIdAndMaxBalance.get(key))).isEqualTo(Math.round(clientRecords.get(i).max));
+            i++;
+        }
+
+        assertThat(expectedView.rowList).isNotNull();
+        assertThat(expectedView.user).isEqualTo(expectedUsername);
+        assertThat(expectedView.link_to_download).isEqualTo(expectedLink);
+        assertThat(expectedView.rowList).isSortedAccordingTo(Comparator.comparing(o -> o.max));
+        i = 0;
+        for (Integer key : clientIdAndMaxBalance.keySet()) {
+            assertThat(key).isEqualTo(expectedView.rowList.get(i).id);
+            assertThat(Math.round(clientIdAndMaxBalance.get(key))).isEqualTo(Math.round(expectedView.rowList.get(i).max));
             i++;
         }
     }
 
     @Test
-    public void getClientListSortByMaxBalanceDesc() {
+    public void getClientList_and_renderClientList_SortByMaxBalanceDesc() {
         TRUNCATE();
-        List<Client> clients = fillClientWithRNDData(100, null); // TODO
 
         RequestOptions options = new RequestOptions();
         options.sort = SortBy.max;
         options.order = "desc";
 
+        List<Client> expectedClients = fillClientWithRNDData(100, null);
+        List<ClientAccount> expectedAccounts = fillClientAccountWithRNDData(expectedClients);
+        TestClientRecordsReportView expectedView = new TestClientRecordsReportView();
+        String expectedUsername = RND.str(10);
+        String expectedLink = RND.str(10);
+        Map<Integer, Float> clientIdAndMaxBalance = new HashMap<>();
+        Float max = null;
+        for (ClientAccount account : expectedAccounts) {
+            Float temp = account.money;
+            Float isFirstTime = clientIdAndMaxBalance.get(account.client);
+            if (isFirstTime == null) {
+                max = temp;
+                clientIdAndMaxBalance.put(account.client, max);
+            } else if (max != null && temp > max) {
+                max = temp;
+                clientIdAndMaxBalance.put(account.client, max);
+            }
+        }
+        clientIdAndMaxBalance = sortMapByValues(clientIdAndMaxBalance);
+
         //
         //
         //
-        List<ClientRecord> clientRecordInfo = clientRegister.get().getClientList(options);
+        List<ClientRecord> clientRecords = clientRegister.get().getClientList(options);
+        clientRegister.get().renderClientList(options, expectedView, expectedUsername, expectedLink);
         //
         //
         //
 
-        assertThat(clientRecordInfo).isNotNull();
-        Collections.reverse(clientRecordInfo);
-        assertThat(clientRecordInfo).isSortedAccordingTo(Comparator.comparing(o -> o.max));
+        Collections.reverse(clientRecords);
+        Collections.reverse(expectedView.rowList);
+
+        assertThat(clientRecords).isNotNull();
+        assertThat(clientRecords).isSortedAccordingTo(Comparator.comparing(o -> o.max));
+        int i = 0;
+        for (Integer key : clientIdAndMaxBalance.keySet()) {
+            assertThat(key).isEqualTo(clientRecords.get(i).id);
+            assertThat(Math.round(clientIdAndMaxBalance.get(key))).isEqualTo(Math.round(clientRecords.get(i).max));
+            i++;
+        }
+
+        assertThat(expectedView.rowList).isNotNull();
+        assertThat(expectedView.user).isEqualTo(expectedUsername);
+        assertThat(expectedView.link_to_download).isEqualTo(expectedLink);
+        assertThat(expectedView.rowList).isSortedAccordingTo(Comparator.comparing(o -> o.max));
+        i = 0;
+        for (Integer key : clientIdAndMaxBalance.keySet()) {
+            assertThat(key).isEqualTo(expectedView.rowList.get(i).id);
+            assertThat(Math.round(clientIdAndMaxBalance.get(key))).isEqualTo(Math.round(expectedView.rowList.get(i).max));
+            i++;
+        }
     }
 
     @Test
-    public void getClientList_SortByMinBalanceAsc() {
+    public void getClientList_and_renderClientList_SortByMinBalanceAsc() {
         TRUNCATE();
-        List<Client> clients = fillClientWithRNDData(100, null); // TODO
 
         RequestOptions options = new RequestOptions();
         options.sort = SortBy.min;
         options.order = "asc";
 
+        List<Client> expectedClients = fillClientWithRNDData(100, null);
+        List<ClientAccount> expectedAccounts = fillClientAccountWithRNDData(expectedClients);
+        TestClientRecordsReportView expectedView = new TestClientRecordsReportView();
+        String expectedUsername = RND.str(10);
+        String expectedLink = RND.str(10);
+        Map<Integer, Float> clientIdAndMinBalance = new HashMap<>();
+        Float min = null;
+        for (ClientAccount account : expectedAccounts) {
+            Float temp = account.money;
+            Float isFirstTime = clientIdAndMinBalance.get(account.client);
+            if (isFirstTime == null) {
+                min = temp;
+                clientIdAndMinBalance.put(account.client, min);
+            } else if (min != null && temp < min) {
+                min = temp;
+                clientIdAndMinBalance.put(account.client, min);
+            }
+        }
+        clientIdAndMinBalance = sortMapByValues(clientIdAndMinBalance);
+
         //
         //
         //
-        List<ClientRecord> clientRecordInfo = clientRegister.get().getClientList(options);
+        List<ClientRecord> clientRecords = clientRegister.get().getClientList(options);
+        clientRegister.get().renderClientList(options, expectedView, expectedUsername, expectedLink);
         //
         //
         //
 
-        assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo).isSortedAccordingTo(Comparator.comparing(o -> o.min));
+        assertThat(clientRecords).isNotNull();
+        assertThat(clientRecords).isSortedAccordingTo(Comparator.comparing(o -> o.min));
+        int i = 0;
+        for (Integer key : clientIdAndMinBalance.keySet()) {
+            assertThat(key).isEqualTo(clientRecords.get(i).id);
+            assertThat(Math.round(clientIdAndMinBalance.get(key))).isEqualTo(Math.round(clientRecords.get(i).min));
+            i++;
+        }
+
+        assertThat(expectedView.rowList).isNotNull();
+        assertThat(expectedView.user).isEqualTo(expectedUsername);
+        assertThat(expectedView.link_to_download).isEqualTo(expectedLink);
+        assertThat(expectedView.rowList).isSortedAccordingTo(Comparator.comparing(o -> o.min));
+        i = 0;
+        for (Integer key : clientIdAndMinBalance.keySet()) {
+            assertThat(key).isEqualTo(expectedView.rowList.get(i).id);
+            assertThat(Math.round(clientIdAndMinBalance.get(key))).isEqualTo(Math.round(expectedView.rowList.get(i).min));
+            i++;
+        }
     }
 
     @Test
-    public void getClientList_SortByMinBalanceDesc() {
+    public void getClientList_and_renderClientList_SortByMinBalanceDesc() {
         TRUNCATE();
-        List<Client> clients = fillClientWithRNDData(100, null); // TODO
 
         RequestOptions options = new RequestOptions();
         options.sort = SortBy.min;
         options.order = "desc";
 
+        List<Client> expectedClients = fillClientWithRNDData(100, null);
+        List<ClientAccount> expectedAccounts = fillClientAccountWithRNDData(expectedClients);
+        TestClientRecordsReportView expectedView = new TestClientRecordsReportView();
+        String expectedUsername = RND.str(10);
+        String expectedLink = RND.str(10);
+        Map<Integer, Float> clientIdAndMinBalance = new HashMap<>();
+        Float min = null;
+        for (ClientAccount account : expectedAccounts) {
+            Float temp = account.money;
+            Float isFirstTime = clientIdAndMinBalance.get(account.client);
+            if (isFirstTime == null) {
+                min = temp;
+                clientIdAndMinBalance.put(account.client, min);
+            } else if (min != null && temp < min) {
+                min = temp;
+                clientIdAndMinBalance.put(account.client, min);
+            }
+        }
+        clientIdAndMinBalance = sortMapByValues(clientIdAndMinBalance);
+
         //
         //
         //
-        List<ClientRecord> clientRecordInfo = clientRegister.get().getClientList(options);
+        List<ClientRecord> clientRecords = clientRegister.get().getClientList(options);
+        clientRegister.get().renderClientList(options, expectedView, expectedUsername, expectedLink);
         //
         //
         //
 
-        assertThat(clientRecordInfo).isNotNull();
-        Collections.reverse(clientRecordInfo);
-        assertThat(clientRecordInfo).isSortedAccordingTo(Comparator.comparing(o -> o.min));
-    }
+        Collections.reverse(clientRecords);
+        Collections.reverse(expectedView.rowList);
 
-    @Test
-    public void getClientListCount_valid() {
-        TRUNCATE();
-
-        RequestOptions options = new RequestOptions();
-        options.filter = generateRndStr(10);
-        List<Client> clients = fillClientWithRNDData(100, options.filter);
-        List<Client> expectedList = new ArrayList<>();
-        for (Client client : clients) {
-            if (client.name.contains(options.filter) ||
-                    client.surname.contains(options.filter) ||
-                    client.patronymic.contains(options.filter))
-                expectedList.add(client);
+        assertThat(clientRecords).isNotNull();
+        assertThat(clientRecords).isSortedAccordingTo(Comparator.comparing(o -> o.min));
+        int i = 0;
+        for (Integer key : clientIdAndMinBalance.keySet()) {
+            assertThat(key).isEqualTo(clientRecords.get(i).id);
+            assertThat(Math.round(clientIdAndMinBalance.get(key))).isEqualTo(Math.round(clientRecords.get(i).min));
+            i++;
         }
 
-        //
-        //
-        //
-        int count = clientRegister.get().getClientListCount(options.filter);
-        //
-        //
-        //
-
-        assertThat(count).isNotNull();
-        assertThat(count).isEqualTo(expectedList.size());
+        assertThat(expectedView.rowList).isNotNull();
+        assertThat(expectedView.user).isEqualTo(expectedUsername);
+        assertThat(expectedView.link_to_download).isEqualTo(expectedLink);
+        assertThat(expectedView.rowList).isSortedAccordingTo(Comparator.comparing(o -> o.min));
+        i = 0;
+        for (Integer key : clientIdAndMinBalance.keySet()) {
+            assertThat(key).isEqualTo(expectedView.rowList.get(i).id);
+            assertThat(Math.round(clientIdAndMinBalance.get(key))).isEqualTo(Math.round(expectedView.rowList.get(i).min));
+            i++;
+        }
     }
 
     @Test
-    public void getClientDetails() {
-        TRUNCATE();
-
-        Charm rndCharm = generateAndInsertRNDCharm();
-        Client rndClient = generateRNDClient(true, rndCharm.id, null);
-        ClientAddr rndClientAddr = generateRNDClientAddr(true, rndClient.id, AddrType.REG);
-        ClientPhone rndClientPhone = generateRNDClientPhone(true, rndClient.id);
-        ClientDetails expectedClientDetail = generateClientDetail(rndClient, rndClientPhone, rndClientAddr);
-
-
-        //
-        //
-        //
-        ClientDetails clientDetails = clientRegister.get().getClientDetails(expectedClientDetail.id);
-        //
-        //
-        //
-
-        assertThat(clientDetails).isNotNull();
-        assertThat(clientDetails).isEqualsToByComparingFields(expectedClientDetail);
-    }
-
-    @Test
-    public void getClientList_pagination() {
+    public void getClientList_pagination_NoFilter() {
         TRUNCATE();
 
         RequestOptions options = new RequestOptions();
-        options.size = Integer.toString(RND.plusInt(10));
-        options.page = Integer.toString(RND.plusInt(10));
+        options.size = RND.intStr(3);
+        options.page = RND.intStr(3);
 
-        List<Client> clients = fillClientWithRNDData(100, null);
+        List<Client> clients = fillClientWithRNDData(1000, null);
         List<Client> expectedList = new ArrayList<>();
         int size = Integer.parseInt(options.size);
         int number = Integer.parseInt(options.page);
@@ -409,30 +540,28 @@ public class ClientRegisterImplTest extends ParentTestNg {
             }
         }
 
+        //
+        //
+        //
+        List<ClientRecord> clientRecords = clientRegister.get().getClientList(options);
+        //
+        //
+        //
 
-        //
-        //
-        //
-        List<ClientRecord> clientRecordInfo = clientRegister.get().getClientList(options);
-        //
-        //
-        //
-
-        assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo.size()).isLessThanOrEqualTo(Integer.parseInt(options.size));
-        assertThat(clientRecordInfo.size()).isEqualTo(expectedList.size());
-        for (int i = 0; i < clientRecordInfo.size(); i++)
-            assertThat(clientRecordInfo.get(i).id).isEqualTo(expectedList.get(i).id);
+        assertThat(clientRecords).isNotNull();
+        assertThat(clientRecords.size()).isEqualTo(expectedList.size());
+        for (int i = 0; i < clientRecords.size(); i++)
+            assertThat(clientRecords.get(i).id).isEqualTo(expectedList.get(i).id);
     }
 
     @Test
-    public void getClientList_paginationOfFilteredList() {
+    public void getClientList_pagination_WithFilter() {
         TRUNCATE();
 
         RequestOptions options = new RequestOptions();
         options.filter = generateRndStr(10);
-        options.size = Integer.toString(RND.plusInt(10));
-        options.page = Integer.toString(RND.plusInt(10));
+        options.size = RND.intStr(3);
+        options.page = RND.intStr(3);
 
         List<Client> clients = fillClientWithRNDData(100, options.filter);
         List<Client> filteredList = new ArrayList<>();
@@ -457,22 +586,174 @@ public class ClientRegisterImplTest extends ParentTestNg {
         //
         //
         //
-        List<ClientRecord> clientRecordInfo = clientRegister.get().getClientList(options);
+        List<ClientRecord> clientRecords = clientRegister.get().getClientList(options);
         //
         //
         //
 
-        assertThat(clientRecordInfo).isNotNull();
-        assertThat(clientRecordInfo.size()).isLessThanOrEqualTo(Integer.parseInt(options.size));
-        for (ClientRecord aFilteredList : clientRecordInfo)
+        assertThat(clientRecords).isNotNull();
+        assertThat(clientRecords.size()).isEqualTo(expectedList.size());
+        for (ClientRecord aFilteredList : clientRecords)
             assertThat(aFilteredList.name).contains(options.filter);
-        assertThat(clientRecordInfo.size()).isEqualTo(expectedList.size());
-        for (int i = 0; i < clientRecordInfo.size(); i++)
-            assertThat(clientRecordInfo.get(i).id).isEqualTo(expectedList.get(i).id);
+        for (int i = 0; i < clientRecords.size(); i++)
+            assertThat(clientRecords.get(i).id).isEqualTo(expectedList.get(i).id);
+    }
+
+    @Test(expectedExceptions = UndeclaredThrowableException.class)
+    public void getClientList_pagination_wrongSize() {
+        TRUNCATE();
+
+        RequestOptions options = new RequestOptions();
+        options.filter = generateRndStr(10);
+        options.size = "-254";
+        options.page = RND.intStr(3);
+
+        fillClientWithRNDData(100, options.filter);
+        //
+        //
+        //
+        clientRegister.get().getClientList(options);
+    }
+
+    @Test(expectedExceptions = UndeclaredThrowableException.class)
+    public void getClientList_pagination_wrongPage() {
+        TRUNCATE();
+
+        RequestOptions options = new RequestOptions();
+        options.filter = generateRndStr(10);
+        options.size = RND.intStr(3);
+        options.page = "-254";
+
+        fillClientWithRNDData(100, options.filter);
+        //
+        //
+        //
+        clientRegister.get().getClientList(options);
     }
 
     @Test
-    public void addClient_validClient() {
+    public void getClientList_getClientListCount_renderClientList_FilterByName() {
+        TRUNCATE();
+
+        RequestOptions options = new RequestOptions();
+        options.filter = generateRndStr(10);
+        options.size = RND.intStr(2);
+
+        List<Client> clients = fillClientWithRNDData(100, options.filter);
+        List<Client> expectedList = new ArrayList<>();
+        TestClientRecordsReportView expectedView = new TestClientRecordsReportView();
+        String expectedUsername = RND.str(10);
+        String expectedLink = RND.str(10);
+        for (Client client : clients) {
+            if (client.name.contains(options.filter) ||
+                    client.surname.contains(options.filter) ||
+                    client.patronymic.contains(options.filter))
+                expectedList.add(client);
+        }
+
+        //
+        //
+        //
+        List<ClientRecord> clientRecords = clientRegister.get().getClientList(options);
+        int clientRecordsListSize = clientRegister.get().getClientListCount(options.filter);
+        clientRegister.get().renderClientList(options, expectedView, expectedUsername, expectedLink);
+        //
+        //
+        //
+
+        assertThat(clientRecords).isNotNull();
+        assertThat(clientRecords.size()).isLessThanOrEqualTo(Integer.parseInt(options.size));
+        for (int i = 0; i < clientRecords.size(); i++) {
+            assertThat(clientRecords.get(i).id).isEqualTo(expectedList.get(i).id);
+            assertThat(clientRecords.get(i).name).contains(options.filter);
+        }
+
+        assertThat(expectedView.rowList).isNotNull();
+        assertThat(expectedView.user).isEqualTo(expectedUsername);
+        assertThat(expectedView.link_to_download).isEqualTo(expectedLink);
+        for (int i = 0; i < expectedView.rowList.size(); i++) {
+            assertThat(expectedView.rowList.get(i).id).isEqualTo(expectedList.get(i).id);
+            assertThat(expectedView.rowList.get(i).name).contains(options.filter);
+        }
+
+        assertThat(clientRecordsListSize).isEqualTo(expectedList.size());
+    }
+
+    @Test
+    public void getClientList_and_renderClientList() {
+        TRUNCATE();
+
+        RequestOptions options = new RequestOptions();
+        options.size = RND.intStr(2);
+
+        List<Client> expectedList = fillClientWithRNDData(100, options.filter);
+        TestClientRecordsReportView expectedView = new TestClientRecordsReportView();
+        String expectedUsername = RND.str(10);
+        String expectedLink = RND.str(10);
+
+        //
+        //
+        //
+        List<ClientRecord> clientRecords = clientRegister.get().getClientList(options);
+        clientRegister.get().renderClientList(options, expectedView, expectedUsername, expectedLink);
+        //
+        //
+        //
+
+        assertThat(clientRecords).isNotNull();
+        assertThat(clientRecords.size()).isEqualTo(expectedList.size());
+        for (int i = 0; i < clientRecords.size(); i++) {
+            Client client = expectedList.get(i);
+            String name = client.surname + " " + client.name + " " + client.patronymic;
+            assertThat(clientRecords.get(i).id).isEqualTo(expectedList.get(i).id);
+            assertThat(clientRecords.get(i).name).isEqualTo(name);
+            assertThat(clientRecords.get(i).age).isEqualTo(calculateAge(client.birth_date));
+            assertThat(clientRecords.get(i).charm).isEqualTo(clientTestDao.get().getCharmById(client.charm));
+            assertThat(clientRecords.get(i).total).isEqualTo(0f);
+            assertThat(clientRecords.get(i).max).isEqualTo(0f);
+            assertThat(clientRecords.get(i).min).isEqualTo(0f);
+        }
+
+        assertThat(expectedView.rowList).isNotNull();
+        assertThat(expectedView.user).isEqualTo(expectedUsername);
+        assertThat(expectedView.link_to_download).isEqualTo(expectedLink);
+        for (int i = 0; i < expectedView.rowList.size(); i++) {
+            Client client = expectedList.get(i);
+            String name = client.surname + " " + client.name + " " + client.patronymic;
+            assertThat(expectedView.rowList.get(i).id).isEqualTo(expectedList.get(i).id);
+            assertThat(expectedView.rowList.get(i).name).isEqualTo(name);
+            assertThat(expectedView.rowList.get(i).age).isEqualTo(calculateAge(client.birth_date));
+            assertThat(expectedView.rowList.get(i).charm).isEqualTo(clientTestDao.get().getCharmById(client.charm));
+            assertThat(expectedView.rowList.get(i).total).isEqualTo(0f);
+            assertThat(expectedView.rowList.get(i).max).isEqualTo(0f);
+            assertThat(expectedView.rowList.get(i).min).isEqualTo(0f);
+        }
+    }
+
+    @Test
+    public void getClientDetails() {
+        TRUNCATE();
+
+        Charm rndCharm = generateAndInsertRNDCharm();
+        Client rndClient = generateRNDClient(true, rndCharm.id, null);
+        ClientAddr rndClientAddr = generateRNDClientAddr(true, rndClient.id, AddrType.REG);
+        ClientPhone rndClientPhone = generateRNDClientPhone(true, rndClient.id);
+        ClientDetails expectedClientDetail = generateClientDetail(rndClient, rndClientPhone, rndClientAddr);
+
+        //
+        //
+        //
+        ClientDetails clientDetails = clientRegister.get().getClientDetails(expectedClientDetail.id);
+        //
+        //
+        //
+
+        assertThat(clientDetails).isNotNull();
+        assertThat(clientDetails).isEqualsToByComparingFields(expectedClientDetail);
+    }
+
+    @Test
+    public void addClient_validClientData() {
         TRUNCATE();
 
         Charm rndCharm = generateAndInsertRNDCharm();
@@ -518,7 +799,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     }
 
     @Test
-    public void editClient_validClient() {
+    public void editClient_validClientData() {
         TRUNCATE();
 
         Charm rndCharm = generateAndInsertRNDCharm();
@@ -579,6 +860,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         //
 
         Client client = clientTestDao.get().getClientById(rndClient.id);
+
         assertThat(client).isNull();
     }
 
@@ -604,55 +886,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(charms.get(0).energy).isEqualTo(rndCharm.energy);
     }
 
-    private static class TestClientRecordsReportView implements ClientRecordsReportView {
-
-        String user;
-        Date created_at;
-        String link_to_download;
-        final List<ClientRecord> rowList = Lists.newArrayList();
-
-        @Override
-        public void start() {
-        }
-
-        @Override
-        public void append(ClientRecord row) {
-            rowList.add(row);
-        }
-
-        @Override
-        public void finish(String user, Date created_at, String link_to_download) {
-            this.user = user;
-            this.created_at = created_at;
-            this.link_to_download = link_to_download;
-        }
-
-    }
-
-
-    @Test
-    public void renderClientList() {
-        RequestOptions options = new RequestOptions();
-        options.size = Integer.toString(RND.plusInt(20));
-        options.page = Integer.toString(0);
-        TestClientRecordsReportView view = new TestClientRecordsReportView();
-        String username = "someuser";
-        String link = "http://link.com";
-
-
-        //
-        //
-        //
-        clientRegister.get().renderClientList(options, view, username, link);
-        //
-        //
-        //
-
-        assertThat(view.link_to_download).isEqualTo(link);
-        assertThat(view.user).isEqualTo(username);
-        assertThat(view.rowList.size()).isLessThanOrEqualTo(Integer.parseInt(options.size));
-    }
-
     @Test(expectedExceptions = PersistenceException.class)
     public void insertClientAddress_RepeatedCompositeKey() {
         TRUNCATE();
@@ -663,8 +896,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         //
         //
-        //
-
         // делаем первый инсерт
         clientTestDao.get().insert_random_client_addr(clientAddr);
         // делаем второй инсерт того же адреса, должна вылететь ошибка так как ключи повторяются
@@ -681,14 +912,17 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
         //
         //
-        //
-
         // делаем первый инсерт
         clientTestDao.get().insert_random_client_phone(clientPhone);
-        // делаем второй инсерт того же елефона, должна вылететь ошибка так как ключи повторяются
+        // делаем второй инсерт того же телефона, должна вылететь ошибка так как ключи повторяются
         clientTestDao.get().insert_random_client_phone(clientPhone);
     }
 
+    //
+    //
+    //
+    //
+    //
 
     private void TRUNCATE() {
         clientTestDao.get().TRUNCATE();
@@ -825,5 +1059,29 @@ public class ClientRegisterImplTest extends ParentTestNg {
 
     }
 
+    private static class TestClientRecordsReportView implements ClientRecordsReportView {
+
+        String user;
+        Date created_at;
+        String link_to_download;
+        List<ClientRecordReportRow> rowList = Lists.newArrayList();
+
+        @Override
+        public void start() {
+        }
+
+        @Override
+        public void append(ClientRecordReportRow row) {
+            rowList.add(row);
+        }
+
+        @Override
+        public void finish(String user, Date created_at, String link_to_download) {
+            this.user = user;
+            this.created_at = created_at;
+            this.link_to_download = link_to_download;
+        }
+
+    }
 
 }

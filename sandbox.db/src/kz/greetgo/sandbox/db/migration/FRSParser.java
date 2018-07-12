@@ -3,6 +3,7 @@ package kz.greetgo.sandbox.db.migration;
 import kz.greetgo.sandbox.db.migration.model.Account;
 import kz.greetgo.sandbox.db.migration.util.Insert;
 import kz.greetgo.sandbox.db.migration.model.Transaction;
+import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.BufferedReader;
@@ -19,6 +20,7 @@ public class FRSParser {
     private PreparedStatement trPS;
     private int batch = 0;
     private int maxBatchSize;
+    private final Logger logger = Logger.getLogger(FRSParser.class);
 
     FRSParser(Connection connection, int maxBatchSize) {
         this.connection = connection;

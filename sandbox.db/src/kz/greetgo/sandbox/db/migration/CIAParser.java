@@ -6,6 +6,7 @@ import kz.greetgo.sandbox.db.migration.model.Address;
 import kz.greetgo.sandbox.db.migration.model.Client;
 import kz.greetgo.sandbox.db.migration.util.Insert;
 import kz.greetgo.sandbox.db.migration.model.Phone;
+import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -31,6 +32,7 @@ public class CIAParser extends DefaultHandler {
     private final static String WORK_PHONE = "workPhone";
     private final static String HOME_PHONE = "homePhone";
     private final static String MOBILE_PHONE = "mobilePhone";
+    private final Logger logger = Logger.getLogger(CIAParser.class);
 
     private Client client;
     private Connection connection;
@@ -54,6 +56,7 @@ public class CIAParser extends DefaultHandler {
             start();
         } catch (Exception e) {
             e.printStackTrace();
+            logger.error(e.getMessage());
         }
         super.startDocument();
     }
@@ -138,6 +141,7 @@ public class CIAParser extends DefaultHandler {
                     insertAddr(reg);
                 } catch (Exception e) {
                     e.printStackTrace();
+                    logger.error(e.getMessage());
                 }
                 break;
         }
@@ -149,6 +153,7 @@ public class CIAParser extends DefaultHandler {
             df.setLenient(false);
             return df.parse(tmp);
         } catch (Exception e) {
+            logger.error("Parse exception date: " + tmp);
             return null;
         }
     }
@@ -256,6 +261,7 @@ public class CIAParser extends DefaultHandler {
             phonePs.close();
         } catch (SQLException e) {
             e.printStackTrace();
+            logger.error(e.getMessage());
         }
         super.endDocument();
     }

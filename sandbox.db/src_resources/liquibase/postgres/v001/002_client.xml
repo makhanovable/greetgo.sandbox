@@ -26,8 +26,6 @@
     ]]></sql>
     </changeSet>
 
-
-    <!--TODO NOT NULL charm-->
     <changeSet author="makhan" id="create-table-client">
         <sql endDelimiter=";;"><![CDATA[
         CREATE TABLE client
@@ -92,7 +90,6 @@
     ]]></sql>
     </changeSet>
 
-    <!--TODO add actual column-->
     <changeSet author="makhan" id="create-table-client_phone">
         <sql endDelimiter=";;"><![CDATA[
         CREATE TABLE client_phone
@@ -100,14 +97,13 @@
             client integer,
             number varchar(255),
             type varchar(50) NOT NULL,
-            actual boolean NOT NULL default true,
             PRIMARY KEY(client, number),
             FOREIGN KEY (client) REFERENCES client (id)
         )
     ]]></sql>
     </changeSet>
 
-    <!--TODO remove trigger-->
+    <!--remove trigger-->
     <!--<changeSet author="makhan" id="create-transactions_trigger">-->
         <!--<sql endDelimiter=";;"><![CDATA[-->
         <!--CREATE OR REPLACE FUNCTION update_wallet()-->

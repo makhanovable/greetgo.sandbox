@@ -120,7 +120,7 @@ public class ClientRegisterStand implements ClientRegister {
                                  String username, String link) {
         view.start();
         for (ClientRecordDot dot : db.get().getClientRecordStorage(options)) {
-            ClientRecord clientRecord = new ClientRecord();
+            ClientRecordReportRow clientRecord = new ClientRecordReportRow();
             clientRecord.id = dot.id;
             clientRecord.name = dot.name;
             clientRecord.charm = dot.charm;

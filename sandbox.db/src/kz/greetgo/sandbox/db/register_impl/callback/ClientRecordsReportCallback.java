@@ -1,26 +1,25 @@
 package kz.greetgo.sandbox.db.register_impl.callback;
 
-import kz.greetgo.db.ConnectionCallback;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.RequestOptions;
 import kz.greetgo.sandbox.controller.report.ClientRecordsReportView;
 import kz.greetgo.sandbox.db.dao.ClientDao;
+import org.apache.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import static kz.greetgo.sandbox.db.register_impl.callback.ClientRecordsCallback.createSqlForGetClientRecords;
-import static kz.greetgo.sandbox.db.register_impl.callback.ClientRecordsCallback.extractClientRecord;
+public class ClientRecordsReportCallback extends ClientRecordsConnectionCallback<Void> {
 
-public class ClientRecordsReportCallback implements ConnectionCallback<Void> {
-
-    public BeanGetter<ClientDao> clientDao;
     private RequestOptions options;
     private ClientRecordsReportView view;
+    public BeanGetter<ClientDao> clientDao;
+    private static final Logger logger = Logger.getLogger(ClientRecordsReportCallback.class);
 
     public ClientRecordsReportCallback(RequestOptions options, BeanGetter<ClientDao> clientDao,
                                        ClientRecordsReportView view) {
+        super(clientDao);
         this.options = options;
         this.clientDao = clientDao;
         this.view = view;
@@ -28,7 +27,6 @@ public class ClientRecordsReportCallback implements ConnectionCallback<Void> {
 
     @Override
     public Void doInConnection(Connection connection) throws Exception {
-        options.filter = options.filter != null ? options.filter : "";
         String sql = createSqlForGetClientRecords(options);
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -43,10 +41,11 @@ public class ClientRecordsReportCallback implements ConnectionCallback<Void> {
             }
             // END set params to PreparedStatement
 
-            //System.out.println(ps);
+            logger.info("Executed SQL : " + ps);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next())
-                    view.append(extractClientRecord(rs));
+                while (rs.next()) {
+                    view.append(extractClientRecordReport(rs));
+                }
             }
         }
         return null;

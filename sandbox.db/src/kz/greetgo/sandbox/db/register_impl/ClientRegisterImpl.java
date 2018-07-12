@@ -9,6 +9,7 @@ import kz.greetgo.sandbox.db.dao.ClientDao;
 import kz.greetgo.sandbox.db.register_impl.callback.ClientRecordsCallback;
 import kz.greetgo.sandbox.db.register_impl.callback.ClientRecordsReportCallback;
 import kz.greetgo.sandbox.db.util.JdbcSandbox;
+import org.apache.log4j.Logger;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,26 +24,33 @@ public class ClientRegisterImpl implements ClientRegister {
 
     public BeanGetter<ClientDao> clientDao;
     public BeanGetter<JdbcSandbox> jdbc;
+    private static final Logger logger = Logger.getLogger(ClientRegisterImpl.class);
+
 
     @Override
     public List<ClientRecord> getClientList(RequestOptions options) {
+        logger.info("getClientList with options: " + options);
         return jdbc.get().execute(new ClientRecordsCallback(options, clientDao));
     }
 
     @Override
     public int getClientListCount(String filter) {
+        logger.info("getClientListCount with filter: " + filter);
         return clientDao.get().getClientRecordsCount("%" + filter + "%");
     }
 
     @Override
     public void deleteClient(int clientId) {
+        logger.info("deleteClient with id: " + clientId);
         clientDao.get().deleteClient(clientId);
     }
 
     @Override
     public ClientRecord addClient(ClientDetails details) {
-        if (!isClientDetailsValid(details, true))
+        if (!isClientDetailsValid(details, true)) {
+            logger.error("ClientDetails to ADD is INVALID");
             return null;
+        }
         Client client = new Client();
         client.name = details.name;
         client.surname = details.surname;
@@ -87,13 +95,18 @@ public class ClientRegisterImpl implements ClientRegister {
         clientRecord.total = 0f;
         clientRecord.min = 0f;
         clientRecord.max = 0f;
+
+        logger.info("added new Client with id: " + id);
+
         return clientRecord;
     }
 
     @Override
     public ClientRecord editClient(ClientDetails details) {
-        if (!isClientDetailsValid(details, false))
+        if (!isClientDetailsValid(details, false)) {
+            logger.error("ClientDetails to EDIT is INVALID");
             return null;
+        }
         Client client = new Client();
         client.id = details.id;
         client.name = details.name;
@@ -143,11 +156,16 @@ public class ClientRegisterImpl implements ClientRegister {
             clientRecord.total += i;
         clientRecord.min = list.isEmpty() ? 0f : list.get(0);
         clientRecord.max = list.isEmpty() ? 0f : list.get(list.size() - 1);
+
+        logger.info("edited Client with id: " + client.id);
+
         return clientRecord;
     }
 
     @Override
     public ClientDetails getClientDetails(int clientId) {
+        logger.info("getClientDetails with id: " + clientId);
+
         ClientDetails clientDetails = new ClientDetails();
         Client client = clientDao.get().getClientByID(clientId);
         List<ClientAddr> clientAddrs = clientDao.get().getClientAddrsByID(clientId);
@@ -178,6 +196,7 @@ public class ClientRegisterImpl implements ClientRegister {
 
     @Override
     public List<Charm> getCharms() {
+        logger.info("Request to getCharms");
         List<Charm> list = new ArrayList<>();
         final String sql = "SELECT * FROM charm";
         jdbc.get().execute(connection -> {
@@ -202,6 +221,7 @@ public class ClientRegisterImpl implements ClientRegister {
     public void renderClientList(RequestOptions options,
                                  ClientRecordsReportView view,
                                  String username, String link) {
+        logger.info("renderClientList with options: " + options + " \n username = " + username + "\n link = " + link);
         view.start();
         jdbc.get().execute(new ClientRecordsReportCallback(options, clientDao, view));
         view.finish(username, new Date(), link);

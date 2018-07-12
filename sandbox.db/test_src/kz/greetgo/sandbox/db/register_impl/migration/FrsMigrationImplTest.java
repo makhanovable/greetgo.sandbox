@@ -16,7 +16,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -135,7 +134,7 @@ public class FrsMigrationImplTest extends ParentTestNg {
     }
 
     @Test(expectedExceptions = JsonParseException.class)
-    public void migration_wrongAccountCiaId() throws Exception {
+    public void migration_wrongAccountClientid() throws Exception {
         TRUNCATE();
         Account account = generateRNDAccount();
         account.client_id = null;
