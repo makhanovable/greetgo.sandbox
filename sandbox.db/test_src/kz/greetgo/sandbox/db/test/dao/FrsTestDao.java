@@ -19,4 +19,7 @@ public interface FrsTestDao {
     @Select("select * from tmp_trans")
     List<Transaction> getTransactions();
 
+    @Select("SELECT table_name FROM information_schema.tables WHERE table_name = #{table}")
+    String isTableExists(@Param("table") String table);
+
 }

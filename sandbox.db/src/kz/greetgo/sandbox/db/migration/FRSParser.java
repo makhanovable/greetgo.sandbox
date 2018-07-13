@@ -20,11 +20,51 @@ public class FRSParser {
     private PreparedStatement trPS;
     private int batch = 0;
     private int maxBatchSize;
+
+    private Thread thread;
+    private int parsedRowCount = 0;
+    private int commit = 0;
+    private boolean isCommitted = false;
+    private boolean runThread = true;
+    private boolean startingCommiting = false;
+
     private final Logger logger = Logger.getLogger(FRSParser.class);
 
     FRSParser(Connection connection, int maxBatchSize) {
         this.connection = connection;
         this.maxBatchSize = maxBatchSize;
+
+        thread = new Thread(() -> {
+            try {
+                int temp = 0;
+                boolean ones = false;
+                logger.info("-----Starting parsing FRS File-----");
+                System.out.println("-----Starting parsing FRS File-----");
+                while (runThread) {
+                    if (!startingCommiting) {
+                        logger.info("Parsed FRS rows count: +" + (parsedRowCount - temp) + " Total(" + parsedRowCount + ")");
+                        System.out.println("Parsed FRS rows count: +" + (parsedRowCount - temp) + " Total(" + parsedRowCount + ")");
+                        ones = false;
+                    } else {
+                        if (!ones) {
+                        logger.info("Starting committing of : " + batch + " FRS requests...");
+                        System.out.println("Starting committing of : " + batch + " FRS requests...");
+                            ones = true;
+                        }
+                    }
+                    if (isCommitted) {
+                        logger.info("Total committed requests to insert FRS: " + commit);
+                        System.out.println("Total committed requests to insert FRS: " + commit);
+                        isCommitted = false;
+                    }
+                    temp = parsedRowCount;
+                    Thread.sleep(1000);
+                }
+            } catch (Exception e) {
+                logger.info(e.getMessage());
+            }
+        });
+        thread.start();
     }
 
     public void parseAndInsertToTempTables(String file) throws Exception {
@@ -54,14 +94,23 @@ public class FRSParser {
                 Transaction transaction = mapper.readValue(line, Transaction.class);
                 insertTransaction(transaction);
             }
+            parsedRowCount++;
         }
         if (batch > 0) {
+            startingCommiting = true;
             accPS.executeBatch();
             trPS.executeBatch();
             connection.commit();
+            startingCommiting = false;
+            commit += batch;
+            isCommitted = true;
         }
         accPS.close();
         trPS.close();
+
+        Thread.sleep(1000);
+        runThread = false;
+        thread.interrupt();
     }
 
     private void insertAccount(Account account) throws Exception {
@@ -88,9 +137,13 @@ public class FRSParser {
     private void execute() throws Exception {
         batch++;
         if (batch >= maxBatchSize) {
+            startingCommiting = true;
             accPS.executeBatch();
             trPS.executeBatch();
             connection.commit();
+            startingCommiting = false;
+            isCommitted = true;
+            commit += batch;
             batch = 0;
         }
     }

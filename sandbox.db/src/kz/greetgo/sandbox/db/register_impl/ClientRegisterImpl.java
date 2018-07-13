@@ -24,11 +24,11 @@ public class ClientRegisterImpl implements ClientRegister {
 
     public BeanGetter<ClientDao> clientDao;
     public BeanGetter<JdbcSandbox> jdbc;
-    private static final Logger logger = Logger.getLogger(ClientRegisterImpl.class);
+    private static final Logger logger = Logger.getLogger("SERVER");
 
 
     @Override
-    public List<ClientRecord> getClientList(RequestOptions options) {
+    public List<ClientRecord> getClientList(ClientRequestOptions options) {
         logger.info("getClientList with options: " + options);
         return jdbc.get().execute(new ClientRecordsCallback(options, clientDao));
     }
@@ -218,7 +218,7 @@ public class ClientRegisterImpl implements ClientRegister {
     }
 
     @Override
-    public void renderClientList(RequestOptions options,
+    public void renderClientList(ClientRequestOptions options,
                                  ClientRecordsReportView view,
                                  String username, String link) {
         logger.info("renderClientList with options: " + options + " \n username = " + username + "\n link = " + link);

@@ -1,12 +1,12 @@
 package kz.greetgo.sandbox.controller.model;
 
-public class RequestOptions {
+public class ClientRequestOptions {
     public String filter, order, page, size;
     public SortBy sort;
 
     @Override
     public String toString() {
-        return "RequestOptions{" +
+        return "ClientRequestOptions{" +
                 "filter='" + filter + '\'' +
                 ", order='" + order + '\'' +
                 ", page='" + page + '\'' +

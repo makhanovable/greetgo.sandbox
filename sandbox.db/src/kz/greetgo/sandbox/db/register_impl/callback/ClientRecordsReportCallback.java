@@ -1,7 +1,7 @@
 package kz.greetgo.sandbox.db.register_impl.callback;
 
 import kz.greetgo.depinject.core.BeanGetter;
-import kz.greetgo.sandbox.controller.model.RequestOptions;
+import kz.greetgo.sandbox.controller.model.ClientRequestOptions;
 import kz.greetgo.sandbox.controller.report.ClientRecordsReportView;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 import org.apache.log4j.Logger;
@@ -12,12 +12,12 @@ import java.sql.ResultSet;
 
 public class ClientRecordsReportCallback extends ClientRecordsConnectionCallback<Void> {
 
-    private RequestOptions options;
+    private ClientRequestOptions options;
     private ClientRecordsReportView view;
     public BeanGetter<ClientDao> clientDao;
-    private static final Logger logger = Logger.getLogger(ClientRecordsReportCallback.class);
+    private static final Logger logger = Logger.getLogger("SERVER");
 
-    public ClientRecordsReportCallback(RequestOptions options, BeanGetter<ClientDao> clientDao,
+    public ClientRecordsReportCallback(ClientRequestOptions options, BeanGetter<ClientDao> clientDao,
                                        ClientRecordsReportView view) {
         super(clientDao);
         this.options = options;

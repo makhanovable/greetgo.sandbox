@@ -31,6 +31,39 @@ public class CiaMigrationImplTest extends ParentTestNg {
     private int maxBatchSize = 500_000;
 
     @Test
+    public void isTempTablesCreated() throws Exception {
+        TRUNCATE();
+
+        Client expectedClient = generateRNDClient();
+        String file = CiaGeneratorUtil.generateXmlFile(expectedClient, null, null);
+        Connection connection = getConnection();
+        String ex_tmp_client = "tmp_client";
+        String ex_tmp_addr = "tmp_address";
+        String ex_tmp_phone = "tmp_phone";
+
+        //
+        //
+        //
+        CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
+        ciaMigration.migrate();
+        connection.close();
+        connection = null;
+        //
+        //
+        //
+        String tmp_client = ciaTestDao.get().isTableExists(ex_tmp_client);
+        String tmp_addr = ciaTestDao.get().isTableExists(ex_tmp_addr);
+        String tmp_phone = ciaTestDao.get().isTableExists(ex_tmp_phone);
+
+        assertThat(tmp_client).isNotNull();
+        assertThat(tmp_addr).isNotNull();
+        assertThat(tmp_phone).isNotNull();
+        assertThat(tmp_client).isEqualTo(ex_tmp_client);
+        assertThat(tmp_addr).isEqualTo(ex_tmp_addr);
+        assertThat(tmp_phone).isEqualTo(ex_tmp_phone);
+    }
+
+    @Test
     public void insertingToTempClientTable() throws Exception {
         TRUNCATE();
 
@@ -44,6 +77,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
         CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
         ciaMigration.migrate();
         connection.close();
+        connection = null;
         Client result = ciaTestDao.get().getClientByCiaId(expectedClient.cia_id);
         //
         //
@@ -74,6 +108,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
         CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
         ciaMigration.migrate();
         connection.close();
+        connection = null;
         List<Address> result = ciaTestDao.get().getAddress();
         //
         //
@@ -108,6 +143,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
         CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
         ciaMigration.migrate();
         connection.close();
+        connection = null;
         List<Phone> result = ciaTestDao.get().getPhones();
         //
         //
@@ -149,6 +185,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
         CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
         ciaMigration.migrate();
         connection.close();
+        connection = null;
         Client result = ciaTestDao.get().getClientByCiaId(client.cia_id);
         kz.greetgo.sandbox.controller.model.Client resultFromRealTable = ciaTestDao.get().getRealClientByCiaId(client.cia_id);
         //
@@ -179,6 +216,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
         CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
         ciaMigration.migrate();
         connection.close();
+        connection = null;
         Client result = ciaTestDao.get().getClientByCiaId(client.cia_id);
         kz.greetgo.sandbox.controller.model.Client resultFromRealTable = ciaTestDao.get().getRealClientByCiaId(client.cia_id);
         //
@@ -208,6 +246,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
         CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
         ciaMigration.migrate();
         connection.close();
+        connection = null;
         Client result = ciaTestDao.get().getClientByCiaId(client.cia_id);
         kz.greetgo.sandbox.controller.model.Client resultFromRealTable = ciaTestDao.get().getRealClientByCiaId(client.cia_id);
         //
@@ -238,6 +277,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
         CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
         ciaMigration.migrate();
         connection.close();
+        connection = null;
         Client result = ciaTestDao.get().getClientByCiaId(client.cia_id);
         kz.greetgo.sandbox.controller.model.Client resultFromRealTable = ciaTestDao.get().getRealClientByCiaId(client.cia_id);
         //
@@ -263,6 +303,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
         CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
         ciaMigration.migrate();
         connection.close();
+        connection = null;
         Client result = ciaTestDao.get().getClientByCiaId(cia_id);
         //
         //
@@ -291,6 +332,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
         CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
         ciaMigration.migrate();
         connection.close();
+        connection = null;
         Client client = ciaTestDao.get().getOldClientByCiaId(cia_id);
         //
         //
@@ -339,6 +381,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
         ciaMigration = new CIAMigration(connection, file, maxBatchSize);
         ciaMigration.migrate();
         connection.close();
+        connection = null;
         result = ciaTestDao.get().getRealClientByCiaId(cia_id);
         charm_id = ciaTestDao.get().getRealCharmIdByName(charm);
         //
@@ -397,6 +440,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
         ciaMigration = new CIAMigration(connection, file, maxBatchSize);
         ciaMigration.migrate();
         connection.close();
+        connection = null;
         result = ciaTestDao.get().getRealAddress();
         //
         //
@@ -435,6 +479,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
         CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
         ciaMigration.migrate();
         connection.close();
+        connection = null;
         Client result_from_tmp = ciaTestDao.get().getClientByCiaId(cia_id);
         kz.greetgo.sandbox.controller.model.Client result = ciaTestDao.get().getRealClientByCiaId(cia_id);
         //
@@ -461,6 +506,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
         CIAMigration ciaMigration = new CIAMigration(connection, file, maxBatchSize);
         ciaMigration.migrate();
         connection.close();
+        connection = null;
     }
 
     private Client generateRNDClient() {

@@ -23,8 +23,12 @@ public class SSHDataUtil {
         List<String> extractedFiles = new ArrayList<>();
 
         // LOCAL Files
-        extractedFiles.add("out_files/from_cia_2018-02-21-154532-1-300.xml");
-        extractedFiles.add("out_files/from_frs_2018-02-21-154543-1-30009.json_row.txt");
+        extractedFiles.add("out_files/from_cia_2018-02-21-154929-1-300.xml");
+        extractedFiles.add("out_files/from_frs_2018-02-21-155112-1-30002.json_row.txt");
+//        extractedFiles.add("out_files/from_cia_2018-02-21-154535-4-100000.xml");
+//        extractedFiles.add("out_files/from_frs_2018-02-21-154551-3-1000004.json_row.txt");
+//        extractedFiles.add("out_files/from_cia_2018-02-21-154955-5-1000000.xml");
+//        extractedFiles.add("out_files/from_frs_2018-02-21-155121-3-10000007.json_row.txt");
 
 
         // to downloading files from server define USER PASSWORD HOST PORT

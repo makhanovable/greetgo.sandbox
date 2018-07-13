@@ -110,7 +110,7 @@
         </layout>
     </appender>
 
-    <category name="kz.greetgo.sandbox.db.register_impl" additivity="true">
+    <category name="SERVER" additivity="true">
         <priority value="INFO"/>
         <appender-ref ref="SERVERIMPL"/>
     </category>

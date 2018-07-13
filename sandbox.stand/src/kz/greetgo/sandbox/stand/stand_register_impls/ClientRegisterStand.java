@@ -18,7 +18,7 @@ public class ClientRegisterStand implements ClientRegister {
     public BeanGetter<ClientStandDb> db;
 
     @Override
-    public List<ClientRecord> getClientList(RequestOptions options) {
+    public List<ClientRecord> getClientList(ClientRequestOptions options) {
         List<ClientRecord> out = new ArrayList<>();
         for (ClientRecordDot dot : db.get().getClientRecordStorage(options)) {
             ClientRecord clientRecord = new ClientRecord();
@@ -115,7 +115,7 @@ public class ClientRegisterStand implements ClientRegister {
     }
 
     @Override
-    public void renderClientList(RequestOptions options,
+    public void renderClientList(ClientRequestOptions options,
                                  ClientRecordsReportView view,
                                  String username, String link) {
         view.start();

@@ -25,6 +25,38 @@ public class FrsMigrationImplTest extends ParentTestNg {
     private int maxBatchSize = 500_000;
 
     @Test
+    public void isTempTablesCreated() throws Exception {
+        TRUNCATE();
+
+        Account account = generateRNDAccount();
+        List<Transaction> transactions = generateRNDTransactions(account.account_number, 10);
+        String file = FrsGeneratorUtil.generateFrsFile(account, transactions);
+        Connection connection = getConnection();
+
+        String ex_tmp_trans = "tmp_trans";
+        String ex_tmp_acc = "tmp_acc";
+
+        //
+        //
+        //
+        FRSMigration frsMigration = new FRSMigration(connection, file, maxBatchSize);
+        frsMigration.migrate();
+        connection.close();
+        connection = null;
+        //
+        //
+        //
+        String tmp_trans = frsTestDao.get().isTableExists(ex_tmp_trans);
+        String tmp_acc = frsTestDao.get().isTableExists(ex_tmp_acc);
+
+        assertThat(tmp_trans).isNotNull();
+        assertThat(tmp_acc).isNotNull();
+        assertThat(tmp_trans).isEqualTo(ex_tmp_trans);
+        assertThat(tmp_acc).isEqualTo(ex_tmp_acc);
+
+    }
+
+    @Test
     public void insertingToTempClientAccountTable() throws Exception {
         TRUNCATE();
         String file = "sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/one_frs.txt";
@@ -39,6 +71,7 @@ public class FrsMigrationImplTest extends ParentTestNg {
         FRSMigration frsMigration = new FRSMigration(connection, file, maxBatchSize);
         frsMigration.migrate();
         connection.close();
+        connection = null;
         Account result = frsTestDao.get().getAccountById(cia_id);
         //
         //
@@ -63,6 +96,7 @@ public class FrsMigrationImplTest extends ParentTestNg {
         FRSMigration frsMigration = new FRSMigration(connection, file, maxBatchSize);
         frsMigration.migrate();
         connection.close();
+        connection = null;
         List<Transaction> result = frsTestDao.get().getTransactions();
         //
         //
@@ -85,6 +119,7 @@ public class FrsMigrationImplTest extends ParentTestNg {
         FRSMigration frsMigration = new FRSMigration(connection, file, maxBatchSize);
         frsMigration.migrate();
         connection.close();
+        connection = null;
         List<Transaction> result = frsTestDao.get().getTransactions();
         //
         //
@@ -107,6 +142,7 @@ public class FrsMigrationImplTest extends ParentTestNg {
         FRSMigration frsMigration = new FRSMigration(connection, file, maxBatchSize);
         frsMigration.migrate();
         connection.close();
+        connection = null;
         Account result = frsTestDao.get().getAccountById(cia_id);
         //
         //
@@ -131,6 +167,7 @@ public class FrsMigrationImplTest extends ParentTestNg {
         FRSMigration frsMigration = new FRSMigration(connection, file, maxBatchSize);
         frsMigration.migrate();
         connection.close();
+        connection = null;
     }
 
     @Test(expectedExceptions = JsonParseException.class)
@@ -148,6 +185,7 @@ public class FrsMigrationImplTest extends ParentTestNg {
         FRSMigration frsMigration = new FRSMigration(connection, file, maxBatchSize);
         frsMigration.migrate();
         connection.close();
+        connection = null;
     }
 
     @Test
@@ -167,6 +205,7 @@ public class FrsMigrationImplTest extends ParentTestNg {
         FRSMigration frsMigration = new FRSMigration(connection, file, maxBatchSize);
         frsMigration.migrate();
         connection.close();
+        connection = null;
         Account result_acc = frsTestDao.get().getAccountById(cia_id);
         List<Transaction> result_tr = frsTestDao.get().getTransactions();
         //
@@ -194,6 +233,7 @@ public class FrsMigrationImplTest extends ParentTestNg {
         FRSMigration frsMigration = new FRSMigration(connection, file, maxBatchSize);
         frsMigration.migrate();
         connection.close();
+        connection = null;
     }
 
     private Account generateRNDAccount() {

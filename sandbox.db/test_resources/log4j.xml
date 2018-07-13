@@ -64,5 +64,22 @@
         <appender-ref ref="SERVER"/>
     </root>
 
+    <appender name="SERVERIMPL" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${user.home}/sandbox.d/logs/server_impl.log"/>
+        <param name="Threshold" value="INFO"/>
+        <param name="Append" value="true"/>
+        <param name="MaxFileSize" value="100MB"/>
+        <param name="MaxBackupIndex" value="100"/>
+
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %-5p [%c{1}] %m%n"/>
+        </layout>
+    </appender>
+
+    <category name="SERVER" additivity="true">
+        <priority value="INFO"/>
+        <appender-ref ref="SERVERIMPL"/>
+    </category>
+
 
 </log4j:configuration>

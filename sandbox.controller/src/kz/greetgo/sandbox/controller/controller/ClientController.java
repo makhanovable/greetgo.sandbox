@@ -9,7 +9,7 @@ import kz.greetgo.sandbox.controller.register.AuthRegister;
 import kz.greetgo.sandbox.controller.register.ClientRegister;
 import kz.greetgo.sandbox.controller.model.ClientDetails;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
-import kz.greetgo.sandbox.controller.model.RequestOptions;
+import kz.greetgo.sandbox.controller.model.ClientRequestOptions;
 import kz.greetgo.sandbox.controller.report.ClientRecordReportViewPdfImpl;
 import kz.greetgo.sandbox.controller.report.ClientRecordReportViewXlsxImpl;
 import kz.greetgo.sandbox.controller.report.ClientRecordsReportView;
@@ -31,7 +31,7 @@ public class ClientController implements Controller {
     @ToJson
     @NoSecurity
     @Mapping("/get-list")
-    public List<ClientRecord> getClientList(@Par("options") @Json RequestOptions options) {
+    public List<ClientRecord> getClientList(@Par("options") @Json ClientRequestOptions options) {
         return clientRegister.get().getClientList(options);
     }
 
@@ -81,7 +81,7 @@ public class ClientController implements Controller {
     @Mapping("/render-list/{type}")
     public void renderClientList(@ParSession("personId") String personId,
                           @ParPath("type") String type,
-                          @Par("options") @Json RequestOptions options,
+                          @Par("options") @Json ClientRequestOptions options,
                           @Par("link") String link,
                           RequestTunnel tunnel) throws Exception {
 

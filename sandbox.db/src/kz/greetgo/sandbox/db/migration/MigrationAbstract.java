@@ -23,12 +23,14 @@ public abstract class MigrationAbstract {
 
     void exec(String sql) throws Exception {
         long start = System.currentTimeMillis();
+        System.out.println("NOW EXECUTING " + sql);
 
         try (Statement statement = connection.createStatement()) {
             statement.executeUpdate(sql);
         }
 
         long end = System.currentTimeMillis();
+        System.out.println("Time to execute SQL ABOVE " + (end - start) + " ms");
         topSqlQueries.put(sql, end - start);
     }
 

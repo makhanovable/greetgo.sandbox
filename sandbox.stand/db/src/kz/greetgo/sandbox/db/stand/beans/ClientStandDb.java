@@ -4,7 +4,7 @@ import kz.greetgo.depinject.core.Bean;
 import kz.greetgo.depinject.core.HasAfterInject;
 import kz.greetgo.sandbox.controller.model.ClientDetails;
 import kz.greetgo.sandbox.controller.model.ClientPhone;
-import kz.greetgo.sandbox.controller.model.RequestOptions;
+import kz.greetgo.sandbox.controller.model.ClientRequestOptions;
 import kz.greetgo.sandbox.controller.model.PhoneType;
 import kz.greetgo.sandbox.db.stand.model.CharmDot;
 import kz.greetgo.sandbox.db.stand.model.ClientDetailsDot;
@@ -78,7 +78,7 @@ public class ClientStandDb implements HasAfterInject {
         ID = clientRecordStorage.size();
     }
 
-    public List<ClientRecordDot> getClientRecordStorage(RequestOptions options) {
+    public List<ClientRecordDot> getClientRecordStorage(ClientRequestOptions options) {
         List<ClientRecordDot> returned = new ArrayList<>();
         out = new ArrayList<>();
 

@@ -4,7 +4,7 @@ import kz.greetgo.db.ConnectionCallback;
 import kz.greetgo.depinject.core.BeanGetter;
 import kz.greetgo.sandbox.controller.model.ClientRecord;
 import kz.greetgo.sandbox.controller.model.ClientRecordReportRow;
-import kz.greetgo.sandbox.controller.model.RequestOptions;
+import kz.greetgo.sandbox.controller.model.ClientRequestOptions;
 import kz.greetgo.sandbox.controller.model.SortBy;
 import kz.greetgo.sandbox.db.dao.ClientDao;
 
@@ -21,7 +21,7 @@ public abstract class ClientRecordsConnectionCallback<T> implements ConnectionCa
         this.clientDao = clientDao;
     }
 
-    static String createSqlForGetClientRecords(RequestOptions options) {
+    static String createSqlForGetClientRecords(ClientRequestOptions options) {
         options.filter = options.filter != null ? options.filter : "";
 
         StringBuilder sb = new StringBuilder();

@@ -22,34 +22,48 @@ public class LaunchMigration {
     }
 
     private static void startMigration(int maxBatchSize) throws Exception {
+        List<String> dataToMigrate = SSHDataUtil.downloadFilesAndExtract();
+        if (!dataToMigrate.isEmpty())
+            for (String file : dataToMigrate) {
+                if (file.endsWith("xml"))
+                    executeCiaMigration(file, maxBatchSize);
+                else if (file.endsWith("txt"))
+                    executeFrsMigration(file, maxBatchSize);
+            }
+    }
+
+    private static void executeCiaMigration(String path, int maxBatchSize) throws Exception {
+        System.out.println();
+        System.out.println("Starting Migration of " + path);
+        logger.info("Starting Migration of " + path);
         long start = System.currentTimeMillis();
-        logger.info("Starting Migration");
 
         {
-            List<String> dataToMigrate = SSHDataUtil.downloadFilesAndExtract();
-            if (!dataToMigrate.isEmpty())
-                for (String file : dataToMigrate) {
-                    if (file.endsWith("xml"))
-                        executeCiaMigration(file, maxBatchSize);
-                    else if (file.endsWith("txt"))
-                        executeFrsMigration(file, maxBatchSize);
-                }
+            CIAMigration ciaMigration = new CIAMigration(connection, path, maxBatchSize);
+            ciaMigration.migrate();
         }
 
-
         long end = System.currentTimeMillis();
+        System.out.println("Migration Finished in " + (end - start) + " ms");
         logger.info("Migration Finished in " + (end - start) + " ms");
         logger.info("");
     }
 
-    private static void executeCiaMigration(String path, int maxBatchSize) throws Exception {
-        CIAMigration ciaMigration = new CIAMigration(connection, path, maxBatchSize);
-        ciaMigration.migrate();
-    }
-
     private static void executeFrsMigration(String path, int maxBatchSize) throws Exception {
-        FRSMigration frsMigration = new FRSMigration(connection, path, maxBatchSize);
-        frsMigration.migrate();
+        System.out.println();
+        System.out.println("Starting Migration of " + path);
+        logger.info("Starting Migration of " + path);
+        long start = System.currentTimeMillis();
+
+        {
+            FRSMigration frsMigration = new FRSMigration(connection, path, maxBatchSize);
+            frsMigration.migrate();
+        }
+
+        long end = System.currentTimeMillis();
+        System.out.println("Migration Finished in " + (end - start) + " ms");
+        logger.info("Migration Finished in " + (end - start) + " ms");
+        logger.info("");
     }
 
     private static Connection getConnection() throws Exception {

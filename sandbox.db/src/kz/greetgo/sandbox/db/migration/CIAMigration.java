@@ -19,7 +19,6 @@ public class CIAMigration extends MigrationAbstract {
         this.connection = connection;
         this.maxBatchSize = maxBatchSize;
         this.path = path;
-
         logger.info("Starting CIA Migration of file: " + path);
     }
 

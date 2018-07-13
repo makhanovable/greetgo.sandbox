@@ -42,4 +42,6 @@ public interface CiaTestDao {
     @Select("select * from client_addr")
     List<ClientAddr> getRealAddress();
 
+    @Select("SELECT table_name FROM information_schema.tables WHERE table_name = #{table}")
+    String isTableExists(@Param("table") String table);
 }

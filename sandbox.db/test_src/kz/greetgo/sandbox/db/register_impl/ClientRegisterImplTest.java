@@ -8,7 +8,6 @@ import kz.greetgo.sandbox.db.test.dao.ClientTestDao;
 import kz.greetgo.sandbox.db.test.util.ParentTestNg;
 import kz.greetgo.util.RND;
 import org.apache.ibatis.exceptions.PersistenceException;
-import org.postgresql.util.PSQLException;
 import org.testng.annotations.Test;
 import org.testng.collections.Lists;
 
@@ -32,7 +31,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public void getClientList_and_renderClientList_SortByNameAsc() {
         TRUNCATE();
 
-        RequestOptions options = new RequestOptions();
+        ClientRequestOptions options = new ClientRequestOptions();
         options.sort = SortBy.name;
         options.order = "asc";
 
@@ -69,7 +68,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public void getClientList_and_renderClientList_SortByNameDesc() {
         TRUNCATE();
 
-        RequestOptions options = new RequestOptions();
+        ClientRequestOptions options = new ClientRequestOptions();
         options.sort = SortBy.name;
         options.order = "desc";
 
@@ -108,7 +107,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public void getClientList_and_renderClientList_SortByAgeAsc() {
         TRUNCATE();
 
-        RequestOptions options = new RequestOptions();
+        ClientRequestOptions options = new ClientRequestOptions();
         options.sort = SortBy.age;
         options.order = "asc";
 
@@ -145,7 +144,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public void getClientList_and_renderClientList_SortByAgeDesc() {
         TRUNCATE();
 
-        RequestOptions options = new RequestOptions();
+        ClientRequestOptions options = new ClientRequestOptions();
         options.sort = SortBy.age;
         options.order = "desc";
 
@@ -185,7 +184,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public void getClientList_and_renderClientList_SortByTotalBalanceAsc() {
         TRUNCATE();
 
-        RequestOptions options = new RequestOptions();
+        ClientRequestOptions options = new ClientRequestOptions();
         options.sort = SortBy.total;
         options.order = "asc";
 
@@ -233,7 +232,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public void getClientList_and_renderClientList_SortByTotalBalanceDesc() {
         TRUNCATE();
 
-        RequestOptions options = new RequestOptions();
+        ClientRequestOptions options = new ClientRequestOptions();
         options.sort = SortBy.total;
         options.order = "desc";
 
@@ -284,7 +283,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public void getClientList_and_renderClientList_SortByMaxBalanceAsc() {
         TRUNCATE();
 
-        RequestOptions options = new RequestOptions();
+        ClientRequestOptions options = new ClientRequestOptions();
         options.sort = SortBy.max;
         options.order = "asc";
 
@@ -342,7 +341,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public void getClientList_and_renderClientList_SortByMaxBalanceDesc() {
         TRUNCATE();
 
-        RequestOptions options = new RequestOptions();
+        ClientRequestOptions options = new ClientRequestOptions();
         options.sort = SortBy.max;
         options.order = "desc";
 
@@ -403,7 +402,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public void getClientList_and_renderClientList_SortByMinBalanceAsc() {
         TRUNCATE();
 
-        RequestOptions options = new RequestOptions();
+        ClientRequestOptions options = new ClientRequestOptions();
         options.sort = SortBy.min;
         options.order = "asc";
 
@@ -461,7 +460,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public void getClientList_and_renderClientList_SortByMinBalanceDesc() {
         TRUNCATE();
 
-        RequestOptions options = new RequestOptions();
+        ClientRequestOptions options = new ClientRequestOptions();
         options.sort = SortBy.min;
         options.order = "desc";
 
@@ -522,7 +521,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public void getClientList_pagination_NoFilter() {
         TRUNCATE();
 
-        RequestOptions options = new RequestOptions();
+        ClientRequestOptions options = new ClientRequestOptions();
         options.size = RND.intStr(3);
         options.page = RND.intStr(3);
 
@@ -558,7 +557,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public void getClientList_pagination_WithFilter() {
         TRUNCATE();
 
-        RequestOptions options = new RequestOptions();
+        ClientRequestOptions options = new ClientRequestOptions();
         options.filter = generateRndStr(10);
         options.size = RND.intStr(3);
         options.page = RND.intStr(3);
@@ -603,7 +602,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public void getClientList_pagination_wrongSize() {
         TRUNCATE();
 
-        RequestOptions options = new RequestOptions();
+        ClientRequestOptions options = new ClientRequestOptions();
         options.filter = generateRndStr(10);
         options.size = "-254";
         options.page = RND.intStr(3);
@@ -619,7 +618,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public void getClientList_pagination_wrongPage() {
         TRUNCATE();
 
-        RequestOptions options = new RequestOptions();
+        ClientRequestOptions options = new ClientRequestOptions();
         options.filter = generateRndStr(10);
         options.size = RND.intStr(3);
         options.page = "-254";
@@ -635,9 +634,8 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public void getClientList_getClientListCount_renderClientList_FilterByName() {
         TRUNCATE();
 
-        RequestOptions options = new RequestOptions();
+        ClientRequestOptions options = new ClientRequestOptions();
         options.filter = generateRndStr(10);
-        options.size = RND.intStr(2);
 
         List<Client> clients = fillClientWithRNDData(100, options.filter);
         List<Client> expectedList = new ArrayList<>();
@@ -662,7 +660,6 @@ public class ClientRegisterImplTest extends ParentTestNg {
         //
 
         assertThat(clientRecords).isNotNull();
-        assertThat(clientRecords.size()).isLessThanOrEqualTo(Integer.parseInt(options.size));
         for (int i = 0; i < clientRecords.size(); i++) {
             assertThat(clientRecords.get(i).id).isEqualTo(expectedList.get(i).id);
             assertThat(clientRecords.get(i).name).contains(options.filter);
@@ -683,7 +680,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public void getClientList_and_renderClientList() {
         TRUNCATE();
 
-        RequestOptions options = new RequestOptions();
+        ClientRequestOptions options = new ClientRequestOptions();
         options.size = RND.intStr(2);
 
         List<Client> expectedList = fillClientWithRNDData(100, options.filter);

@@ -41,9 +41,48 @@ public class CIAParser extends DefaultHandler {
     private int maxBatchSize;
     private StringBuilder phoneStr;
 
+    private Thread thread;
+    private int parsedRowCount = 0;
+    private int commit = 0;
+    private boolean runThread = true;
+    private boolean isCommitted = false;
+    private boolean startingCommiting = false;
+
     CIAParser(Connection connection, int maxBatchSize) {
         this.connection = connection;
         this.maxBatchSize = maxBatchSize;
+
+        thread = new Thread(() -> {
+            try {
+                logger.info("-----Starting parsing CIA File-----");
+                System.out.println("-----Starting parsing CIA File-----");
+                int temp = 0;
+                boolean ones = false;
+                while (runThread) {
+                    if (!startingCommiting) {
+                        logger.info("Parsed CIA clients count: +" + (parsedRowCount - temp) + " Total(" + parsedRowCount + ")");
+                        System.out.println("Parsed CIA clients count: +" + (parsedRowCount - temp) + " Total(" + parsedRowCount + ")");
+                        ones = false;
+                    } else {
+                        if (!ones) {
+                            logger.info("Starting committing of : " + batch + " CIA requests...");
+                            System.out.println("Starting committing of : " + batch + " CIA requests...");
+                            ones = true;
+                        }
+                    }
+                    if (isCommitted) {
+                        logger.info("Total committed requests to insert CIA : " + commit);
+                        System.out.println("Total committed requests to insert CIA : " + commit);
+                        isCommitted = false;
+                    }
+                    temp = parsedRowCount;
+                    Thread.sleep(1000);
+                }
+            } catch (Exception e) {
+                logger.info(e.getMessage());
+            }
+        });
+        thread.start();
     }
 
     private PreparedStatement clientPs;
@@ -175,6 +214,7 @@ public class CIAParser extends DefaultHandler {
             switch (qName) {
                 case CLIENT:
                     insertClient(client);
+                    parsedRowCount++;
                     break;
                 case HOME_PHONE:
                     Phone home = new Phone();
@@ -239,10 +279,14 @@ public class CIAParser extends DefaultHandler {
     private void execute() throws Exception {
         batch++;
         if (batch >= maxBatchSize) {
+            startingCommiting = true;
             clientPs.executeBatch();
             phonePs.executeBatch();
             addrPs.executeBatch();
             connection.commit();
+            startingCommiting = false;
+            commit += batch;
+            isCommitted = true;
             batch = 0;
         }
     }
@@ -251,15 +295,22 @@ public class CIAParser extends DefaultHandler {
     public void endDocument() throws SAXException {
         try {
             if (batch > 0) {
+                startingCommiting = true;
                 clientPs.executeBatch();
                 phonePs.executeBatch();
                 addrPs.executeBatch();
                 connection.commit();
+                startingCommiting = false;
+                commit += batch;
+                isCommitted = true;
             }
             clientPs.close();
             addrPs.close();
             phonePs.close();
-        } catch (SQLException e) {
+            Thread.sleep(1000);
+            runThread = false;
+            thread.interrupt();
+        } catch (Exception e) {
             e.printStackTrace();
             logger.error(e.getMessage());
         }
