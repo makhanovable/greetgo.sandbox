@@ -34,7 +34,7 @@ public class ClientStandDb implements HasAfterInject {
     public void afterInject() {
         for (int i = 0; i < 50; i++) {
             CharmDot charm = new CharmDot();
-            charm.id = i;
+            charm.id = (long) i;
             charm.name = randomString();
             charmsStorage.add(charm);
         }
@@ -43,13 +43,13 @@ public class ClientStandDb implements HasAfterInject {
             ClientDetailsDot clientDetailsDot = new ClientDetailsDot();
             ClientRecordDot clientRecordDot = new ClientRecordDot();
 
-            clientDetailsDot.id = i;
+            clientDetailsDot.id = (long)i;
             clientDetailsDot.name = randomString();
             clientDetailsDot.surname = randomString();
             clientDetailsDot.patronymic = randomString();
             clientDetailsDot.gender = genders[random.nextInt(2)];
             clientDetailsDot.birth_date = "Thu Dec 14 2006";
-            clientDetailsDot.charm = random.nextInt(charmsStorage.size());
+            clientDetailsDot.charm =(long) random.nextInt(charmsStorage.size());
             clientDetailsDot.addrFactStreet = randomString();
             clientDetailsDot.addrFactHome = Integer.toString(random.nextInt(100));
             clientDetailsDot.addrFactFlat = Integer.toString(random.nextInt(100));
@@ -65,7 +65,7 @@ public class ClientStandDb implements HasAfterInject {
             clientDetailsDot.phones = phones;
             clientDetailsStorage.add(clientDetailsDot);
 
-            clientRecordDot.id = i;
+            clientRecordDot.id =(long) i;
             clientRecordDot.name = clientDetailsDot.surname + " " + clientDetailsDot.name
                     + " " + clientDetailsDot.patronymic;
             clientRecordDot.charm = getCharmById(clientDetailsDot.charm);
@@ -146,8 +146,8 @@ public class ClientStandDb implements HasAfterInject {
 
     public List<ClientRecordDot> getClientRecordStorage(String filter) {
         out = new ArrayList<>();
-
-        System.out.println(filter);
+//
+//        System.out.println(filter);
 
         if (filter != null && !filter.isEmpty()) {
             for (ClientRecordDot aList : clientRecordStorage) {
@@ -162,7 +162,7 @@ public class ClientStandDb implements HasAfterInject {
         return out;
     }
 
-    public void deleteClientInfo(int id) {
+    public void deleteClientInfo(long id) {
         System.out.println("deleting id = " + id);
         for (int i = 0; i < clientDetailsStorage.size(); i++) {
             if (clientDetailsStorage.get(i).id == id || clientRecordStorage.get(i).id == id) {
@@ -174,7 +174,7 @@ public class ClientStandDb implements HasAfterInject {
         }
     }
 
-    private ClientRecordDot getDeletingClientRecord(int id) {
+    private ClientRecordDot getDeletingClientRecord(long id) {
         for (ClientRecordDot aClientRecordStorage : clientRecordStorage) {
             if (aClientRecordStorage.id == id) {
                 return aClientRecordStorage;
@@ -189,7 +189,7 @@ public class ClientStandDb implements HasAfterInject {
         ClientDetailsDot clientDetailsDot = new ClientDetailsDot();
         ClientRecordDot clientRecordDot = new ClientRecordDot();
 
-        clientDetailsDot.id = id;
+        clientDetailsDot.id = (long)id;
         clientDetailsDot.name = details.name;
         clientDetailsDot.surname = details.surname;
         if (details.patronymic != null) clientDetailsDot.patronymic = details.patronymic;
@@ -217,7 +217,7 @@ public class ClientStandDb implements HasAfterInject {
         clientDetailsDot.phones = phones;
         clientDetailsStorage.add(clientDetailsDot);
 
-        clientRecordDot.id = id;
+        clientRecordDot.id = (long)id;
         clientRecordDot.name = clientDetailsDot.surname + " " + clientDetailsDot.name
                 + " " + clientDetailsDot.patronymic;
         clientRecordDot.charm = getCharmById(clientDetailsDot.charm);
@@ -280,7 +280,7 @@ public class ClientStandDb implements HasAfterInject {
         return clientRecordDot;
     }
 
-    public ClientDetailsDot getClientDetailById(int clientId) {
+    public ClientDetailsDot getClientDetailById(long clientId) {
         ClientDetailsDot dot = null;
         for (ClientDetailsDot aClientDetailsStorage : clientDetailsStorage) {
             if (aClientDetailsStorage.id == clientId) {
@@ -302,7 +302,7 @@ public class ClientStandDb implements HasAfterInject {
     }
 
     private int calculateAge(String date) {
-        System.out.println("have to calculate = " + date);
+//        System.out.println("have to calculate = " + date);
         try {
             String[] split = date.split(" ");
             DateFormat formatter = new SimpleDateFormat("MM/dd/yy");
@@ -325,7 +325,7 @@ public class ClientStandDb implements HasAfterInject {
         }
     }
 
-    private String getCharmById(int id) {
+    private String getCharmById(long id) {
         try {
             for (CharmDot aCharmsStorage : charmsStorage) {
                 if (aCharmsStorage.id == id) {

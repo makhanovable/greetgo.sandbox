@@ -39,7 +39,7 @@ public class ClientHelperUtil {
 
     public static boolean isClientDetailsValid(ClientDetails details, boolean isNew) {
         if (!isNew)
-            if (details.id == -1)
+            if (details.id == null || details.id == -1)
                 return false;
         return details.name != null &&
                 details.surname != null &&

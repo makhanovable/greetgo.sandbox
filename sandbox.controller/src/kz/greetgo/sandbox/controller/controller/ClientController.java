@@ -31,42 +31,42 @@ public class ClientController implements Controller {
     @ToJson
     @NoSecurity
     @Mapping("/get-list")
-    public List<ClientRecord> getClientList(@Par("options") @Json ClientRequestOptions options) {
+    public List<ClientRecord> getList(@Par("options") @Json ClientRequestOptions options) {
         return clientRegister.get().getClientList(options);
     }
 
     @ToJson
     @NoSecurity
     @Mapping("/get-list-count")
-    public int getClientListCount(@Par("filter") String filter) {
+    public int getListCount(@Par("filter") String filter) {
         return clientRegister.get().getClientListCount(filter);
     }
 
     @ToJson
     @NoSecurity
     @Mapping("/add")
-    public ClientRecord addClient(@Json @Par("toSave") ClientDetails clientDetails) {
+    public ClientRecord add(@Json @Par("toSave") ClientDetails clientDetails) {
         return clientRegister.get().addClient(clientDetails);
     }
 
     @ToJson
     @NoSecurity
     @Mapping("/delete")
-    public void deleteClient(@Par("clientId") int clientId) {
+    public void delete(@Par("clientId") long clientId) {
         clientRegister.get().deleteClient(clientId);
     }
 
     @ToJson
     @NoSecurity
     @Mapping("/edit")
-    public ClientRecord editClient(@Json @Par("toSave") ClientDetails clientDetails) {
+    public ClientRecord edit(@Json @Par("toSave") ClientDetails clientDetails) {
         return clientRegister.get().editClient(clientDetails);
     }
 
     @ToJson
     @NoSecurity
     @Mapping("/get-details")
-    public ClientDetails getClientDetails(@Par("clientId") int clientId) {
+    public ClientDetails getDetails(@Par("clientId") long clientId) {
         return clientRegister.get().getClientDetails(clientId);
     }
 
@@ -79,7 +79,7 @@ public class ClientController implements Controller {
 
     @ToJson
     @Mapping("/render-list/{type}")
-    public void renderClientList(@ParSession("personId") String personId,
+    public void renderList(@ParSession("personId") String personId,
                           @ParPath("type") String type,
                           @Par("options") @Json ClientRequestOptions options,
                           @Par("link") String link,

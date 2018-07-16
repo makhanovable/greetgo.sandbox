@@ -8,7 +8,7 @@ import java.util.List;
 public interface ClientDao {
 
     @Select("insert into client(surname, name, patronymic, gender, birth_date, charm) VALUES (#{client.surname}, #{client.name}, #{client.patronymic}, #{client.gender}, #{client.birth_date}, #{client.charm}) RETURNING id")
-    int insert_client(@Param("client") Client client);
+    long insert_client(@Param("client") Client client);
 
     @Insert("insert into client_addr VALUES (#{clientAddr.client}, #{clientAddr.type}, #{clientAddr.street}, #{clientAddr.house}, #{clientAddr.flat})")
     void insert_client_addr(@Param("clientAddr") ClientAddr clientAddr);
@@ -21,7 +21,7 @@ public interface ClientDao {
     //
 
     @Update("update client set actual = false where id = #{id}")
-    void deleteClient(@Param("id") int id);
+    void deleteClient(@Param("id") long id);
 
     //
     //
@@ -41,23 +41,23 @@ public interface ClientDao {
     //
 
     @Select("select money from client_account WHERE id = #{id}")
-    List<Float> getClientAccountsMoneyById(@Param("id") int id);
+    List<Float> getClientAccountsMoneyById(@Param("id") long id);
 
     @Select("select * from client_addr where client = #{id}")
-    List<ClientAddr> getClientAddrsByID(@Param("id") int id);
+    List<ClientAddr> getClientAddrsByID(@Param("id") long id);
 
     @Select("select * from client_phone where client = #{id}")
-    List<ClientPhone> getClientPhonesByID(@Param("id") int id);
+    List<ClientPhone> getClientPhonesByID(@Param("id") long id);
 
     //
     //
     //
 
     @Select("select name from charm where id = #{id}")
-    String getCharmById(@Param("id") int id);
+    String getCharmById(@Param("id") long id);
 
     @Select("select * from client where id = #{id} and actual = true")
-    Client getClientByID(@Param("id") int id);
+    Client getClientByID(@Param("id") long id);
 
     @Select("SELECT count(id) FROM client WHERE actual = TRUE AND (name LIKE #{filter} OR surname LIKE #{filter} OR patronymic LIKE #{filter})")
     int getClientRecordsCount(@Param("filter") String filter);

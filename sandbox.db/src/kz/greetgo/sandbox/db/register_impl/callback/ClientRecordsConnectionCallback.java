@@ -64,7 +64,7 @@ public abstract class ClientRecordsConnectionCallback<T> implements ConnectionCa
 
     ClientRecord extractClientRecord(ResultSet rs) throws SQLException {
         ClientRecord clientRecord = new ClientRecord();
-        clientRecord.id = rs.getInt("id");
+        clientRecord.id = rs.getLong("id");
         clientRecord.name = rs.getString("name");
         clientRecord.age = calculateAge(rs.getString("age"));
         clientRecord.charm = clientDao.get().getCharmById(rs.getInt("charm"));
@@ -76,7 +76,7 @@ public abstract class ClientRecordsConnectionCallback<T> implements ConnectionCa
 
     ClientRecordReportRow extractClientRecordReport(ResultSet rs) throws SQLException {
         ClientRecordReportRow clientRecord = new ClientRecordReportRow();
-        clientRecord.id = rs.getInt("id");
+        clientRecord.id = rs.getLong("id");
         clientRecord.name = rs.getString("name");
         clientRecord.age = calculateAge(rs.getString("age"));
         clientRecord.charm = clientDao.get().getCharmById(rs.getInt("charm"));

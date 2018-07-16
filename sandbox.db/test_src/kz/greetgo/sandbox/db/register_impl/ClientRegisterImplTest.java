@@ -193,7 +193,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         TestClientRecordsReportView expectedView = new TestClientRecordsReportView();
         String expectedUsername = RND.str(10);
         String expectedLink = RND.str(10);
-        Map<Integer, Float> clientIdAndTotalBalance = new HashMap<>();
+        Map<Long, Float> clientIdAndTotalBalance = new HashMap<>();
         for (ClientAccount account : expectedAccounts)
             clientIdAndTotalBalance.merge(account.client, account.money, (a, b) -> a + b);
         clientIdAndTotalBalance = sortMapByValues(clientIdAndTotalBalance);
@@ -210,7 +210,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(clientRecords).isNotNull();
         assertThat(clientRecords).isSortedAccordingTo(Comparator.comparing(o -> o.total));
         int i = 0;
-        for (Integer key : clientIdAndTotalBalance.keySet()) {
+        for (Long key : clientIdAndTotalBalance.keySet()) {
             assertThat(key).isEqualTo(clientRecords.get(i).id);
             assertThat(Math.round(clientIdAndTotalBalance.get(key))).isEqualTo(Math.round(clientRecords.get(i).total));
             i++;
@@ -221,7 +221,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(expectedView.link_to_download).isEqualTo(expectedLink);
         assertThat(expectedView.rowList).isSortedAccordingTo(Comparator.comparing(o -> o.total));
         i = 0;
-        for (Integer key : clientIdAndTotalBalance.keySet()) {
+        for (Long key : clientIdAndTotalBalance.keySet()) {
             assertThat(key).isEqualTo(expectedView.rowList.get(i).id);
             assertThat(Math.round(clientIdAndTotalBalance.get(key))).isEqualTo(Math.round(expectedView.rowList.get(i).total));
             i++;
@@ -241,7 +241,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         TestClientRecordsReportView expectedView = new TestClientRecordsReportView();
         String expectedUsername = RND.str(10);
         String expectedLink = RND.str(10);
-        Map<Integer, Float> clientIdAndTotalBalance = new HashMap<>();
+        Map<Long, Float> clientIdAndTotalBalance = new HashMap<>();
         for (ClientAccount account : expectedAccounts)
             clientIdAndTotalBalance.merge(account.client, account.money, (a, b) -> a + b);
         clientIdAndTotalBalance = sortMapByValues(clientIdAndTotalBalance);
@@ -261,7 +261,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(clientRecords).isNotNull();
         assertThat(clientRecords).isSortedAccordingTo(Comparator.comparing(o -> o.total));
         int i = 0;
-        for (Integer key : clientIdAndTotalBalance.keySet()) {
+        for (Long key : clientIdAndTotalBalance.keySet()) {
             assertThat(key).isEqualTo(clientRecords.get(i).id);
             assertThat(Math.round(clientIdAndTotalBalance.get(key))).isEqualTo(Math.round(clientRecords.get(i).total));
             i++;
@@ -272,7 +272,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(expectedView.link_to_download).isEqualTo(expectedLink);
         assertThat(expectedView.rowList).isSortedAccordingTo(Comparator.comparing(o -> o.total));
         i = 0;
-        for (Integer key : clientIdAndTotalBalance.keySet()) {
+        for (Long key : clientIdAndTotalBalance.keySet()) {
             assertThat(key).isEqualTo(expectedView.rowList.get(i).id);
             assertThat(Math.round(clientIdAndTotalBalance.get(key))).isEqualTo(Math.round(expectedView.rowList.get(i).total));
             i++;
@@ -292,7 +292,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         TestClientRecordsReportView expectedView = new TestClientRecordsReportView();
         String expectedUsername = RND.str(10);
         String expectedLink = RND.str(10);
-        Map<Integer, Float> clientIdAndMaxBalance = new HashMap<>();
+        Map<Long, Float> clientIdAndMaxBalance = new HashMap<>();
         Float max = null;
         for (ClientAccount account : expectedAccounts) {
             Float temp = account.money;
@@ -319,7 +319,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(clientRecords).isNotNull();
         assertThat(clientRecords).isSortedAccordingTo(Comparator.comparing(o -> o.max));
         int i = 0;
-        for (Integer key : clientIdAndMaxBalance.keySet()) {
+        for (Long key : clientIdAndMaxBalance.keySet()) {
             assertThat(key).isEqualTo(clientRecords.get(i).id);
             assertThat(Math.round(clientIdAndMaxBalance.get(key))).isEqualTo(Math.round(clientRecords.get(i).max));
             i++;
@@ -330,7 +330,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(expectedView.link_to_download).isEqualTo(expectedLink);
         assertThat(expectedView.rowList).isSortedAccordingTo(Comparator.comparing(o -> o.max));
         i = 0;
-        for (Integer key : clientIdAndMaxBalance.keySet()) {
+        for (Long key : clientIdAndMaxBalance.keySet()) {
             assertThat(key).isEqualTo(expectedView.rowList.get(i).id);
             assertThat(Math.round(clientIdAndMaxBalance.get(key))).isEqualTo(Math.round(expectedView.rowList.get(i).max));
             i++;
@@ -350,7 +350,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         TestClientRecordsReportView expectedView = new TestClientRecordsReportView();
         String expectedUsername = RND.str(10);
         String expectedLink = RND.str(10);
-        Map<Integer, Float> clientIdAndMaxBalance = new HashMap<>();
+        Map<Long, Float> clientIdAndMaxBalance = new HashMap<>();
         Float max = null;
         for (ClientAccount account : expectedAccounts) {
             Float temp = account.money;
@@ -380,7 +380,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(clientRecords).isNotNull();
         assertThat(clientRecords).isSortedAccordingTo(Comparator.comparing(o -> o.max));
         int i = 0;
-        for (Integer key : clientIdAndMaxBalance.keySet()) {
+        for (Long key : clientIdAndMaxBalance.keySet()) {
             assertThat(key).isEqualTo(clientRecords.get(i).id);
             assertThat(Math.round(clientIdAndMaxBalance.get(key))).isEqualTo(Math.round(clientRecords.get(i).max));
             i++;
@@ -391,7 +391,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(expectedView.link_to_download).isEqualTo(expectedLink);
         assertThat(expectedView.rowList).isSortedAccordingTo(Comparator.comparing(o -> o.max));
         i = 0;
-        for (Integer key : clientIdAndMaxBalance.keySet()) {
+        for (Long key : clientIdAndMaxBalance.keySet()) {
             assertThat(key).isEqualTo(expectedView.rowList.get(i).id);
             assertThat(Math.round(clientIdAndMaxBalance.get(key))).isEqualTo(Math.round(expectedView.rowList.get(i).max));
             i++;
@@ -411,7 +411,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         TestClientRecordsReportView expectedView = new TestClientRecordsReportView();
         String expectedUsername = RND.str(10);
         String expectedLink = RND.str(10);
-        Map<Integer, Float> clientIdAndMinBalance = new HashMap<>();
+        Map<Long, Float> clientIdAndMinBalance = new HashMap<>();
         Float min = null;
         for (ClientAccount account : expectedAccounts) {
             Float temp = account.money;
@@ -438,7 +438,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(clientRecords).isNotNull();
         assertThat(clientRecords).isSortedAccordingTo(Comparator.comparing(o -> o.min));
         int i = 0;
-        for (Integer key : clientIdAndMinBalance.keySet()) {
+        for (Long key : clientIdAndMinBalance.keySet()) {
             assertThat(key).isEqualTo(clientRecords.get(i).id);
             assertThat(Math.round(clientIdAndMinBalance.get(key))).isEqualTo(Math.round(clientRecords.get(i).min));
             i++;
@@ -449,7 +449,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(expectedView.link_to_download).isEqualTo(expectedLink);
         assertThat(expectedView.rowList).isSortedAccordingTo(Comparator.comparing(o -> o.min));
         i = 0;
-        for (Integer key : clientIdAndMinBalance.keySet()) {
+        for (Long key : clientIdAndMinBalance.keySet()) {
             assertThat(key).isEqualTo(expectedView.rowList.get(i).id);
             assertThat(Math.round(clientIdAndMinBalance.get(key))).isEqualTo(Math.round(expectedView.rowList.get(i).min));
             i++;
@@ -469,7 +469,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         TestClientRecordsReportView expectedView = new TestClientRecordsReportView();
         String expectedUsername = RND.str(10);
         String expectedLink = RND.str(10);
-        Map<Integer, Float> clientIdAndMinBalance = new HashMap<>();
+        Map<Long, Float> clientIdAndMinBalance = new HashMap<>();
         Float min = null;
         for (ClientAccount account : expectedAccounts) {
             Float temp = account.money;
@@ -499,7 +499,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(clientRecords).isNotNull();
         assertThat(clientRecords).isSortedAccordingTo(Comparator.comparing(o -> o.min));
         int i = 0;
-        for (Integer key : clientIdAndMinBalance.keySet()) {
+        for (Long key : clientIdAndMinBalance.keySet()) {
             assertThat(key).isEqualTo(clientRecords.get(i).id);
             assertThat(Math.round(clientIdAndMinBalance.get(key))).isEqualTo(Math.round(clientRecords.get(i).min));
             i++;
@@ -510,7 +510,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         assertThat(expectedView.link_to_download).isEqualTo(expectedLink);
         assertThat(expectedView.rowList).isSortedAccordingTo(Comparator.comparing(o -> o.min));
         i = 0;
-        for (Integer key : clientIdAndMinBalance.keySet()) {
+        for (Long key : clientIdAndMinBalance.keySet()) {
             assertThat(key).isEqualTo(expectedView.rowList.get(i).id);
             assertThat(Math.round(clientIdAndMinBalance.get(key))).isEqualTo(Math.round(expectedView.rowList.get(i).min));
             i++;
@@ -782,7 +782,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
     public void addClient_wrongCharmID() {
         TRUNCATE();
 
-        int charmId = -254;
+        long charmId = -254;
         Client rndClient = generateRNDClient(false, charmId, null);
         ClientAddr rndClientAddr = generateRNDClientAddr(false, rndClient.id, AddrType.REG);
         ClientPhone rndClientPhone = generateRNDClientPhone(false, rndClient.id);
@@ -834,7 +834,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         ClientPhone rndClientPhone = generateRNDClientPhone(true, rndClient.id);
         ClientDetails clientDetailToEdit = generateClientDetail(rndClient, rndClientPhone, rndClientAddr);
 
-        clientDetailToEdit.charm = -254;
+        clientDetailToEdit.charm = -254L;
         //
         //
         //
@@ -957,7 +957,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         return charm;
     }
 
-    private Client generateRNDClient(boolean insertIt, int charmId, String filter) {
+    private Client generateRNDClient(boolean insertIt, Long charmId, String filter) {
         Client client = new Client();
         client.name = generateRndStr(10);
         client.surname = generateRndStr(10);
@@ -972,7 +972,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         return client;
     }
 
-    private ClientAddr generateRNDClientAddr(boolean insertIt, int clientId, AddrType addrType) {
+    private ClientAddr generateRNDClientAddr(boolean insertIt, Long clientId, AddrType addrType) {
         ClientAddr clientAddr = new ClientAddr();
         clientAddr.client = clientId;
         clientAddr.type = addrType;
@@ -984,7 +984,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         return clientAddr;
     }
 
-    private ClientPhone generateRNDClientPhone(boolean insertIt, int clientId) {
+    private ClientPhone generateRNDClientPhone(boolean insertIt, Long clientId) {
         ClientPhone clientPhone = new ClientPhone();
         clientPhone.client = clientId;
         clientPhone.number = RND.intStr(10);
@@ -994,7 +994,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         return clientPhone;
     }
 
-    private ClientAccount generateRNDClientAccount(boolean insertIt, int clientId) {
+    private ClientAccount generateRNDClientAccount(boolean insertIt, Long clientId) {
         ClientAccount clientAccount = new ClientAccount();
         clientAccount.client = clientId;
         clientAccount.number = RND.str(10);
@@ -1048,7 +1048,7 @@ public class ClientRegisterImplTest extends ParentTestNg {
         return clientRecord;
     }
 
-    private Map<Integer, Float> sortMapByValues(Map<Integer, Float> map) {
+    private Map<Long, Float> sortMapByValues(Map<Long, Float> map) {
         return map.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,

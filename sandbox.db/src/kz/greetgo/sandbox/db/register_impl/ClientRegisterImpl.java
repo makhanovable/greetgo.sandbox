@@ -40,15 +40,24 @@ public class ClientRegisterImpl implements ClientRegister {
     }
 
     @Override
-    public void deleteClient(int clientId) {
+    public void deleteClient(Long clientId) {
         logger.info("deleteClient with id: " + clientId);
         clientDao.get().deleteClient(clientId);
     }
 
     @Override
     public ClientRecord addClient(ClientDetails details) {
-        if (!isClientDetailsValid(details, true)) {
-            logger.error("ClientDetails to ADD is INVALID");
+        return saveClient(details, false);
+    }
+
+    @Override
+    public ClientRecord editClient(ClientDetails details) {
+        return saveClient(details, true);
+    }
+
+    private ClientRecord saveClient(ClientDetails details, boolean toEdit) {
+        if (!isClientDetailsValid(details, !toEdit)) {
+            logger.error("ClientDetails to Save is INVALID");
             return null;
         }
         Client client = new Client();
@@ -58,7 +67,15 @@ public class ClientRegisterImpl implements ClientRegister {
         client.gender = Gender.valueOf(details.gender);
         client.birth_date = parseDate(details.birth_date);
         client.charm = details.charm;
-        Integer id = clientDao.get().insert_client(client);
+
+        Long id;
+        if (toEdit) {
+            id = details.id;
+            client.id = id;
+            clientDao.get().edit_client(client);
+        } else {
+            id = clientDao.get().insert_client(client);
+        }
 
         ClientAddr clientAddr = new ClientAddr();
         clientAddr.client = id;
@@ -66,22 +83,30 @@ public class ClientRegisterImpl implements ClientRegister {
         clientAddr.street = details.addrRegStreet;
         clientAddr.house = details.addrRegHome;
         clientAddr.flat = details.addrRegFlat;
-        clientDao.get().insert_client_addr(clientAddr);
+        if (toEdit)
+            clientDao.get().edit_client_addr(clientAddr);
+        else
+            clientDao.get().insert_client_addr(clientAddr);
         if (details.addrFactStreet != null && details.addrFactHome != null) {
             clientAddr.type = AddrType.FACT;
             clientAddr.street = details.addrFactStreet;
             clientAddr.house = details.addrFactHome;
             clientAddr.flat = details.addrFactFlat;
-            clientDao.get().insert_client_addr(clientAddr);
+            if (toEdit)
+                clientDao.get().edit_client_addr(clientAddr);
+            else
+                clientDao.get().insert_client_addr(clientAddr);
         }
-        // Stream<ClientPhone> stream = Arrays.stream(details.phones); //
         for (int i = 0; i < details.phones.length; i++) {
             if (details.phones[i] != null) {
                 ClientPhone clientPhone = new ClientPhone();
                 clientPhone.number = details.phones[i].number;
                 clientPhone.client = id;
-                clientPhone.type = details.phones[i].type; //
-                clientDao.get().insert_client_phone(clientPhone);
+                clientPhone.type = details.phones[i].type;
+                if (toEdit)
+                    clientDao.get().edit_client_phone(clientPhone);
+                else
+                    clientDao.get().insert_client_phone(clientPhone);
             }
         }
 
@@ -92,64 +117,7 @@ public class ClientRegisterImpl implements ClientRegister {
             clientRecord.name += " " + client.patronymic;
         clientRecord.charm = clientDao.get().getCharmById(client.charm);
         clientRecord.age = calculateAge(details.birth_date);
-        clientRecord.total = 0f;
-        clientRecord.min = 0f;
-        clientRecord.max = 0f;
-
-        logger.info("added new Client with id: " + id);
-
-        return clientRecord;
-    }
-
-    @Override
-    public ClientRecord editClient(ClientDetails details) {
-        if (!isClientDetailsValid(details, false)) {
-            logger.error("ClientDetails to EDIT is INVALID");
-            return null;
-        }
-        Client client = new Client();
-        client.id = details.id;
-        client.name = details.name;
-        client.surname = details.surname;
-        client.patronymic = details.patronymic;
-        client.gender = Gender.valueOf(details.gender);
-        client.birth_date = parseDate(details.birth_date);
-        client.charm = details.charm;
-        clientDao.get().edit_client(client);
-
-        ClientAddr clientAddr = new ClientAddr();
-        clientAddr.client = details.id;
-        clientAddr.type = AddrType.REG;
-        clientAddr.street = details.addrRegStreet;
-        clientAddr.house = details.addrRegHome;
-        clientAddr.flat = details.addrRegFlat;
-        clientDao.get().edit_client_addr(clientAddr);
-        if (details.addrFactStreet != null && details.addrFactHome != null) {
-            clientAddr.type = AddrType.FACT;
-            clientAddr.street = details.addrFactStreet;
-            clientAddr.house = details.addrFactHome;
-            clientAddr.flat = details.addrFactFlat;
-            clientDao.get().edit_client_addr(clientAddr);
-        }
-        // Stream<ClientPhone> stream = Arrays.stream(details.phones);
-        for (int i = 0; i < details.phones.length; i++) {
-            if (details.phones[i] != null) {
-                ClientPhone clientPhone = new ClientPhone();
-                clientPhone.number = details.phones[i].number;
-                clientPhone.client = details.id;
-                clientPhone.type = details.phones[i].type;
-                clientDao.get().edit_client_phone(clientPhone);
-            }
-        }
-
-        ClientRecord clientRecord = new ClientRecord();
-        clientRecord.id = details.id;
-        clientRecord.name = client.surname + " " + client.name;
-        if (client.patronymic != null)
-            clientRecord.name += " " + client.patronymic;
-        clientRecord.charm = clientDao.get().getCharmById(client.charm);
-        clientRecord.age = calculateAge(details.birth_date);
-        List<Float> list = clientDao.get().getClientAccountsMoneyById(details.id);
+        List<Float> list = clientDao.get().getClientAccountsMoneyById(id);
         Collections.sort(list);
         clientRecord.total = 0f;
         for (float i : list)
@@ -157,13 +125,13 @@ public class ClientRegisterImpl implements ClientRegister {
         clientRecord.min = list.isEmpty() ? 0f : list.get(0);
         clientRecord.max = list.isEmpty() ? 0f : list.get(list.size() - 1);
 
-        logger.info("edited Client with id: " + client.id);
+        logger.info("save Client with id: " + client.id);
 
         return clientRecord;
     }
 
     @Override
-    public ClientDetails getClientDetails(int clientId) {
+    public ClientDetails getClientDetails(Long clientId) {
         logger.info("getClientDetails with id: " + clientId);
 
         ClientDetails clientDetails = new ClientDetails();
@@ -204,7 +172,7 @@ public class ClientRegisterImpl implements ClientRegister {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         Charm charm = new Charm();
-                        charm.id = rs.getInt("id");
+                        charm.id = rs.getLong("id");
                         charm.name = rs.getString("name");
                         charm.description = rs.getString("description");
                         charm.energy = rs.getFloat("energy");

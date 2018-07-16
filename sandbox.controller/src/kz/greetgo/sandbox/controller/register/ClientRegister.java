@@ -14,13 +14,13 @@ public interface ClientRegister {
 
     int getClientListCount(String filter);
 
-    void deleteClient(int clientId);
+    void deleteClient(Long clientId);
 
     ClientRecord addClient(ClientDetails details);
 
     ClientRecord editClient(ClientDetails details);
 
-    ClientDetails getClientDetails(int clientId);
+    ClientDetails getClientDetails(Long clientId);
 
     List<Charm> getCharms();
 

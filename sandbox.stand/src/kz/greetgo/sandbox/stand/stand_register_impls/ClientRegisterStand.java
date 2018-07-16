@@ -40,7 +40,7 @@ public class ClientRegisterStand implements ClientRegister {
     }
 
     @Override
-    public void deleteClient(int clientId) {
+    public void deleteClient(Long clientId) {
         db.get().deleteClientInfo(clientId);
     }
 
@@ -73,7 +73,7 @@ public class ClientRegisterStand implements ClientRegister {
     }
 
     @Override
-    public ClientDetails getClientDetails(int clientId) {
+    public ClientDetails getClientDetails(Long clientId) {
         ClientDetails clientDetails = new ClientDetails();
         ClientDetailsDot dot = db.get().getClientDetailById(clientId);
         clientDetails.id = dot.id;

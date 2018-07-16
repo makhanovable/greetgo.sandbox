@@ -3,13 +3,13 @@ package kz.greetgo.sandbox.db.stand.model;
 import kz.greetgo.sandbox.controller.model.ClientPhone;
 
 public class ClientDetailsDot {
-    public int id;
+    public Long id;
     public String name;
     public String surname;
     public String patronymic;
     public String gender;
     public String birth_date;
-    public int charm;
+    public Long charm;
     public String addrFactStreet;
     public String addrFactHome;
     public String addrFactFlat;

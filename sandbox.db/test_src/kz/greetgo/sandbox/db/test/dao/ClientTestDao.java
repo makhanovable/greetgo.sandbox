@@ -16,13 +16,13 @@ public interface ClientTestDao {
     //language=PostgreSQL
     @Select("INSERT INTO charm (name, description, energy) VALUES " +
             "(#{charm.name}, #{charm.description}, #{charm.energy}) RETURNING id")
-    int insert_random_charm(@Param("charm") Charm charm);
+    Long insert_random_charm(@Param("charm") Charm charm);
 
     //language=PostgreSQL
     @Select("INSERT INTO client (surname, name, patronymic, gender, birth_date, charm) VALUES " +
             "(#{client.surname}, #{client.name}, #{client.patronymic}," +
             "#{client.gender}, #{client.birth_date}, #{client.charm}) RETURNING id")
-    int insert_random_client(@Param("client") Client client);
+    Long insert_random_client(@Param("client") Client client);
 
     //language=PostgreSQL
     @Insert("INSERT INTO client_addr VALUES (#{clientAddr.client}, #{clientAddr.type}," +
@@ -36,7 +36,7 @@ public interface ClientTestDao {
 
     //language=PostgreSQL
     @Select("insert into client_account(client, money, number) VALUES (#{clientAccount.client}, #{clientAccount.money}, #{clientAccount.number}) RETURNING id")
-    int insert_random_client_account(@Param("clientAccount") ClientAccount clientAccount);
+    Long insert_random_client_account(@Param("clientAccount") ClientAccount clientAccount);
 
     @Insert("insert into client_account_transaction(account, money, type) VALUES (#{clientAccountTransaction.account}, #{clientAccountTransaction.money}, #{clientAccountTransaction.type})")
     void insert_random_client_account_transaction(@Param("clientAccountTransaction") ClientAccountTransaction clientAccountTransaction);
@@ -52,19 +52,19 @@ public interface ClientTestDao {
     Integer getCharmsCount();
 
     @Select("select name from charm where id = #{id}")
-    String getCharmById(@Param("id") int id);
+    String getCharmById(@Param("id") long id);
 
     @Select("select * from client where id = #{id} and actual = true")
-    Client getClientById(@Param("id") int id);
+    Client getClientById(@Param("id") long id);
 
     @Select("select * from client_addr where client = #{id}")
-    List<ClientAddr> getClientAddrsById(@Param("id") int id);
+    List<ClientAddr> getClientAddrsById(@Param("id") long id);
 
     @Select("select * from client_phone where client = #{id}")
-    List<ClientPhone> getClientPhonesById(@Param("id") int id);
+    List<ClientPhone> getClientPhonesById(@Param("id") long id);
 
     @Select("select * from client_account where client = #{id}")
-    List<ClientAccount> getClientAccountsById(@Param("id") int id);
+    List<ClientAccount> getClientAccountsById(@Param("id") long id);
 
     @Select("select id from client where actual = true")
     List<Integer> getAllActualClientIds();
@@ -74,6 +74,6 @@ public interface ClientTestDao {
     //
 
     @Select("select money from client_account WHERE id = #{id}")
-    List<Float> getClientAccountsMoneyById(@Param("id") int id);
+    List<Float> getClientAccountsMoneyById(@Param("id") long id);
 
 }

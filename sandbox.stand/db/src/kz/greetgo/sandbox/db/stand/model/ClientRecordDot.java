@@ -1,7 +1,7 @@
 package kz.greetgo.sandbox.db.stand.model;
 
 public class ClientRecordDot {
-    public int id;
+    public Long id;
     public String name;
     public String charm;
     public int age;
