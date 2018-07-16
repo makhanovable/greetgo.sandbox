@@ -1,6 +1,7 @@
 package kz.greetgo.sandbox.db.util;
 
 import kz.greetgo.sandbox.controller.model.ClientDetails;
+import org.apache.log4j.Logger;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -14,6 +15,8 @@ import static kz.greetgo.sandbox.db.util.FlexibleDateParser.parseDate;
 
 public class ClientHelperUtil {
 
+    private static Logger logger = Logger.getLogger(ClientHelperUtil.class);
+
     public static int calculateAge(String birth_date) {
         try {
             Date birth = parseDate(birth_date);
@@ -22,7 +25,7 @@ public class ClientHelperUtil {
             LocalDate currentDate = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             return Period.between(birthDate, currentDate).getYears();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e);
             return 0;
         }
     }
@@ -33,6 +36,7 @@ public class ClientHelperUtil {
             LocalDate currentDate = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             return Period.between(birthDate, currentDate).getYears();
         } catch (Exception e) {
+            logger.error(e);
             return 0;
         }
     }

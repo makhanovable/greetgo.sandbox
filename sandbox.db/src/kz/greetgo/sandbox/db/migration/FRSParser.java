@@ -61,7 +61,7 @@ public class FRSParser {
                     Thread.sleep(1000);
                 }
             } catch (Exception e) {
-                logger.info(e.getMessage());
+                logger.info(e);
             }
         });
         thread.start();

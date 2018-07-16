@@ -4,6 +4,7 @@ import kz.greetgo.msoffice.xlsx.gen.Sheet;
 import kz.greetgo.msoffice.xlsx.gen.Xlsx;
 import kz.greetgo.sandbox.controller.model.ClientRecordReportRow;
 import kz.greetgo.util.RND;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -14,6 +15,7 @@ public class ClientRecordReportViewXlsxImpl implements ClientRecordsReportView {
     private PrintStream out;
     private Xlsx xlsx;
     private Sheet sheet;
+    private Logger logger = Logger.getLogger(ClientRecordReportViewXlsxImpl.class);
 
     public ClientRecordReportViewXlsxImpl(PrintStream out) {
         this.out = out;
@@ -67,7 +69,7 @@ public class ClientRecordReportViewXlsxImpl implements ClientRecordsReportView {
             xlsx.complete(out);
             out.flush();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e);
         }
     }
 

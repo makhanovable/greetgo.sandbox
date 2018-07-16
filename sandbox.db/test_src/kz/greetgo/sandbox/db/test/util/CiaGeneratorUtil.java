@@ -4,6 +4,7 @@ import kz.greetgo.sandbox.controller.model.AddrType;
 import kz.greetgo.sandbox.db.migration.model.Address;
 import kz.greetgo.sandbox.db.migration.model.Client;
 import kz.greetgo.sandbox.db.migration.model.Phone;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -13,6 +14,7 @@ import java.util.List;
 public class CiaGeneratorUtil {
 
     private static File file;
+    private static Logger logger = Logger.getLogger(CiaGeneratorUtil.class);
 
     public static String generateXmlFile(Client client, List<Address> addrs, List<Phone> phones) throws Exception {
         file = new File("sandbox.db/test_src/kz/greetgo/sandbox/db/register_impl/migration/data/cia.xml");
@@ -50,6 +52,7 @@ public class CiaGeneratorUtil {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                 birth = dateFormat.format(client.birth);
             } catch (Exception e) {// empty
+                logger.error(e);
             }
             sb.append("<birth value=\"").append(birth).append("\"/>\n");
         }

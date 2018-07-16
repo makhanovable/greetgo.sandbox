@@ -79,7 +79,7 @@ public class CIAParser extends DefaultHandler {
                     Thread.sleep(1000);
                 }
             } catch (Exception e) {
-                logger.info(e.getMessage());
+                logger.error(e);
             }
         });
         thread.start();
@@ -94,8 +94,7 @@ public class CIAParser extends DefaultHandler {
         try {
             start();
         } catch (Exception e) {
-            e.printStackTrace();
-            logger.error(e.getMessage());
+            logger.error(e);
         }
         super.startDocument();
     }
@@ -166,7 +165,7 @@ public class CIAParser extends DefaultHandler {
                 try {
                     insertAddr(fact);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error(e);
                 }
                 break;
             case REGISTER:
@@ -179,8 +178,7 @@ public class CIAParser extends DefaultHandler {
                 try {
                     insertAddr(reg);
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    logger.error(e.getMessage());
+                    logger.error(e);
                 }
                 break;
         }
@@ -239,6 +237,7 @@ public class CIAParser extends DefaultHandler {
                     break;
             }
         } catch (Exception ignored) {
+            logger.error(ignored);
         }
     }
 
@@ -312,7 +311,7 @@ public class CIAParser extends DefaultHandler {
             thread.interrupt();
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error(e.getMessage());
+            logger.error(e);
         }
         super.endDocument();
     }

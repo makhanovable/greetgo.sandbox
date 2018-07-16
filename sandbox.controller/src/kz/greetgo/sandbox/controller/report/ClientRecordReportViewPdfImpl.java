@@ -12,6 +12,7 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import kz.greetgo.sandbox.controller.model.ClientRecordReportRow;
 import kz.greetgo.util.RND;
+import org.apache.log4j.Logger;
 
 public class ClientRecordReportViewPdfImpl implements ClientRecordsReportView {
 
@@ -19,6 +20,7 @@ public class ClientRecordReportViewPdfImpl implements ClientRecordsReportView {
     private PrintStream out;
     private PdfPTable table;
     private Document document;
+    private Logger logger = Logger.getLogger(ClientRecordReportViewPdfImpl.class);
 
     public ClientRecordReportViewPdfImpl(PrintStream out) {
         this.out = out;
@@ -50,7 +52,7 @@ public class ClientRecordReportViewPdfImpl implements ClientRecordsReportView {
             table.addCell(new Phrase("Максимальный остаток", font));
             table.addCell(new Phrase("Минимальный остаток", font));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e);
         }
     }
 
@@ -84,7 +86,7 @@ public class ClientRecordReportViewPdfImpl implements ClientRecordsReportView {
             out.flush();
             document.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e);
         }
     }
 
