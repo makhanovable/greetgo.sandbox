@@ -1,19 +1,24 @@
 package kz.greetgo.sandbox.db.migration;
 
+import kz.greetgo.depinject.core.Bean;
+import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.sandbox.controller.register.MigrationRegister;
+import kz.greetgo.sandbox.db.configs.DbConfig;
 import kz.greetgo.sandbox.db.migration.util.SSHDataUtil;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.ArrayList;
-import java.util.List;
 
-public class LaunchMigration {
+@Bean
+public class LaunchMigration implements MigrationRegister {
 
+    public static BeanGetter<DbConfig> dbConfig;
     private static Connection connection;
     private static Logger logger = Logger.getLogger(LaunchMigration.class);
 
-    public static void main(String args[]) throws Exception {
+    public void start() throws Exception {
         connection = getConnection();
 
         int maxBatchSize = 500_000;
@@ -69,11 +74,9 @@ public class LaunchMigration {
 
     private static Connection getConnection() throws Exception {
         Class.forName("org.postgresql.Driver");
-        return DriverManager.getConnection(
-                "jdbc:postgresql://127.0.0.1:5432/makhan_sandbox",
-                "makhan_sandbox",
-                "111"
-        );
+        return DriverManager.getConnection(dbConfig.get().url(),
+                dbConfig.get().username(),
+                dbConfig.get().password());
     }
 
 }

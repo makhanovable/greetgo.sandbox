@@ -1,6 +1,7 @@
 package kz.greetgo.sandbox.db.register_impl.migration;
 
 import kz.greetgo.depinject.core.BeanGetter;
+import kz.greetgo.sandbox.db.configs.DbConfig;
 import kz.greetgo.sandbox.db.migration.FRSMigration;
 import kz.greetgo.sandbox.db.migration.model.Account;
 import kz.greetgo.sandbox.db.migration.model.Transaction;
@@ -23,6 +24,8 @@ public class FrsMigrationImplTest extends ParentTestNg {
 
     public BeanGetter<FrsTestDao> frsTestDao;
     private int maxBatchSize = 500_000;
+    public static BeanGetter<DbConfig> dbConfig;
+
 
     @Test
     public void isTempTablesCreated() throws Exception {
@@ -261,13 +264,11 @@ public class FrsMigrationImplTest extends ParentTestNg {
         frsTestDao.get().TRUNCATE();
     }
 
-    private Connection getConnection() throws Exception {
+    private static Connection getConnection() throws Exception {
         Class.forName("org.postgresql.Driver");
-        return DriverManager.getConnection(
-                "jdbc:postgresql://127.0.0.1:5432/makhan_sandbox",
-                "makhan_sandbox",
-                "111"
-        );
+        return DriverManager.getConnection(dbConfig.get().url(),
+                dbConfig.get().username(),
+                dbConfig.get().password());
     }
 
 }

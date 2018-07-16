@@ -5,6 +5,9 @@ import kz.greetgo.sandbox.controller.model.ClientAddr;
 import kz.greetgo.sandbox.controller.model.AddrType;
 import kz.greetgo.sandbox.controller.model.Gender;
 import kz.greetgo.sandbox.controller.model.PhoneType;
+import kz.greetgo.sandbox.controller.register.ClientRegister;
+import kz.greetgo.sandbox.controller.register.MigrationRegister;
+import kz.greetgo.sandbox.db.configs.DbConfig;
 import kz.greetgo.sandbox.db.migration.CIAMigration;
 import kz.greetgo.sandbox.db.migration.model.Address;
 import kz.greetgo.sandbox.db.migration.model.Client;
@@ -29,6 +32,7 @@ public class CiaMigrationImplTest extends ParentTestNg {
 
     public BeanGetter<CiaTestDao> ciaTestDao;
     private int maxBatchSize = 500_000;
+    public static BeanGetter<DbConfig> dbConfig;
 
     @Test
     public void isTempTablesCreated() throws Exception {
@@ -563,13 +567,11 @@ public class CiaMigrationImplTest extends ParentTestNg {
         ciaTestDao.get().TRUNCATE();
     }
 
-    private Connection getConnection() throws Exception {
+    private static Connection getConnection() throws Exception {
         Class.forName("org.postgresql.Driver");
-        return DriverManager.getConnection(
-                "jdbc:postgresql://127.0.0.1:5432/makhan_sandbox",
-                "makhan_sandbox",
-                "111"
-        );
+        return DriverManager.getConnection(dbConfig.get().url(),
+                dbConfig.get().username(),
+                dbConfig.get().password());
     }
 
 }
