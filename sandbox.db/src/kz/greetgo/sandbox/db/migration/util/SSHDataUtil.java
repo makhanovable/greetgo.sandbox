@@ -4,7 +4,6 @@ import com.jcraft.jsch.*;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
 
 public class SSHDataUtil {
@@ -19,20 +18,20 @@ public class SSHDataUtil {
     private static ChannelSftp channelSftp;
     private static Channel channel;
 
-    public static List<String> downloadFilesAndExtract() throws Exception {
-        List<String> extractedFiles = new ArrayList<>();
+    public static ArrayList<String> downloadFilesAndExtract() throws Exception {
+        ArrayList<String> xml = new ArrayList<>();
+        ArrayList<String> json = new ArrayList<>();
 
         // LOCAL Files
-        extractedFiles.add("out_files/from_cia_2018-02-21-154929-1-300.xml");
-        extractedFiles.add("out_files/from_frs_2018-02-21-155112-1-30002.json_row.txt");
-//        extractedFiles.add("out_files/from_cia_2018-02-21-154535-4-100000.xml");
-//        extractedFiles.add("out_files/from_frs_2018-02-21-154551-3-1000004.json_row.txt");
-//        extractedFiles.add("out_files/from_cia_2018-02-21-154955-5-1000000.xml");
-//        extractedFiles.add("out_files/from_frs_2018-02-21-155121-3-10000007.json_row.txt");
+        xml.add("out_files/from_cia_2018-02-21-154929-1-300.xml");
+        json.add("out_files/from_frs_2018-02-21-155112-1-30002.json_row.txt");
+//        xml.add("out_files/from_cia_2018-02-21-154535-4-100000.xml");
+//        json.add("out_files/from_frs_2018-02-21-154551-3-1000004.json_row.txt");
+//        xml.add("out_files/from_cia_2018-02-21-154955-5-1000000.xml");
+//        json.add("out_files/from_frs_2018-02-21-155121-3-10000007.json_row.txt");
 
-
-        // to downloading files from server define USER PASSWORD HOST PORT
-        // and uncomment this
+//        to downloading files from server define USER PASSWORD HOST PORT
+//        and uncomment this
 //        createConnection();
 //
 //        for (String FOLDER : FOLDERS) {
@@ -45,13 +44,16 @@ public class SSHDataUtil {
 //                        String extractedFilePath = sendCommand("tar -jxvf "
 //                                + FOLDER.substring(1, FOLDER.length()) + oListItem.getFilename());
 //                        extractedFilePath = extractedFilePath.replace("\n", "");
-//                        extractedFiles.add(extractedFilePath);
+//                        if (extractedFilePath.endsWith("txt"))
+//                            json.add(extractedFilePath);
+//                        else xml.add(extractedFilePath);
 //                    }
 //                }
 //        }
 //        downloadFiles();
 //        closeConnection();
-        return extractedFiles;
+
+        return merge(xml, json);
     }
 
     private static void downloadFiles() throws Exception {
@@ -94,6 +96,16 @@ public class SSHDataUtil {
         }
         channel.disconnect();
         return outputBuffer.toString();
+    }
+
+    private static ArrayList merge(ArrayList<String> a, ArrayList<String> b) {
+        int c1 = 0, c2 = 0;
+        ArrayList<String> res = new ArrayList<>();
+        while (c1 < a.size() || c2 < b.size()) {
+            if (c1 < a.size()) res.add((String) a.get(c1++));
+            if (c2 < b.size()) res.add((String) b.get(c2++));
+        }
+        return res;
     }
 
     private static void closeConnection() {

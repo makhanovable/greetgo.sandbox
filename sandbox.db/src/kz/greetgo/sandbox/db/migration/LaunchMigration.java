@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.ArrayList;
 import java.util.List;
 
 public class LaunchMigration {
@@ -22,7 +23,7 @@ public class LaunchMigration {
     }
 
     private static void startMigration(int maxBatchSize) throws Exception {
-        List<String> dataToMigrate = SSHDataUtil.downloadFilesAndExtract();
+        ArrayList<String> dataToMigrate = SSHDataUtil.downloadFilesAndExtract();
         if (!dataToMigrate.isEmpty())
             for (String file : dataToMigrate) {
                 if (file.endsWith("xml"))
